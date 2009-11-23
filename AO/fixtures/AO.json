@@ -1,0 +1,245 @@
+[
+    {
+        "pk": 1, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "responses_allowed": "n", 
+            "name": "qna", 
+            "name_file": "qna.wav",
+            "open": "y", 
+            "moderated": "y", 
+            "maxlength": 3000
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "responses_allowed": "y", 
+            "name": "announcements", 
+            "name_file": "announcements.wav",
+            "open": "n", 
+            "moderated": "y", 
+            "maxlength": 60000
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "responses_allowed": "n", 
+            "name": "radio", 
+            "name_file": "radio.wav",
+            "open": "n", 
+            "moderated": "n", 
+            "maxlength": 40000
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "responses_allowed": "y", 
+            "name": "anubhav",
+            "name_file": "anubhav.wav", 
+            "open": "n", 
+            "moderated": "y", 
+            "maxlength": 6666
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.user", 
+        "fields": {
+            "taluka": "Anand", 
+            "village": "Patli", 
+            "number": "9537165413", 
+            "district": "Anand", 
+            "name": "Neil Patel",
+            "taluka_file": "foo.wav", 
+            "village_file": "foo.wav", 
+            "district_file": "foo.wav", 
+            "name_file": "foo.wav"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.user", 
+        "fields": {
+            "taluka": "", 
+            "village": "", 
+            "number": "9999999999", 
+            "district": "", 
+            "name": "ADMIN",
+            "taluka_file": "foo.wav", 
+            "village_file": "foo.wav", 
+            "district_file": "foo.wav", 
+            "name_file": "foo.wav"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 1, 
+            "thread": 1, 
+            "forum": 1, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-10-27 20:05:59", 
+            "position": 2, 
+            "extra_file": "",
+            "lft": 1, 
+            "rgt": 12
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 1, 
+            "thread": 1, 
+            "forum": 1, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 20:45:24", 
+            "position": 1, 
+            "extra_file": "",
+            "lft": 2, 
+            "rgt": 3
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 0, 
+            "thread": 1, 
+            "forum": 1, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:16", 
+            "position": 0, 
+            "extra_file": "",
+            "lft": 4, 
+            "rgt": 11
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 0, 
+            "thread": 1, 
+            "forum": 1, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:27", 
+            "position": 0, 
+            "extra_file": "",
+            "lft": 5, 
+            "rgt": 8
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 0, 
+            "thread": 1, 
+            "forum": 1, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:38", 
+            "position": 0, 
+            "extra_file": "",
+            "lft": 6, 
+            "rgt": 7
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 0, 
+            "thread": 1, 
+            "forum": 1, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:46", 
+            "position": 0, 
+            "extra_file": "",
+            "lft": 9, 
+            "rgt": 10
+        }
+    },
+
+        {
+        "pk": 7, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 1, 
+            "thread": 7, 
+            "forum": 3, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:46", 
+            "position": 1, 
+            "extra_file": "",
+            "lft": 1, 
+            "rgt": 2
+        }
+    },
+ {
+        "pk": 8, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 1, 
+            "thread": 8, 
+            "forum": 2, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 20:45:24", 
+            "position": 1, 
+            "extra_file": "",
+            "lft": 1, 
+            "rgt": 2
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 0, 
+            "thread": 9, 
+            "forum": 2, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:16", 
+            "position": 0, 
+            "extra_file": "",
+            "lft": 1, 
+            "rgt": 2
+        }
+    }, 
+    {
+        "pk": 10, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 0, 
+            "thread": 10, 
+            "forum": 2, 
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:27", 
+            "position": 0, 
+            "extra_file": "",
+            "lft": 1, 
+            "rgt": 2
+        }
+    }
+]
