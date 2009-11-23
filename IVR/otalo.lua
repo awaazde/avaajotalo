@@ -211,6 +211,7 @@ end
 
 function playmessage (msg)
    currfile = sd .. msg[2];
+   logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
    session:streamFile(sd .. msg[2]);
    session:sleep(1000);
    d = use();
@@ -220,6 +221,7 @@ function playmessage (msg)
       if (d == "1") then
 	 read(aosd .. "okcontent.wav", 500);
 	 currfile = sd .. msg[1];
+	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
 	 session:streamFile(sd .. msg[1]);
 	 session:sleep(1000);
 	 d = use();
