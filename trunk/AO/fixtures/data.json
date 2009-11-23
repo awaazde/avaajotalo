@@ -1,0 +1,133 @@
+[
+    {
+        "pk": 1, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "response_allowed": "n", 
+            "name": "qna", 
+            "searchable": "y", 
+            "moderated": "y", 
+            "maxlength": 3000
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "response_allowed": "y", 
+            "name": "announcements", 
+            "searchable": "n", 
+            "moderated": "y", 
+            "maxlength": 60000
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "response_allowed": "n", 
+            "name": "radio", 
+            "searchable": "n", 
+            "moderated": "y", 
+            "maxlength": 40000
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "response_allowed": "y", 
+            "name": "anubhav", 
+            "searchable": "n", 
+            "moderated": "y", 
+            "maxlength": 6666
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.user", 
+        "fields": {
+            "taluka": "Anand", 
+            "village": "Patli", 
+            "number": "9537165413", 
+            "district": "Anand", 
+            "name": "Neil"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.message", 
+        "fields": {
+            "date": "2009-10-27 20:05:59", 
+            "content_file": "test",
+            "status": 0,
+            "position": 0, 
+            "user": 1, 
+            "forum": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.message", 
+        "fields": {
+            "date": "2009-11-01 20:45:24", 
+            "content_file": "test", 
+            "status": 0,
+            "position": 0, 
+            "user": 1, 
+            "forum": 1
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.message", 
+        "fields": {
+            "date": "2009-11-01 23:13:16", 
+            "content_file": "test",
+            "status": 0,
+            "position": 0,  
+            "user": 1, 
+            "forum": 2
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.message", 
+        "fields": {
+            "date": "2009-11-01 23:13:27", 
+            "content_file": "test",
+            "status": 0,
+            "position": 0,  
+            "user": 1, 
+            "forum": 2
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.message", 
+        "fields": {
+            "date": "2009-11-01 23:13:38", 
+            "content_file": "test",
+            "status": 0,
+            "position": 0,  
+            "user": 1, 
+            "forum": 3
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.message", 
+        "fields": {
+            "date": "2009-11-01 23:13:46", 
+            "content_file": "test",
+            "status": 0,
+            "position": 0,  
+            "user": 1, 
+            "forum": 4
+        }
+    }
+]
