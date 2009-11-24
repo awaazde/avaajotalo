@@ -400,10 +400,10 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
    query2 = " VALUES ('"..session:getVariable("caller_id_number").."','"..partfilename.."'";
    
    if (thread ~= nil) then
-      query = "UPDATE message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND thread = " .. thread .. " OR ID = " .. thread;
+      query = "UPDATE message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread = " .. thread .. " OR ID = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-      query = "UPDATE message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND thread = " .. thread .. " OR ID = " .. thread;
+      query = "UPDATE message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread = " .. thread .. " OR ID = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
       query1 = query1 .. ", thread, lft, rgt)";
