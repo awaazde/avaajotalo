@@ -30,7 +30,7 @@ class User(models.Model):
 class Message(models.Model):
     date = models.DateTimeField()
     content_file = models.CharField(max_length=48)
-    extra_file = models.CharField(max_length=48)
+    extra_content_file = models.CharField(max_length=48)
     status = models.IntegerField()
     position = models.IntegerField()
     user = models.ForeignKey(User)

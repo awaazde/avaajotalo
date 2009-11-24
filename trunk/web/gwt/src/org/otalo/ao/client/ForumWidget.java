@@ -129,7 +129,15 @@ public class ForumWidget implements ClickHandler {
 	
 	public void selectMain()
 	{
-  	Messages.get().displayMessages(forum, "");
+		if (forum.moderated())
+		{
+			Messages.get().displayMessages(forum, "");
+		}
+		else
+		{
+			// in order to display the messages in position order, rather than date order
+			Messages.get().displayMessages(forum, "status="+MessageStatus.APPROVED.ordinal());
+		}
   	Messages.get().setMovable(false);
   	Messages.get().setModerated(forum.moderated());
   	

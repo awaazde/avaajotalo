@@ -10,9 +10,8 @@ import os, stat
 json_serializer = serializers.get_serializer("json")()
 
 # Code in order of how they are declared in Message.java
-MESSAGE_STATUS_NONE = 0
+MESSAGE_STATUS_PENDING = 0
 MESSAGE_STATUS_APPROVED = 1
-MESSAGE_STATUS_PENDING = 2
 
 AUDIO_FILE_EXTENSION = ".mp3"
 
@@ -73,7 +72,7 @@ def updatemessage(request):
             msg.position -= 1
             msg.save()
 
-        m.status = MESSAGE_STATUS_NONE
+        m.status = MESSAGE_STATUS_PENDING
         m.position = -1
 
     m.save()
@@ -153,7 +152,7 @@ def createmessage(forum, content, extra=False, parent=False):
     admin = get_console_user()
     pos = Message.objects.filter(forum = forum, status = MESSAGE_STATUS_APPROVED).count() + 1
 
-    resp_msg = Message(date=t, content_file=filename, extra_file=extra_filename, status=MESSAGE_STATUS_APPROVED, position=pos, user=admin, forum=forum)
+    resp_msg = Message(date=t, content_file=filename, extra_content_file=extra_filename, status=MESSAGE_STATUS_APPROVED, position=pos, user=admin, forum=forum)
 
     if parent:
         add_child(resp_msg, parent)
@@ -169,7 +168,7 @@ def createmessage(forum, content, extra=False, parent=False):
 
 def thread(request, message_id):
     m = get_object_or_404(Message, pk=message_id)
-    if m.lft == 1:
+    if m.lft == 1: # this is the parent thread
         top = m
     else:
         top = m.thread
