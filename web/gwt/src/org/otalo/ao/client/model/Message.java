@@ -8,7 +8,7 @@ public class Message extends BaseModel {
 	 * is 0 and then increases from there.
 	 */
 	public enum MessageStatus {
-		NONE, APPROVED, PENDING
+		PENDING, APPROVED
 	}
 	
 	public boolean read;
@@ -54,7 +54,7 @@ public class Message extends BaseModel {
 		}
 		else //default
 		{
-			return MessageStatus.NONE;
+			return MessageStatus.PENDING;
 		}
 	}
 	

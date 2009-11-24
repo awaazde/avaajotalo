@@ -4,12 +4,12 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "y", 
-            "responses_allowed": "n", 
             "name": "qna", 
-            "name_file": "qna.wav",
             "open": "y", 
             "moderated": "y", 
-            "maxlength": 3000
+            "maxlength": 3000, 
+            "responses_allowed": "n", 
+            "name_file": "qna.wav"
         }
     }, 
     {
@@ -17,12 +17,12 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "n", 
-            "responses_allowed": "y", 
             "name": "announcements", 
-            "name_file": "announcements.wav",
             "open": "n", 
             "moderated": "y", 
-            "maxlength": 60000
+            "maxlength": 60000, 
+            "responses_allowed": "y", 
+            "name_file": "announcements.wav"
         }
     }, 
     {
@@ -30,12 +30,12 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "n", 
-            "responses_allowed": "n", 
             "name": "radio", 
-            "name_file": "radio.wav",
             "open": "n", 
             "moderated": "n", 
-            "maxlength": 40000
+            "maxlength": 40000, 
+            "responses_allowed": "n", 
+            "name_file": "radio.wav"
         }
     }, 
     {
@@ -43,26 +43,26 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "y", 
-            "responses_allowed": "y", 
-            "name": "anubhav",
-            "name_file": "anubhav.wav", 
+            "name": "anubhav", 
             "open": "n", 
             "moderated": "y", 
-            "maxlength": 6666
+            "maxlength": 6666, 
+            "responses_allowed": "y", 
+            "name_file": "anubhav.wav"
         }
     }, 
     {
         "pk": 1, 
         "model": "AO.user", 
         "fields": {
-            "taluka": "Anand", 
-            "village": "Patli", 
-            "number": "9537165413", 
+            "name": "Neil Patel", 
             "district": "Anand", 
-            "name": "Neil Patel",
+            "number": "9537165413", 
             "taluka_file": "foo.wav", 
+            "taluka": "Anand", 
             "village_file": "foo.wav", 
             "district_file": "foo.wav", 
+            "village": "Patli", 
             "name_file": "foo.wav"
         }
     }, 
@@ -70,14 +70,14 @@
         "pk": 2, 
         "model": "AO.user", 
         "fields": {
-            "taluka": "", 
-            "village": "", 
-            "number": "9999999999", 
+            "name": "ADMIN", 
             "district": "", 
-            "name": "ADMIN",
+            "number": "9999999999", 
             "taluka_file": "foo.wav", 
+            "taluka": "", 
             "village_file": "foo.wav", 
             "district_file": "foo.wav", 
+            "village": "", 
             "name_file": "foo.wav"
         }
     }, 
@@ -86,15 +86,15 @@
         "model": "AO.message", 
         "fields": {
             "status": 1, 
+            "rgt": 12, 
             "thread": 1, 
             "forum": 1, 
+            "lft": 1, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-10-27 20:05:59", 
             "position": 2, 
-            "extra_file": "",
-            "lft": 1, 
-            "rgt": 12
+            "extra_content_file": ""
         }
     }, 
     {
@@ -102,15 +102,15 @@
         "model": "AO.message", 
         "fields": {
             "status": 1, 
+            "rgt": 3, 
             "thread": 1, 
             "forum": 1, 
+            "lft": 2, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 20:45:24", 
             "position": 1, 
-            "extra_file": "",
-            "lft": 2, 
-            "rgt": 3
+            "extra_content_file": ""
         }
     }, 
     {
@@ -118,15 +118,15 @@
         "model": "AO.message", 
         "fields": {
             "status": 0, 
+            "rgt": 11, 
             "thread": 1, 
             "forum": 1, 
+            "lft": 4, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:16", 
             "position": 0, 
-            "extra_file": "",
-            "lft": 4, 
-            "rgt": 11
+            "extra_content_file": ""
         }
     }, 
     {
@@ -134,15 +134,15 @@
         "model": "AO.message", 
         "fields": {
             "status": 0, 
+            "rgt": 8, 
             "thread": 1, 
             "forum": 1, 
+            "lft": 5, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:27", 
             "position": 0, 
-            "extra_file": "",
-            "lft": 5, 
-            "rgt": 8
+            "extra_content_file": ""
         }
     }, 
     {
@@ -150,15 +150,15 @@
         "model": "AO.message", 
         "fields": {
             "status": 0, 
+            "rgt": 7, 
             "thread": 1, 
             "forum": 1, 
+            "lft": 6, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:38", 
             "position": 0, 
-            "extra_file": "",
-            "lft": 6, 
-            "rgt": 7
+            "extra_content_file": ""
         }
     }, 
     {
@@ -166,48 +166,47 @@
         "model": "AO.message", 
         "fields": {
             "status": 0, 
+            "rgt": 10, 
             "thread": 1, 
             "forum": 1, 
+            "lft": 9, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:46", 
             "position": 0, 
-            "extra_file": "",
-            "lft": 9, 
-            "rgt": 10
+            "extra_content_file": ""
         }
-    },
-
-        {
+    }, 
+    {
         "pk": 7, 
         "model": "AO.message", 
         "fields": {
             "status": 1, 
+            "rgt": 2, 
             "thread": 7, 
             "forum": 3, 
+            "lft": 1, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:46", 
             "position": 1, 
-            "extra_file": "",
-            "lft": 1, 
-            "rgt": 2
+            "extra_content_file": ""
         }
-    },
- {
+    }, 
+    {
         "pk": 8, 
         "model": "AO.message", 
         "fields": {
             "status": 1, 
+            "rgt": 2, 
             "thread": 8, 
             "forum": 2, 
+            "lft": 1, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 20:45:24", 
             "position": 1, 
-            "extra_file": "",
-            "lft": 1, 
-            "rgt": 2
+            "extra_content_file": ""
         }
     }, 
     {
@@ -215,15 +214,15 @@
         "model": "AO.message", 
         "fields": {
             "status": 0, 
+            "rgt": 2, 
             "thread": 9, 
             "forum": 2, 
+            "lft": 1, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:16", 
             "position": 0, 
-            "extra_file": "",
-            "lft": 1, 
-            "rgt": 2
+            "extra_content_file": ""
         }
     }, 
     {
@@ -231,15 +230,31 @@
         "model": "AO.message", 
         "fields": {
             "status": 0, 
+            "rgt": 2, 
             "thread": 10, 
             "forum": 2, 
+            "lft": 1, 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:27", 
             "position": 0, 
-            "extra_file": "",
+            "extra_content_file": ""
+        }
+    }, 
+    {
+        "pk": 11, 
+        "model": "AO.message", 
+        "fields": {
+            "status": 1, 
+            "rgt": 2, 
+            "thread": null, 
+            "forum": 3, 
             "lft": 1, 
-            "rgt": 2
+            "content_file": "11-23-2009_072242.mp3", 
+            "user": 2, 
+            "date": "2009-11-23 07:22:42", 
+            "position": 2, 
+            "extra_content_file": ""
         }
     }
 ]
