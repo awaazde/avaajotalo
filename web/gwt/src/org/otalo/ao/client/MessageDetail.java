@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Map.Entry;
 
 import org.otalo.ao.client.model.Forum;
@@ -107,7 +108,7 @@ public class MessageDetail extends Composite {
   	detailsTable.setWidget(detailsTable.getRowCount(), 0, messageId);
 
   	threadPanel.setSize("100%", "100%");
-  	Label threadTitle = new Label("Related Messages");
+  	Label threadTitle = new Label("Thread");
   	threadTitle.setStyleName("gwt-Label");
   	threadPanel.add(threadTitle, DockPanel.NORTH);
   	
@@ -122,6 +123,7 @@ public class MessageDetail extends Composite {
   	threadPanel.add(responsePanel, DockPanel.SOUTH);
   	thread = new VerticalPanel();
   	thread.setSize("100%", "100%");
+  	thread.setSpacing(3);
   	threadPanel.add(thread, DockPanel.CENTER);
   	
   	
@@ -267,13 +269,30 @@ public class MessageDetail extends Composite {
   
   private void loadThread(List<Message> messages)
   {
+  	ArrayList<Message> rgt = new ArrayList<Message>();
   	for (Message m : messages)
   	{
+  		String indent = "";
+  		if (rgt.size() > 0)
+  		{
+  			for (int i=rgt.size()-1; i >= 0 ; i--)
+  			{
+  				if (Integer.valueOf(rgt.get(i).getRgt()) < Integer.valueOf(m.getRgt()))
+  					rgt.remove(i);
+  			}
+  		}
+  		
+  		for (int i=0; i<rgt.size(); i++)
+  		{
+  			indent += "&nbsp&nbsp&nbsp&nbsp";
+  		}
+  		
+  		rgt.add(m);
   		User user = m.getAuthor();
   		String callerText = "".equals(user.getName()) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
   		String threadText = callerText + " - " + m.getDate();
   		
-  		HTML msgHTML = new HTML("<a href='javascript:;'>"+threadText+"</a>");
+  		HTML msgHTML = new HTML("<span>"+indent+"<a href='javascript:;'>"+threadText+"</a></span>");
   		msgHTML.addClickHandler(new ThreadMessageHandler(m));
   		
   		thread.add(msgHTML);
