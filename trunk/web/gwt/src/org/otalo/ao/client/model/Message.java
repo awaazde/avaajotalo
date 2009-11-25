@@ -72,5 +72,15 @@ public class Message extends BaseModel {
 	{
 		return getObject("fields").get("thread");
 	}
+	
+	public String getRgt()
+	{
+		return getObject("fields").get("rgt");
+	}
+	
+	public String getLft()
+	{
+		return getObject("fields").get("lft");
+	}
 		
 }
