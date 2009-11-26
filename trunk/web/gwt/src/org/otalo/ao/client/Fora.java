@@ -18,6 +18,7 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 
@@ -68,7 +69,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 	  p = new VerticalPanel();
 		// Get fora
 		JSONRequest request = new JSONRequest();
-		request.doFetchURL("forum/", this);
+		request.doFetchURL(AoAPI.FORUM, this);
 	  
 	  initWidget(p);
   }

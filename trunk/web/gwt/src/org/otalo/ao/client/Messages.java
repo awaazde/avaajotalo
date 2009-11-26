@@ -17,6 +17,7 @@ package org.otalo.ao.client;
 
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Message;
+import org.otalo.ao.client.model.MessageForum;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -68,25 +69,20 @@ public class Messages implements EntryPoint, ResizeHandler {
   /**
    * Displays the specified item.
    * 
-   * @param message
+   * @param messageForum
    */
-  public void displayMessage(Message message) {
-    messageDetail.setItem(message);
+  public void displayMessage(MessageForum messageForum) {
+    messageDetail.setItem(messageForum);
   }
   
-  public void displayMessages(Forum f, String filterParams, Message m)
+  public void displayMessages(Forum f, MessageForum m)
   {
-  	messageList.getMessages(f, filterParams, m);
+  	messageList.getMessages(f, "status="+m.getStatus().ordinal(), m);
   }
   
   public void displayMessages(Forum f, String filterParams)
   {
-  	displayMessages(f, filterParams, null);
-  }
-  
-  public void displayMessages(Forum f)
-  {
-  	displayMessages(f, "", null);
+  	messageList.getMessages(f, filterParams, null);
   }
   
   public void setMovable(boolean canMove)

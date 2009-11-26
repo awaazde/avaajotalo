@@ -18,9 +18,11 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Message;
+import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -46,8 +48,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   private int startIndex, selectedRow = -1;
   private FlexTable table = new FlexTable();
   private HorizontalPanel navBar = new HorizontalPanel();
-  private List<Message> messages = new ArrayList();
-  private Message selectMessage;
+  private List<MessageForum> messages = new ArrayList();
+  private MessageForum selectMessage;
   private Forum forum;
 
   public MessageList() {
@@ -144,7 +146,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   private void selectRow(int row) {
     // When a row (other than the first one, which is used as a header) is
     // selected, display its associated details.
-    Message message = messages.get(startIndex + row);
+    MessageForum message = messages.get(startIndex + row);
     if (message == null) {
       return;
     }
@@ -152,7 +154,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     styleRow(selectedRow, false);
     styleRow(row, true);
 
-    message.read = true;
+    // TODO
+    //message.read = true;
     selectedRow = row;
     Messages.get().displayMessage(message);
   }
@@ -187,7 +190,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
         break;
       }
 
-      Message message = messages.get(startIndex + i);
+      MessageForum message = messages.get(startIndex + i);
 
       // Add a new row to the table, then set each of its columns
       table.setText(i + 1, 0, message.getDate());
@@ -212,25 +215,14 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     }
   }
   
-  public void getMessages(Forum f)
-  {
-  	getMessages(f, "");
-  }
-  
-  
-  public void getMessages(Forum f, String filterParams)
-  {
-  	getMessages(f, filterParams, null);
-  }
-  
-  public void getMessages(Forum f, String filterParams, Message m)
+  public void getMessages(Forum f, String filterParams, MessageForum m)
   {
   	selectMessage = m;
   	
   	styleRow(selectedRow, false);
   	String forumId = f.getId();
   	JSONRequest request = new JSONRequest();
-		request.doFetchURL("messages/" + forumId + "/?" + filterParams, this);
+		request.doFetchURL(AoAPI.MESSAGES + forumId + "/?" + filterParams, this);
   }
 
 	public void dataReceived(List<JSOModel> models) 
@@ -240,7 +232,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   	
   	for (JSOModel model : models)
   	{
-  		messages.add(new Message(model));
+  		messages.add(new MessageForum(model));
   	}
   	
   	startIndex = 0;
@@ -252,11 +244,11 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   	{
   		// GWT gives some funny compilation problems if the below
   		// line is inlined in the if statement, so keep this variable
-  		int messageId = Integer.valueOf(selectMessage.getId());
+  		int messageForumId = Integer.valueOf(selectMessage.getId());
   		// find this message and select it
   		for (int i = selectedRow; i < messages.size(); i++)
   		{
-  			if (Integer.valueOf(messages.get(i).getId()) == messageId)
+  			if (Integer.valueOf(messages.get(i).getId()) == messageForumId)
   			{
   				break;
   			}

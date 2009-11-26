@@ -22,9 +22,11 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Map.Entry;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Message;
+import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
@@ -59,7 +61,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
  */
 public class MessageDetail extends Composite {
 	private FormPanel detailsForm;
-	private Hidden userId, messageId, moveDirection;
+	private Hidden userId, messageForumId, moveDirection;
 	private CheckBox approve;
 	private Button saveButton, moveUpButton, moveDownButton, clickedButton;
 	private VerticalPanel moveButtons, thread;
@@ -104,8 +106,8 @@ public class MessageDetail extends Composite {
   	userId = new Hidden("userid");
   	detailsTable.setWidget(detailsTable.getRowCount(), 0, userId);
   	
-  	messageId = new Hidden("messageid");
-  	detailsTable.setWidget(detailsTable.getRowCount(), 0, messageId);
+  	messageForumId = new Hidden("messageforumid");
+  	detailsTable.setWidget(detailsTable.getRowCount(), 0, messageForumId);
 
   	threadPanel.setSize("100%", "100%");
   	Label threadTitle = new Label("Thread");
@@ -132,7 +134,7 @@ public class MessageDetail extends Composite {
   	saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	setClickedButton(saveButton);
-      	detailsForm.setAction(JSONRequest.BASE_URL+"update/message/");
+      	detailsForm.setAction(JSONRequest.BASE_URL + AoAPI.UPDATE_MESSAGE);
         detailsForm.submit();
       }
     });
@@ -144,7 +146,7 @@ public class MessageDetail extends Composite {
       public void onClick(ClickEvent event) {
       	setClickedButton(moveUpButton);
       	moveDirection.setValue("up");
-      	detailsForm.setAction(JSONRequest.BASE_URL+"move/");
+      	detailsForm.setAction(JSONRequest.BASE_URL+ AoAPI.MOVE);
         detailsForm.submit();
       }
     });
@@ -153,7 +155,7 @@ public class MessageDetail extends Composite {
       public void onClick(ClickEvent event) {
       	setClickedButton(moveDownButton);
       	moveDirection.setValue("down");
-      	detailsForm.setAction(JSONRequest.BASE_URL+"move/");
+      	detailsForm.setAction(JSONRequest.BASE_URL+AoAPI.MOVE);
         detailsForm.submit();
       }
     });
@@ -214,18 +216,18 @@ public class MessageDetail extends Composite {
   	return box;
   }
 
-  public void setItem(Message message) {
+  public void setItem(MessageForum messageForum) {
   	reset();
-  	messageId.setValue(message.getId());
-  	approve.setValue(message.isApproved());
+  	messageForumId.setValue(messageForum.getId());
+  	approve.setValue(messageForum.isApproved());
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
   	// since the last load
     JSONRequest request = new JSONRequest();
-    request.doFetchURL("user/"+message.getAuthor().getId()+"/", new CallerDetailsRequester());
+    request.doFetchURL(AoAPI.USER + messageForum.getAuthor().getId() + "/", new CallerDetailsRequester());
     
     request = new JSONRequest();
-    request.doFetchURL("thread/"+message.getId()+"/", new ThreadRequester());
+    request.doFetchURL(AoAPI.THREAD + messageForum.getId() + "/", new ThreadRequester());
   	
   }
   
@@ -243,11 +245,11 @@ public class MessageDetail extends Composite {
   private class ThreadRequester implements JSONRequester {
 
 		public void dataReceived(List<JSOModel> models) {
-			List<Message> threadList = new ArrayList<Message>();
+			List<MessageForum> threadList = new ArrayList<MessageForum>();
 			
 			for (JSOModel m : models)
 			{
-				threadList.add(new Message(m));
+				threadList.add(new MessageForum(m));
 			}
 			
 			loadThread(threadList);
@@ -267,10 +269,10 @@ public class MessageDetail extends Composite {
   	userId.setValue(u.getId());
   }
   
-  private void loadThread(List<Message> messages)
+  private void loadThread(List<MessageForum> messages)
   {
-  	ArrayList<Message> rgt = new ArrayList<Message>();
-  	for (Message m : messages)
+  	ArrayList<MessageForum> rgt = new ArrayList<MessageForum>();
+  	for (MessageForum m : messages)
   	{
   		String indent = "";
   		if (rgt.size() > 0)
@@ -300,13 +302,13 @@ public class MessageDetail extends Composite {
   }
 	
   public class ThreadMessageHandler implements ClickHandler {
-  	private Message message;
+  	private MessageForum mf;
   	
-  	public ThreadMessageHandler(Message m) {
-  		message = m;
+  	public ThreadMessageHandler(MessageForum mf) {
+  		this.mf = mf;
   	}
 		public void onClick(ClickEvent event) {
-			Messages.get().displayMessages(message.getForum(), "", message);
+			Messages.get().displayMessages(mf.getForum(), mf);
 		}
   	
   }
@@ -316,7 +318,7 @@ public class MessageDetail extends Composite {
 		public void onSubmitComplete(SubmitCompleteEvent event) {
 			// get the message that was updated
 			JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
-			Message m = new Message(model);
+			MessageForum m = new MessageForum(model);
 			
 			Forum f = m.getForum();
 			
@@ -325,14 +327,10 @@ public class MessageDetail extends Composite {
 				ConfirmDialog saved = new ConfirmDialog("Updated!");
 				saved.show();
 				saved.center();
-				
-				// reload messageList with this message highlighted
-				Messages.get().displayMessages(f, "", m);
 			}
-			else if (clickedButton == moveUpButton || clickedButton == moveDownButton)
-			{
-				Messages.get().displayMessages(f, "status=" + MessageStatus.APPROVED.ordinal(), m);
-			}
+			
+			// reload messageList with this message highlighted
+			Messages.get().displayMessages(f, m);
 			
 			submitComplete();
 			

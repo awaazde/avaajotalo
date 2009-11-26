@@ -1,6 +1,7 @@
 package org.otalo.ao.client;
 
 import org.otalo.ao.client.ForumWidget.UploadComplete;
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -29,7 +30,7 @@ public class UploadDialog extends DialogBox {
 		setText("Upload Content");
 		FlexTable outer = new FlexTable();
 		outer.setSize("100%", "100%");
-		uploadForm.setAction(JSONRequest.BASE_URL+"upload/");
+		uploadForm.setAction(JSONRequest.BASE_URL+AoAPI.UPLOAD);
 		uploadForm.setMethod(FormPanel.METHOD_POST);
 		uploadForm.setEncoding(FormPanel.ENCODING_MULTIPART);
 		

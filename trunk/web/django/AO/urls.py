@@ -9,12 +9,12 @@ urlpatterns = patterns('',
     (r'^$', 'otalo.AO.views.index'),
     (r'^forum/$', 'otalo.AO.views.forum'),
     (r'^messages/(?P<forum_id>\d+)/$', 'otalo.AO.views.messages'),
-    (r'^message/(?P<message_id>\d+)/$', 'otalo.AO.views.message'),
+    (r'^messageforum/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messageforum'),
     (r'^user/(?P<user_id>\d+)/$', 'otalo.AO.views.user'),
     (r'^update/message/$', 'otalo.AO.views.updatemessage'),
     (r'^move/$', 'otalo.AO.views.movemessage'),
     (r'^upload/$', 'otalo.AO.views.uploadmessage'),
-    (r'^thread/(?P<message_id>\d+)/$', 'otalo.AO.views.thread'),
+    (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.thread'),
 )
 
 if settings.DEVELOPMENT:

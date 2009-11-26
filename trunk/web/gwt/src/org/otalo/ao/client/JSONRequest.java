@@ -52,7 +52,15 @@ public final class JSONRequest {
    * Class for handling the response text associated with a request for a JSON
    * object.
    */
-	
+	public final class AoAPI {
+		public static final String USER = "user/";
+		public static final String THREAD = "thread/";
+		public static final String FORUM = "forum/";
+		public static final String MESSAGES = "messages/";
+		public static final String UPDATE_MESSAGE = "update/message/";
+		public static final String MOVE = "move/";
+		public static final String UPLOAD = "upload/";
+	}
 	public static List<JSOModel> getModels(String jsonStr)
 	{
 		 jsonStr = jsonStr.replaceAll("\\n","");
@@ -114,16 +122,4 @@ public final class JSONRequest {
     }
   }
   
-  public void doPost(String postURL, FormPanel form, JSONRequester requester)
-  {
-  	this.requester = requester;
-  	// RequestBuilder used to issue HTTP GET requests.
-  	RequestBuilder requestBuilder = new RequestBuilder(
-	      RequestBuilder.POST, URL.encode(BASE_URL + postURL));
-    try {
-      requestBuilder.sendRequest(null, new JSONResponseTextHandler());
-    } catch (RequestException ex) {
-    	// TODO
-    }
-  }
 }
