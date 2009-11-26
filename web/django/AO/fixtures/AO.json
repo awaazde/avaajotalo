@@ -84,177 +84,247 @@
     {
         "pk": 1, 
         "model": "AO.message", 
-        "fields": {
-            "status": 1, 
-            "rgt": 12, 
-            "thread": 1, 
-            "forum": 1, 
-            "lft": 1, 
+        "fields": {          
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-10-27 20:05:59", 
+            "extra_content_file": "",
+            "thread": 1,
+            "lft": 1,
+            "rgt": 12  
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
             "position": 2, 
-            "extra_content_file": ""
+            "message":1,
+            "forum": 1
         }
     }, 
     {
         "pk": 2, 
         "model": "AO.message", 
-        "fields": {
-            "status": 1, 
-            "rgt": 3, 
-            "thread": 1, 
-            "forum": 1, 
-            "lft": 2, 
+        "fields": {                                 
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 20:45:24", 
-            "position": 1, 
-            "extra_content_file": ""
+            "extra_content_file": "",
+            "thread": 1,
+            "lft": 2, 
+            "rgt": 3
         }
     }, 
     {
+        "pk": 2, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "position": 1, 
+            "message":2,
+            "forum": 1
+        }
+    },
+    {
         "pk": 3, 
         "model": "AO.message", 
-        "fields": {
-            "status": 0, 
-            "rgt": 11, 
-            "thread": 1, 
-            "forum": 1, 
-            "lft": 4, 
+        "fields": {                                       
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:16", 
+            "extra_content_file": "",
+            "thread": 1,
+            "lft": 4,
+            "rgt": 11 
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
             "position": 0, 
-            "extra_content_file": ""
+            "message":3,
+            "forum": 1
         }
     }, 
     {
         "pk": 4, 
         "model": "AO.message", 
-        "fields": {
-            "status": 0, 
-            "rgt": 8, 
-            "thread": 1, 
-            "forum": 1, 
-            "lft": 5, 
+        "fields": {                                       
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:27", 
+            "extra_content_file": "",
+            "thread": 1,
+            "lft": 5,
+            "rgt": 8
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
             "position": 0, 
-            "extra_content_file": ""
+            "message":4,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "AO.message", 
+        "fields": {                                       
+            "content_file": "test.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:38", 
+            "extra_content_file": "",
+            "thread": 1,
+            "lft": 6,
+            "rgt": 7
         }
     }, 
     {
         "pk": 5, 
-        "model": "AO.message", 
+        "model": "AO.message_forum", 
         "fields": {
             "status": 0, 
-            "rgt": 7, 
-            "thread": 1, 
-            "forum": 1, 
-            "lft": 6, 
+            "position": 0, 
+            "message":5,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "AO.message", 
+        "fields": {                                       
             "content_file": "test.mp3", 
             "user": 1, 
-            "date": "2009-11-01 23:13:38", 
-            "position": 0, 
-            "extra_content_file": ""
+            "date": "2009-11-01 23:13:46",  
+            "extra_content_file": "",
+            "thread": 1,
+            "lft": 9,
+            "rgt": 10
         }
     }, 
     {
         "pk": 6, 
-        "model": "AO.message", 
+        "model": "AO.message_forum", 
         "fields": {
             "status": 0, 
-            "rgt": 10, 
-            "thread": 1, 
-            "forum": 1, 
-            "lft": 9, 
+            "position": 0, 
+            "message":6,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 7, 
+        "model": "AO.message", 
+        "fields": {                                       
             "content_file": "test.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:46", 
-            "position": 0, 
-            "extra_content_file": ""
+            "extra_content_file": "",         
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
         "pk": 7, 
-        "model": "AO.message", 
+        "model": "AO.message_forum", 
         "fields": {
             "status": 1, 
-            "rgt": 2, 
-            "thread": 7, 
-            "forum": 3, 
-            "lft": 1, 
+            "position": 1, 
+            "message":7,
+            "forum": 3
+        }
+    },
+    {
+        "pk": 8, 
+        "model": "AO.message", 
+        "fields": {                          
             "content_file": "test.mp3", 
             "user": 1, 
-            "date": "2009-11-01 23:13:46", 
-            "position": 1, 
-            "extra_content_file": ""
+            "date": "2009-11-01 20:45:24", 
+            "extra_content_file": "",
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
         "pk": 8, 
-        "model": "AO.message", 
+        "model": "AO.message_forum", 
         "fields": {
             "status": 1, 
-            "rgt": 2, 
-            "thread": 8, 
-            "forum": 2, 
-            "lft": 1, 
+            "position": 1, 
+            "message":8,
+            "forum": 2
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "AO.message", 
+        "fields": {                          
             "content_file": "test.mp3", 
             "user": 1, 
-            "date": "2009-11-01 20:45:24", 
-            "position": 1, 
-            "extra_content_file": ""
+            "date": "2009-11-01 23:13:16", 
+            "extra_content_file": "",
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
         "pk": 9, 
-        "model": "AO.message", 
+        "model": "AO.message_forum", 
         "fields": {
             "status": 0, 
-            "rgt": 2, 
-            "thread": 9, 
-            "forum": 2, 
-            "lft": 1, 
+            "message":9,
+            "forum": 2
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "AO.message", 
+        "fields": {                           
             "content_file": "test.mp3", 
             "user": 1, 
-            "date": "2009-11-01 23:13:16", 
-            "position": 0, 
-            "extra_content_file": ""
+            "date": "2009-11-01 23:13:27", 
+            "extra_content_file": "",
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
         "pk": 10, 
-        "model": "AO.message", 
+        "model": "AO.message_forum", 
         "fields": {
             "status": 0, 
-            "rgt": 2, 
-            "thread": 10, 
-            "forum": 2, 
-            "lft": 1, 
-            "content_file": "test.mp3", 
-            "user": 1, 
-            "date": "2009-11-01 23:13:27", 
-            "position": 0, 
-            "extra_content_file": ""
+            "message":10,
+            "forum": 2
         }
-    }, 
+    },
     {
         "pk": 11, 
         "model": "AO.message", 
-        "fields": {
-            "status": 1, 
-            "rgt": 2, 
-            "thread": null, 
-            "forum": 3, 
-            "lft": 1, 
+        "fields": {                          
             "content_file": "11-23-2009_072242.mp3", 
             "user": 2, 
             "date": "2009-11-23 07:22:42", 
+            "extra_content_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
             "position": 2, 
-            "extra_content_file": ""
+            "message":11,
+            "forum": 3
         }
     }
 ]
