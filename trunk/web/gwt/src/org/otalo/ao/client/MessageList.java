@@ -24,14 +24,24 @@ import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Message;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
+import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.ImageBundle;
+import com.google.gwt.user.client.ui.TreeImages;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.HTMLTable.Cell;
+import com.google.gwt.user.client.ui.ImageBundle.Resource;
 
 /**
  * A composite that displays voice messages.
@@ -47,13 +57,32 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       true);
   private int startIndex, selectedRow = -1;
   private FlexTable table = new FlexTable();
+  private FormPanel detailsForm = new FormPanel();
   private HorizontalPanel navBar = new HorizontalPanel();
   private List<MessageForum> messages = new ArrayList();
   private MessageForum selectMessage;
   private Forum forum;
+  private Hidden messageForumId;
+  private Images images;
+  
+  /**
+   * Specifies the images that will be bundled for this Composite and specify
+   * that tree's images should also be included in the same bundle.
+   */
+  public interface Images extends ImageBundle {
+    AbstractImagePrototype approve();
+    
+    AbstractImagePrototype reject();
+  }
 
-  public MessageList() {
-    // Setup the table.
+  public MessageList(Images images) {
+  	this.images = images;
+  	
+  	detailsForm.setWidget(table);
+  	detailsForm.setMethod(FormPanel.METHOD_POST);
+  	detailsForm.addSubmitCompleteHandler(new MessageStatusUpdated());
+
+  	// Setup the table.
     table.setCellSpacing(0);
     table.setCellPadding(0);
     table.setWidth("100%");
@@ -74,7 +103,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     navBar.add(innerNavBar);
     navBar.setWidth("100%");
 
-    initWidget(table);
+    initWidget(detailsForm);
     setStyleName("mail-List");
 
     initTable();
@@ -124,6 +153,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     table.setText(0, 1, "User");
     table.setText(0, 2, "Message");
     table.setWidget(0, 3, navBar);
+    table.getFlexCellFormatter().setColSpan(0, 3, 2);
     table.getRowFormatter().setStyleName(0, "mail-ListHeader");
 
     // Initialize the rest of the rows.
@@ -131,10 +161,11 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       table.setText(i + 1, 0, "");
       table.setText(i + 1, 1, "");
       table.setText(i + 1, 2, "");
+      table.setText(i + 1, 3, "");
+      table.setText(i + 1, 4, "");
       table.getCellFormatter().setWordWrap(i + 1, 0, false);
       table.getCellFormatter().setWordWrap(i + 1, 1, false);
       table.getCellFormatter().setWordWrap(i + 1, 2, false);
-      table.getFlexCellFormatter().setColSpan(i + 1, 2, 2);
     }
   }
 
@@ -157,7 +188,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     // TODO
     //message.read = true;
     selectedRow = row;
-    Messages.get().displayMessage(message);
+
+    Messages.get().setItem(message);
   }
 
   private void styleRow(int row, boolean selected) {
@@ -199,6 +231,34 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       table.setText(i + 1, 1, callerText);
       SoundWidget sound = new SoundWidget(message.getContent());
       table.setHTML(i + 1, 2, sound.getWidget().getHTML());
+      
+      if (forum != null && forum.moderated())
+      {
+      	HTML approveButton = new HTML(images.approve().getHTML());
+	      approveButton.addClickHandler(new MessageApproveHandler(AoAPI.APPROVE, message));
+	      
+	      HTML rejectButton = new HTML(images.reject().getHTML());
+	      rejectButton.addClickHandler(new MessageApproveHandler(AoAPI.REJECT, message));
+	      
+	      switch (message.getStatus()){
+	      case APPROVED:
+		      table.setWidget(i+1, 3, rejectButton);
+		      table.setHTML(i+1, 4, "&nbsp");
+	      	break;
+	      case REJECTED:
+	      	table.setWidget(i+1, 3, approveButton);
+		      table.setHTML(i+1, 4, "&nbsp");
+	      	break;
+	      case PENDING:
+	      	table.setWidget(i+1, 3, approveButton);
+	      	table.setWidget(i+1, 4, rejectButton);
+	      }
+      }
+      else
+      {
+      	table.setHTML(i+1, 3, "&nbsp");
+      	table.setHTML(i+1, 4, "&nbsp");
+      }
     }
 
     // Clear any remaining slots.
@@ -206,18 +266,133 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       table.setHTML(i + 1, 0, "&nbsp;");
       table.setHTML(i + 1, 1, "&nbsp;");
       table.setHTML(i + 1, 2, "&nbsp;");
+      table.setHTML(i + 1, 3, "&nbsp;");
+      table.setHTML(i + 1, 4, "&nbsp;");
 
     }
-
+    // set the hidden field in the last row
+    messageForumId = new Hidden("messageforumid");
+    table.setWidget(VISIBLE_MESSAGE_COUNT+1, 0, messageForumId);
+    
     // Select the first row if none is selected.
     if (selectedRow == -1 && count > 0) {
       selectRow(0);
     }
   }
   
-  public void getMessages(Forum f, String filterParams, MessageForum m)
+  private class MessageApproveHandler implements ClickHandler {
+  	private String action;
+  	private MessageForum messageForum;
+  	
+  	MessageApproveHandler(String action, MessageForum messageForum)
+  	{
+  		this.action = action;
+  		this.messageForum = messageForum;
+  	}
+		public void onClick(ClickEvent event) {
+			// save to get the old status when we return
+			selectMessage = messageForum;
+			messageForumId.setValue(messageForum.getId());
+			detailsForm.setAction(JSONRequest.BASE_URL + AoAPI.UPDATE_STATUS + action);
+      detailsForm.submit();
+			
+		}
+  	
+  }
+  
+  private class MessageStatusUpdated implements SubmitCompleteHandler {
+		
+		public void onSubmitComplete(SubmitCompleteEvent event) {
+			// get the message that was updated
+			JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
+			MessageForum m = new MessageForum(model);
+			
+			
+			ConfirmDialog saved = new ConfirmDialog("Updated!");
+			saved.show();
+			saved.center();
+			
+			// call the dispatcher just so we can search
+			// in the code
+			MessageForum mf = selectMessage;
+			selectMessage = null;
+			if (mf.isResponse() && mf.getStatus() != MessageStatus.PENDING)
+			{
+				// only from in the responses folder
+				// do you not want to reload the folder
+				// that you were originally in
+				// (as specified by mf.getStatus())
+				Messages.get().displayMessages(mf);
+			}
+			else
+			{
+				// reload this message's old home folder
+				Messages.get().displayMessages(mf.getForum(), mf.getStatus());
+			}
+			
+		}
+	}
+  
+  public void getMessages(MessageForum m)
   {
   	selectMessage = m;
+  	if (m.isResponse() && m.getStatus() != MessageStatus.PENDING)
+  	{
+  		// call dispatcher in order to set forum widget
+  		Messages.get().displayResponses(m.getForum());
+  	}
+  	else
+  	{
+  		ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
+    	statuses.add(m.getStatus());
+  		getMessages(m.getForum(), statuses);
+  	}
+  }
+  
+  public void getMessages(Forum f, MessageStatus status)
+  {
+  	ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
+  	statuses.add(status);
+  	getMessages(f, statuses);
+  	
+  }
+  
+  public void getResponses(Forum f)
+  {
+  	ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
+  	statuses.add(MessageStatus.APPROVED);
+  	statuses.add(MessageStatus.REJECTED);
+  	getMessages(f, statuses);
+  	
+  }
+  
+  private void getMessages(Forum f, List<MessageStatus> statuses)
+  {
+  	String filterParams = "status=";
+  	for (MessageStatus status : statuses)
+  	{
+  		filterParams += status.ordinal() + " ";
+  	}
+  	
+  	// if we are going specifically to the Approved folder
+  	if (statuses.size() == 1 && statuses.get(0) == MessageStatus.APPROVED )
+  		filterParams += "&orderby=" + AoAPI.MSG_ORDER_BY_POSITION;
+  	else
+  		//default
+  		filterParams += "&orderby=" + AoAPI.MSG_ORDER_BY_DATE;
+  	
+  	if (statuses.size() == 1 && (statuses.get(0) == MessageStatus.APPROVED || statuses.get(0) == MessageStatus.REJECTED) )
+  	{
+  		filterParams += "&posttype=" + AoAPI.POSTS_TOP;
+  	}
+  	else if (statuses.size() == 1 && statuses.get(0) == MessageStatus.PENDING)
+  	{
+  		filterParams += "&posttype=" + AoAPI.POSTS_ALL;
+  	}
+  	else
+  	{
+  		filterParams += "&posttype=" + AoAPI.POSTS_RESPONSES;
+  	}
   	
   	styleRow(selectedRow, false);
   	String forumId = f.getId();
@@ -235,10 +410,18 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   		messages.add(new MessageForum(model));
   	}
   	
+  	// do this instead of initializing selectedRow
+  	// to 0 in case there are no messages in this folder
   	startIndex = 0;
-  	// initialize to 0 instead of -1 so that
-  	// update() below doesn't call selectRow itself
-  	selectedRow = 0;
+  	selectedRow = -1;
+  	
+  	boolean msgFound = false;
+  	if (!messages.isEmpty()) {
+  		forum = messages.get(0).getForum();
+  		// at the very least we will select the first msg
+  		msgFound = true;
+  		selectedRow = 0;
+  	}
   	
   	if (selectMessage != null)
   	{
@@ -263,7 +446,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   		}
   	}
   	update();
- 		selectRow(selectedRow);
-		
+ 		if (msgFound) selectRow(selectedRow);
+		selectMessage = null;
 	}
 }

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.Fora.Images;
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Message;
+import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -29,32 +31,51 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
  */
 public class ForumWidget implements ClickHandler {
 	private Tree tree;
-	private TreeItem root, inbox, approved, upload;
-	private HTML rootHTML, inboxHTML, approvedHTML, uploadHTML;
+	private TreeItem root, inbox, approved, rejected, responses, upload;
+	private HTML rootHTML, inboxHTML, approvedHTML, rejectedHTML, responsesHTML, uploadHTML;
 	private Forum forum;
 	private Composite parent;
 	private List<HTML>options = new ArrayList<HTML>();
 	private UploadDialog uploadDlg = new UploadDialog();
+	private boolean responsesSelected = false;
 	
 	public ForumWidget(Forum f, Images images, Composite parent)
 	{
-		forum = f;
+		this.forum = f;
 		this.parent = parent;
 		
 		tree = new Tree(images);
 		rootHTML = imageItemHTML(images.home(), forum.getName());
     root = new TreeItem(rootHTML);
     tree.addItem(root);
-
-    inboxHTML = imageItemHTML(images.inbox(), "Inbox");
-    inbox = new TreeItem(inboxHTML);
-    root.addItem(inbox);
     
     if (forum.moderated())
     {
-	    approvedHTML = imageItemHTML(images.drafts(), "Approved");
+    	inboxHTML = imageItemHTML(images.inbox(), "Inbox");
+      inbox = new TreeItem(inboxHTML);
+      root.addItem(inbox);
+    
+    	approvedHTML = imageItemHTML(images.drafts(), "Approved");
 	    approved = new TreeItem(approvedHTML);
 	    root.addItem(approved);
+
+	    rejectedHTML = imageItemHTML(images.drafts(), "Rejected");
+	    rejected = new TreeItem(rejectedHTML);
+	    root.addItem(rejected);
+    }
+    else // there is only approved content
+    {
+    	approvedHTML = imageItemHTML(images.drafts(), "Approved");
+	    approved = new TreeItem(approvedHTML);
+	    root.addItem(approved);
+    }
+    
+    // if responses can be made by either admin only or anyone
+    if (forum.postingAllowed() | forum.responsesAllowed())
+    {
+    	responsesHTML = imageItemHTML(images.drafts(), "Responses");
+	    responses = new TreeItem(responsesHTML);
+	    root.addItem(responses);
     }
     
     uploadHTML = imageItemHTML(images.sent(), "Upload");
@@ -67,6 +88,8 @@ public class ForumWidget implements ClickHandler {
     options.add(rootHTML);
     options.add(inboxHTML);
     options.add(approvedHTML);
+    options.add(rejectedHTML);
+    options.add(responsesHTML);
     options.add(uploadHTML);
 	}
 
@@ -89,6 +112,11 @@ public class ForumWidget implements ClickHandler {
 		return tree;
 	}
 	
+	public Forum getForum()
+	{
+		return forum;
+	}
+	
 	public void expand() 
 	{
 		root.setState(true);
@@ -98,12 +126,20 @@ public class ForumWidget implements ClickHandler {
      Object sender = event.getSource();
     if (sender == inboxHTML) 
     {
-    	selectMain();
+    	Messages.get().displayMessages(forum, MessageStatus.PENDING);
     } 
     else if (sender == approvedHTML) 
     {
-    	Messages.get().displayMessages(forum, "status="+MessageStatus.APPROVED.ordinal());
-    	Messages.get().setMovable(true);
+    	Messages.get().displayMessages(forum, MessageStatus.APPROVED);
+    }
+    else if (sender == rejectedHTML) 
+    {
+    	Messages.get().displayMessages(forum, MessageStatus.REJECTED);
+    }
+    else if (sender == responsesHTML) 
+    {
+  		responsesSelected = true;
+    	Messages.get().displayResponses(forum);
     }
     else if (sender == uploadHTML)
     {
@@ -129,22 +165,17 @@ public class ForumWidget implements ClickHandler {
 	
 	public void selectMain()
 	{
-		if (forum.moderated())
-		{
-			Messages.get().displayMessages(forum, "");
-		}
-		else
-		{
-			// in order to display the messages in position order, rather than date order
-			Messages.get().displayMessages(forum, "status="+MessageStatus.APPROVED.ordinal());
-		}
-  	Messages.get().setMovable(false);
-  	Messages.get().setModerated(forum.moderated());
+  	this.expand();
   	
-		this.expand();
-		tree.setSelectedItem(inbox);
+  	if (forum.moderated())
+  	{
+  		Messages.get().displayMessages(forum, MessageStatus.PENDING);
+  	}
+  	else
+  	{
+  		Messages.get().displayMessages(forum, MessageStatus.APPROVED);
+  	}
 	}
-	
 	public class UploadComplete implements SubmitCompleteHandler {
 
 		public void onSubmitComplete(SubmitCompleteEvent event) {
@@ -154,8 +185,55 @@ public class ForumWidget implements ClickHandler {
 				saved.center();
 				
 				// get the message that was updated
-				selectMain();
+				Messages.get().displayMessages(forum, MessageStatus.APPROVED);
 		}
+	}
+	
+	public void setFolderResponses(Forum f)
+	{
+		if (f.getId().equals(forum.getId())) responsesSelected = true;
+		setFolder(f, null);
+	}
+	
+	public void setFolder(Forum f, MessageStatus status)
+	{
+		if (f.getId().equals(forum.getId()))
+		{
+			this.expand();
+			if (responsesSelected())
+			{
+				// special case
+				tree.setSelectedItem(responses);
+			}
+			else		
+			{
+				switch (status) {
+				case PENDING:
+					tree.setSelectedItem(inbox);
+					break;
+				case APPROVED:
+					tree.setSelectedItem(approved);
+					break;
+				case REJECTED:
+					tree.setSelectedItem(rejected);
+					break;
+				}
+			}
+						
+			// reset it now that we've selected something,
+			// otherwise the flag will stay set when we click
+			// on something else
+			responsesSelected = false;
+		}
+		else
+		{
+			close();
+		}
+	}
+	
+	public boolean responsesSelected()
+	{
+		return responsesSelected;
 	}
 	
 }

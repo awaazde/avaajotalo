@@ -51,8 +51,8 @@ public class Shortcuts extends Composite {
 	 * @param images
 	 *            a bundle that provides the images for this widget
 	 */
-	public Shortcuts(Images images) {
-		fora = new Fora(images);
+	public Shortcuts(Images images, Fora fora) {
+		this.fora = fora;
 		add(fora, images.messagesgroup(), "Fora");
 		initWidget(stackPanel);
 	}
