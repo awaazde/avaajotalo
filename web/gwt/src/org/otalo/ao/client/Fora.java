@@ -21,6 +21,8 @@ import java.util.List;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -96,17 +98,31 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		{
 			Forum f = fora.get(i);
 			ForumWidget w = new ForumWidget(f, images, this);
-			
-			// Hackish: for initialization
-	    if (i == 0)
-	    {
-	    	w.selectMain();
-	    }
 	    
 	    p.add(w.getWidget());
 			widgets.add(w);
 		}
+		
+		// Hackish: for initialization
+    widgets.get(0).selectMain();
 	}
+	
+	public void setFolder(Forum f, MessageStatus status)
+	{
+		for (ForumWidget w : widgets)
+		{
+			w.setFolder(f, status);
+		}
+	}
+	
+	public void setFolderResponses(Forum f)
+	{
+		for (ForumWidget w : widgets)
+		{
+			w.setFolderResponses(f);
+		}
+	}
+
 
 	/**
 	 * This is for clicked tree items. Unselect all other ones

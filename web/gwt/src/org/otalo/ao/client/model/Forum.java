@@ -25,6 +25,11 @@ public class Forum extends BaseModel {
 		return getObject("fields").get("posting_allowed").equals("y");
 	}
 	
+	public boolean responsesAllowed()
+	{
+		return getObject("fields").get("responses_allowed").equals("y");
+	}
+	
 	public boolean moderated()
 	{
 		return getObject("fields").get("moderated").equals("y");

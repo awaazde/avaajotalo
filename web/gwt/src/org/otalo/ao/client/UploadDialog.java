@@ -36,10 +36,12 @@ public class UploadDialog extends DialogBox {
 		
 		FileUpload main = new FileUpload();
 		main.setName("main");
+		main.setTitle("Content");
 		Label mainLabel = new Label("Content:");
 		
 		FileUpload extra = new FileUpload();
 		extra.setName("extra");
+		extra.setTitle("Summary");
 		Label extraLabel = new Label("Summary (optional):");
 		
 		Button saveButton = new Button("Save", new ClickHandler() {
@@ -69,7 +71,6 @@ public class UploadDialog extends DialogBox {
 		buttons.add(cancelButton);
 		outer.setWidget(2, 1, buttons);
 		
-		
 		outer.setWidget(outer.getRowCount(), 0, forumId);
 		
 		uploadForm.setWidget(outer);
@@ -84,8 +85,7 @@ public class UploadDialog extends DialogBox {
 	
 	public void reset()
 	{
-		uploadForm.reset();
-		
+		uploadForm.reset();		
 	}
 	
 	public void setCompleteHandler(SubmitCompleteHandler handler)

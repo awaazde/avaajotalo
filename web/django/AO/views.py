@@ -29,19 +29,24 @@ def forum(request):
    
 def messages(request, forum_id):
     params = request.GET
-
-    if (params.__contains__('status')):
-        message_forums = Message_forum.objects.filter(forum=forum_id, status=params['status']).order_by('-position')
-    else:
-        # ASSUME: id order is date preserving
-        message_forums = Message_forum.objects.filter(forum=forum_id).order_by('-id')
     
-    return send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}})
+    status = params['status'].split()
+    order_by = params['orderby']
+    posttype = params['posttype']
+    
+    if posttype == 'top':
+        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft=1).order_by(order_by)
+    elif posttype == 'responses':
+        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft__gt=1).order_by(order_by)
+    elif posttype == 'all':
+        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status).order_by(order_by)
+       
+    return send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':()}})
 
 def messageforum(request, message_forum_id):
     # Note use of filter instead of get to return a query set
     message = get_list_or_404(Message_forum, pk=message_forum_id)
-    return send_response(message, ('forum',))
+    return send_response(message, {'message':{'fields':()}, 'forum':{}})
 
 def user(request, user_id):
     # Note use of filter instead of get to return a query set
@@ -61,24 +66,6 @@ def updatemessage(request):
     u.save()   
 
     m = get_object_or_404(Message_forum, message=params['messageforumid'])
-    if m.position is None and params.__contains__('approve'):  # newly approving
-        m.status = MESSAGE_STATUS_APPROVED
-        # set the position to be the highest based
-        # on what else is approved in this forum
-        count = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED).count()
-        # positions are 1-based, with highest index being the top of the list
-        m.position = count + 1
-    elif m.position is not None and not(params.__contains__('approve')): # newly rejecting
-        # bump down the position of everyone ahead
-        ahead = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, position__gt=m.position)
-        for msg in ahead:
-            msg.position -= 1
-            msg.save()
-
-        m.status = MESSAGE_STATUS_PENDING
-        m.position = None
-
-    m.save()
 
     # Check to see if there was a response uploaded
     if request.FILES:
@@ -95,7 +82,7 @@ def movemessage(request):
     direction = params['direction']    
 
     m = get_object_or_404(Message_forum, pk=params['messageforumid'])
-    count = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED).count()
+    count = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count()
 
     if direction == 'up' and m.position < count:
         # get the message above
@@ -153,14 +140,16 @@ def createmessage(forum, content, extra=False, parent=False):
 
     # create a new message for this content
     admin = get_console_user()
-    pos = Message_forum.objects.filter(forum = forum, status = MESSAGE_STATUS_APPROVED).count() + 1
+    pos = None
+    if not parent:
+        pos = Message_forum.objects.filter(forum = forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count() + 1
 
     resp_msg = Message(date=t, content_file=filename, extra_content_file=extra_filename, user=admin)
     resp_msg.save()
     resp_msg_forum = Message_forum(message=resp_msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position=pos)
 
     if parent:
-        add_child(resp_msg_forum, parent)
+        add_child(resp_msg, parent.message)
 
     resp_msg_forum.save()
 
@@ -178,6 +167,47 @@ def thread(request, message_forum_id):
     thread_msg_forums = Message_forum.objects.filter(message__in=msg_ids, forum=m.forum)
     return send_response (thread_msg_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('pk')}})
 
+def updatestatus(request, action):
+    params = request.POST 
+
+    m = get_object_or_404(Message_forum, message=params['messageforumid'])
+    current_status = m.status
+    
+    if action == 'approve' and current_status != MESSAGE_STATUS_APPROVED:
+        m.status = MESSAGE_STATUS_APPROVED
+        
+        if m.message.lft == 1:
+            # set the position to be the highest based
+            # on what else is approved in this forum
+            count = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count()
+            # positions are 1-based, with highest index being the top of the list
+            m.position = count + 1
+            
+    elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
+        m.status = MESSAGE_STATUS_REJECTED
+        # Reject all responses
+        if m.message.lft == 1:
+            top = m.message
+        else:
+            top = m.message.thread
+        responses = Message_forum.objects.filter(forum = m.forum, message__thread=top, message__lft__gt=m.message.lft, message__rgt__lt=m.message.rgt)
+        for msg in responses:
+            msg.status = MESSAGE_STATUS_REJECTED
+            msg.save()
+        
+        if m.message.lft == 1:
+            # bump down the position of everyone ahead
+            ahead = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, position__gt=m.position)
+            for msg in ahead:
+                msg.position -= 1
+                msg.save()
+
+            m.position = None
+
+    m.save()
+    
+    return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
+
 # this should return the person logged in.
 # Stub it for now.
 def get_console_user():
@@ -192,26 +222,24 @@ def get_console_user():
 
 # make child the last of this parent
 def add_child(child, parent):
-    child_msg = child.message
-    parent_msg = parent.message
-    
-    if parent_msg.lft == 1: # top-level thread
-        child_msg.thread = parent_msg
+    if parent.lft == 1: # top-level thread
+        child.thread = parent
     else:
-        child_msg.thread = parent_msg.thread
+        child.thread = parent.thread
 
-    child_msg.lft = parent_msg.rgt
-    child_msg.rgt = child_msg.lft + 1
+    child.lft = parent.rgt
+    child.rgt = child.lft + 1
 
     # update all nodes to the right of the child
-    msgs = Message.objects.filter(rgt__gte=child_msg.lft).exclude(pk=child_msg.id)
+    msgs = Message.objects.filter(rgt__gte=child.lft).exclude(pk=child.id)
 
     for m in msgs:
         m.rgt += 2
-        if (m.lft >= child_msg.lft):
+        if (m.lft >= child.lft):
             m.lft += 2
         m.save()
-
+        
+    child.save()
 def send_response(query_set, relations=()):
     response = HttpResponse(json_serializer.serialize(query_set, relations=relations))
     response['Pragma'] = "no cache"

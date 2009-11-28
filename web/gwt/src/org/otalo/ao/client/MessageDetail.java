@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Map.Entry;
 
+import org.apache.commons.digester.SetRootRule;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
@@ -30,6 +31,7 @@ import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
+import com.google.gwt.dev.util.msg.Message2ClassClass;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
@@ -62,11 +64,10 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 public class MessageDetail extends Composite {
 	private FormPanel detailsForm;
 	private Hidden userId, messageForumId, moveDirection;
-	private CheckBox approve;
 	private Button saveButton, moveUpButton, moveDownButton, clickedButton;
-	private VerticalPanel moveButtons, thread;
-	private HorizontalPanel outer;
-	private DockPanel threadPanel, controls;
+	private VerticalPanel moveButtons, thread, controls;
+	private HorizontalPanel outer, responsePanel;
+	private DockPanel threadPanel;
 	private FlexTable detailsTable;
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
 
@@ -80,10 +81,10 @@ public class MessageDetail extends Composite {
   	
   	// TODO if needed
   	//detailsForm.addSubmitHandler(new CallerDetailsUpdate());
-  	detailsForm.addSubmitCompleteHandler(new CallerDetailsUpdate());
+  	detailsForm.addSubmitCompleteHandler(new MessageDetailsUpdate());
   	
   	threadPanel = new DockPanel();
-  	controls = new DockPanel();
+  	controls = new VerticalPanel();
   	detailsTable = new FlexTable();
   	
   	outer.setSpacing(3);
@@ -118,7 +119,7 @@ public class MessageDetail extends Composite {
   	FileUpload response = new FileUpload();
   	response.setName("response");
   	Label responseLabel = new Label("Response:");
-  	HorizontalPanel responsePanel = new HorizontalPanel();
+  	responsePanel = new HorizontalPanel();
   	responsePanel.setSpacing(10);
   	responsePanel.add(responseLabel);
   	responsePanel.add(response);
@@ -126,11 +127,8 @@ public class MessageDetail extends Composite {
   	thread = new VerticalPanel();
   	thread.setSize("100%", "100%");
   	thread.setSpacing(3);
-  	threadPanel.add(thread, DockPanel.CENTER);
+  	threadPanel.add(thread, DockPanel.NORTH);
   	
-  	
-  	approve = new CheckBox("Approve");
-  	approve.setName("approve");
   	saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	setClickedButton(saveButton);
@@ -162,7 +160,6 @@ public class MessageDetail extends Composite {
   	
   	controls.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
   	controls.setSpacing(5);
-  	controls.add(approve, DockPanel.NORTH);
   	
   	// to snap the button to the bottom of the panel
   	controls.setVerticalAlignment(HasAlignment.ALIGN_BOTTOM);
@@ -182,7 +179,7 @@ public class MessageDetail extends Composite {
   	moveButtons.setSpacing(5);
   	buttons.add(moveButtons);
   	buttons.add(saveButton);
-  	controls.add(buttons, DockPanel.SOUTH);
+  	controls.add(buttons);
   	
   	
     outer.setStyleName("mail-Detail");
@@ -216,10 +213,35 @@ public class MessageDetail extends Composite {
   	return box;
   }
 
-  public void setItem(MessageForum messageForum) {
+  public void setItem(MessageForum messageForum) {  
+  	// in case selection is done from msgList
   	reset();
+  	
+  	Forum f = messageForum.getForum();
+  	setModerated(f.moderated());
+  	
+  	switch (messageForum.getStatus())
+  	{
+  		case PENDING:
+  	  	setMovable(false); 
+  	  	setCanRespond(false); 
+  	  	break;
+  		case APPROVED:
+  	  	setMovable(true);
+  	  	setCanRespond(true); 
+  	  	break;
+  		case REJECTED:
+  			setMovable(false);
+  			setCanRespond(false); 
+  	}
+  	
+  	//special case
+  	if (messageForum.isResponse() && messageForum.getStatus() != MessageStatus.PENDING)
+  	{
+  		setMovable(false);
+  		setCanRespond(false); 
+  	}
   	messageForumId.setValue(messageForum.getId());
-  	approve.setValue(messageForum.isApproved());
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
   	// since the last load
@@ -227,7 +249,7 @@ public class MessageDetail extends Composite {
     request.doFetchURL(AoAPI.USER + messageForum.getAuthor().getId() + "/", new CallerDetailsRequester());
     
     request = new JSONRequest();
-    request.doFetchURL(AoAPI.THREAD + messageForum.getId() + "/", new ThreadRequester());
+    request.doFetchURL(AoAPI.THREAD + messageForum.getId() + "/", new ThreadRequester(messageForum));
   	
   }
   
@@ -243,7 +265,12 @@ public class MessageDetail extends Composite {
 	}
   
   private class ThreadRequester implements JSONRequester {
-
+  	private MessageForum mf;
+  	
+  	public ThreadRequester(MessageForum mf)
+  	{
+  		this.mf = mf;
+  	}
 		public void dataReceived(List<JSOModel> models) {
 			List<MessageForum> threadList = new ArrayList<MessageForum>();
 			
@@ -252,7 +279,7 @@ public class MessageDetail extends Composite {
 				threadList.add(new MessageForum(m));
 			}
 			
-			loadThread(threadList);
+			loadThread(mf, threadList);
 			
 		}
 		
@@ -269,7 +296,7 @@ public class MessageDetail extends Composite {
   	userId.setValue(u.getId());
   }
   
-  private void loadThread(List<MessageForum> messages)
+  private void loadThread(MessageForum selectedMessage, List<MessageForum> messages)
   {
   	ArrayList<MessageForum> rgt = new ArrayList<MessageForum>();
   	for (MessageForum m : messages)
@@ -294,8 +321,18 @@ public class MessageDetail extends Composite {
   		String callerText = "".equals(user.getName()) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
   		String threadText = callerText + " - " + m.getDate();
   		
-  		HTML msgHTML = new HTML("<span>"+indent+"<a href='javascript:;'>"+threadText+"</a></span>");
-  		msgHTML.addClickHandler(new ThreadMessageHandler(m));
+  		HTML msgHTML;
+  		if (selectedMessage.getId().equals(m.getId()))
+  		{
+  			msgHTML = new HTML("<span>"+indent+ " " +threadText+"</span>");
+  			msgHTML.setStyleName("selectedThreadMessage");
+  		}
+  		else
+  		{
+  			msgHTML = new HTML("<span>"+indent+"<a href='javascript:;'>"+threadText+"</a></span>");
+  			msgHTML.addClickHandler(new ThreadMessageHandler(m));
+  		}
+  		
   		
   		thread.add(msgHTML);
   	}
@@ -308,19 +345,17 @@ public class MessageDetail extends Composite {
   		this.mf = mf;
   	}
 		public void onClick(ClickEvent event) {
-			Messages.get().displayMessages(mf.getForum(), mf);
+			Messages.get().displayMessages(mf);
 		}
   	
   }
   
-	private class CallerDetailsUpdate implements SubmitCompleteHandler {
+	private class MessageDetailsUpdate implements SubmitCompleteHandler {
 		
 		public void onSubmitComplete(SubmitCompleteEvent event) {
 			// get the message that was updated
 			JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
 			MessageForum m = new MessageForum(model);
-			
-			Forum f = m.getForum();
 			
 			if (clickedButton == saveButton)
 			{
@@ -329,8 +364,10 @@ public class MessageDetail extends Composite {
 				saved.center();
 			}
 			
-			// reload messageList with this message highlighted
-			Messages.get().displayMessages(f, m);
+			// reload messageList
+			// need to go to the server so that the caller details
+			// are reflected in the other messages
+			Messages.get().displayMessages(m);
 			
 			submitComplete();
 			
@@ -341,11 +378,17 @@ public class MessageDetail extends Composite {
 	{
 		detailsForm.reset();
 		thread.clear();
+		messageForumId.setValue("");
 	}
 	
-	public void setMovable(boolean canMove)
+	private void setMovable(boolean canMove)
 	{
 		moveButtons.setVisible(canMove);
+	}
+	
+	private void setCanRespond(boolean canRespond)
+	{
+		responsePanel.setVisible(canRespond);
 	}
 	
 	/**
@@ -370,21 +413,19 @@ public class MessageDetail extends Composite {
 		moveDownButton.setEnabled(true);
 	}
 	
-	public void setModerated(boolean isModerated)
+	private void setModerated(boolean isModerated)
 	{
 		if (isModerated)
 		{
 			detailsTable.setVisible(true);
 			threadPanel.setVisible(true);
 			saveButton.setVisible(true);
-			approve.setVisible(true);
 		}
 		else
 		{
 			detailsTable.setVisible(false);
 			threadPanel.setVisible(false);
 			saveButton.setVisible(false);
-			approve.setVisible(false);
 			setMovable(true);
 		}
 	}

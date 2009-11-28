@@ -15,9 +15,11 @@
  */
 package org.otalo.ao.client;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Message;
 import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -49,7 +51,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, TopPanel.Images {
+  public interface Images extends Shortcuts.Images, TopPanel.Images, Fora.Images, MessageList.Images {
   }
 
   /**
@@ -63,36 +65,58 @@ public class Messages implements EntryPoint, ResizeHandler {
   private VerticalPanel rightPanel = new VerticalPanel();
   private MessageList messageList;
   private MessageDetail messageDetail = new MessageDetail();
-  private ApprovedMessages approvedMessages = new ApprovedMessages();
-  private Shortcuts shortcuts = new Shortcuts(images);
+  private Fora fora = new Fora(images);
+  private Shortcuts shortcuts = new Shortcuts(images, fora);
 
   /**
-   * Displays the specified item.
+   * Displays the specified item. 
    * 
    * @param messageForum
    */
-  public void displayMessage(MessageForum messageForum) {
+  public void setItem(MessageForum messageForum) {
     messageDetail.setItem(messageForum);
   }
   
-  public void displayMessages(Forum f, MessageForum m)
+  /**
+   * Display messages in this message's forum
+   * with this message's status (to get the folder right)
+   * 
+   * @param m
+   */
+  public void displayMessages(MessageForum m)
   {
-  	messageList.getMessages(f, "status="+m.getStatus().ordinal(), m);
+  	// need to setup panels here 
+  	// in case there are no messages
+  	messageDetail.reset();
+  	fora.setFolder(m.getForum(), m.getStatus());
+  	
+  	messageList.getMessages(m);
   }
   
-  public void displayMessages(Forum f, String filterParams)
+  /**
+   * Display messages in this forum with
+   * this status (to get the folder right)
+   * @param f
+   * @param status
+   */
+  public void displayMessages(Forum f, MessageStatus status)
   {
-  	messageList.getMessages(f, filterParams, null);
+  	// need to setup panels here 
+  	// in case there are no messages
+  	messageDetail.reset();
+  	fora.setFolder(f, status);
+  	
+  	messageList.getMessages(f, status);
   }
   
-  public void setMovable(boolean canMove)
+  public void displayResponses(Forum f)
   {
-  	messageDetail.setMovable(canMove);
-  }
-  
-  public void setModerated(boolean isModerated)
-  {
-  	messageDetail.setModerated(isModerated);
+  	// need to setup panels here 
+  	// in case there are no messages
+  	messageDetail.reset();
+  	fora.setFolderResponses(f);
+  	
+  	messageList.getResponses(f);
   }
 
   /**
@@ -106,7 +130,7 @@ public class Messages implements EntryPoint, ResizeHandler {
 
     // MailList uses Mail.get() in its constructor, so initialize it after
     // 'singleton'.
-    messageList = new MessageList();
+    messageList = new MessageList(images);
     messageList.setWidth("100%");
 
     // Create the right panel, containing the email list & details.
