@@ -11,12 +11,12 @@ require "luasql.mysql";
 env = assert (luasql.mysql());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 
-logfile = io.open("/Library/WebServer/Documents/AO/ao.log", "a");
+logfile = io.open("/home/dsc/Documents/Log/AO/ao.log", "a");
 script_name = "otalo.lua";
 basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 aosd = basedir .. "/scripts/AO/sounds/eng/";
-sd = basedir .. "/storage/otalo/";
+sd = "/home/dsc/Development/audio/";
 sessid = os.time();
 digits = "";
 currfile = "";
@@ -25,6 +25,10 @@ arg = {};
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 session:setInputCallback("my_cb", "arg");
+
+MESSAGE_STATUS_PENDING = 0;
+MESSAGE_STATUS_APPROVED = 1;
+MESSAGE_STATUS_REJECTED = 2;
 
 
 -- FUNCTIONS
@@ -131,7 +135,7 @@ function my_cb(s, type, obj, arg)
       if (obj['digit'] == "*") then
          --session:speak("stop");
          return "stop";
-      end
+      end	
    else
       freeswitch.console_log("info", obj:serialize("xml"));
    end
@@ -174,7 +178,7 @@ function choosetag ()
    read(aosd .. "welcome.wav", 2000);
 
    i = 0;
-   for row in rows ("SELECT id, name_file FROM tag ORDER BY id ASC") do
+   for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
       i = i + 1;
       tagids[i] = row[1];
       tagnames[i] = row[2];
@@ -237,7 +241,7 @@ end
 
 function playtag (tagid)
    tag = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM tag WHERE ID = " .. tagid);
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. tagid);
    cur:fetch(tag);
    cur:close();
 
@@ -275,7 +279,7 @@ function playtag (tagid)
    end
    
    i = 0;
-   for row in rows ("SELECT message.extra_content_file, message.content_file, message.ID, message.rgt, message.ID FROM message, message_tag WHERE message_tag.tag = " .. tagid .. " AND message_tag.status = 'live' AND message.ID = message_tag.message AND message.lft = 1 ORDER BY -message_tag.position DESC, message.date DESC") do
+   for row in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message_forum.forum_id = " .. tagid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ORDER BY -message_forum.position DESC, message.date DESC") do
       rgt = tonumber(row[4]);
       i = i + 1;
 
@@ -308,7 +312,7 @@ function playtag (tagid)
 	    end
 	     
 	    j = 0;
-	    for row_a in rows ("SELECT message.extra_content_file, message.content_file, message.ID, message.rgt FROM message, message_tag WHERE message.thread = " .. row[5] .. " AND message_tag.message = message.ID AND message_tag.status = 'live' ORDER BY message.lft ASC") do
+	    for row_a in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message.thread_id = " .. row[5] .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ORDER BY message.lft ASC") do
 	       j = j + 1;
 
 	       if (j == 1) then
@@ -396,14 +400,33 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
       end
    until (d == "1");
    
-   query1 = "INSERT INTO message (user, content_file";
-   query2 = " VALUES ('"..session:getVariable("caller_id_number").."','"..partfilename.."'";
+   phone_num = session:getVariable("caller_id_number");
+   user_query = "SELECT id FROM AO_user where number = ".. phone_num;
+   user_response = {}
+   cur = con:execute(user_query);
+   cur:fetch(user_response);
+   
+   if (user_response == nil) then
+   	  -- first time caller
+   	  create_user_query = "INSERT INTO AO_user (number) VALUES ('" ..session:getVariable("caller_id_number").."')";
+   	  con:execute(create_user_query);
+	   freeswitch.consoleLog("info", script_name .. " : " .. create_user_query .. "\n")
+	   user_response = {};
+	   cur = con:execute("SELECT LAST_INSERT_ID()");
+	   cur:fetch(user_response);
+   end		
+      
+   user_id = user_response[1]
+   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(user_id) .. "\n");
+   
+   query1 = "INSERT INTO AO_message (user_id, content_file";
+   query2 = " VALUES ('"..tostring(user_id).."','"..partfilename.."'";
    
    if (thread ~= nil) then
-      query = "UPDATE message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread = " .. thread .. " OR ID = " .. thread .. ")";
+      query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-      query = "UPDATE message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread = " .. thread .. " OR ID = " .. thread .. ")";
+      query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
       query1 = query1 .. ", thread, lft, rgt)";
@@ -422,14 +445,14 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
    if (tag ~= nil) then
-      query1 = "INSERT INTO message_tag (message, tag";
+      query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
       query2 = " VALUES ('"..id[1].."','"..tagid.."'";
 
       if (moderated ~= nil) then
 	 if (moderated == 'y') then
-	    status = 'live';
+	    status = MESSAGE_STATUS_PENDING;
 	 else
-	    status = 'pending';
+	    status = MESSAGE_STATUS_APPROVED;
 	 end
 	 query1 = query1 .. ", status)";
 	 query2 = query2 .. ",'" .. status .. "')";
