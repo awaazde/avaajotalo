@@ -312,7 +312,7 @@ function playtag (tagid)
 	    end
 	     
 	    j = 0;
-	    for row_a in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message.thread_id = " .. row[5] .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ORDER BY message.lft ASC") do
+	    for row_a in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message.thread_id = " .. row[3] .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ORDER BY message.lft ASC") do
 	       j = j + 1;
 
 	       if (j == 1) then
