@@ -5,18 +5,15 @@
 
 require "luasql.mysql";
 
+-- TODO: figure out how to get the local path
+dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 
 -- GLOBALS
-
+script_name = "otalo.lua";
 env = assert (luasql.mysql());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 
-logfile = io.open("/home/dsc/Documents/Log/AO/ao.log", "a");
-script_name = "otalo.lua";
-basedir = "/usr/local/freeswitch";
-bsd = basedir .. "/sounds/en/us/callie/";
-aosd = basedir .. "/scripts/AO/sounds/eng/";
-sd = "/home/dsc/Development/audio/";
+
 sessid = os.time();
 digits = "";
 currfile = "";
@@ -338,6 +335,16 @@ function playtag (tagid)
 	       end
 	    end
 	    read(aosd .. "endreplies.wav", 1000);
+	    
+	    -- if responses allowed, prompt to record a response
+	    if (tag[4] == 'y') then 
+		    read(aosd .. "recordresponse.wav", 2000);
+		    d = use();
+		    if (d == "1") then
+		    	recordmessage (tagid, row[3], tag[2], tag[5], rgt)
+		    end
+		end
+	    
 	    read(aosd .. "backtoforum.wav", 1000);
 	    d = use();
 	 end
@@ -401,26 +408,24 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
    until (d == "1");
    
    phone_num = session:getVariable("caller_id_number");
+   --freeswitch.consoleLog("info", script_name .. " : caller id is " .. phone_num .. "\n");
    user_query = "SELECT id FROM AO_user where number = ".. phone_num;
-   user_response = {}
    cur = con:execute(user_query);
-   cur:fetch(user_response);
+   user_id = cur:fetch();
    
-   if (user_response == nil) then
+   if (user_id == nil) then
    	  -- first time caller
    	  create_user_query = "INSERT INTO AO_user (number) VALUES ('" ..session:getVariable("caller_id_number").."')";
    	  con:execute(create_user_query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. create_user_query .. "\n")
-	   user_response = {};
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
-	   cur:fetch(user_response);
+	   user_id = cur:fetch();
    end		
-      
-   user_id = user_response[1]
-   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(user_id) .. "\n");
+
+   freeswitch.consoleLog("info", script_name .. " : USER ID = " .. tostring(user_id) .. "\n");
    
-   query1 = "INSERT INTO AO_message (user_id, content_file";
-   query2 = " VALUES ('"..tostring(user_id).."','"..partfilename.."'";
+   query1 = "INSERT INTO AO_message (user_id, content_file, date";
+   query2 = " VALUES ('"..tostring(user_id).."','"..partfilename.."',".."now()";
    
    if (thread ~= nil) then
       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
@@ -429,11 +434,11 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-      query1 = query1 .. ", thread, lft, rgt)";
+      query1 = query1 .. ", thread_id, lft, rgt)";
       query2 = query2 .. ",'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
    else
-      query1 = query1 .. ")";
-      query2 = query2 .. ")";
+      query1 = query1 .. ", lft, rgt)";
+      query2 = query2 .. ", 1, 2)";
    end
       
    query = query1 .. query2;
