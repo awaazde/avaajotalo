@@ -276,7 +276,7 @@ function playtag (tagid)
    end
    
    i = 0;
-   for row in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message_forum.forum_id = " .. tagid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ORDER BY -message_forum.position DESC, message.date DESC") do
+   for row in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message_forum.forum_id = " .. tagid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ORDER BY message_forum.position DESC, message.date DESC") do
       rgt = tonumber(row[4]);
       i = i + 1;
 
@@ -380,7 +380,7 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
    moderated = moderated or nil;
    maxlength = maxlength or 60000;
    rgt = rgt or 1;
-   partfilename = os.time() .. ".wav";
+   partfilename = os.time() .. ".mp3";
    filename = sd .. partfilename;
 
    repeat
