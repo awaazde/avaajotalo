@@ -27,6 +27,13 @@ MESSAGE_STATUS_PENDING = 0;
 MESSAGE_STATUS_APPROVED = 1;
 MESSAGE_STATUS_REJECTED = 2;
 
+GLOBAL_MENU_MAINMENU = "0";
+GLOBAL_MENU_RESPOND = "8";
+GLOBAL_MENU_BACK = "4";
+GLOBAL_MENU_NEXT = "3";
+GLOBAL_MENU_REPLAY = "5";
+
+
 
 -- FUNCTIONS
 
@@ -70,7 +77,7 @@ end
 -----------
 
 function my_cb(s, type, obj, arg)
-   freeswitch.console_log("info", "\narg: [" .. arg[2] .. "]\n")
+   freeswitch.console_log("info", "\ncallback: [" .. obj['digit'] .. "]\n")
 
    if (type == "dtmf") then
       
@@ -78,55 +85,48 @@ function my_cb(s, type, obj, arg)
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit'] .. "]\nduration: [" .. obj['duration'] .. "]\n");
 
       if (obj['digit'] == "2") then
-	 return "pause";
+	 	return "pause";
       end
 
-      if (obj['digit'] == "3" or obj['digit'] == "#" or obj['digit'] == "0") then
-	 digits = obj['digit'];
-         return "break";
+      if (obj['digit'] == GLOBAL_MENU_NEXT or obj['digit'] == "#" or obj['digit'] == "0") then
+	 	digits = GLOBAL_MENU_NEXT;
+        return "break";
       end
 
-      if (obj['digit'] == "4") then
-	 return "seek:-500";
+      if (obj['digit'] == GLOBAL_MENU_BACK) then
+		digits = GLOBAL_MENU_BACK;
+		freeswitch.consoleLog("info", script_name .. ".callback() : digits = " .. digits .. "\n");
+		return "break";
+		--return "seek:-500";
       end
 
-      if (obj['digit'] == "5") then
-	 --session:speak("start over");
-         return "seek:0";
+      if (obj['digit'] == GLOBAL_MENU_REPLAY) then
+	 	--session:speak("start over");
+        return "seek:0";
       end
 
       if (obj['digit'] == "6") then
-	 --session:speak("seek forward");
-         return "seek:+500";
+	 	--session:speak("seek forward");
+        return "seek:+500";
       end
       
       if (obj['digit'] == "7") then
-	 read(aosd .. "okinstructions.wav", 500);
-	 read(aosd .. "instructions.wav", 500);
-	 if (digits ~= "0") then
-	    use()
-	    read(aosd .. "backtomessage.wav", 1000);
-	 end
-	 if (digits == "0") then
-	    return "break";
-	 end
-	 use();
-	 return;
+		 read(aosd .. "okinstructions.wav", 500);
+		 read(aosd .. "instructions.wav", 500);
+		 if (digits ~= "0") then
+		    use()
+		    read(aosd .. "backtomessage.wav", 1000);
+		 end
+		 if (digits == "0") then
+		    return "break";
+		 end
+		 use();
+		 return;
       end
 
-      if (obj['digit'] == "8") then
-	 read(aosd .. "okrecord.wav", 500);
-	 recordmessage(arg[1], arg[2], arg[3], arg[4], arg[5]);
-	 session:sleep(500);
-	 if (digits ~= "0") then
-	    use();
-	    read(aosd .. "backtomessage.wav", 1000);
-	 end
-	 if (digits == "0") then
-	    return "break";
-	 end
-	 use();
-	 return;
+      if (obj['digit'] == GLOBAL_MENU_RESPOND) then		 
+		 digits = GLOBAL_MENU_RESPOND;
+		 return "break";
       end
 
       if (obj['digit'] == "*") then
@@ -165,22 +165,22 @@ end
 
 
 -----------
--- choosetag
+-- chooseforum
 -----------
 
-function choosetag ()
-   tagids = {};
-   tagnames = {};
+function chooseforum ()
+   forumids = {};
+   forumnames = {};
    
    read(aosd .. "welcome.wav", 2000);
 
    i = 0;
    for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
       i = i + 1;
-      tagids[i] = row[1];
-      tagnames[i] = row[2];
+      forumids[i] = row[1];
+      forumnames[i] = row[2];
       read(aosd .. "listento.wav", 500);
-      read(aosd .. tagnames[i], 500);
+      read(aosd .. forumnames[i], 500);
       read(bsd .. "voicemail/8000/vm-press.wav", 500);
       read(bsd .. "digits/8000/" .. i .. ".wav", 2000);
    end
@@ -194,12 +194,12 @@ function choosetag ()
    end;
 
    if (d > 0 and d < i) then
-      freeswitch.consoleLog("info", script_name .. " : Selected Tag : " .. tagnames[d] .. "\n");
-      return tagids[d];
+      freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
+      return forumids[d];
    else
-      freeswitch.consoleLog("info", script_name .. " : No such tag number : " .. d .. "\n");
+      freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
       session:sleep(500);
-      read(aosd .. "notag.wav", 500);
+      read(aosd .. "noforum.wav", 500);
       use();
       return 0;
    end
@@ -207,188 +207,315 @@ end
 
 
 -----------
--- playmessage
+-- playcontent
 -----------
 
-function playmessage (msg)
-   currfile = sd .. msg[2];
-   logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
-   session:streamFile(sd .. msg[2]);
-   session:sleep(1000);
-   d = use();
-   if (d ~= "0" and d ~= "3" and msg[1] ~= "") then
-      read(aosd .. "morecontent.wav", 2000);
-      d = use();
-      if (d == "1") then
-	 read(aosd .. "okcontent.wav", 500);
-	 currfile = sd .. msg[1];
+function playcontent (extra, content)
+   if (extra ~= nil and extra ~= "") then
+   	 currfile = sd .. extra;
 	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
-	 session:streamFile(sd .. msg[1]);
+	 session:streamFile(sd .. extra);
 	 session:sleep(1000);
-	 d = use();
-      end
+	 
+     read(aosd .. "morecontent.wav", 2000);
+     d = use();
+     if (d == "1") then
+	 	read(aosd .. "okcontent.wav", 500);
+	 else
+	 	digits = GLOBAL_MENU_NEXT;
+	 end
    end
-   return d;
+      
+   currfile = sd .. content;
+   logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
+   session:streamFile(sd .. content);
+   session:sleep(1000);
+
 end
 
 
 -----------
--- playtag
+-- playforum
 -----------
 
-function playtag (tagid)
-   tag = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. tagid);
-   cur:fetch(tag);
+function playforum (forumid)
+   local forum = {};
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. forumid);
+   cur:fetch(forum);
    cur:close();
+   local forumname = forum[1];
+   local moderated = forum[2];
+   local postingallowed = forum[3];
+   local responsesallowed = forum[4];
+   local maxlength = forum[5];
 
-   if (tag == nil) then
-      freeswitch.consoleLog("info", script_name .. " : No such tag ID : " .. tagid .. "\n");
-      read(aosd .. "notag.wav", 500)
+   if (forum == nil) then
+      freeswitch.consoleLog("info", script_name .. " : No such forum ID : " .. forumid .. "\n");
+      read(aosd .. "noforum.wav", 500)
       return use();
    end
 
    read(aosd .. "okyouwant.wav", 0);
-   read(aosd .. tag[1], 1000);
+   read(aosd .. forumname, 1000);
+   
+   local d = use();
+   if (d == GLOBAL_MENU_MAINMENU) then
+      return d;
+   end
 	
-   if (tag[3] == 'y') then
+   if (postingallowed == 'y') then
       read(aosd .. "recordorlisten.wav", 2000);
       d = use();
 
       if (d == "1") then
-	 read(aosd .. "okrecord.wav", 1000);
-	 d = use();
-	 if (d ~= 0) then
-	    d = recordmessage(tagid, nil, tag[2], tag[5]);
-	 end
+	 	  read(aosd .. "okrecord.wav", 1000);
+	      recordmessage(forumid, nil, moderated, maxlength);
+	    
+		  return GLOBAL_MENU_MAINMENU;
+	  elseif (d == "2") then
+	  	  read(aosd .. "okplay.wav", 1000);
+	  else -- global command
+	  	  return d;
       end
-
-      if (d == "0") then
-	 return d;
-      end
-    
-      read(aosd .. "okplay.wav", 1000);
+      
    end
 
    read(aosd .. "instructions.wav", 1000);
-   if (use() == "0") then
-      return "0";
+   d = use();
+   if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK) then
+      return d;
    end
    
-   i = 0;
-   for row in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message_forum.forum_id = " .. tagid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ORDER BY message_forum.position DESC, message.date DESC") do
-      rgt = tonumber(row[4]);
-      i = i + 1;
+   -- get the first top-level message for this forum
+   cur = con:execute("SELECT COUNT(*) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND forum_id = " .. forumid .. " AND status = " .. MESSAGE_STATUS_APPROVED );
+   local first_position = cur:fetch();
+   first_position = tonumber(first_position);
+   local current_msg = getmessage(forumid, first_position);
+   
+   if (current_msg == nil) then
+   	  read(aosd .. "nomessages.wav", 1000);
+   	  return GLOBAL_MENU_MAINMENU;
+   end
+   
+   d = "";
+   while (current_msg ~= nil) do
+   	  local msgid = current_msg[1];
+   	  local position = tonumber(current_msg[4]);
+   	  local rgt = tonumber(current_msg[6]);
+   	   
+   	  if (d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_REPLAY) then
+   	  	-- if last msg played recd a response
+   	  	read(aosd .. "backtomessage.wav", 1000);
+	  elseif (d == GLOBAL_MENU_BACK) then  -- do this before next in case you go back to first msg
+	  	read(aosd .. "previousmessage.wav", 1000);
+	  elseif (position == first_position) then
+	 	read(aosd .. "firstmessage.wav", 1000);
+	  else -- default
+		read(aosd .. "nextmessage.wav", 1000);
+	  end
+	  
+	  -- clear digits
+	  use();
+	  
+	  freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. msgid .. "]\n"); 
+   	  d = playmessage(current_msg, responsesallowed);
+   	   
+   	  if (d == GLOBAL_MENU_MAINMENU) then
+	      return d;
+	  elseif (d == GLOBAL_MENU_BACK) then
+	      if (position == first_position) then
+	        -- go back from top post
+	        -- maybe want to go back to forum menu instead
+	      	return GLOBAL_MENU_MAINMENU;
+	      else
+	   	  	current_msg = getmessage(forumid, position+1);
+	   	  end
+	  elseif (d == GLOBAL_MENU_NEXT) then
+	      if (position == 1) then
+	        -- end of the line
+	        break;
+	      else
+	   	  	current_msg = getmessage(forumid, position-1);
+	   	  end
+	  elseif (d == GLOBAL_MENU_RESPOND) then
+	   	  read(aosd .. "okrecordresponse.wav", 500);
+	   	  recordmessage (forumid, msgid, moderated, maxlength, rgt);
+	  elseif (d == GLOBAL_MENU_REPLAY) then
+	   		-- do nothing; special case if user pressed back from 1st reply 
+	  end
 
-      if (i == 1) then
-	 -- reply to 1st message
-	 arg = {tagid, row[3], tag[2], tag[5], rgt};
-	 read(aosd .. "firstmessage.wav", 1000);
-      else
-	 -- reply to last message
-	 read(aosd .. "nextmessage.wav", 1000);
-	 arg = {tagid, row[3], tag[2], tag[5], rgt};
-      end
+   end
 
-      -- session:execute("playback", "tone_stream://%(500, 0, 620)");
-      d = use();
+   read(aosd .. "endforum.wav", 1000);
+   return GLOBAL_MENU_MAINMENU;
+end
 
-      if (d ~= "0" and d ~= "3") then
-	 d = playmessage(row);
-      end
+-----------
+-- playmessage
+-----------
 
-      -- if (d ~= "0" and d ~= "3" and rgt > 2) then
-      if (d ~= "0" and rgt > 2) then
+function playmessage (msg, responsesallowed)
+  local id = msg[1];
+  local content = msg[2];
+  local extra = msg[3];
+  local position = msg[4];
+  local lft = tonumber(msg[5]);
+  local rgt = tonumber(msg[6]);
+  
+  playcontent(extra, content);
+  local d = use();
+
+  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+  	return d;
+  end
+  
+  if (rgt > 2) then
 	 read(aosd .. "listenreplies.wav", 2000);
 	 d = use();
+	 
+	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	  	return d;
+	 end
 
 	 if (d == "1") then
 	    read(aosd .. "okreplies.wav", 500);
-	    if (use() == "0") then
-		return "0";
+	    d = use();
+	 
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	  		return d;
 	    end
-	     
-	    j = 0;
-	    for row_a in rows ("SELECT message.extra_content_file, message.content_file, message.id, message.rgt FROM AO_message message, AO_message_forum message_forum WHERE message.thread_id = " .. row[3] .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ORDER BY message.lft ASC") do
-	       j = j + 1;
-
-	       if (j == 1) then
-		  -- reply to 1st message
-		  read(aosd .. "firstmessage.wav", 1000);
-	       else
-		  -- reply to last message
-		  read(aosd .. "nextmessage.wav", 1000);
-	       end
-
-	       session:sleep(1000);
-	       arg = {tagid, row[3], tag[2], tag[5], row_a[4]};
-
-	       -- session:execute("playback", "tone_stream://%(500, 0, 620)");
-	       d = use();
 	    
-	       if (d ~= "0" and d ~= "3") then
-		  d = playmessage(row_a);
-	       end
-	       
-	       if (d == "0") then
-		  return d;
-	       end
+	    -- get the first reply
+	    local current_reply = getreply(id, lft, "next");
+	    d = "";
+	    while (current_reply ~= nil) do
+		   	  local replyid = current_reply[1];
+		   	  local reply_content = current_reply[2];
+  			  local reply_extra = current_reply[3];
+  			  local reply_lft = tonumber(current_reply[5]);
+		   	  local reply_rgt = tonumber(current_reply[6]);
+		   	  
+		   	  if (d == GLOBAL_MENU_RESPOND) then
+		   	  	-- if last msg played recd a response
+		   	  	read(aosd .. "backtomessage.wav", 1000);
+		   	  elseif (reply_lft == 2) then
+			 	read(aosd .. "firstmessage.wav", 1000);
+			  else
+				read(aosd .. "nextmessage.wav", 1000);
+			  end
+			  -- clear digits
+			  use();
+			   
+		   	   playcontent(extra, content);
+			   d = use();
+		   	   
+		   	   if (d == GLOBAL_MENU_MAINMENU) then
+			      return d;
+			   elseif (d == GLOBAL_MENU_BACK) then
+			      if (reply_lft == 2) then
+			        -- go back from top reply
+			        -- go to the original msg
+			      	return GLOBAL_MENU_REPLAY;
+			      else
+			        -- ASSUMING FLAT threads (i.e. no reply to replies)
+			   	  	current_reply = getreply(id, reply_lft, "back");
+			   	  end
+			   elseif (d == GLOBAL_MENU_RESPOND) then
+			   	  -- ASSUMING FLAT threads (i.e. no reply to replies)	
+			   	  return d;
+			   else -- default is go to next
+			      if (reply_rgt+1 == rgt) then
+			        -- end of the line
+			        break;
+			      else
+			   	  	current_reply = getreply(id, reply_lft, "next");
+			   	  end
+			   end
 	    end
+	    
 	    read(aosd .. "endreplies.wav", 1000);
+	    if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	  		return d;
+	    end
 	    
 	    -- if responses allowed, prompt to record a response
-	    if (tag[4] == 'y') then 
+	    if (responsesallowed == 'y') then 
 		    read(aosd .. "recordresponse.wav", 2000);
 		    d = use();
 		    if (d == "1") then
-		    	recordmessage (tagid, row[3], tag[2], tag[5], rgt)
+		    	return GLOBAL_MENU_RESPOND;
+		    elseif (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK) then
+		  		return d;
 		    end
 		end
 	    
 	    read(aosd .. "backtoforum.wav", 1000);
-	    d = use();
-	 end
-      end
-
-      if (d == "0") then
-	 return d;
-      end
-   end
-   
-   if (d == "0") then
-      return d;
-   end
-   
-   if (i == 0) then
-      read(aosd .. "nomessages.wav", 1000);
-   else
-      read(aosd .. "endforum.wav", 1000);
-   end
-
-   return use();
+  	end -- close if choose to listen to replies
+  end -- close check for replies
+  	
+  -- default	
+  return GLOBAL_MENU_NEXT;
 end
 
+-----------
+-- getmessage
+-----------
 
+function getmessage (forumid, position)
+   local query = "SELECT message.id, message.content_file, message.extra_content_file, message_forum.position, message.lft, message.rgt ";
+   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
+   query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id ";
+   query = query .. "AND message_forum.position = " .. position .. " ";
+   
+   freeswitch.consoleLog("info", script_name .. ".getmessage() : " .. query .. "\n");
+   cur = con:execute(query);
+   msg = cur:fetch({});
+   cur:close();
+   
+   return msg;
+end
+
+-----------
+-- getreply
+-----------
+
+function getreply (thread, lft, direction)
+   local query = "SELECT message.id, message.content_file, message.extra_content_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
+   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
+   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND ";
+   if (direction == "next") then
+   	  query = query .. "message.lft > " .. lft .. " ORDER BY message.lft ASC LIMIT 1"; 
+   else -- back
+   	  query = query .. "message.lft < " .. lft .. " ORDER BY message.lft DESC LIMIT 1"; 
+   end
+   
+   freeswitch.consoleLog("info", script_name .. ".getreply() : " .. query .. "\n");
+   cur = con:execute(query);
+   if (cur == nil) then
+   	  return nil;
+   end
+   msg = cur:fetch({});
+   cur:close();
+   
+   return msg;
+end
 -----------
 -- recordmessage
 -----------
 
-function recordmessage (tagid, thread, moderated, maxlength, rgt)
-   tagid = tagid or nil;
-   thread = thread or nil;
-   maxlength = maxlength or 60000;
-   moderated = moderated or nil;
-   maxlength = maxlength or 60000;
-   rgt = rgt or 1;
-   partfilename = os.time() .. ".mp3";
-   filename = sd .. partfilename;
+function recordmessage (forumid, thread, moderated, maxlength, rgt)
+   local forumid = forumid or nil;
+   local thread = thread or nil;
+   local maxlength = maxlength or 60000;
+   local moderated = moderated or nil;
+   local maxlength = maxlength or 60000;
+   local rgt = rgt or 1;
+   local partfilename = os.time() .. ".mp3";
+   local filename = sd .. partfilename;
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
-      d = use();
-      if (d == "0") then
-	 return d;
-      end
+
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n")
@@ -399,11 +526,11 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
       read(aosd .. "hererecorded.wav", 1000);
       read(filename, 1000);
       read(aosd .. "notsatisfied.wav", 2000);
-      d = use();
-      if (d == "0") then
-	 return satisfied;
-      elseif (d ~= "1" and d ~= "2") then
-	 return read(aosd .. "messagecancelled.wav", 500);
+      local d = use();
+ 
+      if (d ~= "1" and d ~= "2") then
+	 	read(aosd .. "messagecancelled.wav", 500);
+	 	return use(); 
       end
    until (d == "1");
    
@@ -427,7 +554,7 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
    query1 = "INSERT INTO AO_message (user_id, content_file, date";
    query2 = " VALUES ('"..tostring(user_id).."','"..partfilename.."',".."now()";
    
-   if (thread ~= nil) then
+   if (thread ~= nil) then -- this is a response
       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
@@ -449,32 +576,31 @@ function recordmessage (tagid, thread, moderated, maxlength, rgt)
    cur:fetch(id);
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
-   if (tag ~= nil) then
-      query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
-      query2 = " VALUES ('"..id[1].."','"..tagid.."'";
+   query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
+   query2 = " VALUES ('"..id[1].."','"..forumid.."'";
 
-      if (moderated ~= nil) then
-	 if (moderated == 'y') then
-	    status = MESSAGE_STATUS_PENDING;
-	 else
+   position = "null";
+   if (moderated == 'y') then
+	    status = MESSAGE_STATUS_PENDING;	    
+   else
 	    status = MESSAGE_STATUS_APPROVED;
-	 end
-	 query1 = query1 .. ", status)";
-	 query2 = query2 .. ",'" .. status .. "')";
-      else
-	 query1 = ")";
-	 query2 = ")";
-      end
-
-      query = query1 .. query2;
-      con:execute(query);
-      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+	    if (thread == nil) then
+		    cur = con:execute("SELECT COUNT(*) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND forum_id = " .. forumid .. " AND status = " .. MESSAGE_STATUS_APPROVED );
+			position = cur:fetch();
+			position = tonumber(position) + 1;
+		end
    end
+   query1 = query1 .. ", status, position)";
+   query2 = query2 .. "," .. status .. ",".. position..")";
+
+  query = query1 .. query2;
+  con:execute(query);
+  freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+
    
    read(aosd .. "okrecorded.wav", 500);
    return use();
 end
-
 
 -----------
 -- MAIN 
@@ -487,17 +613,17 @@ session:answer();
 session:sleep(1000);
 
 while (1) do
-   -- choose the tag
-   tagid = choosetag();
+   -- choose the forum
+   forumid = chooseforum();
 
-   if (tagid == 0) then
+   if (forumid == 0) then
       break;
    end
 
-   -- play the tag
-   playtag(tagid);
+   -- play the forum
+   d = playforum(forumid);
 
-   -- go back to the main menu
+   -- go back to the main menu (no matter what returns from playforum)
    read(aosd .. "mainmenu.wav", 1000);
 end
 
