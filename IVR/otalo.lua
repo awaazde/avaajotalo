@@ -290,7 +290,10 @@ function playforum (forumid)
    cur = con:execute("SELECT COUNT(*) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND forum_id = " .. forumid .. " AND status = " .. MESSAGE_STATUS_APPROVED );
    local first_position = cur:fetch();
    first_position = tonumber(first_position);
-   local current_msg = getmessage(forumid, first_position);
+   local prevmsgs = {};
+   local msgs = getmessages(forumid);
+   local current_msg_idx = 1;
+   local current_msg = msgs();
    
    if (current_msg == nil) then
    	  read(aosd .. "nomessages.wav", 1000);
@@ -319,24 +322,33 @@ function playforum (forumid)
 	  
 	  freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. msgid .. "]\n"); 
    	  d = playmessage(current_msg, responsesallowed);
+   	  
+   	  if (current_msg_idx > #prevmsgs) then
+    	-- add the current msg to the stack
+    	table.insert(prevmsgs, current_msg);
+	  end
    	   
    	  if (d == GLOBAL_MENU_MAINMENU) then
 	      return d;
 	  elseif (d == GLOBAL_MENU_BACK) then
-	      if (position == first_position) then
+	      if (current_msg_idx == 1) then
 	        -- go back from top post
 	        -- maybe want to go back to forum menu instead
 	      	return GLOBAL_MENU_MAINMENU;
 	      else
-	   	  	current_msg = getmessage(forumid, position+1);
+	      	current_msg_idx = current_msg_idx - 1;
+	   	  	current_msg = prevmsgs[current_msg_idx];
 	   	  end
 	  elseif (d == GLOBAL_MENU_NEXT) then
-	      if (position == 1) then
-	        -- end of the line
-	        break;
-	      else
-	   	  	current_msg = getmessage(forumid, position-1);
-	   	  end
+        current_msg_idx = current_msg_idx + 1;
+        -- check to see if we are at the end of prevmsgs
+        if (current_msg_idx > #prevmsgs) then
+        	-- get next msg from the cursor
+        	current_msg = msgs();
+        else
+        	-- get msg from the prev list
+        	current_msg = prevmsgs[current_msg_idx];
+        end
 	  elseif (d == GLOBAL_MENU_RESPOND) then
 	   	  read(aosd .. "okrecordresponse.wav", 500);
 	   	  recordmessage (forumid, msgid, moderated, maxlength, rgt);
@@ -386,7 +398,11 @@ function playmessage (msg, responsesallowed)
 	    end
 	    
 	    -- get the first reply
-	    local current_reply = getreply(id, lft, "next");
+	    local prevreplies = {};
+	    local replies = getreplies(id);
+	    local current_reply_idx = 1;
+	    local current_reply = replies();
+	    
 	    d = "";
 	    while (current_reply ~= nil) do
 		   	  local replyid = current_reply[1];
@@ -398,6 +414,8 @@ function playmessage (msg, responsesallowed)
 		   	  if (d == GLOBAL_MENU_RESPOND) then
 		   	  	-- if last msg played recd a response
 		   	  	read(aosd .. "backtomessage.wav", 1000);
+		   	  elseif (d == GLOBAL_MENU_BACK) then
+		   	  	read(aosd .. "previousmessage.wav", 1000);
 		   	  elseif (reply_lft == 2) then
 			 	read(aosd .. "firstmessage.wav", 1000);
 			  else
@@ -406,30 +424,38 @@ function playmessage (msg, responsesallowed)
 			  -- clear digits
 			  use();
 			   
-		   	   playcontent(extra, content);
+		   	   playcontent(reply_extra, reply_content);
 			   d = use();
+			   
+			   if (current_reply_idx > #prevreplies) then
+		    	-- add the current msg to the stack
+		    	table.insert(prevreplies, current_reply);
+			  end
 		   	   
 		   	   if (d == GLOBAL_MENU_MAINMENU) then
 			      return d;
 			   elseif (d == GLOBAL_MENU_BACK) then
-			      if (reply_lft == 2) then
+			      if (current_reply_idx == 1) then
 			        -- go back from top reply
 			        -- go to the original msg
 			      	return GLOBAL_MENU_REPLAY;
 			      else
-			        -- ASSUMING FLAT threads (i.e. no reply to replies)
-			   	  	current_reply = getreply(id, reply_lft, "back");
+			   	  	current_reply_idx = current_reply_idx - 1;
+	   	  			current_reply = prevreplies[current_reply_idx];
 			   	  end
 			   elseif (d == GLOBAL_MENU_RESPOND) then
 			   	  -- ASSUMING FLAT threads (i.e. no reply to replies)	
 			   	  return d;
 			   else -- default is go to next
-			      if (reply_rgt+1 == rgt) then
-			        -- end of the line
-			        break;
-			      else
-			   	  	current_reply = getreply(id, reply_lft, "next");
-			   	  end
+			   	  current_reply_idx = current_reply_idx + 1;
+			      -- check to see if we are at the end of prevreplies
+		          if (current_reply_idx > #prevreplies) then
+		        	-- get next reply from the cursor
+		        	current_reply = replies();
+		          else
+		        	-- get reply from the prev list
+		        	current_reply = prevreplies[current_reply_idx];
+		          end
 			   end
 	    end
 	    
@@ -458,46 +484,29 @@ function playmessage (msg, responsesallowed)
 end
 
 -----------
--- getmessage
+-- getmessages
 -----------
 
-function getmessage (forumid, position)
+function getmessages (forumid)
    local query = "SELECT message.id, message.content_file, message.extra_content_file, message_forum.position, message.lft, message.rgt ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
-   query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id ";
-   query = query .. "AND message_forum.position = " .. position .. " ";
+   query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ";
+   query = query .. "ORDER BY message_forum.position DESC ";
    
-   freeswitch.consoleLog("info", script_name .. ".getmessage() : " .. query .. "\n");
-   cur = con:execute(query);
-   msg = cur:fetch({});
-   cur:close();
-   
-   return msg;
+   return rows(query);
 end
 
 -----------
--- getreply
+-- getreplies
 -----------
 
-function getreply (thread, lft, direction)
+function getreplies (thread)
    local query = "SELECT message.id, message.content_file, message.extra_content_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
-   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND ";
-   if (direction == "next") then
-   	  query = query .. "message.lft > " .. lft .. " ORDER BY message.lft ASC LIMIT 1"; 
-   else -- back
-   	  query = query .. "message.lft < " .. lft .. " ORDER BY message.lft DESC LIMIT 1"; 
-   end
+   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ";
+   query = query .. "ORDER BY message.lft";
    
-   freeswitch.consoleLog("info", script_name .. ".getreply() : " .. query .. "\n");
-   cur = con:execute(query);
-   if (cur == nil) then
-   	  return nil;
-   end
-   msg = cur:fetch({});
-   cur:close();
-   
-   return msg;
+   return rows(query);
 end
 -----------
 -- recordmessage
