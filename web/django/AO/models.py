@@ -15,6 +15,8 @@ class Forum(models.Model):
 
 class User(models.Model):
     number = models.CharField(max_length=24)
+    allowed = models.CharField(max_length=1)
+    admin = models.CharField(max_length=1)
     name = models.CharField(max_length=128, blank=True, null=True)
     district = models.CharField(max_length=128, blank=True, null=True)
     taluka = models.CharField(max_length=128, blank=True, null=True)
