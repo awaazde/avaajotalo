@@ -8,11 +8,7 @@ require "luasql.mysql";
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 
--- GLOBALS
 script_name = "otalo.lua";
-env = assert (luasql.mysql());
-con = assert (env:connect("otalo","otalo","otalo","localhost"));
-
 
 sessid = os.time();
 digits = "";
@@ -83,12 +79,17 @@ function my_cb(s, type, obj, arg)
       
       logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "dtmf", "\t", obj['digit'], "\n"); 
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit'] .. "]\nduration: [" .. obj['duration'] .. "]\n");
-
+	  
+	  if (obj['digit'] == GLOBAL_MENU_MAINMENU) then
+	 	digits = GLOBAL_MENU_MAINMENU;
+        return "break";
+      end
+      
       if (obj['digit'] == "2") then
 	 	return "pause";
       end
 
-      if (obj['digit'] == GLOBAL_MENU_NEXT or obj['digit'] == "#" or obj['digit'] == "0") then
+      if (obj['digit'] == GLOBAL_MENU_NEXT or obj['digit'] == "#") then
 	 	digits = GLOBAL_MENU_NEXT;
         return "break";
       end
@@ -176,13 +177,14 @@ function chooseforum ()
 
    i = 0;
    for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
+      freeswitch.consoleLog("info", script_name .. " : got into loop [" .. i .. "] \n");
       i = i + 1;
       forumids[i] = row[1];
       forumnames[i] = row[2];
       read(aosd .. "listento.wav", 500);
       read(aosd .. forumnames[i], 500);
-      read(bsd .. "voicemail/8000/vm-press.wav", 500);
-      read(bsd .. "digits/8000/" .. i .. ".wav", 2000);
+      read(aosd .. "press.wav", 500);
+      read(aosd .. "digits/" .. i .. ".wav", 2000);
    end
    
    d = use();
@@ -193,7 +195,7 @@ function chooseforum ()
       d = tonumber(d);
    end;
 
-   if (d > 0 and d < i) then
+   if (d > 0 and d <= i) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
       return forumids[d];
    else
@@ -263,7 +265,7 @@ function playforum (forumid)
       return d;
    end
 	
-   if (postingallowed == 'y') then
+   if (postingallowed == 'y' or adminmode()) then
       read(aosd .. "recordorlisten.wav", 2000);
       d = use();
 
@@ -280,7 +282,12 @@ function playforum (forumid)
       
    end
 
-   read(aosd .. "instructions.wav", 1000);
+   if (responsesallowed == 'y' or adminmode()) then
+   	  read(aosd .. "instructions.wav", 1000);
+   else
+   	  read(aosd .. "instructions_noresponse.wav", 1000);
+   end
+   
    d = use();
    if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK) then
       return d;
@@ -359,6 +366,8 @@ function playforum (forumid)
    end
 
    read(aosd .. "endforum.wav", 1000);
+   d = use();
+   -- TODO: would be nice to go back to the last msg
    return GLOBAL_MENU_MAINMENU;
 end
 
@@ -462,23 +471,21 @@ function playmessage (msg, responsesallowed)
 	    read(aosd .. "endreplies.wav", 1000);
 	    if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
 	  		return d;
-	    end
+	    end	   
 	    
-	    -- if responses allowed, prompt to record a response
-	    if (responsesallowed == 'y') then 
-		    read(aosd .. "recordresponse.wav", 2000);
-		    d = use();
-		    if (d == "1") then
-		    	return GLOBAL_MENU_RESPOND;
-		    elseif (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK) then
-		  		return d;
-		    end
-		end
 	    
-	    read(aosd .. "backtoforum.wav", 1000);
   	end -- close if choose to listen to replies
   end -- close check for replies
-  	
+  
+   -- if responses allowed, prompt to record a response
+  if (responsesallowed == 'y' or adminmode()) then 
+    read(aosd .. "recordresponse.wav", 2000);
+    d = use();
+    if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+  		return d;
+    end
+  end
+  
   -- default	
   return GLOBAL_MENU_NEXT;
 end
@@ -551,7 +558,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
    
    if (user_id == nil) then
    	  -- first time caller
-   	  create_user_query = "INSERT INTO AO_user (number) VALUES ('" ..session:getVariable("caller_id_number").."')";
+   	  create_user_query = "INSERT INTO AO_user (number, allowed, admin) VALUES ('" ..session:getVariable("caller_id_number").."','y','n')";
    	  con:execute(create_user_query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. create_user_query .. "\n")
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
@@ -589,7 +596,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
    query2 = " VALUES ('"..id[1].."','"..forumid.."'";
 
    position = "null";
-   if (moderated == 'y') then
+   if (moderated == 'y' and not adminmode()) then
 	    status = MESSAGE_STATUS_PENDING;	    
    else
 	    status = MESSAGE_STATUS_APPROVED;
