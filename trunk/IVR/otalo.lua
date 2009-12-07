@@ -213,18 +213,24 @@ end
 -----------
 
 function playcontent (extra, content)
+   local d;
    if (extra ~= nil and extra ~= "") then
    	 currfile = sd .. extra;
 	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
 	 session:streamFile(sd .. extra);
 	 session:sleep(1000);
 	 
+	 d = use();
+	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+      	return d;
+   	 end
+   
      read(aosd .. "morecontent.wav", 2000);
      d = use();
      if (d == "1") then
 	 	read(aosd .. "okcontent.wav", 500);
 	 else
-	 	digits = GLOBAL_MENU_NEXT;
+	 	return GLOBAL_MENU_NEXT;
 	 end
    end
       
@@ -232,7 +238,9 @@ function playcontent (extra, content)
    logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", currfile, "\t", "play", "\n"); 
    session:streamFile(sd .. content);
    session:sleep(1000);
-
+   
+   return use();
+   
 end
 
 
@@ -383,8 +391,7 @@ function playmessage (msg, responsesallowed)
   local lft = tonumber(msg[5]);
   local rgt = tonumber(msg[6]);
   
-  playcontent(extra, content);
-  local d = use();
+  d = playcontent(extra, content);
 
   if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
   	return d;
@@ -431,15 +438,14 @@ function playmessage (msg, responsesallowed)
 				read(aosd .. "nextmessage.wav", 1000);
 			  end
 			  -- clear digits
-			  use();
+			   use();
 			   
-		   	   playcontent(reply_extra, reply_content);
-			   d = use();
+		   	   d = playcontent(reply_extra, reply_content);			   
 			   
 			   if (current_reply_idx > #prevreplies) then
 		    	-- add the current msg to the stack
 		    	table.insert(prevreplies, current_reply);
-			  end
+			   end
 		   	   
 		   	   if (d == GLOBAL_MENU_MAINMENU) then
 			      return d;
