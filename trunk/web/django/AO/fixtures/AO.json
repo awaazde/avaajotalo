@@ -43,12 +43,12 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "y", 
-            "name": "anubhav", 
+            "name": "experiences", 
             "open": "n", 
             "moderated": "y", 
             "maxlength": 6666, 
             "responses_allowed": "y", 
-            "name_file": "anubhav.wav"
+            "name_file": "experiences.wav"
         }
     }, 
     {
@@ -63,7 +63,8 @@
             "village_file": "foo.wav", 
             "district_file": "foo.wav", 
             "village": "Patli", 
-            "name_file": "foo.wav"
+            "admin" : "n",
+            "allowed" : "y"
         }
     }, 
     {
@@ -72,20 +73,21 @@
         "fields": {
             "name": "ADMIN", 
             "district": "", 
-            "number": "9999999999", 
+            "number": "1001", 
             "taluka_file": "foo.wav", 
             "taluka": "", 
             "village_file": "foo.wav", 
             "district_file": "foo.wav", 
             "village": "", 
-            "name_file": "foo.wav"
+            "admin" : "y",
+            "allowed" : "y"
         }
     }, 
     {
         "pk": 1, 
         "model": "AO.message", 
         "fields": {          
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-10-27 20:05:59", 
             "extra_content_file": "",
@@ -107,7 +109,7 @@
         "pk": 2, 
         "model": "AO.message", 
         "fields": {                                 
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 20:45:24", 
             "extra_content_file": "",
@@ -129,7 +131,7 @@
         "pk": 3, 
         "model": "AO.message", 
         "fields": {                                       
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:16", 
             "extra_content_file": "",
@@ -151,7 +153,7 @@
         "pk": 4, 
         "model": "AO.message", 
         "fields": {                                       
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:27", 
             "extra_content_file": "",
@@ -173,7 +175,7 @@
         "pk": 5, 
         "model": "AO.message", 
         "fields": {                                       
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:38", 
             "extra_content_file": "",
@@ -195,7 +197,7 @@
         "pk": 6, 
         "model": "AO.message", 
         "fields": {                                       
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:46",  
             "extra_content_file": "",
@@ -217,7 +219,7 @@
         "pk": 7, 
         "model": "AO.message", 
         "fields": {                                       
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:46", 
             "extra_content_file": "",         
@@ -239,7 +241,7 @@
         "pk": 8, 
         "model": "AO.message", 
         "fields": {                          
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 20:45:24", 
             "extra_content_file": "",
@@ -261,7 +263,7 @@
         "pk": 9, 
         "model": "AO.message", 
         "fields": {                          
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:16", 
             "extra_content_file": "",
@@ -283,7 +285,7 @@
         "pk": 10, 
         "model": "AO.message", 
         "fields": {                           
-            "content_file": "test.mp3", 
+            "content_file": "test2.mp3", 
             "user": 1, 
             "date": "2009-11-01 23:13:27", 
             "extra_content_file": "",
@@ -305,7 +307,7 @@
         "pk": 11, 
         "model": "AO.message", 
         "fields": {                          
-            "content_file": "11-23-2009_072242.mp3", 
+            "content_file": "test2.mp3", 
             "user": 2, 
             "date": "2009-11-23 07:22:42", 
             "extra_content_file": "",

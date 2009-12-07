@@ -195,7 +195,7 @@ def updatestatus(request, action):
             msg.status = MESSAGE_STATUS_REJECTED
             msg.save()
         
-        if m.message.lft == 1:
+        if m.message.lft == 1 and m.position:
             # bump down the position of everyone ahead
             ahead = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, position__gt=m.position)
             for msg in ahead:
@@ -215,7 +215,7 @@ def get_console_user():
         return User.objects.get(name__contains="ADMIN")
     except User.DoesNotExist:
         # create
-        u = User(number='9999999999', name="ADMIN")
+        u = User(number='1001', name="ADMIN", admin='y', allowed='y')
         u.save()
     
         return u
