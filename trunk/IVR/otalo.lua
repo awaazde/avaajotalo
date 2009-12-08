@@ -189,20 +189,25 @@ function chooseforum ()
    d = use();
 
    if (d == "") then
-      d = 1;
+      return -1;
    else
       d = tonumber(d);
    end;
 
    if (d > 0 and d <= i) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
+      
+      
+	  read(aosd .. "okyouwant.wav", 0);
+	  read(aosd .. forumnames[d], 1000);
+
       return forumids[d];
    else
       freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
       session:sleep(500);
       read(aosd .. "noforum.wav", 500);
       use();
-      return 0;
+      return -1;
    end
 end
 
@@ -257,20 +262,6 @@ function playforum (forumid)
    local postingallowed = forum[3];
    local responsesallowed = forum[4];
    local maxlength = forum[5];
-
-   if (forum == nil) then
-      freeswitch.consoleLog("info", script_name .. " : No such forum ID : " .. forumid .. "\n");
-      read(aosd .. "noforum.wav", 500)
-      return use();
-   end
-
-   read(aosd .. "okyouwant.wav", 0);
-   read(aosd .. forumname, 1000);
-   
-   local d = use();
-   if (d == GLOBAL_MENU_MAINMENU) then
-      return d;
-   end
 	
    if (postingallowed == 'y' or adminmode()) then
       read(aosd .. "recordorlisten.wav", 2000);
@@ -278,9 +269,15 @@ function playforum (forumid)
 
       if (d == "1") then
 	 	  read(aosd .. "okrecord.wav", 1000);
-	      recordmessage(forumid, nil, moderated, maxlength);
-	    
-		  return GLOBAL_MENU_MAINMENU;
+	      d = recordmessage(forumid, nil, moderated, maxlength);
+	      if (d == GLOBAL_MENU_MAINMENU ) then
+	  		  return d;
+	      end
+		  -- else continue to playing messages
+		  read(aosd .. "backtoforum.wav", 1000);
+		  -- don't check input here; it will be checked when it comes back around
+		  -- to this function
+		  return GLOBAL_MENU_REPLAY;
 	  elseif (d == "2") then
 	  	  read(aosd .. "okplay.wav", 1000);
 	  else -- global command
@@ -330,12 +327,14 @@ function playforum (forumid)
 	  else -- default
 		read(aosd .. "nextmessage.wav", 1000);
 	  end
+
+	  d = use();
 	  
-	  -- clear digits
-	  use();
-	  
-	  freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. msgid .. "]\n"); 
-   	  d = playmessage(current_msg, responsesallowed);
+	  -- check if a pre-emptive action was taken
+	  if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_BACK and d~= GLOBAL_MENU_NEXT and d ~= GLOBAL_MENU_RESPOND) then
+	  	freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. msgid .. "]\n"); 
+   	  	d = playmessage(current_msg, responsesallowed);
+   	  end
    	  
    	  if (current_msg_idx > #prevmsgs) then
     	-- add the current msg to the stack
@@ -347,16 +346,20 @@ function playforum (forumid)
 	  elseif (d == GLOBAL_MENU_BACK) then
 	      if (current_msg_idx == 1) then
 	        -- go back from top post
-	        -- maybe want to go back to forum menu instead
-	      	return GLOBAL_MENU_MAINMENU;
+	        -- go to the forum menu
+	      	return GLOBAL_MENU_REPLAY;
 	      else
 	      	current_msg_idx = current_msg_idx - 1;
 	   	  	current_msg = prevmsgs[current_msg_idx];
 	   	  end
 	  elseif (d == GLOBAL_MENU_NEXT) then
         current_msg_idx = current_msg_idx + 1;
-        -- check to see if we are at the end of prevmsgs
-        if (current_msg_idx > #prevmsgs) then
+        -- check to see if we are at the last msg in the forum
+        if (current_msg_idx > first_position) then
+        	-- let the end of the forum check happen below
+        	current_msg = nil;
+        -- check to see if we are at the end of prevmsgs    
+        elseif (current_msg_idx > #prevmsgs) then
         	-- get next msg from the cursor
         	current_msg = msgs();
         else
@@ -365,16 +368,26 @@ function playforum (forumid)
         end
 	  elseif (d == GLOBAL_MENU_RESPOND) then
 	   	  read(aosd .. "okrecordresponse.wav", 500);
-	   	  recordmessage (forumid, msgid, moderated, maxlength, rgt);
+	   	  d = recordmessage (forumid, msgid, moderated, maxlength, rgt);
+	   	  if (d == GLOBAL_MENU_MAINMENU) then
+	      	  return d;
+	      end
 	  elseif (d == GLOBAL_MENU_REPLAY) then
 	   		-- do nothing; special case if user pressed back from 1st reply 
 	  end
-
+	  
+	  if (current_msg == nil) then
+	  	-- give a chance to go back if we are at the end of the forum
+	  	read(aosd .. "endforum.wav", 2000);
+        d = use(); 
+		if (d == GLOBAL_MENU_BACK) then
+			current_msg_idx = current_msg_idx - 1;
+	   	  	current_msg = prevmsgs[current_msg_idx];
+	   	end
+	  end
+	  
    end
 
-   read(aosd .. "endforum.wav", 1000);
-   d = use();
-   -- TODO: would be nice to go back to the last msg
    return GLOBAL_MENU_MAINMENU;
 end
 
@@ -392,7 +405,8 @@ function playmessage (msg, responsesallowed)
   
   d = playcontent(extra, content);
 
-  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+  -- no short circuit for next here; still want to prompt to listen to replies
+  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
   	return d;
   end
   
@@ -400,7 +414,8 @@ function playmessage (msg, responsesallowed)
 	 read(aosd .. "listenreplies.wav", 2000);
 	 d = use();
 	 
-	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	 -- no short circuit for next here; still want to prompt to record a response
+	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
 	  	return d;
 	 end
 
@@ -408,7 +423,9 @@ function playmessage (msg, responsesallowed)
 	    read(aosd .. "okreplies.wav", 500);
 	    d = use();
 	 
-		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	 	-- just like when we are about to play messages in the forum
+	 	-- (instructions), don't short circuit on next
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
 	  		return d;
 	    end
 	    
@@ -436,10 +453,13 @@ function playmessage (msg, responsesallowed)
 			  else
 				read(aosd .. "nextmessage.wav", 1000);
 			  end
-			  -- clear digits
-			   use();
+			  
+			   d = use();
 			   
-		   	   d = playcontent(reply_extra, reply_content);			   
+			   -- check if a pre-emptive action was taken
+			   if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_BACK and d~= GLOBAL_MENU_NEXT and d ~= GLOBAL_MENU_RESPOND) then
+		   	  	  d = playcontent(reply_extra, reply_content);
+		   	   end	   
 			   
 			   if (current_reply_idx > #prevreplies) then
 		    	-- add the current msg to the stack
@@ -462,8 +482,12 @@ function playmessage (msg, responsesallowed)
 			   	  return d;
 			   else -- default is go to next
 			   	  current_reply_idx = current_reply_idx + 1;
+			   	   -- check to see if we are at the last reply
+		          if (reply_rgt == rgt-1) then
+		        	-- let the end of the replies check happen below
+		        	current_reply = nil;  
 			      -- check to see if we are at the end of prevreplies
-		          if (current_reply_idx > #prevreplies) then
+		          elseif (current_reply_idx > #prevreplies) then
 		        	-- get next reply from the cursor
 		        	current_reply = replies();
 		          else
@@ -471,13 +495,17 @@ function playmessage (msg, responsesallowed)
 		        	current_reply = prevreplies[current_reply_idx];
 		          end
 			   end
-	    end
-	    
-	    read(aosd .. "endreplies.wav", 1000);
-	    if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
-	  		return d;
-	    end	   
-	    
+			   
+			   if (current_reply == nil) then
+			   	  -- give a chance to go back if we are at the end of the replies
+			  	  read(aosd .. "endreplies.wav", 2000);
+		          d = use(); 
+				  if (d == GLOBAL_MENU_BACK) then
+					current_reply_idx = current_reply_idx - 1;
+			   	  	current_reply = prevreplies[current_reply_idx];
+			   	  end
+			   end
+	    end	    	      
 	    
   	end -- close if choose to listen to replies
   end -- close check for replies
@@ -536,6 +564,10 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
+      local d = use();
+	  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK) then
+	  	 return d;
+	  end
 
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       
@@ -547,7 +579,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       read(aosd .. "hererecorded.wav", 1000);
       read(filename, 1000);
       read(aosd .. "notsatisfied.wav", 2000);
-      local d = use();
+      d = use();
  
       if (d ~= "1" and d ~= "2") then
 	 	read(aosd .. "messagecancelled.wav", 500);
@@ -620,7 +652,13 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
 
    
    read(aosd .. "okrecorded.wav", 500);
-   return use();
+   d = use();
+   if (d == GLOBAL_MENU_MAINMENU) then
+  	 return d;
+   end
+   
+   -- replay either the forum or the message (if response)
+   return GLOBAL_MENU_REPLAY;
 end
 
 -----------
@@ -633,17 +671,22 @@ session:answer();
 -- sleep for a sec
 session:sleep(1000);
 
+local forumid = -1;
 while (1) do
    -- choose the forum
-   forumid = chooseforum();
-
-   if (forumid ~= 0) then
-   -- play the forum
-      d = playforum(forumid);
+   while (forumid == -1) do
+   	  forumid = chooseforum();
    end
 
-   -- go back to the main menu (no matter what returns from playforum)
-   read(aosd .. "mainmenu.wav", 1000);
+   -- play the forum
+   d = playforum(forumid);
+   
+   if (d ~= GLOBAL_MENU_REPLAY) then
+	   -- go back to the main menu
+	   read(aosd .. "mainmenu.wav", 1000);
+	   forumid = -1;
+   end
+   
 end
 
 -- say goodbye 
