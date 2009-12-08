@@ -30,7 +30,6 @@ GLOBAL_MENU_NEXT = "3";
 GLOBAL_MENU_REPLAY = "5";
 
 
-
 -- FUNCTIONS
 
 -----------
@@ -541,8 +540,8 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n")
-      session:execute("record", filename .. " " .. maxlength .. " 40 3");
-      session:sleep(1000);
+      session:execute("record", filename .. " " .. maxlength .. " 80 2");
+      --Session:sleep(1000);
       use();
       
       read(aosd .. "hererecorded.wav", 1000);
@@ -638,12 +637,10 @@ while (1) do
    -- choose the forum
    forumid = chooseforum();
 
-   if (forumid == 0) then
-      break;
-   end
-
+   if (forumid ~= 0) then
    -- play the forum
-   d = playforum(forumid);
+      d = playforum(forumid);
+   end
 
    -- go back to the main menu (no matter what returns from playforum)
    read(aosd .. "mainmenu.wav", 1000);
