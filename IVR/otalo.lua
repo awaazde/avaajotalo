@@ -24,10 +24,15 @@ MESSAGE_STATUS_APPROVED = 1;
 MESSAGE_STATUS_REJECTED = 2;
 
 GLOBAL_MENU_MAINMENU = "0";
-GLOBAL_MENU_RESPOND = "8";
-GLOBAL_MENU_BACK = "4";
-GLOBAL_MENU_NEXT = "3";
-GLOBAL_MENU_REPLAY = "5";
+GLOBAL_MENU_NEXT = "1";
+GLOBAL_MENU_BACK = "2";
+GLOBAL_MENU_PAUSE = "3";
+GLOBAL_MENU_REPLAY = "4";
+
+GLOBAL_MENU_RESPOND = "5";
+GLOBAL_MENU_SEEK_FWD = "6";
+GLOBAL_MENU_SEEK_BACK = "7";
+GLOBAL_MENU_INSTRUCTIONS = "8";
 
 
 -- FUNCTIONS
@@ -83,10 +88,6 @@ function my_cb(s, type, obj, arg)
 	 	digits = GLOBAL_MENU_MAINMENU;
         return "break";
       end
-      
-      if (obj['digit'] == "2") then
-	 	return "pause";
-      end
 
       if (obj['digit'] == GLOBAL_MENU_NEXT or obj['digit'] == "#") then
 	 	digits = GLOBAL_MENU_NEXT;
@@ -97,20 +98,33 @@ function my_cb(s, type, obj, arg)
 		digits = GLOBAL_MENU_BACK;
 		freeswitch.consoleLog("info", script_name .. ".callback() : digits = " .. digits .. "\n");
 		return "break";
-		--return "seek:-500";
       end
 
       if (obj['digit'] == GLOBAL_MENU_REPLAY) then
 	 	--session:speak("start over");
         return "seek:0";
       end
+      
+            
+      if (obj['digit'] == GLOBAL_MENU_PAUSE) then
+	 	return "pause";
+      end
+      
+      
+      if (obj['digit'] == GLOBAL_MENU_RESPOND) then		 
+		 digits = GLOBAL_MENU_RESPOND;
+		 return "break";
+      end
 
-      if (obj['digit'] == "6") then
-	 	--session:speak("seek forward");
+      if (obj['digit'] == GLOBAL_MENU_SEEK_FWD) then
         return "seek:+500";
       end
       
-      if (obj['digit'] == "7") then
+      if (obj['digit'] == GLOBAL_MENU_SEEK_BACK) then
+        return "seek:-500";
+      end
+      
+      if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
 		 read(aosd .. "okinstructions.wav", 500);
 		 read(aosd .. "instructions.wav", 500);
 		 if (digits ~= "0") then
@@ -124,15 +138,7 @@ function my_cb(s, type, obj, arg)
 		 return;
       end
 
-      if (obj['digit'] == GLOBAL_MENU_RESPOND) then		 
-		 digits = GLOBAL_MENU_RESPOND;
-		 return "break";
-      end
 
-      if (obj['digit'] == "*") then
-         --session:speak("stop");
-         return "stop";
-      end	
    else
       freeswitch.console_log("info", obj:serialize("xml"));
    end
@@ -172,18 +178,17 @@ function chooseforum ()
    forumids = {};
    forumnames = {};
    
-   read(aosd .. "welcome.wav", 2000);
+   read(aosd .. "welcome.wav", 500);
 
    i = 0;
-   for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
-      freeswitch.consoleLog("info", script_name .. " : got into loop [" .. i .. "] \n");
+   for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do      
       i = i + 1;
       forumids[i] = row[1];
       forumnames[i] = row[2];
-      read(aosd .. "listento.wav", 500);
-      read(aosd .. forumnames[i], 500);
-      read(aosd .. "press.wav", 500);
-      read(aosd .. "digits/" .. i .. ".wav", 2000);
+      read(aosd .. "listento_pre.wav", 0);
+      read(aosd .. forumnames[i], 0);
+      read(aosd .. "listento_post.wav", 0);
+      read(aosd .. "digits/" .. i .. ".wav", 500);
    end
    
    d = use();
@@ -198,8 +203,9 @@ function chooseforum ()
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
       
       
-	  read(aosd .. "okyouwant.wav", 0);
-	  read(aosd .. forumnames[d], 1000);
+	  read(aosd .. "okyouwant_pre.wav", 0);
+	  read(aosd .. forumnames[d], 0);
+	  read(aosd .. "okyouwant_post.wav", 0);
 
       return forumids[d];
    else
@@ -264,7 +270,7 @@ function playforum (forumid)
    local maxlength = forum[5];
 	
    if (postingallowed == 'y' or adminmode()) then
-      read(aosd .. "recordorlisten.wav", 2000);
+      read(aosd .. "recordorlisten.wav", 3000);
       d = use();
 
       if (d == "1") then
@@ -419,7 +425,7 @@ function playmessage (msg, responsesallowed)
 	  	return d;
 	 end
 
-	 if (d == "1") then
+	 if (d == "3") then
 	    read(aosd .. "okreplies.wav", 500);
 	    d = use();
 	 
@@ -565,7 +571,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
       local d = use();
-	  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_NEXT or d == GLOBAL_MENU_BACK) then
+	  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK) then
 	  	 return d;
 	  end
 
