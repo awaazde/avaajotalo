@@ -589,7 +589,13 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
  
       if (d ~= "1" and d ~= "2") then
 	 	read(aosd .. "messagecancelled.wav", 500);
-	 	return use(); 
+	 	-- have to check use() first so it gets cleared for sure
+	 	if (use() == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_MAINMENU) then
+	 		freeswitch.consoleLog("info", script_name .. " : returning to mm after cancel msg \n");
+	 		return GLOBAL_MENU_MAINMENU;
+	 	else
+	 		return GLOBAL_MENU_REPLAY;
+	 	end
       end
    until (d == "1");
    
