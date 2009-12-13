@@ -289,7 +289,9 @@ public class MessageDetail extends Composite {
   {
   	for (Entry<String,TextBox>entry : callerDetailsMap.entrySet())
   	{
-  		entry.getValue().setText(u.getField(entry.getKey()));
+  		String val = u.getField(entry.getKey());
+  		if (!"null".equals(val))
+  			entry.getValue().setText(val);
   	}
   	
   	// also load user id
@@ -318,7 +320,7 @@ public class MessageDetail extends Composite {
   		
   		rgt.add(m);
   		User user = m.getAuthor();
-  		String callerText = "".equals(user.getName()) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
+  		String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
   		String threadText = callerText + " - " + m.getDate();
   		
   		HTML msgHTML;

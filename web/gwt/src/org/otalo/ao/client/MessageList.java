@@ -227,14 +227,14 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       // Add a new row to the table, then set each of its columns
       table.setText(i + 1, 0, message.getDate());
       User user = message.getAuthor();
-      String callerText = "".equals(user.getName()) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
+      String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
       table.setText(i + 1, 1, callerText);
       SoundWidget sound = new SoundWidget(message.getContent());
       table.setHTML(i + 1, 2, sound.getWidget().getHTML());
       
       if (forum != null && forum.moderated())
       {
-      	HTML approveButton = new HTML(images.approve().getHTML());
+    	  HTML approveButton = new HTML(images.approve().getHTML());
 	      approveButton.addClickHandler(new MessageApproveHandler(AoAPI.APPROVE, message));
 	      
 	      HTML rejectButton = new HTML(images.reject().getHTML());
@@ -242,12 +242,12 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 	      
 	      switch (message.getStatus()){
 	      case APPROVED:
-		      table.setWidget(i+1, 3, rejectButton);
-		      table.setHTML(i+1, 4, "&nbsp");
+	        table.setWidget(i+1, 3, rejectButton);
+	        table.setHTML(i+1, 4, "&nbsp");
 	      	break;
 	      case REJECTED:
 	      	table.setWidget(i+1, 3, approveButton);
-		      table.setHTML(i+1, 4, "&nbsp");
+		    table.setHTML(i+1, 4, "&nbsp");
 	      	break;
 	      case PENDING:
 	      	table.setWidget(i+1, 3, approveButton);
