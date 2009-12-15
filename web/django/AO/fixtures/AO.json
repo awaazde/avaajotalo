@@ -4,7 +4,7 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "y", 
-            "name": "qna", 
+            "name": "Question and Answer", 
             "open": "y", 
             "moderated": "y", 
             "maxlength": 3000, 
@@ -17,7 +17,7 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "n", 
-            "name": "announcements", 
+            "name": "Announcements", 
             "open": "n", 
             "moderated": "y", 
             "maxlength": 60000, 
@@ -30,7 +30,7 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "n", 
-            "name": "radio", 
+            "name": "Radio", 
             "open": "n", 
             "moderated": "n", 
             "maxlength": 40000, 
@@ -43,7 +43,7 @@
         "model": "AO.forum", 
         "fields": {
             "posting_allowed": "y", 
-            "name": "experiences", 
+            "name": "Experiences", 
             "open": "n", 
             "moderated": "y", 
             "maxlength": 6666, 
@@ -55,34 +55,67 @@
         "pk": 1, 
         "model": "AO.user", 
         "fields": {
+            "name": "ADMIN", 
+            "district": "", 
+            "number": "1001",         
+            "taluka": "",  
+            "village": "", 
+            "admin" : "y",
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "AO.user", 
+        "fields": {
             "name": "Neil Patel", 
-            "district": "Anand", 
-            "number": "9537165413", 
+            "district": "Anand",            
             "taluka_file": "foo.wav", 
             "taluka": "Anand", 
-            "village_file": "foo.wav", 
-            "district_file": "foo.wav", 
             "village": "Patli", 
             "admin" : "n",
             "allowed" : "y"
         }
     }, 
     {
-        "pk": 2, 
+        "pk": 3, 
         "model": "AO.user", 
         "fields": {
-            "name": "ADMIN", 
+            "name": "Paresh Dave", 
             "district": "", 
-            "number": "1001", 
-            "taluka_file": "foo.wav", 
+            "number": "9428500597",            
             "taluka": "", 
-            "village_file": "foo.wav", 
-            "district_file": "foo.wav", 
             "village": "", 
             "admin" : "y",
             "allowed" : "y"
         }
     }, 
+    {
+        "pk": 4, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Amit Nanavati", 
+            "district": "", 
+            "number": "981070287",            
+            "taluka": "", 
+            "village": "", 
+            "admin" : "n",
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Nitendra Rajput", 
+            "district": "", 
+            "number": "9818832956",            
+            "taluka": "", 
+            "village": "", 
+            "admin" : "n",
+            "allowed" : "y"
+        }
+    },
     {
         "pk": 1, 
         "model": "AO.message", 
