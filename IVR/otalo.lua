@@ -21,16 +21,16 @@ MESSAGE_STATUS_PENDING = 0;
 MESSAGE_STATUS_APPROVED = 1;
 MESSAGE_STATUS_REJECTED = 2;
 
--- TAP: Still not sure about these mappings.
 GLOBAL_MENU_MAINMENU = "0";
 GLOBAL_MENU_NEXT = "1";
-GLOBAL_MENU_BACK = "2";
-GLOBAL_MENU_PAUSE = "3";
-GLOBAL_MENU_REPLAY = "4";
-GLOBAL_MENU_RESPOND = "5";
-GLOBAL_MENU_SEEK_FWD = "6";
+GLOBAL_MENU_RESPOND = "2";
+GLOBAL_MENU_INSTRUCTIONS = "3";
+GLOBAL_MENU_SKIP_BACK = "4";
+GLOBAL_MENU_PAUSE = "5";
+GLOBAL_MENU_SKIP_FWD = "6";
 GLOBAL_MENU_SEEK_BACK = "7";
-GLOBAL_MENU_INSTRUCTIONS = "8";
+GLOBAL_MENU_REPLAY = "8";
+GLOBAL_MENU_SEEK_FWD = "9";
 
 
 -- FUNCTIONS
@@ -117,43 +117,14 @@ function my_cb(s, type, obj, arg)
 	 return "break";
       end
 
-      if (obj['digit'] == GLOBAL_MENU_BACK) then
-	 digits = GLOBAL_MENU_BACK;
-	 freeswitch.consoleLog("info", script_name .. ".callback() : digits = " .. digits .. "\n");
-	 return "break";
-      end
-
-      if (obj['digit'] == GLOBAL_MENU_REPLAY) then
-	 return "seek:0";
-      end
-             
-      if (obj['digit'] == GLOBAL_MENU_PAUSE) then
-	 if (digits ~= GLOBAL_MENU_PAUSE) then
-	    read(aosd .. "paused.wav", 500);
-	    if (digits == GLOBAL_MENU_MAINMENU) then
-	       return "break";
-	    end
-	    digits = GLOBAL_MENU_PAUSE;
-	 end
-	 return "pause";
-      end
-        
       if (obj['digit'] == GLOBAL_MENU_RESPOND) then	
 	 digits = GLOBAL_MENU_RESPOND;
 	 return "break";
       end
 
-      if (obj['digit'] == GLOBAL_MENU_SEEK_FWD) then
-	 return "seek:+500";
-      end
-      
-      if (obj['digit'] == GLOBAL_MENU_SEEK_BACK) then
-	 return "seek:-500";
-      end
-      
       if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
 	 read(aosd .. "okinstructions.wav", 500);
-	 read(aosd .. "instructions.wav", 500);
+	 read(aosd .. "instructions_full.wav", 500);
 	 if (digits ~= GLOBAL_MENU_MAINMENU) then
 	    use();
 	    read(aosd .. "backtomessage.wav", 1000);
@@ -164,6 +135,40 @@ function my_cb(s, type, obj, arg)
 	 return;
       end
 
+      if (obj['digit'] == GLOBAL_MENU_SKIP_BACK) then
+	 digits = GLOBAL_MENU_SKIP_BACK;
+	 freeswitch.consoleLog("info", script_name .. ".callback() : digits = " .. digits .. "\n");
+	 return "break";
+      end
+
+      if (obj['digit'] == GLOBAL_MENU_PAUSE) then
+	 if (digits ~= GLOBAL_MENU_PAUSE) then
+	    read(aosd .. "paused.wav", 500);
+	    if (digits == GLOBAL_MENU_MAINMENU) then
+	       return "break";
+	    end
+	    digits = GLOBAL_MENU_PAUSE;
+	 end
+	 return "pause";
+      end
+
+      if (obj['digit'] == GLOBAL_MENU_SKIP_FWD) then
+	 digits = GLOBAL_MENU_SKIP_FWD;
+	 return "break";
+      end
+
+      if (obj['digit'] == GLOBAL_MENU_SEEK_BACK) then
+	 return "seek:-500";
+      end
+
+      if (obj['digit'] == GLOBAL_MENU_REPLAY) then
+	 return "seek:0";
+      end
+              
+      if (obj['digit'] == GLOBAL_MENU_SEEK_FWD) then
+	 return "seek:+500";
+      end
+      
    else
       freeswitch.console_log("info", obj:serialize("xml"));
    end
@@ -176,10 +181,10 @@ end
 -----------
 
 function getmessages (forumid)
-   local query = "SELECT message.id, message.content_file, message.extra_content_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
    query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ";
-   -- TAP: Sort first by position AND then date
+   -- Sort first by position AND then date
    query = query .. "ORDER BY message_forum.position DESC, message.date DESC";
   
    return rows(query);
@@ -191,7 +196,7 @@ end
 -----------
 
 function getreplies (thread)
-   local query = "SELECT message.id, message.content_file, message.extra_content_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
    query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ";
    -- TAP: even though we have threading information (lft, rgt), we
@@ -252,33 +257,30 @@ end
 -- playcontent
 -----------
 
-function playcontent (extra, content)
+function playcontent (summary, content)
    local d;
    
-   if (extra ~= nil and extra ~= "") then
-      -- TAP: Do you really want to play the "extra" file first?  Then
-      -- that sounds like a "subject" file to me.  If so you should
-      -- change the naming here and in the DB.
-      arg[1] = sd .. extra;
+   if (summary ~= nil and summary ~= "") then
+      arg[1] = sd .. summary;
       logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "play", "\n"); 
-      session:streamFile(sd .. extra);
+      session:streamFile(sd .. summary);
       session:sleep(1000);
       
       d = use();
-      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
 	 return d;
       end
    
       read(aosd .. "morecontent.wav", 2000);
       d = use();
-      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
 	 return d;
       elseif (d ~= 1) then
 	 return GLOBAL_MENU_NEXT;
       else
 	 read(aosd .. "okcontent.wav", 500);
 	 d = use();
-	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
 	    return d;
 	 end
       end
@@ -300,13 +302,13 @@ end
 function playmessage (msg, responsesallowed, listenreplies)
   local id = msg[1];
   local content = msg[2];
-  local extra = msg[3];
+  local summary = msg[3];
   local rgt = tonumber(msg[6]);
 
-  d = playcontent(extra, content);
+  d = playcontent(summary, content);
 
   -- no short circuit for next here; still want to prompt to listen to replies
-  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
   	return d;
   end
   
@@ -314,42 +316,26 @@ function playmessage (msg, responsesallowed, listenreplies)
      read(aosd .. "listenreplies.wav", 2000);
      d = use();
 	 
-     -- TAP: Why 3?  Hasnt the default for Yes been 1?  We should be
-     -- careful not to overextend the GLOBAL_MENU mapping.  In my
-     -- mind, 0 is the only global mapping.  Make this consistent w/
-     -- other Yes/No prompts.  (1 = Yes / Default).  YOURS: no short
-     -- circuit for next here; still want to prompt to record a
-     -- response
      if (d == "1") then
 	read(aosd .. "okreplies.wav", 500);
 	d = use();
 	-- just like when we are about to play messages in the forum
 	-- (instructions), don't short circuit on next
-	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
+	if (d == GLOBAL_MENU_MAINMENU) then
 	   return d;
 	end
 	d = playmessages(getreplies(id), responsesallowed, 'n');
+	if (d == GLOBAL_MENU_MAINMENU) then
+	   return d;
+	end
+	read(aosd .. "backtoforum.wav", 1000);
+     end
+
+     if (d == GLOBAL_MENU_MAINMENU) then
+	return d;
      end
   end -- close check for replies
 
-  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
-     return d;
-  end
-
-   -- TAP: this is a hack too.  also, this sounds annoying.  suggest
-   -- removing this prompt. Lets talk about this.  YOU: if responses
-   -- allowed, prompt to record a response
-  --if (listenreplies == 'y' and responsesallowed == 'y' or adminmode()) then 
-  if (false) then
-     read(aosd .. "recordresponse.wav", 2000);
-     d = use();
-     -- TAP: What is the expected value here, GLOBAL_MENU_RESPOND?
-     -- Hasnt the default for Yes been 1?  
-     if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_BACK or d == GLOBAL_MENU_RESPOND) then
-	return d;
-     end
-  end
-  
   -- default	
   return GLOBAL_MENU_NEXT;
 end
@@ -380,7 +366,7 @@ function playmessages (msgs, responsesallowed, listenreplies)
 	 -- first message
       elseif (current_msg_idx == 1) then
 	 read(aosd .. "firstmessage.wav", 1000);
-      elseif (d == GLOBAL_MENU_BACK) then  
+      elseif (d == GLOBAL_MENU_SKIP_BACK) then  
 	 read(aosd .. "previousmessage.wav", 1000);
       else -- default
 	 read(aosd .. "nextmessage.wav", 1000);
@@ -388,29 +374,37 @@ function playmessages (msgs, responsesallowed, listenreplies)
 
       d = use();
       -- check if a pre-emptive action was taken
-      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_BACK and d ~= GLOBAL_MENU_RESPOND) then
+      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
 	 freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. current_msg[1] .. "]\n"); 
 	 d = playmessage(current_msg, responsesallowed, listenreplies);
       end
   
-      if (d == GLOBAL_MENU_BACK) then
+      if (d == GLOBAL_MENU_RESPOND) then
+	 if (responsesallowed == 'y') then
+	    read(aosd .. "okrecordresponse.wav", 500);
+	    --d = use();
+	    --if (d == GLOBAL_MENU_MAINMENU) then
+	    -- return;
+	    --end
+	    --recordmessage handles this
+	    local thread = current_msg[7];
+	    if (thread == nil) then
+	       thread = current_msg[1];
+	    end
+	    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[6]);
+	    if (d == GLOBAL_MENU_MAINMENU) then
+	       return d;
+	    else
+	       d = GLOBAL_MENU_RESPOND;
+	    end
+	 else
+	    read(aosd .. "responsesnotallowed.wav", 500);
+	    d = use();
+	 end
+      elseif (d == GLOBAL_MENU_SKIP_BACK) then
 	 if (current_msg_idx > 1) then
 	    current_msg_idx = current_msg_idx - 1;
 	    current_msg = prevmsgs[current_msg_idx];
-	 end
-      elseif (d == GLOBAL_MENU_RESPOND) then
-	 read(aosd .. "okrecordresponse.wav", 500);
-	 --d = use();
-	 --if (d == GLOBAL_MENU_MAINMENU) then
-	 -- return;
-	 --end
-	 --recordmessage handles this
-	 local thread = current_msg[7];
-	 if (thread == nil) then
-	    thread = current_msg[1];
-	 end
-	 if (recordmessage (forumid, thread, moderated, maxlength, current_msg[6]) == GLOBAL_MENU_MAINMENU) then
-	    return GLOBAL_MENU_MAINMENU;
 	 end
       elseif (d ~= GLOBAL_MENU_MAINMENU) then
 	 current_msg_idx = current_msg_idx + 1;
@@ -419,16 +413,9 @@ function playmessages (msgs, responsesallowed, listenreplies)
 	    -- get next msg from the cursor
 	    current_msg = msgs();
 	    if (current_msg == nil) then
-	       -- give a chance to go back if we are at the end of the
-	       -- forum TAP: Total hack.  Develop a more general
-	       -- prompt or parametrize
-	       if (listenreplies == 'y') then
-		  read(aosd .. "endforum.wav", 2000);
-	       else
-		  read(aosd .. "endreplies.wav", 1000);
-	       end
+	       read(aosd .. "lastmessage.wav", 1000);
 	       d = use(); 
-	       if (d == GLOBAL_MENU_BACK) then
+	       if (d == GLOBAL_MENU_SKIP_BACK) then
 		  current_msg_idx = current_msg_idx - 1;
 		  current_msg = prevmsgs[current_msg_idx];
 	       end
@@ -465,7 +452,6 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       read(aosd .. "pleaserecord.wav", 1000);
       local d = use();
 
-      -- TAP: Are you sure you want Back to be accessible from here?
       if (d == GLOBAL_MENU_MAINMENU) then
 	 return d;
       end
@@ -486,17 +472,13 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       read(aosd .. "notsatisfied.wav", 2000);
       d = use();
 
-      if (d == GLOBAL_MENU_MAINMENU) then
+      if (d ~= "1" and d ~= "2") then
 	 os.remove(filename);
-	 return d;
-      elseif (d ~= "1" and d ~= "2") then
-	 os.remove(filename);
-	 read(aosd .. "messagecancelled.wav", 500);
-	 d = use();
 	 if (d == GLOBAL_MENU_MAINMENU) then
 	    return d;
 	 else
-	    return;
+	    read(aosd .. "messagecancelled.wav", 500);
+	    return use();
 	 end
       end
    until (d == "1");
@@ -554,18 +536,18 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       status = MESSAGE_STATUS_PENDING;
    else
       status = MESSAGE_STATUS_APPROVED;
-      -- TAP: I dont like that all messages need a position.  That
+     -- TAP: I dont like that all messages need a position.  That
       -- should be the exception rather then the rule.  The default
       -- should be ordering by date, with special messages promoted
       -- using the position field.
-      if (thread == nil) then
-	 cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mfstatus = " .. MESSAGE_STATUS_APPROVED );
-	 if (cur == nil) then
-	    position = 1;
-	 else	 
-	    position = tonumber(cur:fetch()) + 1;
-	 end
-      end
+      -- if (thread == nil) then
+      -- cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mfstatus = " .. MESSAGE_STATUS_APPROVED );
+      -- if (cur == nil) then
+      -- position = 1;
+      -- else	 
+      -- position = tonumber(cur:fetch()) + 1;
+      -- end
+      -- end
    end
    query1 = query1 .. ", status, position)";
    query2 = query2 .. "," .. status .. ",".. position..")";
@@ -615,8 +597,6 @@ function playforum (forumid)
 	 end
       until (d ~= 1);
       
-      -- TAP: Wouldnt you want to drive users to listening to messages
-      -- even in the case of bad / no input?  
       read(aosd .. "okplay.wav", 1000);
    end
  
@@ -625,9 +605,9 @@ function playforum (forumid)
    end
 
    if (responsesallowed == 'y' or adminmode()) then
-      read(aosd .. "instructions.wav", 1000);
+      read(aosd .. "instructions_short.wav", 1000);
    else
-      read(aosd .. "instructions_noresponse.wav", 1000);
+      read(aosd .. "instructions_short_noresponse.wav", 1000);
    end
     
    if (use() == GLOBAL_MENU_MAINMENU) then
@@ -646,12 +626,17 @@ end
 -- answer the call
 session:answer();
 
+logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "MM", "\t", "Start call", "\n"); 
+
 -- sleep for a sec
 session:sleep(1000);
 
 while (1) do
    -- choose a forum
    forumid = chooseforum();
+
+   
+   logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "MM", "\t", "Chose forum: ", "\t", forumid, "\n"); 
   
    -- play the forum
    playforum(forumid);
