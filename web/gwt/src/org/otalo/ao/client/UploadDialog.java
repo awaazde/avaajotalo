@@ -39,10 +39,10 @@ public class UploadDialog extends DialogBox {
 		main.setTitle("Content");
 		Label mainLabel = new Label("Content:");
 		
-		FileUpload extra = new FileUpload();
-		extra.setName("extra");
-		extra.setTitle("Summary");
-		Label extraLabel = new Label("Summary (optional):");
+		FileUpload summary = new FileUpload();
+		summary.setName("summary");
+		summary.setTitle("Summary");
+		Label summaryLabel = new Label("Summary (optional):");
 		
 		Button saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
@@ -59,9 +59,9 @@ public class UploadDialog extends DialogBox {
 		outer.setWidget(0, 0, mainLabel);
 		outer.getCellFormatter().setWordWrap(0, 0, false);
 		outer.setWidget(0, 1, main);
-		outer.setWidget(1, 0, extraLabel);
+		outer.setWidget(1, 0, summaryLabel);
 		outer.getCellFormatter().setWordWrap(1, 0, false);
-		outer.setWidget(1, 1, extra);
+		outer.setWidget(1, 1, summary);
 		
 		HorizontalPanel buttons = new HorizontalPanel();
 		// tables don't obey the setHorizontal of parents, and buttons is a table,

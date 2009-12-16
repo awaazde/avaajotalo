@@ -106,18 +106,18 @@ def movemessage(request):
 def uploadmessage(request):
     if request.FILES:
         main = request.FILES['main']
-        extra = False
-        if 'extra' in request.FILES:
-            extra = request.FILES['extra']
+        summary = False
+        if 'summary' in request.FILES:
+            summary = request.FILES['summary']
 
         f = get_object_or_404(Forum, pk=request.POST['forumid'])
-        m = createmessage(f, main, extra)
+        m = createmessage(f, main, summary)
 
         return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
 
-def createmessage(forum, content, extra=False, parent=False):
+def createmessage(forum, content, summary=False, parent=False):
     t = datetime.now()
-    extra_filename = ''
+    summary_filename = ''
 
     extension = content.name[content.name.index('.'):]
     filename = t.strftime("%m-%d-%Y_%H%M%S") + extension
@@ -128,14 +128,14 @@ def createmessage(forum, content, extra=False, parent=False):
     os.chmod(filename_abs, 0644)
     destination.close()
 
-    if extra:
-        extension = extra.name[extra.name.index('.'):]
-        extra_filename = t.strftime("%m-%d-%Y_%H%M%S") + '_extra' + extension
-        extra_filename_abs = settings.MEDIA_ROOT + '/' + extra_filename
-        destination = open(extra_filename_abs, 'wb')
-        for chunk in extra.chunks():
+    if summary:
+        extension = summary.name[summary.name.index('.'):]
+        summary_filename = t.strftime("%m-%d-%Y_%H%M%S") + '_summary' + extension
+        summary_filename_abs = settings.MEDIA_ROOT + '/' + summary_filename
+        destination = open(summary_filename_abs, 'wb')
+        for chunk in summary.chunks():
             destination.write(chunk)
-        os.chmod(extra_filename_abs, 0644)
+        os.chmod(summary_filename_abs, 0644)
         destination.close()
 
     # create a new message for this content
@@ -144,7 +144,7 @@ def createmessage(forum, content, extra=False, parent=False):
     if not parent:
         pos = Message_forum.objects.filter(forum = forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count() + 1
 
-    resp_msg = Message(date=t, content_file=filename, extra_content_file=extra_filename, user=admin)
+    resp_msg = Message(date=t, content_file=filename, summary_content_file=summary_filename, user=admin)
     resp_msg.save()
     resp_msg_forum = Message_forum(message=resp_msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position=pos)
 
