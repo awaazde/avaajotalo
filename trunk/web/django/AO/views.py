@@ -144,7 +144,7 @@ def createmessage(forum, content, summary=False, parent=False):
     if not parent:
         pos = Message_forum.objects.filter(forum = forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count() + 1
 
-    resp_msg = Message(date=t, content_file=filename, summary_content_file=summary_filename, user=admin)
+    resp_msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
     resp_msg.save()
     resp_msg_forum = Message_forum(message=resp_msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position=pos)
 
