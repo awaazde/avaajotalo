@@ -162,9 +162,7 @@ def thread(request, message_forum_id):
         top = msg
     else:
         top = msg.thread
-    thread_msgs = (Message.objects.filter(thread=top) | Message.objects.filter(id=top.id)).order_by('lft')
-    msg_ids = [msg.id for msg in thread_msgs]
-    thread_msg_forums = Message_forum.objects.filter(message__in=msg_ids, forum=m.forum)
+    thread_msg_forums = (Message_forum.objects.filter(message__thread=top) | Message_forum.objects.filter(message=top)).order_by('message__lft')
     return send_response (thread_msg_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('pk')}})
 
 def updatestatus(request, action):
