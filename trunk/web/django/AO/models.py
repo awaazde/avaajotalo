@@ -32,7 +32,7 @@ class User(models.Model):
 class Message(models.Model):
     date = models.DateTimeField()
     content_file = models.CharField(max_length=48)
-    extra_content_file = models.CharField(max_length=48)
+    summary_content_file = models.CharField(max_length=48)
     user = models.ForeignKey(User)    
     thread = models.ForeignKey('self', blank=True, null=True)
     lft = models.IntegerField(default=1) 
