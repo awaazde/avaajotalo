@@ -268,21 +268,21 @@ function playcontent (summary, content)
       
       d = use();
       if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	 return d;
+	 	return d;
       end
    
       read(aosd .. "morecontent.wav", 2000);
       d = use();
       if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	 return d;
-      elseif (d ~= 1) then
-	 return GLOBAL_MENU_NEXT;
+	 	  return d;
+      elseif (d ~= "1") then
+	 	  return GLOBAL_MENU_NEXT;
       else
-	 read(aosd .. "okcontent.wav", 500);
-	 d = use();
-	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	    return d;
-	 end
+		 read(aosd .. "okcontent.wav", 500);
+		 d = use();
+		 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
+		    return d;
+		 end
       end
    end
    
@@ -541,7 +541,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       -- should be ordering by date, with special messages promoted
       -- using the position field.
       -- if (thread == nil) then
-      -- cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mfstatus = " .. MESSAGE_STATUS_APPROVED );
+      -- cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
       -- if (cur == nil) then
       -- position = 1;
       -- else	 
