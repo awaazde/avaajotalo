@@ -56,17 +56,32 @@ end
 -----------
 
 function rows (sql_statement)
-  local cursor = assert (con:execute (sql_statement));
-  freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n")
-  return function ()
-	    row = {};
-	    result = cursor:fetch(row);
-	    if (result == nil) then
-	       cursor:close();
-	       return nil;
-	    end;
-	    return row;
-	 end
+   sleep(1000);
+   local cursor = assert (con:execute (sql_statement));
+   local closed = false;
+   freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n")
+   return function ()
+	     if (closed) then 
+		return nil;
+	     end;
+	     row = {};
+	     result = cursor:fetch(row);
+	     if (result == nil) then
+		cursor:close();
+		closed = true;
+		return nil;
+	     end;
+	     return row;
+	  end
+end
+
+
+-----------
+-- sleep
+-----------
+
+function sleep(delay)
+   return read("", delay);
 end
 
 
@@ -103,13 +118,17 @@ function my_cb(s, type, obj, arg)
    freeswitch.console_log("info", "\ncallback: [" .. obj['digit'] .. "]\n")
 
    if (type == "dtmf") then
-      
       logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "dtmf", "\t", obj['digit'], "\n"); 
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit'] .. "]\nduration: [" .. obj['duration'] .. "]\n");
-	  
+
       if (obj['digit'] == GLOBAL_MENU_MAINMENU) then
 	 digits = GLOBAL_MENU_MAINMENU;
 	 return "break";
+      end
+
+      if (digits == GLOBAL_MENU_PAUSE) then
+	 session:execute("playback", "tone_stream://%(500, 0, 620)");
+	 return "pause";
       end
 
       if (obj['digit'] == GLOBAL_MENU_NEXT or obj['digit'] == "#") then
@@ -147,9 +166,13 @@ function my_cb(s, type, obj, arg)
 	    if (digits == GLOBAL_MENU_MAINMENU) then
 	       return "break";
 	    end
-	    digits = GLOBAL_MENU_PAUSE;
+	    if (digits == "") then
+	       digits = GLOBAL_MENU_PAUSE;
+	       return "pause";
+	    else
+	       session:execute("playback", "tone_stream://%(500, 0, 620)");
+	    end
 	 end
-	 return "pause";
       end
 
       if (obj['digit'] == GLOBAL_MENU_SKIP_FWD) then
@@ -158,7 +181,7 @@ function my_cb(s, type, obj, arg)
       end
 
       if (obj['digit'] == GLOBAL_MENU_SEEK_BACK) then
-	 return "seek:-500";
+	 return "seek:-10";
       end
 
       if (obj['digit'] == GLOBAL_MENU_REPLAY) then
@@ -166,7 +189,7 @@ function my_cb(s, type, obj, arg)
       end
               
       if (obj['digit'] == GLOBAL_MENU_SEEK_FWD) then
-	 return "seek:+500";
+	 return "seek:+10";
       end
       
    else
@@ -244,10 +267,10 @@ function chooseforum ()
 	 return forumids[d];
       elseif (d ~= nil) then
 	 freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
-	 session:sleep(500);
+	 sleep(500);
 	 read(aosd .. "noforum.wav", 500);
       else
-	 session:sleep(1000);
+	 sleep(1000);
       end 
    end
 end
@@ -264,32 +287,32 @@ function playcontent (summary, content)
       arg[1] = sd .. summary;
       logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "play", "\n"); 
       session:streamFile(sd .. summary);
-      session:sleep(1000);
+      sleep(1000);
       
       d = use();
       if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	 	return d;
+	 return d;
       end
    
       read(aosd .. "morecontent.wav", 2000);
       d = use();
       if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	 	  return d;
+	 return d;
       elseif (d ~= "1") then
-	 	  return GLOBAL_MENU_NEXT;
+	 return GLOBAL_MENU_NEXT;
       else
-		 read(aosd .. "okcontent.wav", 500);
-		 d = use();
-		 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-		    return d;
-		 end
+	 read(aosd .. "okcontent.wav", 500);
+	 d = use();
+	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
+	    return d;
+	 end
       end
    end
    
    arg[1] = sd .. content;
    logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "play", "\n"); 
    session:streamFile(sd .. content);
-   session:sleep(1000);
+   read("", 3000);
    
    return use();
 end
@@ -299,7 +322,7 @@ end
 -- playmessage
 -----------
 
-function playmessage (msg, responsesallowed, listenreplies)
+function playmessage (msg, responsesallowed, moderated, listenreplies)
   local id = msg[1];
   local content = msg[2];
   local summary = msg[3];
@@ -319,21 +342,25 @@ function playmessage (msg, responsesallowed, listenreplies)
      if (d == "1") then
 	read(aosd .. "okreplies.wav", 500);
 	d = use();
-	-- just like when we are about to play messages in the forum
-	-- (instructions), don't short circuit on next
-	if (d == GLOBAL_MENU_MAINMENU) then
+	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
 	   return d;
 	end
-	d = playmessages(getreplies(id), responsesallowed, 'n');
-	if (d == GLOBAL_MENU_MAINMENU) then
+	
+	d = playmessages(getreplies(id), responsesallowed, moderated, 'n');
+	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
 	   return d;
 	end
+	
 	read(aosd .. "backtoforum.wav", 1000);
-     end
+	d = use();
+	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+	   return d;
+	end
 
-     if (d == GLOBAL_MENU_MAINMENU) then
-	return d;
-     end
+        -- dont catch RESPOND because it could also be NO
+     elseif (d == GLOBAL_MENU_MAINMENU) then
+  	return d;
+     end  
   end -- close check for replies
 
   -- default	
@@ -345,7 +372,7 @@ end
 -- playmessages
 -----------
 
-function playmessages (msgs, responsesallowed, listenreplies)
+function playmessages (msgs, responsesallowed, moderated, listenreplies)
    -- get the first top-level message for this forum
    local current_msg = msgs();
    if (current_msg == nil) then
@@ -376,17 +403,12 @@ function playmessages (msgs, responsesallowed, listenreplies)
       -- check if a pre-emptive action was taken
       if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
 	 freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. current_msg[1] .. "]\n"); 
-	 d = playmessage(current_msg, responsesallowed, listenreplies);
+	 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
       end
   
       if (d == GLOBAL_MENU_RESPOND) then
 	 if (responsesallowed == 'y') then
 	    read(aosd .. "okrecordresponse.wav", 500);
-	    --d = use();
-	    --if (d == GLOBAL_MENU_MAINMENU) then
-	    -- return;
-	    --end
-	    --recordmessage handles this
 	    local thread = current_msg[7];
 	    if (thread == nil) then
 	       thread = current_msg[1];
@@ -459,7 +481,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n")
       session:execute("record", filename .. " " .. maxlength .. " 80 2");
-      --session:sleep(1000);
+      --sleep(1000);
       d = use();
 
       if (d == GLOBAL_MENU_MAINMENU) then
@@ -580,28 +602,21 @@ function playforum (forumid)
    if (postingallowed == 'y' or adminmode()) then
       repeat
 	 read(aosd .. "recordorlisten.wav", 3000);
-	 d = tonumber(use());
+	 d = use();
 	 if (d == GLOBAL_MENU_MAINMENU) then
 	    return;
 	 end
-	 if (d == 1) then
+	 if (d == "1") then
 	    read(aosd .. "okrecord.wav", 1000);
-	    if (use() == GLOBAL_MENU_MAINMENU) then
-	       return;
-	    end
 	    if (recordmessage(forumid, nil, moderated, maxlength, nil) == GLOBAL_MENU_MAINMENU) then
 	       return;
 	    end
 	    read(aosd .. "backtoforum.wav", 1000);
 	    -- else continue to playing messages
 	 end
-      until (d ~= 1);
+      until (d ~= "1");
       
       read(aosd .. "okplay.wav", 1000);
-   end
- 
-   if (use() == GLOBAL_MENU_MAINMENU) then
-      return;
    end
 
    if (responsesallowed == 'y' or adminmode()) then
@@ -614,7 +629,7 @@ function playforum (forumid)
       return;
    end
 
-   playmessages(getmessages(forumid), 'y', 'y');
+   playmessages(getmessages(forumid), responsesallowed, moderated, 'y');
    return;
 end
 
@@ -629,7 +644,7 @@ session:answer();
 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "MM", "\t", "Start call", "\n"); 
 
 -- sleep for a sec
-session:sleep(1000);
+sleep(1000);
 
 while (1) do
    -- choose a forum
