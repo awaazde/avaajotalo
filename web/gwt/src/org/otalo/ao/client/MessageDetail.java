@@ -69,6 +69,7 @@ public class MessageDetail extends Composite {
 	private HorizontalPanel outer, responsePanel;
 	private DockPanel threadPanel;
 	private FlexTable detailsTable;
+	private CheckBox sticky;
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
 
   public MessageDetail() {
@@ -129,6 +130,9 @@ public class MessageDetail extends Composite {
   	thread.setSpacing(3);
   	threadPanel.add(thread, DockPanel.NORTH);
   	
+  	sticky = new CheckBox("Sticky");
+  	sticky.setName("position");
+  	
   	saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	setClickedButton(saveButton);
@@ -177,6 +181,7 @@ public class MessageDetail extends Composite {
   	moveButtons.add(moveUpButton);
   	moveButtons.add(moveDownButton);
   	moveButtons.setSpacing(5);
+  	buttons.add(sticky);
   	buttons.add(moveButtons);
   	buttons.add(saveButton);
   	controls.add(buttons);
@@ -223,16 +228,19 @@ public class MessageDetail extends Composite {
   	switch (messageForum.getStatus())
   	{
   		case PENDING:
-  	  	setMovable(false); 
-  	  	setCanRespond(false); 
-  	  	break;
+	  	  	setMovable(false); 
+	  	  	setCanRespond(false); 
+	  	  	setSticky(false);
+	  	  	break;
   		case APPROVED:
-  	  	setMovable(true);
-  	  	setCanRespond(true); 
-  	  	break;
+	  	  	setMovable(true);
+	  	  	setCanRespond(true); 
+	  	  	setSticky(true);
+	  	  	break;
   		case REJECTED:
   			setMovable(false);
-  			setCanRespond(false); 
+  			setCanRespond(false);
+  			setSticky(false);
   	}
   	
   	//special case
@@ -240,8 +248,17 @@ public class MessageDetail extends Composite {
   	{
   		setMovable(false);
   		setCanRespond(false); 
+  		setSticky(false);
   	}
   	messageForumId.setValue(messageForum.getId());
+  	if ("null".equals(messageForum.getPosition()) || "".equals(messageForum.getPosition()))
+  	{
+  		sticky.setValue(false);
+  	}
+  	else
+  	{
+  		sticky.setValue(true);
+  	}
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
   	// since the last load
@@ -380,6 +397,7 @@ public class MessageDetail extends Composite {
 	{
 		detailsForm.reset();
 		thread.clear();
+		sticky.setValue(false);
 		messageForumId.setValue("");
 	}
 	
@@ -391,6 +409,11 @@ public class MessageDetail extends Composite {
 	private void setCanRespond(boolean canRespond)
 	{
 		responsePanel.setVisible(canRespond);
+	}
+	
+	private void setSticky(boolean canStick)
+	{
+		sticky.setVisible(canStick);
 	}
 	
 	/**
@@ -421,13 +444,11 @@ public class MessageDetail extends Composite {
 		{
 			detailsTable.setVisible(true);
 			threadPanel.setVisible(true);
-			saveButton.setVisible(true);
 		}
 		else
 		{
 			detailsTable.setVisible(false);
 			threadPanel.setVisible(false);
-			saveButton.setVisible(false);
 			setMovable(true);
 		}
 	}

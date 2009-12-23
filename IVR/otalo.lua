@@ -557,19 +557,14 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
    if (moderated == 'y' and not adminmode()) then
       status = MESSAGE_STATUS_PENDING;
    else
-      status = MESSAGE_STATUS_APPROVED;
-     -- TAP: I dont like that all messages need a position.  That
-      -- should be the exception rather then the rule.  The default
-      -- should be ordering by date, with special messages promoted
-      -- using the position field.
-      -- if (thread == nil) then
-      -- cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
-      -- if (cur == nil) then
-      -- position = 1;
-      -- else	 
-      -- position = tonumber(cur:fetch()) + 1;
-      -- end
-      -- end
+      status = MESSAGE_STATUS_APPROVED; 
+      if (thread == nil) then
+      	cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
+        -- only set position if we have to
+        if (cur ~= nil) then 
+        	position = tonumber(cur:fetch()) + 1;
+        end
+      end
    end
    query1 = query1 .. ", status, position)";
    query2 = query2 .. "," .. status .. ",".. position..")";
