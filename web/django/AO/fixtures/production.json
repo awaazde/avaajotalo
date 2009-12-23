@@ -56,10 +56,7 @@
         "model": "AO.user", 
         "fields": {
             "name": "ADMIN", 
-            "district": "", 
             "number": "1001",         
-            "taluka": "",  
-            "village": "", 
             "admin" : "y",
             "allowed" : "y"
         }
@@ -113,5 +110,5 @@
             "admin" : "y",
             "allowed" : "y"
         }
-    },
+    }
 ]
