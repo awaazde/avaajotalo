@@ -374,13 +374,6 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   		filterParams += status.ordinal() + " ";
   	}
   	
-  	// if we are going specifically to the Approved folder
-  	if (statuses.size() == 1 && statuses.get(0) == MessageStatus.APPROVED )
-  		filterParams += "&orderby=" + AoAPI.MSG_ORDER_BY_POSITION;
-  	else
-  		//default
-  		filterParams += "&orderby=" + AoAPI.MSG_ORDER_BY_DATE;
-  	
   	if (statuses.size() == 1 && (statuses.get(0) == MessageStatus.APPROVED || statuses.get(0) == MessageStatus.REJECTED) )
   	{
   		filterParams += "&posttype=" + AoAPI.POSTS_TOP;

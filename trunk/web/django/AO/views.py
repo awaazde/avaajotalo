@@ -1,9 +1,11 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
+from django.contrib.auth.decorators import login_required
 from otalo.AO.models import Forum, Message, Message_forum, User
 from django.core import serializers
 from django.conf import settings
+from django.db.models import Min
 from datetime import datetime
 import os, stat
 
@@ -26,20 +28,19 @@ def forum(request):
 
     fora = Forum.objects.all()
     return send_response(fora)
-   
+
 def messages(request, forum_id):
     params = request.GET
     
     status = params['status'].split()
-    order_by = params['orderby']
     posttype = params['posttype']
     
     if posttype == 'top':
-        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft=1).order_by(order_by)
+        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft=1).order_by('-position', '-message__date')
     elif posttype == 'responses':
-        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft__gt=1).order_by(order_by)
+        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft__gt=1).order_by('-position', '-message__date')
     elif posttype == 'all':
-        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status).order_by(order_by)
+        message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status).order_by('-position', '-message__date')
        
     return send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':()}})
 
@@ -67,6 +68,10 @@ def updatemessage(request):
 
     m = get_object_or_404(Message_forum, message=params['messageforumid'])
 
+    if not params.__contains__('position'):
+        m.position = None
+        m.save()
+
     # Check to see if there was a response uploaded
     if request.FILES:
         f = request.FILES['response']
@@ -82,25 +87,92 @@ def movemessage(request):
     direction = params['direction']    
 
     m = get_object_or_404(Message_forum, pk=params['messageforumid'])
-    count = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count()
-
-    if direction == 'up' and m.position < count:
-        # get the message above
-        above = Message_forum.objects.get(forum = m.forum, position = m.position+1)
-        above.position -= 1
-        m.position += 1
-
-        above.save()
-        m.save()
-    elif direction == 'down' and m.position > 1:
-        # get the message below
-        below = Message_forum.objects.get(forum = m.forum, position = m.position-1)
-        below.position += 1
-        m.position -= 1
-
-        below.save()
-        m.save()
-
+    forum_msgs = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft = 1)
+    count = forum_msgs.count()
+    
+    if direction == 'up':
+        if m.position and m.position < count:
+            # if this msg has a position then by definition so does the msg above it
+            above = Message_forum.objects.get(forum = m.forum, position = m.position+1)
+            above.position -= 1
+            m.position += 1
+            above.save()
+            m.save()    
+        elif m.position == None:
+            # go from where positions end till this message, setting positions
+            need_pos = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft = 1, position = None, message__date__gt = m.message.date).order_by('-message__date')
+            # start with the next position
+            min_pos = forum_msgs.aggregate(Min('position'))
+            min = min_pos.values()[0]
+            above = None
+            if min:
+                above = forum_msgs.get(position = min)
+                pos = min - 1
+            else:
+                # there are currently no positions
+                pos = count
+            for msg in need_pos:
+                msg.position = pos
+                pos -= 1
+                msg.save()
+                above = msg
+            
+            # swap positions with the last msg
+            # use above so that we avoid setting position
+            # for top-most msg if not already set
+            if above:
+                m.position = above.position
+                above.position -= 1
+                m.save()
+                above.save()
+            
+    elif direction == 'down':
+        if m.position and m.position > 1:
+            # get the message below
+            min_pos = forum_msgs.aggregate(Min('position'))
+            min = min_pos.values()[0]
+            if min == m.position:
+                # below is the first msg without a position
+                # it should always exist since position accomodates all msgs in forum
+                below = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, position = None).order_by('-message__date')[:1]
+                below = below[0]
+            else:
+                below = Message_forum.objects.get(forum = m.forum, position = m.position-1)
+            
+            # swap positions
+            below.position = m.position
+            m.position -= 1
+            below.save()
+            m.save()
+            
+        elif m.position == None:
+            # get below message
+            # do the check first to avoid any work if this is the last msg
+            below = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, message__date__lt = m.message.date).order_by('-message__date')[:1]
+            if below.count() == 1:
+                below = below[0]
+                
+                # go from where positions end till this message, setting positions
+                need_pos = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft = 1, position = None, message__date__gt = m.message.date).order_by('-message__date')
+                # start with the next position
+                min_pos = forum_msgs.aggregate(Min('position'))
+                min = min_pos.values()[0]
+                if min:
+                    pos = min - 1
+                else:
+                    # there are currently no positions
+                    pos = count
+                for msg in need_pos:
+                    msg.position = pos
+                    pos -= 1
+                    msg.save()
+                
+                # pos is now set for the msg to be swapped
+                below.position = pos
+                m.position = pos - 1
+                below.save()
+                m.save()
+            
     return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
         
 def uploadmessage(request):
@@ -142,11 +214,14 @@ def createmessage(forum, content, summary=False, parent=False):
     admin = get_console_user()
     pos = None
     if not parent:
-        pos = Message_forum.objects.filter(forum = forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count() + 1
-
+        # only set position if there are some already set
+        msgs = Message_forum.objects.filter(forum=forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
+        if msgs.count() > 0 and msgs[0].position != None:
+            pos = msgs[0].position + 1
+    
     resp_msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
     resp_msg.save()
-    resp_msg_forum = Message_forum(message=resp_msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position=pos)
+    resp_msg_forum = Message_forum(message=resp_msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position = pos)
 
     if parent:
         add_child(resp_msg, parent.message)
@@ -173,13 +248,10 @@ def updatestatus(request, action):
     
     if action == 'approve' and current_status != MESSAGE_STATUS_APPROVED:
         m.status = MESSAGE_STATUS_APPROVED
-        
-        if m.message.lft == 1:
-            # set the position to be the highest based
-            # on what else is approved in this forum
-            count = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1).count()
-            # positions are 1-based, with highest index being the top of the list
-            m.position = count + 1
+        # only set position if there are some already set
+        msgs = Message_forum.objects.filter(forum=m.forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
+        if msgs.count() > 0 and msgs[0].position != None:
+            m.position = msgs[0].position + 1
             
     elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
         m.status = MESSAGE_STATUS_REJECTED

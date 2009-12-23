@@ -64,9 +64,6 @@ public final class JSONRequest {
 		public static final String REJECT = "reject/";
 		public static final String UPDATE_STATUS = "update/status/";
 		
-		public static final String MSG_ORDER_BY_DATE = "-message__date";
-		public static final String MSG_ORDER_BY_POSITION = "-position";
-		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
 		public static final String POSTS_RESPONSES = "responses";
