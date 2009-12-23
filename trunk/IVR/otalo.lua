@@ -561,8 +561,9 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       if (thread == nil) then
       	cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
         -- only set position if we have to
-        if (cur ~= nil) then 
-        	position = tonumber(cur:fetch()) + 1;
+        pos = cur:fetch()
+        if (pos ~= nil) then 
+        	position = tonumber(pos) + 1;
         end
       end
    end
