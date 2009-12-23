@@ -1,0 +1,117 @@
+[
+    {
+        "pk": 1, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "name": "Question and Answer", 
+            "open": "y", 
+            "moderated": "y", 
+            "maxlength": 90000, 
+            "responses_allowed": "n", 
+            "name_file": "qna.wav"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "name": "Announcements", 
+            "open": "y", 
+            "moderated": "n", 
+            "maxlength": 90000, 
+            "responses_allowed": "n", 
+            "name_file": "announcements.wav"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "name": "Radio", 
+            "open": "y", 
+            "moderated": "n", 
+            "maxlength": 40000, 
+            "responses_allowed": "n", 
+            "name_file": "radio.wav"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "name": "Experiences", 
+            "open": "y", 
+            "moderated": "y", 
+            "maxlength": 90000, 
+            "responses_allowed": "y", 
+            "name_file": "experiences.wav"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "ADMIN", 
+            "district": "", 
+            "number": "1001",         
+            "taluka": "",  
+            "village": "", 
+            "admin" : "y",
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Neil Patel", 
+            "admin" : "y",
+            "allowed" : "y",
+            "number": "9537165413"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Paresh Dave", 
+            "number": "9428500597",            
+            "admin" : "y",
+            "allowed" : "y"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Parina Samuel", 
+            "number": "9428826986",            
+            "admin" : "y",
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "U.A. Parasara", 
+            "number": "9904455211",                        
+            "admin" : "y",
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Manhar Patel", 
+            "number": "9824991658",                        
+            "admin" : "y",
+            "allowed" : "y"
+        }
+    },
+]
