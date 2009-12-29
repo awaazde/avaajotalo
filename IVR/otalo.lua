@@ -56,7 +56,6 @@ end
 -----------
 
 function rows (sql_statement)
-   sleep(1000);
    local cursor = assert (con:execute (sql_statement));
    local closed = false;
    freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n")
