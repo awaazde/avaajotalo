@@ -248,29 +248,29 @@ function chooseforum ()
       -- TAP: Handle the case where there is only one forum - default
       -- to going straight to that forum.
       for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
-	 i = i + 1;
-	 forumids[i] = row[1];
-	 forumnames[i] = row[2];
-	 read(aosd .. "listento_pre.wav", 0);
-	 read(aosd .. forumnames[i], 0);
-	 read(aosd .. "listento_post.wav", 0);
-	 read(aosd .. "digits/" .. i .. ".wav", 500);
+		 i = i + 1;
+		 forumids[i] = row[1];
+		 forumnames[i] = row[2];
+		 read(aosd .. "listento_pre.wav", 0);
+		 read(aosd .. forumnames[i], 0);
+		 read(aosd .. "listento_post.wav", 0);
+		 read(aosd .. "digits/" .. i .. ".wav", 500);
       end
-   
+   	  
       d = tonumber(use());
 
       if (d ~= nil and d > 0 and d <= i) then
-	 freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
-	 read(aosd .. "okyouwant_pre.wav", 0);
-	 read(aosd .. forumnames[d], 0);
-	 read(aosd .. "okyouwant_post.wav", 0);
-	 return forumids[d];
-      elseif (d ~= nil) then
-	 freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
-	 sleep(500);
-	 read(aosd .. "noforum.wav", 500);
+		 freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
+		 read(aosd .. "okyouwant_pre.wav", 0);
+		 read(aosd .. forumnames[d], 0);
+		 read(aosd .. "okyouwant_post.wav", 0);
+		 return forumids[d];
+	  elseif (d ~= nil) then
+		 freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
+		 sleep(500);
+		 read(aosd .. "noforum.wav", 500);
       else
-	 sleep(1000);
+	 	 sleep(10000);
       end 
    end
 end
@@ -363,6 +363,12 @@ function playmessage (msg, responsesallowed, moderated, listenreplies)
      end  
   end -- close check for replies
 
+	-- give some time for users to compose themselves and
+	-- potentially respond
+	if (d == "") then
+		sleep(3000)
+	end
+	
   -- default	
   return GLOBAL_MENU_NEXT;
 end
@@ -405,7 +411,7 @@ function playmessages (msgs, responsesallowed, moderated, listenreplies)
 	 freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. current_msg[1] .. "]\n"); 
 	 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
       end
-  
+		
       if (d == GLOBAL_MENU_RESPOND) then
 	 if (responsesallowed == 'y') then
 	    read(aosd .. "okrecordresponse.wav", 500);
@@ -489,19 +495,22 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
 	 return d;
       end
       
-      read(aosd .. "hererecorded.wav", 1000);
-      read(filename, 1000);
-      read(aosd .. "notsatisfied.wav", 2000);
-      d = use();
+      while (d ~= GLOBAL_MENU_MAINMENU and d ~= "1" and d ~= "2" and d ~= "3") do
+	      read(aosd .. "hererecorded.wav", 1000);
+	      read(filename, 1000);
+	      read(aosd .. "notsatisfied.wav", 2000);
+	      sleep(6000)
+	      d = use();
+	  end
 
       if (d ~= "1" and d ~= "2") then
-	 os.remove(filename);
-	 if (d == GLOBAL_MENU_MAINMENU) then
-	    return d;
-	 else
-	    read(aosd .. "messagecancelled.wav", 500);
-	    return use();
-	 end
+	 	 os.remove(filename);
+		 if (d == GLOBAL_MENU_MAINMENU) then
+		    return d;
+		 elseif (d == "3") then
+		    read(aosd .. "messagecancelled.wav", 500);
+		    return use();
+		 end
       end
    until (d == "1");
    
