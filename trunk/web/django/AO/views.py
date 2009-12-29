@@ -248,10 +248,12 @@ def updatestatus(request, action):
     
     if action == 'approve' and current_status != MESSAGE_STATUS_APPROVED:
         m.status = MESSAGE_STATUS_APPROVED
-        # only set position if there are some already set
-        msgs = Message_forum.objects.filter(forum=m.forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
-        if msgs.count() > 0 and msgs[0].position != None:
-            m.position = msgs[0].position + 1
+        
+        if m.message.lft == 1:
+            # only set position if there are some already set
+            msgs = Message_forum.objects.filter(forum=m.forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
+            if msgs.count() > 0 and msgs[0].position != None:
+                m.position = msgs[0].position + 1
             
     elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
         m.status = MESSAGE_STATUS_REJECTED
