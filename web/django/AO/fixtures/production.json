@@ -19,7 +19,7 @@
             "posting_allowed": "n", 
             "name": "Announcements", 
             "open": "y", 
-            "moderated": "n", 
+            "moderated": "y", 
             "maxlength": 90000, 
             "responses_allowed": "n", 
             "name_file": "announcements.wav"
