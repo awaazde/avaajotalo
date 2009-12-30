@@ -39,7 +39,12 @@ GLOBAL_MENU_SEEK_FWD = "9";
 -- hangup 
 -----------
 
-function hangup()
+function hangup() 
+
+   logfile:write(sessid, "\t",
+		 session:getVariable("caller_id_number"), "\t",
+		 os.time(), "\t", "End call", "\n");
+
    -- cleanup
    con:close();
    env:close();
@@ -90,9 +95,12 @@ end
 
 function read(file, delay)
    if (digits == "") then
+      logfile:write(sessid, "\t",
+		    session:getVariable("caller_id_number"), "\t",
+		    os.time(), "\t", "Prompt", "\t", file, "\n");
       digits = session:read(1, 1, file, delay, "#");
       if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", file, "\t", "dtmf", "\t", digits, "\n"); 
+	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
    end
 end
@@ -117,15 +125,23 @@ function my_cb(s, type, obj, arg)
    freeswitch.console_log("info", "\ncallback: [" .. obj['digit'] .. "]\n")
 
    if (type == "dtmf") then
-      logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "dtmf", "\t", obj['digit'], "\n"); 
-      freeswitch.console_log("info", "\ndigit: [" .. obj['digit'] .. "]\nduration: [" .. obj['duration'] .. "]\n");
+
+      logfile:write(sessid, "\t",
+      session:getVariable("caller_id_number"), "\t", os.time(), "\t",
+      "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
+
+      freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
+      .. "]\nduration: [" .. obj['duration'] .. "]\n");
 
       if (obj['digit'] == GLOBAL_MENU_MAINMENU) then
 	 digits = GLOBAL_MENU_MAINMENU;
 	 return "break";
       end
 
+      -- This is tricky.  Note we are checking if the playback is
+      -- *already* paused, not whether the user pressed Pause.
       if (digits == GLOBAL_MENU_PAUSE) then
+	 digits = obj['digit'];
 	 session:execute("playback", "tone_stream://%(500, 0, 620)");
 	 return "pause";
       end
@@ -284,7 +300,9 @@ function playcontent (summary, content)
    
    if (summary ~= nil and summary ~= "") then
       arg[1] = sd .. summary;
-      logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "play", "\n"); 
+      logfile:write(sessid, "\t",
+		    session:getVariable("caller_id_number"), "\t",
+		    os.time(), "\t", "Stream", "\t", arg[1], "\n");
       session:streamFile(sd .. summary);
       sleep(1000);
       
@@ -309,9 +327,12 @@ function playcontent (summary, content)
    end
    
    arg[1] = sd .. content;
-   logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", arg[1], "\t", "play", "\n"); 
+   logfile:write(sessid, "\t",
+		 session:getVariable("caller_id_number"), "\t",
+		 os.time(), "\t", "Stream", "\t", arg[1], "\n");
+
    session:streamFile(sd .. content);
-   read("", 3000);
+   sleep(3000);
    
    return use();
 end
@@ -484,7 +505,10 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
       end
 
       session:execute("playback", "tone_stream://%(500, 0, 620)");
-      freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n")
+      freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
+      logfile:write(sessid, "\t",
+		 session:getVariable("caller_id_number"), "\t",
+		 os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 80 2");
       --sleep(1000);
       d = use();
@@ -645,7 +669,8 @@ end
 -- answer the call
 session:answer();
 
-logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "MM", "\t", "Start call", "\n"); 
+logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
+"\t", os.time(), "\t", "Start call", "\n");
 
 -- sleep for a sec
 sleep(1000);
@@ -653,9 +678,6 @@ sleep(1000);
 while (1) do
    -- choose a forum
    forumid = chooseforum();
-
-   
-   logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "MM", "\t", "Chose forum: ", "\t", forumid, "\n"); 
   
    -- play the forum
    playforum(forumid);
