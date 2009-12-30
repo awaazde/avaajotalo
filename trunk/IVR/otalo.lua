@@ -428,56 +428,56 @@ function playmessages (msgs, responsesallowed, moderated, listenreplies)
       d = use();
       -- check if a pre-emptive action was taken
       if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
-	 freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. current_msg[1] .. "]\n"); 
-	 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
+		 freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. current_msg[1] .. "]\n"); 
+		 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
       end
 		
       if (d == GLOBAL_MENU_RESPOND) then
-	 if (responsesallowed == 'y') then
-	    read(aosd .. "okrecordresponse.wav", 500);
-	    local thread = current_msg[7];
-	    if (thread == nil) then
-	       thread = current_msg[1];
-	    end
-	    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[6]);
-	    if (d == GLOBAL_MENU_MAINMENU) then
-	       return d;
-	    else
-	       d = GLOBAL_MENU_RESPOND;
-	    end
-	 else
-	    read(aosd .. "responsesnotallowed.wav", 500);
-	    d = use();
-	 end
+	 	 if (responsesallowed == 'y' or adminmode()) then
+		    read(aosd .. "okrecordresponse.wav", 500);
+		    local thread = current_msg[7];
+		    if (thread == nil) then
+		       thread = current_msg[1];
+		    end
+		    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[6]);
+		    if (d == GLOBAL_MENU_MAINMENU) then
+		       return d;
+		    else
+		       d = GLOBAL_MENU_RESPOND;
+		    end
+		 else
+		    read(aosd .. "responsesnotallowed.wav", 500);
+		    d = use();
+		 end
       elseif (d == GLOBAL_MENU_SKIP_BACK) then
-	 if (current_msg_idx > 1) then
-	    current_msg_idx = current_msg_idx - 1;
-	    current_msg = prevmsgs[current_msg_idx];
-	 end
+		 if (current_msg_idx > 1) then
+		    current_msg_idx = current_msg_idx - 1;
+		    current_msg = prevmsgs[current_msg_idx];
+		 end
       elseif (d ~= GLOBAL_MENU_MAINMENU) then
-	 current_msg_idx = current_msg_idx + 1;
-	 -- check to see if we are at the last msg in the forum
-	 if (current_msg_idx > #prevmsgs) then
-	    -- get next msg from the cursor
-	    current_msg = msgs();
-	    if (current_msg == nil) then
-	       read(aosd .. "lastmessage.wav", 1000);
-	       d = use(); 
-	       if (d == GLOBAL_MENU_SKIP_BACK) then
-		  current_msg_idx = current_msg_idx - 1;
-		  current_msg = prevmsgs[current_msg_idx];
-	       end
-	    else
-	       table.insert(prevmsgs, current_msg);
-	    end
-	 else
-	    -- get msg from the prev list
-	    current_msg = prevmsgs[current_msg_idx];
+		 current_msg_idx = current_msg_idx + 1;
+		 -- check to see if we are at the last msg in the forum
+		 if (current_msg_idx > #prevmsgs) then
+		    -- get next msg from the cursor
+		    current_msg = msgs();
+		    if (current_msg == nil) then
+		       read(aosd .. "lastmessage.wav", 1000);
+		       d = use(); 
+		       if (d == GLOBAL_MENU_SKIP_BACK) then
+			  current_msg_idx = current_msg_idx - 1;
+			  current_msg = prevmsgs[current_msg_idx];
+		       end
+		    else
+		       table.insert(prevmsgs, current_msg);
+		    end
+		 else
+	    	-- get msg from the prev list
+	    	current_msg = prevmsgs[current_msg_idx];
          end
       end
     
       if (d == GLOBAL_MENU_MAINMENU) then
-	 return d;
+	 	return d;
       end
    end
 end
