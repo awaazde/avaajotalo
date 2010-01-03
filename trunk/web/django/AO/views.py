@@ -16,8 +16,7 @@ MESSAGE_STATUS_PENDING = 0
 MESSAGE_STATUS_APPROVED = 1
 MESSAGE_STATUS_REJECTED = 2
 
-AUDIO_FILE_EXTENSION = ".mp3"
-
+@login_required
 def index(request):
     #return render_to_response('AO/index.html', {'fora':fora})
     return render_to_response('Ao.html')
