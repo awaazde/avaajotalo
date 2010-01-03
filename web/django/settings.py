@@ -36,7 +36,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/home/dsc/Development/audio'
+MEDIA_ROOT = '/home/neil/Development/audio'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -46,7 +46,7 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+ADMIN_MEDIA_PREFIX = '/adminmedia/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '+1m4bqgx##tjp#rd4e=r#1ut=cw7xr3-za__oa3o8j377os_#='
@@ -70,8 +70,8 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    '/home/dsc/Development/html/django_templates',
-    '/home/dsc/Development/html/war',
+    '/home/neil/Development/html/django_templates',
+    '/home/neil/Development/workspace/ao/war',
 )
 
 INSTALLED_APPS = (
@@ -83,7 +83,7 @@ INSTALLED_APPS = (
     'django.contrib.admin'
 )
 
-STATIC_DOCUMENT_ROOT = '/home/dsc/Development/html/war'
+STATIC_DOCUMENT_ROOT = '/home/neil/Development/workspace/ao/war'
 
 SERIALIZATION_MODULES = {
     'json': 'wadofstuff.django.serializers.json'
