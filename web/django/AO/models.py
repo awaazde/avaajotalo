@@ -27,7 +27,10 @@ class User(models.Model):
     village_file = models.CharField(max_length=24, blank=True, null=True)
 
     def __unicode__(self):
-        return self.name + '-' + self.number
+        if self.name:
+            return self.name + '-' + self.number
+        else:
+            return self.number
 
 class Message(models.Model):
     date = models.DateTimeField()
