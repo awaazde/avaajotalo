@@ -70,7 +70,6 @@ freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 -----------
 
 function hangup() 
-
    logfile:write(sessid, "\t",
 		 session:getVariable("caller_id_number"), "\t",
 		 os.time(), "\t", "End call", "\n");
@@ -249,11 +248,16 @@ end
 -----------
 
 function getmessages (forumid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
-   query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 ";
+   query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
+   --if (adminmode) then
+   --query = query .. " AND NOT message_forum.status = " .. MESSAGE_STATUS_REJECTED;
+   --else
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
+   --end
    -- Sort first by position AND then date
-   query = query .. "ORDER BY message_forum.position DESC, message.date DESC";
+   query = query .. " ORDER BY message_forum.position DESC, message.date DESC";
   
    return rows(query);
 end
@@ -264,12 +268,13 @@ end
 -----------
 
 function getreplies (thread)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
-   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " ";
+   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id";
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    -- TAP: even though we have threading information (lft, rgt), we
    -- only order by date.  consider losing the lft, right altogether.
-   query = query .. "ORDER BY message.date ASC";
+   query = query .. " ORDER BY message.date ASC";
    -- query = query .. "ORDER BY message.lft";
 
    return rows(query);
@@ -277,14 +282,14 @@ end
 
 
 -----------
--- getreplies
+-- getusermessages
 -----------
 
 function getusermessages ()
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum ";
-   query = query .. "WHERE message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
-   -- Sort first by position AND then date
+   query = query .. "WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    query = query .. " ORDER BY message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
@@ -292,52 +297,75 @@ end
 
 
 -----------
--- chooseforum
+-- getpendingmessages
 -----------
 
-function chooseforum ()
+function getpendingmessages ()
+   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
+   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
+   query = query .. "WHERE message.id = message_forum.message_id";
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING;
+   query = query .. " ORDER BY message.date DESC";
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   return rows(query);
+end
+
+
+-----------
+-- mainmenu
+-----------
+
+function mainmenu ()
   
-   -- choose the forum
-   while (1) do
-      read(aosd .. "welcome.wav", 500);
+   read(aosd .. "welcome.wav", 500);
+   
+   local forumids = {};
+   local forumnames = {};
+   local i = 0;
 
-      local forumids = {};
-      local forumnames = {};
-      local i = 0;
-
-      -- TAP: Handle the case where there is only one forum - default
-      -- to going straight to that forum.
-      for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
-		 i = i + 1;
-		 forumids[i] = row[1];
-		 forumnames[i] = row[2];
-		 read(aosd .. "listento_pre.wav", 0);
-		 read(aosd .. forumnames[i], 0);
-		 read(aosd .. "listento_post.wav", 0);
-		 read(aosd .. "digits/" .. i .. ".wav", 500);
-      end
-
-      read(aosd .. "checkmyreplies.wav", 1000);
-   	  
-      d = tonumber(use());
-
-      if (d ~= nil and d > 0 and d <= i) then
-	 freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
-	 read(aosd .. "okyouwant_pre.wav", 0);
-	 read(aosd .. forumnames[d], 0);
-	 read(aosd .. "okyouwant_post.wav", 0);
-	 return forumids[d];
-      elseif (d == 0) then
-	 read(aosd .. "okyourreplies.wav", 0);
-	 return 0;
-      elseif (d ~= nil) then
-	 freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
-	 sleep(500);
-	 read(aosd .. "noforum.wav", 500);
-      else
-	 sleep(10000);
-      end 
+   -- TAP: Handle the case where there is only one forum - default
+   -- to going straight to that forum.
+   for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
+      i = i + 1;
+      forumids[i] = row[1];
+      forumnames[i] = row[2];
+      read(aosd .. "listento_pre.wav", 0);
+      read(aosd .. forumnames[i], 0);
+      read(aosd .. "listento_post.wav", 0);
+      read(aosd .. "digits/" .. i .. ".wav", 500);
    end
+
+   read(aosd .. "checkmyreplies.wav", 1000);
+   read(aosd .. "digits/" .. i + 1 .. ".wav", 500);
+
+   if (adminmode) then
+      read(aosd .. "checkpending.wav", 1000);
+      read(aosd .. "digits/" .. i + 2 .. ".wav", 500);
+   end
+     
+   d = tonumber(use());
+   
+   if (d ~= nil and d > 0 and d <= i) then
+      freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
+      read(aosd .. "okyouwant_pre.wav", 0);
+      read(aosd .. forumnames[d], 0);
+      read(aosd .. "okyouwant_post.wav", 0);
+      playforum(forumid);
+   elseif (d == i + 1) then
+      read(aosd .. "okyourreplies.wav", 0);
+      use();
+      playmessages(getusermessages(), 'n', 'y', 'y');
+   elseif (d == i + 2 and adminmode) then
+      read(aosd .. "okpending.wav", 0);
+      use();
+      playmessages(getpendingmessages(), 'n', 'n', 'n');
+   elseif (d ~= nil) then
+      freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
+      sleep(500);
+      read(aosd .. "noforum.wav", 500);
+   else
+      sleep(10000);
+   end 
 end
 
 
@@ -397,12 +425,26 @@ function playmessage (msg, responsesallowed, moderated, listenreplies)
   local content = msg[2];
   local summary = msg[3];
   local rgt = tonumber(msg[6]);
+  local status = tonumber(msg[8]);
 
   d = playcontent(summary, content);
 
-  -- no short circuit for next here; still want to prompt to listen to replies
   if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
      return d;
+  end
+
+  if (status == MESSAGE_STATUS_PENDING and adminmode) then
+     read(aosd .. "approvereject.wav", 500);
+     d = use();
+     if (d == "1") then
+	con:execute("UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_APPROVED .. " WHERE message_id = " .. id);
+	read(aosd .. "messageapproved.wav", 0);
+     elseif (d == "2") then
+	con:execute("UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_REJECTED .. " WHERE message_id = " .. id);
+	read(aosd .. "messagerejected.wav", 0);
+     elseif (d == GLOBAL_MENU_MAINMENU) then
+	return d;
+     end
   end
   
   if (rgt > 2 and listenreplies == 'y') then
@@ -433,8 +475,8 @@ function playmessage (msg, responsesallowed, moderated, listenreplies)
      end  
   end -- close check for replies
 
-	-- give some time for users to compose themselves and
-	-- potentially respond
+  -- give some time for users to compose themselves and
+  -- potentially respond
   if (d == "") then
      sleep(3000)
   end
@@ -478,7 +520,6 @@ function playmessages (msgs, responsesallowed, moderated, listenreplies)
       d = use();
       -- check if a pre-emptive action was taken
       if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
-	 freeswitch.consoleLog("info", script_name .. ".playforum[" .. forumid .."] : playing msg [" .. current_msg[1] .. "]\n"); 
 	 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
       end
       
@@ -489,7 +530,7 @@ function playmessages (msgs, responsesallowed, moderated, listenreplies)
 	    if (thread == nil) then
 	       thread = current_msg[1];
 	    end
-	    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[6]);
+	    d = recordmessage (nil, thread, moderated, maxlength, current_msg[6]);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	       return d;
 	    else
@@ -613,30 +654,32 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt)
    cur:close();
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
-   query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
-   query2 = " VALUES ('"..id[1].."','"..forumid.."'";
-
-   local position = "null";
-   if (moderated == 'y' and not adminmode) then
-      status = MESSAGE_STATUS_PENDING;
-   else
-      status = MESSAGE_STATUS_APPROVED; 
-      if (thread == nil) then
-	 cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
-	 -- only set position if we have to
-	 pos = cur:fetch()
-	 if (pos ~= nil) then 
-	    position = tonumber(pos) + 1;
+   if (forumid ~= nil) then
+      query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
+      query2 = " VALUES ('"..id[1].."','"..forumid.."'";
+      
+      local position = "null";
+      if (moderated == 'y' and not adminmode) then
+	 status = MESSAGE_STATUS_PENDING;
+      else
+	 status = MESSAGE_STATUS_APPROVED; 
+	 if (thread == nil) then
+	    cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
+	    -- only set position if we have to
+	    pos = cur:fetch()
+	    if (pos ~= nil) then 
+	       position = tonumber(pos) + 1;
+	    end
 	 end
       end
+      query1 = query1 .. ", status, position)";
+      query2 = query2 .. "," .. status .. ",".. position..")";
+   
+      query = query1 .. query2;
+      con:execute(query);
+      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
    end
-   query1 = query1 .. ", status, position)";
-   query2 = query2 .. "," .. status .. ",".. position..")";
-   
-   query = query1 .. query2;
-   con:execute(query);
-   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-   
+
    read(aosd .. "okrecorded.wav", 500);
    return use();
 end
@@ -708,14 +751,7 @@ sleep(1000);
 
 while (1) do
    -- choose a forum
-   forumid = chooseforum();
-  
-   if (forumid == 0) then
-      use();
-      playmessages(getusermessages(), 'n', 'y', 'y');
-   else
-      playforum(forumid);
-   end
+   mainmenu();
 
    -- go back to the main menu
    read(aosd .. "mainmenu.wav", 1000);
