@@ -15,10 +15,13 @@
  */
 package org.otalo.ao.client;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -38,7 +41,7 @@ public class TopPanel extends Composite implements ClickHandler {
     AbstractImagePrototype logo();
   }
 
-  private HTML signOutLink = new HTML("<a href='javascript:;'>Sign Out</a>");
+  private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
   private HTML aboutLink = new HTML("<a href='javascript:;'>About</a>");
 
   public TopPanel(Images images) {
@@ -55,7 +58,7 @@ public class TopPanel extends Composite implements ClickHandler {
     outer.setCellHorizontalAlignment(logo, HorizontalPanel.ALIGN_LEFT);
 
     outer.add(inner);
-    inner.add(new HTML("<b>Welcome back, admin@dscindia.org</b>&nbsp;|&nbsp;"));
+    inner.add(new HTML("<b>Welcome back, dsc@dscindia.org</b>&nbsp;|&nbsp;"));
     inner.add(signOutLink);
     inner.add(aboutLink);
     
@@ -70,7 +73,8 @@ public class TopPanel extends Composite implements ClickHandler {
   public void onClick(ClickEvent event) {
     Object sender = event.getSource();
     if (sender == signOutLink) {
-      Window.alert("If this were implemented, you would be signed out now.");
+    	JSONRequest request = new JSONRequest();
+      	request.doFetchURL(AoAPI.LOGOUT, null);
     } else if (sender == aboutLink) {
       // When the 'About' item is selected, show the AboutDialog.
       // Note that showing a dialog box does not block -- execution continues

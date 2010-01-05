@@ -63,6 +63,7 @@ public final class JSONRequest {
 		public static final String APPROVE = "approve/";
 		public static final String REJECT = "reject/";
 		public static final String UPDATE_STATUS = "update/status/";
+		public static final String LOGOUT = "/logout/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
