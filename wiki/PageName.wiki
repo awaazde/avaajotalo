@@ -6,6 +6,7 @@
   # Install Python, Java, MySQL
   # Install Django
   # Install wadofstuff Django serializers
+  # Install mysqldb python module
   # Install Eclipse
   # Install Subclipse eclipse plugin
   # Install GWT eclipse plugin
