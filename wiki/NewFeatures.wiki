@@ -1,0 +1,28 @@
+==1. Tagging Content==
+  * In the web interface, add the ability to tag questions and answers
+  * Content can have up to two tags: crop and/or topic
+  * Place the tag fields in the details panel which currently has Name, location, etc. fields, but make tagging mandatory before content is approved or rejected
+
+==2. Alerts==
+When new content of interest (an answer to your question, answer to a question of interest, new announcements or radio program uploads) has been posted to AO, the system leaves you a missed call. This single bit of information simply means, "something new has been posted that you might be interested in", without immediately telling you what that is.
+
+Once you call in, following the normal main menu prompt is a recording saying what is new for you (some combo of new answer, new announcement, new radio).
+
+===Implementation Details===
+  * Alerts will have to be sent via cron, periodically checking each user's last login and whether new content of interest has been posted since.
+
+==3. Personal Inbox==
+  * A third option for each forum, enabled through a new forum parameter
+  * 3 suboptions
+    ** Listen to threads which you are an author of, by most recently posted
+    ** Listen to recommended content. Implement this as any content that matches the crop tags of personal content. If a user has no content, then there are no recommendations so the prompt suggests asking a question.
+    ** Go back to the forum
+
+==4. Rating of Answers==
+After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg. 
+
+==Prompts Needed==
+  * Inbox top-level option
+  * Inbox suboptions
+  * Inbox empty personal or recommended threads
+  * Alert messages for each section
