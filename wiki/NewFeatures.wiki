@@ -4,16 +4,7 @@
   * Place the tag fields in the details panel which currently has Name, location, etc. fields, but make tagging mandatory before content is approved or rejected
 
 ==2. Alerts==
-When new content of interest (an answer to your question, answer to a question of interest, new announcements or radio program uploads) has been posted to AO, the system leaves you a missed call. This single bit of information simply means, "something new has been posted that you might be interested in", without immediately telling you what that is.
-
-Once you call in, following the normal main menu prompt is a recording saying what is new for you (some combo of new answer, new announcement, new radio).
-
-TAP: Id like to limit this to responses to your own questions.  Also, the second sentence will require us to keep track of the last time each person called.
-
-===Implementation Details===
-  * Alerts will have to be sent via cron, periodically checking each user's last login and whether new content of interest has been posted since.
-
-TAP: Alerts should be sent out whenever the DB is updated.  Another reason to limit it to responses to your questions.
+When new content of interest (at this time limit this to an answer to a posted question) has been posted to AO, the system leaves you a missed call.
 
 ==3. Personal Inbox==
   * A third option for each forum, enabled through a new forum parameter
