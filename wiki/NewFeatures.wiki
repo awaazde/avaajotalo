@@ -1,23 +1,46 @@
-==1. Tagging Content==
+==1. Tagging Content [1 week]==
   * In the web interface, add the ability to tag questions and answers
   * Content can have up to two tags: crop and/or topic
   * Place the tag fields in the details panel which currently has Name, location, etc. fields, but make tagging mandatory before content is approved or rejected
 
-==2. Alerts==
+==2. Alerts [2 weeks]==
 When new content of interest (at this time limit this to an answer to a posted question) has been posted to AO, the system leaves you a missed call.
 
-==3. Personal Inbox==
+==3. Personal Inbox [1 week]==
   * A third option for each forum, enabled through a new forum parameter
   * 3 suboptions
     ** Listen to threads which you are an author of, by most recently posted
     ** Listen to recommended content. Implement this as any content that matches the crop tags of personal content. If a user has no content, then there are no recommendations so the prompt suggests asking a question.
     ** Go back to the forum
 
-==4. Rating of Answers==
+==4. Rating of Answers [1 week]==
 After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg. 
 
-==Prompts Needed==
+==Prompts Needed [2.5 weeks, in parallel]==
   * Inbox top-level option
   * Inbox suboptions
   * Inbox empty personal or recommended threads
   * Alert messages for each section
+
+==Timeline==
+By 3/17
+  * Finalize design of features, call flows and prompts
+  * Development and testing environment setup
+
+4/1
+  * Tagging
+
+4/20
+  * CHI
+  * Inbox
+  * Alerts
+  * Guj prompt recording done
+
+5/1
+  * Ratings
+
+===Other tasks in between===
+  * Study design, development, and (at least pilot) deployment
+  * CHI talk
+  * AO server move and administration
+  
