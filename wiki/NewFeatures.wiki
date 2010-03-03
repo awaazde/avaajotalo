@@ -8,8 +8,12 @@ When new content of interest (an answer to your question, answer to a question o
 
 Once you call in, following the normal main menu prompt is a recording saying what is new for you (some combo of new answer, new announcement, new radio).
 
+TAP: Id like to limit this to responses to your own questions.  Also, the second sentence will require us to maintain a lot more state then we do now. 
+
 ===Implementation Details===
   * Alerts will have to be sent via cron, periodically checking each user's last login and whether new content of interest has been posted since.
+
+TAP: Thats a bad way to implement it.  Alerts should be sent out whenever the DB is updated.  Another reason to limit it to responses to your questions.
 
 ==3. Personal Inbox==
   * A third option for each forum, enabled through a new forum parameter
