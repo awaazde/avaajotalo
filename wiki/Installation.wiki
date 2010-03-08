@@ -1,6 +1,4 @@
-#summary One-sentence summary of this page.
-
-= Installing AO =
+#step-by-step development environment setup instructions for AO
 
 == Web Components ==
   # Install Python, Java, MySQL
