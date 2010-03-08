@@ -1,4 +1,4 @@
-#step-by-step development environment setup instructions for AO
+#summary Step-by-step development environment setup instructions for AO
 
 == Web Components ==
   # Install Python, Java, MySQL
