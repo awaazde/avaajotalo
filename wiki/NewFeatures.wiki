@@ -28,6 +28,7 @@ What is the interface for answering calls? At a high level, the interaction begi
   * Inbox suboptions
   * Inbox empty personal or recommended threads
   * Alert messages for each section
+  * Answerer interface prompts
 
 ==Timeline==
   * By 3/17
