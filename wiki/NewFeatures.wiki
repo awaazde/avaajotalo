@@ -16,6 +16,13 @@ When new content of interest (at this time limit this to an answer to a posted q
 ==4. Rating of Answers (1 week)==
 After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg. 
 
+==5. Routing Questions for Answering (2 weeks)==
+Instead of answerers calling the system themselves to answer questions, the system calls answerers with pending questions to answer and they are recorded over that call.
+
+What is the routing algorithm? Since we have a small number of answerers, one approach is to create a randomized ring of the answerers, and keep calling along the ring until the question gets answered (Trying the next person if no one picks up or the person declines to answer). Another possibility is to set up the ring according to expertise, so that calls are first made to answerers with expertise (This would depend on tagged content).
+
+What is the interface for answering calls? At a high level, the interaction begins by introducing the call as an automated one from AO, and introduces the question. The user listens to the question and then has the option to record a response or pass. Regardless of the choice, the system then asks if they would like to listen to another pending question (if one exists). This continues until the answerer hangs up, which they can do at any time.
+
 ==Prompts Needed (2.5 weeks, in parallel)==
   * Inbox top-level option
   * Inbox suboptions
