@@ -21,7 +21,11 @@ Instead of answerers calling the system themselves to answer questions, the syst
 
 What is the routing algorithm? Since we have a small number of answerers, one approach is to create a randomized ring of the answerers, and keep calling along the ring until the question gets answered (Trying the next person if no one picks up or the person declines to answer). Another possibility is to set up the ring according to expertise, so that calls are first made to answerers with expertise (This would depend on tagged content).
 
+In order to be flexible to answerer availability as well as system downtime, pinging answerers should be implemented as an offline process (that may or not be triggered by a question being asked).
+
 What is the interface for answering calls? At a high level, the interaction begins by introducing the call as an automated one from AO, and introduces the question. The user listens to the question and then has the option to record a response or pass. Regardless of the choice, the system then asks if they would like to listen to another pending question (if one exists). This continues until the answerer hangs up, which they can do at any time.
+
+The tone should be friendly and greatful, not pushy to answer more questions. For example, present questions one at a time and let the answerer answer how many they want, as opposed to, "There are 3 questions awaiting your answer." This may turn the caller off from answering any question if they are busy.
 
 ==Prompts Needed (2.5 weeks, in parallel)==
   * Inbox top-level option
