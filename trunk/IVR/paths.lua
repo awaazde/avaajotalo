@@ -3,9 +3,9 @@ bsd = basedir .. "/sounds/en/us/callie/";
 aosd = basedir .. "/scripts/AO/sounds/guj/";
 sd = "/home/dsc/Development/audio/";
 logfilename = "/home/dsc/Documents/Log/AO/ao.log";
-aosd = basedir .. "/scripts/AO/sounds/eng/";
-sd = basedir .. "/storage/otalo/";
-logfilename = sd .. "ao.log";
+-- aosd = basedir .. "/scripts/AO/sounds/eng/";
+-- sd = basedir .. "/storage/otalo/";
+-- logfilename = sd .. "ao.log";
 
 -- GLOBALS
 env = assert (luasql.mysql());
