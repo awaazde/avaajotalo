@@ -1,14 +1,28 @@
-#!/usr/local/bin/lua
+--[[ 
+
+Copyright (c) 2009 Regents of the University of California, Stanford
+  University, and others
+
+   Licensed under the Apache License, Version 2.0 (the "License"); you
+   may not use this file except in compliance with the License.  You
+   may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.  See the License for the specific language governing
+   permissions and limitations under the License.
+
+   --]]
 
 -- INCLUDES
-
 require "luasql.mysql";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 
-logfile = io.open(logfilename, "a");
-logfile:setvbuf("line");
 script_name = "otalo.lua";
 digits = "";
 arg = {};
@@ -16,21 +30,6 @@ arg = {};
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 session:setInputCallback("my_cb", "arg");
-
-MESSAGE_STATUS_PENDING = 0;
-MESSAGE_STATUS_APPROVED = 1;
-MESSAGE_STATUS_REJECTED = 2;
-
-GLOBAL_MENU_MAINMENU = "0";
-GLOBAL_MENU_NEXT = "1";
-GLOBAL_MENU_RESPOND = "2";
-GLOBAL_MENU_INSTRUCTIONS = "3";
-GLOBAL_MENU_SKIP_BACK = "4";
-GLOBAL_MENU_PAUSE = "5";
-GLOBAL_MENU_SKIP_FWD = "6";
-GLOBAL_MENU_SEEK_BACK = "7";
-GLOBAL_MENU_REPLAY = "8";
-GLOBAL_MENU_SEEK_FWD = "9";
 
 sessid = os.time();
 userid = nil;
