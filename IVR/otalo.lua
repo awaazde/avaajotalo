@@ -8,6 +8,7 @@ require "luasql.mysql";
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 
 logfile = io.open(logfilename, "a");
+logfile:setvbuf("line");
 script_name = "otalo.lua";
 digits = "";
 arg = {};
