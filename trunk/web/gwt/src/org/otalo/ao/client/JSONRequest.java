@@ -64,10 +64,15 @@ public final class JSONRequest {
 		public static final String REJECT = "reject/";
 		public static final String UPDATE_STATUS = "update/status/";
 		public static final String LOGOUT = "/logout/";
+		public static final String TAGS = "tags/";
+		public static final String MESSAGE_TAGS = "messagetag/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
 		public static final String POSTS_RESPONSES = "responses";
+		
+		public static final String TAG_TYPE_CROP = "agri-crop";
+		public static final String TAG_TYPE_TOPIC = "agri-topic";
 	}
 	public static List<JSOModel> getModels(String jsonStr)
 	{

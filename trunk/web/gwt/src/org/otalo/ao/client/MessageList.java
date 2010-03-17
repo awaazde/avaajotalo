@@ -290,11 +290,19 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   		this.messageForum = messageForum;
   	}
 		public void onClick(ClickEvent event) {
-			// save to get the old status when we return
-			selectMessage = messageForum;
-			messageForumId.setValue(messageForum.getId());
-			detailsForm.setAction(JSONRequest.BASE_URL + AoAPI.UPDATE_STATUS + action);
-      detailsForm.submit();
+			String tagErrorText = Messages.get().validateTags();
+			if (tagErrorText == null) {
+				// save to get the old status when we return
+				selectMessage = messageForum;
+				messageForumId.setValue(messageForum.getId());
+				detailsForm.setAction(JSONRequest.BASE_URL + AoAPI.UPDATE_STATUS + action);
+				detailsForm.submit();
+			} else {
+				ConfirmDialog tagValidation = new ConfirmDialog(tagErrorText);
+				tagValidation.show();
+				tagValidation.center();
+			}
+			
 			
 		}
   	
