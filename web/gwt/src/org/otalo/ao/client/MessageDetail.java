@@ -71,6 +71,7 @@ public class MessageDetail extends Composite {
 	private FlexTable detailsTable;
 	private CheckBox sticky;
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
+	private TagWidget tags;
 
   public MessageDetail() {
   	outer = new HorizontalPanel();
@@ -87,10 +88,12 @@ public class MessageDetail extends Composite {
   	threadPanel = new DockPanel();
   	controls = new VerticalPanel();
   	detailsTable = new FlexTable();
+  	tags = new AOTagWidget();
   	
   	outer.setSpacing(3);
   	outer.add(detailsTable);
   	outer.add(threadPanel);
+  	outer.add(tags);
   	outer.add(controls);
   	
   	controls.setSize("100%", "100%");
@@ -259,6 +262,10 @@ public class MessageDetail extends Composite {
   	{
   		sticky.setValue(true);
   	}
+  	
+  	// Load Tags
+  	tags.loadSelectedTags(messageForum);
+  	
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
   	// since the last load
@@ -393,12 +400,18 @@ public class MessageDetail extends Composite {
 		}
 	}
 	
+	public String validateTags()
+	{
+		return tags.getErrorText();
+	}
+	
 	public void reset()
 	{
 		detailsForm.reset();
 		thread.clear();
 		sticky.setValue(false);
 		messageForumId.setValue("");
+		tags.reset();
 	}
 	
 	private void setMovable(boolean canMove)

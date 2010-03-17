@@ -1,0 +1,267 @@
+[
+    {
+        "pk": 1, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cotton"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Wheat"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cumin"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Castor"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Mustard"
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Millet"
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Groundnut"
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Maize"
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Paddy"
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Crop Planning"
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Seeds"
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Soil Care"
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Pests"
+        }
+    },
+    {
+        "pk": 14, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Diseases"
+        }
+    },
+    {
+        "pk": 15, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Weeding"
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Irrigation"
+        }
+    },
+    {
+        "pk": 17, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Animal Husbandry"
+        }
+    },
+    {
+        "pk": 18, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Onion"
+        }
+    },
+    {
+        "pk": 19, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tobacco"
+        }
+    },
+    {
+        "pk": 20, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sesame"
+        }
+    },
+    {
+        "pk": 21, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chilli"
+        }
+    },
+    {
+        "pk": 22, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sorghum"
+        }
+    },
+    {
+        "pk": 23, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Garlic"
+        }
+    },
+    {
+        "pk": 24, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Brinjal"
+        }
+    },
+    {
+        "pk": 25, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Gram"
+        }
+    },
+    {
+        "pk": 26, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chickpea"
+        }
+    },
+    {
+        "pk": 27, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Banana"
+        }
+    },
+    {
+        "pk": 28, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Papaya"
+        }
+    },
+    {
+        "pk": 29, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tumeric"
+        }
+    },
+    {
+        "pk": 30, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Other"
+        }
+    },
+     {
+        "pk": 31, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Harvesting"
+        }
+    },
+     {
+        "pk": 32, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Marketing"
+        }
+    },
+    {
+        "pk": 33, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Other"
+        }
+    }
+    
+]

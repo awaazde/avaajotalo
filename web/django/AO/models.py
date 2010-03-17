@@ -52,3 +52,18 @@ class Message_forum(models.Model):
     
     def __unicode__(self):
         return unicode(self.message) + '_' + unicode(self.forum)
+    
+class Tag(models.Model):
+    tag = models.CharField(max_length=24)
+    type = models.CharField(max_length=24, blank=True, null=True)
+    tag_file = models.CharField(max_length=24, blank=True, null=True)
+    
+    def __unicode__(self):
+        return self.tag
+    
+class Message_tag(models.Model):
+    message = models.ForeignKey(Message)
+    tag = models.ForeignKey(Tag)
+    
+    def __unicode__(self):
+        return unicode(self.message) + '_' + unicode(self.tag)

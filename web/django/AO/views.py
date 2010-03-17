@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
-from otalo.AO.models import Forum, Message, Message_forum, User
+from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_tag
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min
@@ -46,6 +46,7 @@ def messages(request, forum_id):
 def messageforum(request, message_forum_id):
     # Note use of filter instead of get to return a query set
     message = get_list_or_404(Message_forum, pk=message_forum_id)
+    # means don't put any restrictions on the fields returned for forum relation
     return send_response(message, {'message':{'fields':()}, 'forum':{}})
 
 def user(request, user_id):
@@ -75,7 +76,25 @@ def updatemessage(request):
     if request.FILES:
         f = request.FILES['response']
         resp = createmessage(m.forum, f, parent=m)
-
+        
+    # Save tags
+    crop = params['crop']
+    topic = params['topic']
+    
+    tags = Message_tag.objects.filter(message=m.message)
+    for old_tag in tags:
+        old_tag.delete()
+    
+    if crop != '-1':
+        crop_tag = Tag.objects.get(pk=crop)
+        new_crop_tag = Message_tag(message=m.message, tag=crop_tag)
+        new_crop_tag.save()
+    
+    if topic != '-1':
+        topic_tag = Tag.objects.get(pk=topic)
+        new_topic_tag = Message_tag(message=m.message, tag=topic_tag)
+        new_topic_tag.save()  
+    
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
     # user hits the Back button.
@@ -278,6 +297,18 @@ def updatestatus(request, action):
     m.save()
     
     return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
+
+def tags(request):
+    params = request.GET
+    
+    types = params['type'].split()
+    tags = Tag.objects.filter(type__in=types)
+       
+    return send_response(tags)
+
+def messagetag(request, message_id):
+    tags = Message_tag.objects.filter(message=message_id)
+    return send_response(tags, ('tag'))
 
 # this should return the person logged in.
 # Stub it for now.

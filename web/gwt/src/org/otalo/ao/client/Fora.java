@@ -99,12 +99,12 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			Forum f = fora.get(i);
 			ForumWidget w = new ForumWidget(f, images, this);
 	    
-	    p.add(w.getWidget());
+			p.add(w.getWidget());
 			widgets.add(w);
 		}
 		
 		// Hackish: for initialization
-    widgets.get(0).selectMain();
+		widgets.get(0).selectMain();
 	}
 	
 	public void setFolder(Forum f, MessageStatus status)

@@ -118,6 +118,11 @@ public class Messages implements EntryPoint, ResizeHandler {
   	
   	messageList.getResponses(f);
   }
+  
+  public String validateTags()
+  {
+	  return messageDetail.validateTags();
+  }
 
   /**
    * This method constructs the application user interface by instantiating
