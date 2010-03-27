@@ -7,16 +7,21 @@ _This are high-level instructions. The links below should provide you with info 
   # Install Django
   # Install wadofstuff Django serializers
   # Install mysqldb python module
+  # Create a mysql database called 'otalo', and a user 'otalo' and password 'otalo' with all privileges to it.
 
 == Dev Environment ==
+  # Setup web components above
   # Install Eclipse
   # Install Subclipse eclipse plugin
   # Install GWT eclipse plugin
   # Checkout gwt folder from the repository (trunk/web/), following the instructions here. Be sure to check out the code as a GWT project and name it 'ao' with package name 'org.otalo.ao'.
   # Checkout trunk/web/django into a new project ao_server. Optionally use python project plugin
-  # Checkou trunk/IVR into a new project ao_IVR. Optionally use lua plugin
+  # Checkout trunk/IVR into a new project ao_IVR. Optionally use lua plugin
 
 == Web Server ==
+  # Setup web components above
+  # Download trunk web and place the code in a place you are comfortable with web server accessing it (a good place is /var/www). You can place the gwt and django_templates folders in /html subdirectory; the django folder can stay at the same level and renamed to 'otalo' for specificity.
+  # In the django (or 'otalo') directory, run 'python manage.py syncdb' to setup the mysql tables. Run 'python manage.py loaddata production.json' and 'python manage.py loaddata tags.json' to seed the tables.
   # Install and configure mod_wsgi for your apache server
   # setup django project to interface with wsgi using these instructions
   # Be sure that the paths in django.wsgi, settings.py, and the paths in your apache config file are all matched up
@@ -24,5 +29,6 @@ _This are high-level instructions. The links below should provide you with info 
 == IVR ==
   # Download and install FreeSWITCH
   # Download and install lua and luasql
-  # open ports 5060, 5080 tcp and udp in server firewall (for centOS, use /sbin/iptables command)
-  # drop in dialplan for app at extension 5000. Default user ids are 1000, 1001, 1002, all with password 1234
+  # Open ports 5060, 5080 tcp and udp in server firewall (for centOS, use /sbin/iptables command)
+  # Download trunk/IVR and drop the directory into /usr/local/freeswitch/scripts
+  # Drop in dialplan for app at extension 5000. Default user ids are 1000, 1001, 1002, all with password 1234
