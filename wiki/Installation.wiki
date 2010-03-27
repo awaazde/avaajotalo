@@ -3,7 +3,7 @@
 _This are high-level instructions. The links below should provide you with info to get started, but setting up many of these items is platform-specific, so google around and if you still are stuck email me._
 
 == Web Components ==
-  # Install Python, Java, MySQL
+  # Install Python, Java SDK, MySQL
   # Install Django
   # Install wadofstuff Django serializers
   # Install mysqldb python module
