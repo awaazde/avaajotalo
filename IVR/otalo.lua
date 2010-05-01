@@ -519,7 +519,7 @@ function playmessages (msgs, responsesallowed, moderated, listenreplies)
 
       d = use();
       -- check if a pre-emptive action was taken
-      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
+      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
 	 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
       end
       
