@@ -248,14 +248,17 @@ end
 -----------
 
 function getmessages (forumid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
-   query = query .. "WHERE message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
-   --if (adminmode) then
-   --query = query .. " AND NOT message_forum.status = " .. MESSAGE_STATUS_REJECTED;
-   --else
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
-   --end
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated ";
+   if (adminmode) then
+      query = query .. ", message_forum.status ";
+   end
+   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. "WHERE forum.id = " .. forumid .. " AND message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
+   if (adminmode) then
+      query = query .. " AND NOT message_forum.status = " .. MESSAGE_STATUS_REJECTED;
+   else
+      query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
+   end
    -- Sort first by position AND then date
    query = query .. " ORDER BY message_forum.position DESC, message.date DESC";
   
@@ -268,10 +271,13 @@ end
 -----------
 
 function getreplies (thread)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated ";
+   if (adminmode) then
+      query = query .. ", message_forum.status ";
+   end
+   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id";
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id";
    -- TAP: even though we have threading information (lft, rgt), we
    -- only order by date.  consider losing the lft, right altogether.
    query = query .. " ORDER BY message.date ASC";
@@ -286,10 +292,13 @@ end
 -----------
 
 function getusermessages ()
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated ";
+   if (adminmode) then
+      query = query .. ", message_forum.status ";
+   end
+   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. "WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id";
    query = query .. " ORDER BY message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
@@ -301,10 +310,13 @@ end
 -----------
 
 function getpendingmessages ()
-   local query = "SELECT message.id, message.content_file, message.summary_file, message_forum.position, message.lft, message.rgt, message.thread_id, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated ";
+   if (adminmode) then
+      query = query .. ", message_forum.status ";
+   end
+   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. "WHERE message.id = message_forum.message_id";
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING;
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING .. " AND message_forum.forum_id = forum.id";
    query = query .. " ORDER BY message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
@@ -420,12 +432,18 @@ end
 -- playmessage
 -----------
 
-function playmessage (msg, responsesallowed, moderated, listenreplies)
+function playmessage (msg, listenreplies)
   local id = msg[1];
   local content = msg[2];
   local summary = msg[3];
-  local rgt = tonumber(msg[6]);
-  local status = tonumber(msg[8]);
+  local rgt = tonumber(msg[4]);
+  local responsesallowed = tonumber(msg[7]);
+  local moderated = tonumber(msg[8]);
+  local status = MESSAGE_STATUS_APPROVED;
+
+  if (adminmode) then
+     local status = tonumber(msg[9]);
+  end
 
   d = playcontent(summary, content);
 
@@ -458,7 +476,7 @@ function playmessage (msg, responsesallowed, moderated, listenreplies)
 	   return d;
 	end
 	
-	d = playmessages(getreplies(id), responsesallowed, moderated, 'n');
+	d = playmessages(getreplies(id), 'n');
 	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
 	   return d;
 	end
@@ -490,7 +508,7 @@ end
 -- playmessages
 -----------
 
-function playmessages (msgs, responsesallowed, moderated, listenreplies)
+function playmessages (msgs, listenreplies)
    -- get the first top-level message for this forum
    local current_msg = msgs();
    if (current_msg == nil) then
@@ -520,17 +538,17 @@ function playmessages (msgs, responsesallowed, moderated, listenreplies)
       d = use();
       -- check if a pre-emptive action was taken
       if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
-	 d = playmessage(current_msg, responsesallowed, moderated, listenreplies);
+	 d = playmessage(current_msg, listenreplies);
       end
       
       if (d == GLOBAL_MENU_RESPOND) then
 	 if (responsesallowed == 'y' or adminmode) then
 	    read(aosd .. "okrecordresponse.wav", 500);
-	    local thread = current_msg[7];
+	    local thread = current_msg[5];
 	    if (thread == nil) then
 	       thread = current_msg[1];
 	    end
-	    d = recordmessage (nil, thread, moderated, maxlength, current_msg[6]);
+	    d = recordmessage (current_msg[6], thread, moderated, maxlength, current_msg[4]);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	       return d;
 	    else
@@ -691,14 +709,13 @@ end
 
 function playforum (forumid)
    local forum = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. forumid);
+   cur = con:execute("SELECT name_file, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. forumid);
    cur:fetch(forum);
    cur:close();
    local forumname = forum[1];
-   local moderated = forum[2];
-   local postingallowed = forum[3];
-   local responsesallowed = forum[4];
-   local maxlength = forum[5];
+   local postingallowed = forum[2];
+   local responsesallowed = forum[3];
+   local maxlength = forum[4];
    local d = "";
 	
    if (postingallowed == 'y' or adminmode) then
@@ -731,7 +748,7 @@ function playforum (forumid)
       return;
    end
 
-   playmessages(getmessages(forumid), responsesallowed, moderated, 'y');
+   playmessages(getmessages(forumid), 'y');
    return;
 end
 
