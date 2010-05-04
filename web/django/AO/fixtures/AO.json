@@ -5,7 +5,6 @@
         "fields": {
             "posting_allowed": "y", 
             "name": "Question and Answer", 
-            "open": "y", 
             "moderated": "y", 
             "maxlength": 3000, 
             "responses_allowed": "n", 
@@ -18,7 +17,6 @@
         "fields": {
             "posting_allowed": "n", 
             "name": "Announcements", 
-            "open": "n", 
             "moderated": "y", 
             "maxlength": 60000, 
             "responses_allowed": "y", 
@@ -31,7 +29,6 @@
         "fields": {
             "posting_allowed": "n", 
             "name": "Radio", 
-            "open": "n", 
             "moderated": "n", 
             "maxlength": 40000, 
             "responses_allowed": "n", 
@@ -44,7 +41,6 @@
         "fields": {
             "posting_allowed": "y", 
             "name": "Experiences", 
-            "open": "n", 
             "moderated": "y", 
             "maxlength": 6666, 
             "responses_allowed": "y", 
@@ -57,7 +53,7 @@
         "fields": {
             "name": "ADMIN", 
             "district": "", 
-            "number": "1001",         
+            "number": "1000",         
             "taluka": "",  
             "village": "", 
             "admin" : "y",
@@ -69,6 +65,7 @@
         "model": "AO.user", 
         "fields": {
             "name": "Neil Patel", 
+            "number": "1001",
             "district": "Anand",            
             "taluka_file": "foo.wav", 
             "taluka": "Anand", 
@@ -83,7 +80,7 @@
         "fields": {
             "name": "Paresh Dave", 
             "district": "", 
-            "number": "9428500597",            
+            "number": "1002",            
             "taluka": "", 
             "village": "", 
             "admin" : "y",
@@ -96,7 +93,7 @@
         "fields": {
             "name": "Amit Nanavati", 
             "district": "", 
-            "number": "981070287",            
+            "number": "1003",            
             "taluka": "", 
             "village": "", 
             "admin" : "n",
@@ -109,7 +106,7 @@
         "fields": {
             "name": "Nitendra Rajput", 
             "district": "", 
-            "number": "9818832956",            
+            "number": "1004",            
             "taluka": "", 
             "village": "", 
             "admin" : "n",
@@ -125,7 +122,7 @@
             "date": "2009-10-27 20:05:59", 
             "summary_file": "",
             "lft": 1,
-            "rgt": 12  
+            "rgt": 6  
         }
     },
     {
@@ -170,14 +167,14 @@
             "summary_file": "",
             "thread": 1,
             "lft": 4,
-            "rgt": 11 
+            "rgt": 5 
         }
     },
     {
         "pk": 3, 
         "model": "AO.message_forum", 
         "fields": {
-            "status": 0, 
+            "status": 1, 
             "message":3,
             "forum": 1
         }
@@ -190,9 +187,8 @@
             "user": 1, 
             "date": "2009-11-01 23:13:27", 
             "summary_file": "",
-            "thread": 1,
-            "lft": 5,
-            "rgt": 8
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
@@ -200,7 +196,7 @@
         "model": "AO.message_forum", 
         "fields": {
             "status": 0, 
-            "message":4,
+            "message":5,
             "forum": 1
         }
     },
@@ -212,9 +208,8 @@
             "user": 1, 
             "date": "2009-11-01 23:13:38", 
             "summary_file": "",
-            "thread": 1,
-            "lft": 6,
-            "rgt": 7
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
@@ -222,7 +217,7 @@
         "model": "AO.message_forum", 
         "fields": {
             "status": 0, 
-            "message":5,
+            "message":4,
             "forum": 1
         }
     },
@@ -234,9 +229,8 @@
             "user": 1, 
             "date": "2009-11-01 23:13:46",  
             "summary_file": "",
-            "thread": 1,
-            "lft": 9,
-            "rgt": 10
+            "lft": 1,
+            "rgt": 2
         }
     }, 
     {
@@ -356,6 +350,834 @@
             "position": 2, 
             "message":11,
             "forum": 3
+        }
+    },
+     {
+        "pk": 1, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cotton",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Wheat",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cumin",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Castor",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Mustard",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Millet",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Groundnut",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Maize",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Paddy",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Crop Planning",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Seeds",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Soil Care",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Pests",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 14, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Diseases",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 15, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Weeding",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Irrigation",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 17, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Animal Husbandry",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 18, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Onion",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 19, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tobacco",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 20, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sesame",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 21, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chilli",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 22, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sorghum",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 23, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Garlic",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 24, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Brinjal",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 25, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Gram",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 26, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chickpea",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 27, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Banana",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 28, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Papaya",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 29, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tumeric",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 30, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Other",
+            "forum" : 2
+        }
+    },
+     {
+        "pk": 31, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Harvesting",
+            "forum" : 2
+        }
+    },
+     {
+        "pk": 32, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Marketing",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 33, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Other",
+            "forum" : 2
+        }
+    },
+    
+    {
+        "pk": 1, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "1"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "2"
+        }
+    },
+     {
+        "pk": 3, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "3"
+        }
+    },
+     {
+        "pk": 4, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "4"
+        }
+    },
+     {
+        "pk": 5, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "5"
+        }
+    },
+     {
+        "pk": 6, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "6"
+        }
+    },
+     {
+        "pk": 7, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "7"
+        }
+    },
+     {
+        "pk": 8, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "8"
+        }
+    },
+     {
+        "pk": 9, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "9"
+        }
+    },
+     {
+        "pk": 10, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "10"
+        }
+    },
+
+     {
+        "pk": 11, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "11"
+        }
+    },
+     {
+        "pk": 12, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "12"
+        }
+    },
+     {
+        "pk": 13, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "13"
+        }
+    },
+     {
+        "pk": 14, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "14"
+        }
+    },
+     {
+        "pk": 15, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "15"
+        }
+    },
+     {
+        "pk": 16, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "16"
+        }
+    },
+     {
+        "pk": 17, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "17"
+        }
+    },
+     {
+        "pk": 18, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "18"
+        }
+    },
+     {
+        "pk": 19, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "19"
+        }
+    },
+     {
+        "pk": 20, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "20"
+        }
+    },
+     {
+        "pk": 21, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "21"
+        }
+    },
+     {
+        "pk": 22, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "22"
+        }
+    },
+     {
+        "pk": 23, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "23"
+        }
+    },
+     {
+        "pk": 24, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "1"
+        }
+    },
+     {
+        "pk": 25, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "2"
+        }
+    },
+     {
+        "pk": 26, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "3"
+        }
+    },
+     {
+        "pk": 27, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "4"
+        }
+    },
+     {
+        "pk": 28, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "5"
+        }
+    },
+     {
+        "pk": 29, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "6"
+        }
+    },
+     {
+        "pk": 30, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "7"
+        }
+    },
+     {
+        "pk": 31, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "8"
+        }
+    },
+     {
+        "pk": 32, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "9"
+        }
+    },
+     {
+        "pk": 33, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "10"
+        }
+    },
+     {
+        "pk": 34, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "11"
+        }
+    },
+     {
+        "pk": 35, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "12"
+        }
+    },
+     {
+        "pk": 36, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "13"
+        }
+    },
+     {
+        "pk": 37, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "14"
+        }
+    },
+     {
+        "pk": 38, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "15"
+        }
+    },
+     {
+        "pk": 39, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "2", 
+            "tag": "16"
+        }
+    },
+     {
+        "pk": 40, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "1"
+        }
+    },
+     {
+        "pk": 41, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "2"
+        }
+    },
+     {
+        "pk": 42, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "3"
+        }
+    },
+     {
+        "pk": 43, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "4"
+        }
+    },
+     {
+        "pk": 44, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "5"
+        }
+    },
+     {
+        "pk": 45, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "6"
+        }
+    },
+     {
+        "pk": 46, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "7"
+        }
+    },
+     {
+        "pk": 47, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "8"
+        }
+    },
+     {
+        "pk": 48, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "9"
+        }
+    },
+     {
+        "pk": 49, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "3", 
+            "tag": "10"
+        }
+    },
+    {
+        "pk": 50, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "4", 
+            "tag": "1"
+        }
+    },
+     {
+        "pk": 51, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "4", 
+            "tag": "2"
+        }
+    },
+     {
+        "pk": 52, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "4", 
+            "tag": "3"
+        }
+    },
+     {
+        "pk": 53, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "4", 
+            "tag": "4"
+        }
+    },
+     {
+        "pk": 54, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "4", 
+            "tag": "5"
+        }
+    },
+    {
+        "pk": 55, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "5", 
+            "tag": "1"
+        }
+    },
+     {
+        "pk": 56, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "5", 
+            "tag": "2"
+        }
+    },
+     {
+        "pk": 57, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "24"
+        }
+    },
+     {
+        "pk": 58, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "25"
+        }
+    },
+     {
+        "pk": 59, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "26"
+        }
+    },
+     {
+        "pk": 60, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "27"
+        }
+    },
+     {
+        "pk": 61, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "28"
+        }
+    },
+     {
+        "pk": 62, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "29"
+        }
+    },
+     {
+        "pk": 63, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "30"
+        }
+    },
+
+     {
+        "pk": 64, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "31"
+        }
+    },
+     {
+        "pk": 65, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "32"
+        }
+    },
+     {
+        "pk": 66, 
+        "model": "AO.Responder_tag", 
+        "fields": {
+            "user": "1", 
+            "tag": "33"
         }
     }
 ]

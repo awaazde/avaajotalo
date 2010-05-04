@@ -22,7 +22,6 @@ class Forum(models.Model):
     moderated = models.CharField(max_length=1)
     posting_allowed = models.CharField(max_length=1)
     responses_allowed = models.CharField(max_length=1)
-    open = models.CharField(max_length=1)
     maxlength = models.IntegerField()
 
     def __unicode__(self):
@@ -73,13 +72,44 @@ class Tag(models.Model):
     tag = models.CharField(max_length=24)
     type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
+    ########################################################################################
+    # why? so that experts can be associated with not only a topic
+    # but also a community (i.e. forum) where they should share that expertise
+    # Put another way, a cotton expert in Guj may not want or be qualified to
+    # answer cotton questions from a forum for MP farmers.
+    # This also makes it so forums develop a specific vocabulary for people to be experts in
+    forum = models.ForeignKey(Forum)
+    ########################################################################################
     
     def __unicode__(self):
         return self.tag
     
 class Message_tag(models.Model):
-    message = models.ForeignKey(Message)
+    # need forum so that you can retrieve tags
+    # for a message by the specific forum
+    message_forum = models.ForeignKey(Message_forum)
     tag = models.ForeignKey(Tag)
     
     def __unicode__(self):
         return unicode(self.message) + '_' + unicode(self.tag)
+    
+class Responder_tag(models.Model):
+    user = models.ForeignKey(User)
+    tag = models.ForeignKey(Tag)
+    
+    def __unicode__(self):
+        return unicode(self.user) + '_' + unicode(self.tag)
+    
+class Message_responder(models.Model):
+    # need forum so that you can retrieve responders
+    # for a message by the specific forum
+    message_forum = models.ForeignKey(Message_forum)
+    user = models.ForeignKey(User)
+    assign_date = models.DateTimeField()
+    listens = models.IntegerField(default=0)
+    reserved_by = models.ForeignKey(User, related_name='reserved_by', blank=True, null=True)
+    reserved_until = models.DateTimeField(blank=True, null=True)
+    passed_date = models.DateTimeField(blank=True, null=True)
+    
+    def __unicode__(self):
+        return unicode(self.message) + '_' + unicode(self.user)

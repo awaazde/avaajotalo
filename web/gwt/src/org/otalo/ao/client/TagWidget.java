@@ -11,7 +11,7 @@ import com.google.gwt.user.client.ui.Composite;
  *
  */
 public abstract class TagWidget extends Composite {
-	public abstract void loadSelectedTags(MessageForum messageForun);
+	public abstract void loadTags(MessageForum messageForum);
 	public abstract String getErrorText();
 	public abstract void reset();
 }

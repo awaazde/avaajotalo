@@ -32,8 +32,9 @@ urlpatterns = patterns('',
     (r'^move/$', 'otalo.AO.views.movemessage'),
     (r'^upload/$', 'otalo.AO.views.uploadmessage'),
     (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.thread'),
-    (r'^tags/$', 'otalo.AO.views.tags'),
-    (r'^messagetag/(?P<message_id>\d+)/$', 'otalo.AO.views.messagetag'),
+    (r'^tags/(?P<forum_id>\d+)/$', 'otalo.AO.views.tags'),
+    (r'^messagetag/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messagetag'),
+    (r'^messageresponder/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messageresponder'),
 )
 
 if settings.DEVELOPMENT:

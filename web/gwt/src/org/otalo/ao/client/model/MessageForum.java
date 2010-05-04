@@ -48,7 +48,7 @@ public class MessageForum extends BaseModel {
 	}
 	
 	/**
-	 * Replicate the Message API hear to make MessageForums more like messages
+	 * Replicate the Message API here to make MessageForums more like messages
 	 * @return
 	 */
 	public User getAuthor()
