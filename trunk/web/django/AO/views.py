@@ -18,10 +18,10 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
-from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_tag
+from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_tag, Responder_tag, Message_responder
 from django.core import serializers
 from django.conf import settings
-from django.db.models import Min
+from django.db.models import Min, Count
 from datetime import datetime
 import os, stat
 
@@ -31,6 +31,13 @@ json_serializer = serializers.get_serializer("json")()
 MESSAGE_STATUS_PENDING = 0
 MESSAGE_STATUS_APPROVED = 1
 MESSAGE_STATUS_REJECTED = 2
+
+# Routing Constants
+MAX_RESPONDERS = 5
+MIN_RESPONDERS = 2
+MAX_QUESTIONS_PER_RESPONDER = 10
+# should match answer.lua
+LISTEN_THRESH = 5
 
 @login_required
 def index(request):
@@ -82,7 +89,7 @@ def updatemessage(request):
 
     u.save()   
 
-    m = get_object_or_404(Message_forum, message=params['messageforumid'])
+    m = get_object_or_404(Message_forum, pk=params['messageforumid'])
 
     if not params.__contains__('position'):
         m.position = None
@@ -97,19 +104,49 @@ def updatemessage(request):
     crop = params['crop']
     topic = params['topic']
     
-    tags = Message_tag.objects.filter(message=m.message)
-    for old_tag in tags:
-        old_tag.delete()
+    tags = Message_tag.objects.filter(message_forum = m)
+    initial_tag = False
+    if not tags and (crop != '-1' or topic != '-1'):
+        # if there aren't any previous tags
+        # and there is at least one new one
+        # (even if you can untag completely, we still want this flag set)
+        initial_tag = True
+    else:   
+        tags.delete()
     
     if crop != '-1':
         crop_tag = Tag.objects.get(pk=crop)
-        new_crop_tag = Message_tag(message=m.message, tag=crop_tag)
+        new_crop_tag = Message_tag(message_forum = m, tag=crop_tag)
         new_crop_tag.save()
     
     if topic != '-1':
         topic_tag = Tag.objects.get(pk=topic)
-        new_topic_tag = Message_tag(message=m.message, tag=topic_tag)
-        new_topic_tag.save()  
+        new_topic_tag = Message_tag(message_forum = m, tag=topic_tag)
+        new_topic_tag.save()
+        
+    # check routing table
+    routeEnabled = params.__contains__('routeEnabled')
+    if routeEnabled:
+        # checked
+        
+        # do fresh assignments even if it's the same people to start again
+        Message_responder.objects.filter(message_forum=m).delete()
+        responders = get_responders(m)
+        t = datetime.now()
+        for responder in responders:
+            mr = Message_responder(message_forum=m, user=responder, assign_date=t)
+            mr.save();
+    else:
+        # check if tags are being saved for the first time
+        if initial_tag:
+            responders = get_responders(m)
+            t = datetime.now()
+            for responder in responders:
+                mr = Message_responder(message_forum=m, user=responder, assign_date=t)
+                mr.save();
+        else:
+            # unchecked; delete any responder assignments that exist
+            Message_responder.objects.filter(message_forum=m).delete()
     
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
@@ -277,7 +314,7 @@ def thread(request, message_forum_id):
 def updatestatus(request, action):
     params = request.POST 
 
-    m = get_object_or_404(Message_forum, message=params['messageforumid'])
+    m = get_object_or_404(Message_forum, pk=params['messageforumid'])
     current_status = m.status
     
     if action == 'approve' and current_status != MESSAGE_STATUS_APPROVED:
@@ -309,23 +346,49 @@ def updatestatus(request, action):
                 msg.save()
 
             m.position = None
+        
+        # remove any assignments to answer this question
+        Message_responder.objects.filter(message_forum=m).delete()
 
     m.save()
     
     return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
 
-def tags(request):
+def tags(request, forum_id):
     params = request.GET
     
     types = params['type'].split()
-    tags = Tag.objects.filter(type__in=types)
+    tags = Tag.objects.filter(forum=forum_id, type__in=types)
        
     return send_response(tags)
 
-def messagetag(request, message_id):
-    tags = Message_tag.objects.filter(message=message_id)
+def messagetag(request, message_forum_id):
+    tags = Message_tag.objects.filter(message_forum=message_forum_id)
     return send_response(tags, ('tag'))
 
+def messageresponder(request, message_forum_id):
+    responders = Message_responder.objects.filter(message_forum=message_forum_id)
+    return send_response(responders, ('user'))
+
+def get_responders(message_forum):
+    
+    tag_ids = Message_tag.objects.filter(message_forum = message_forum).values_list('tag', flat=True)
+    
+    # Find users who match at least one of the tags for this message, excluding
+    # those who have already passed on this message and have listened to it beyond the listen threshold
+    # (the excludes for if a question is re-run for responders), and pick the ones with the least pending questions
+    responder_ids = User.objects.filter(responder_tag__tag__in = tag_ids).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
+    responder_ids = [row['id'] for row in responder_ids]
+    
+    if len(responder_ids) < MIN_RESPONDERS:
+        old = responder_ids
+        # If too few, pick the X with the fewest pending questions
+        responder_ids = User.objects.exclude(id__in=old).values('id').annotate(num_assigned=Count('message_responder__message_forum')).order_by('num_assigned')[:MAX_RESPONDERS-len(old)]
+        responder_ids = [row['id'] for row in responder_ids]
+        responder_ids.extend(old)
+
+    return User.objects.filter(id__in=responder_ids) 
+  
 # this should return the person logged in.
 # Stub it for now.
 def get_console_user():

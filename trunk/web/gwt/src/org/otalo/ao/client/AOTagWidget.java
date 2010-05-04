@@ -3,6 +3,7 @@ package org.otalo.ao.client;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.MessageTag;
@@ -15,6 +16,7 @@ import com.google.gwt.user.client.ui.ListBox;
 public class AOTagWidget extends TagWidget {
 	private ListBox crop, topic;
 	private boolean tagged;
+	private MessageForum mf;
 	
 	public AOTagWidget()
 	{
@@ -37,7 +39,6 @@ public class AOTagWidget extends TagWidget {
 		tagTable.setWidget(1, 1, topic);
 		
 		initWidget(tagTable);
-		loadTags();
 	}
 	
 	public String getErrorText() {
@@ -48,10 +49,16 @@ public class AOTagWidget extends TagWidget {
 		return errorText;
 	}
 	
-	private void loadTags()
+	public void loadTags(MessageForum messageForum)
 	{
+		mf = messageForum;
+		crop.clear();
+		topic.clear();
+		crop.addItem("", "-1");
+		topic.addItem("", "-1");
+		
 		JSONRequest request = new JSONRequest();
-	    request.doFetchURL(AoAPI.TAGS + "?type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
+	    request.doFetchURL(AoAPI.TAGS + mf.getForum().getId() + "/?type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
 	}
 	
 	 private class TagRequestor implements JSONRequester {
@@ -67,11 +74,15 @@ public class AOTagWidget extends TagWidget {
 		  		else if (t.getType().equals(AoAPI.TAG_TYPE_TOPIC))
 		  			topic.addItem(t.getTag(), t.getId());
 		  	}
+			
+			// now that tags have been loaded,
+			// check which have been selected
+			loadSelectedTags(mf);
 
 		}
 	 }
 	 
-	public void loadSelectedTags(MessageForum messageForum) {		
+	private void loadSelectedTags(MessageForum messageForum) {		
 		JSONRequest request = new JSONRequest();
 	    request.doFetchURL(AoAPI.MESSAGE_TAGS + messageForum.getId() + "/", new MessageTagRequestor());
 	}

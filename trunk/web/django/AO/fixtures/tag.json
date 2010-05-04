@@ -4,7 +4,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Cotton"
+            "tag": "Cotton",
+            "forum" : 1
         }
     }, 
     {
@@ -12,7 +13,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Wheat"
+            "tag": "Wheat",
+            "forum" : 1
         }
     }, 
     {
@@ -20,7 +22,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Cumin"
+            "tag": "Cumin",
+            "forum" : 1
         }
     }, 
     {
@@ -28,7 +31,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Castor"
+            "tag": "Castor",
+            "forum" : 1
         }
     }, 
     {
@@ -36,7 +40,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Mustard"
+            "tag": "Mustard",
+            "forum" : 1
         }
     }, 
     {
@@ -44,7 +49,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Millet"
+            "tag": "Millet",
+            "forum" : 1
         }
     }, 
     {
@@ -52,7 +58,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Groundnut"
+            "tag": "Groundnut",
+            "forum" : 1
         }
     }, 
     {
@@ -60,7 +67,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Maize"
+            "tag": "Maize",
+            "forum" : 1
         }
     },
     {
@@ -68,7 +76,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Paddy"
+            "tag": "Paddy",
+            "forum" : 1
         }
     },
     {
@@ -76,7 +85,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Crop Planning"
+            "tag": "Crop Planning",
+            "forum" : 1
         }
     },
     {
@@ -84,7 +94,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Seeds"
+            "tag": "Seeds",
+            "forum" : 1
         }
     },
     {
@@ -92,7 +103,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Soil Care"
+            "tag": "Soil Care",
+            "forum" : 1
         }
     },
     {
@@ -100,7 +112,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Pests"
+            "tag": "Pests",
+            "forum" : 1
         }
     },
     {
@@ -108,7 +121,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Diseases"
+            "tag": "Diseases",
+            "forum" : 1
         }
     },
     {
@@ -116,7 +130,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Weeding"
+            "tag": "Weeding",
+            "forum" : 1
         }
     },
     {
@@ -124,7 +139,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Irrigation"
+            "tag": "Irrigation",
+            "forum" : 1
         }
     },
     {
@@ -132,7 +148,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Animal Husbandry"
+            "tag": "Animal Husbandry",
+            "forum" : 1
         }
     },
     {
@@ -140,7 +157,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Onion"
+            "tag": "Onion",
+            "forum" : 1
         }
     },
     {
@@ -148,7 +166,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Tobacco"
+            "tag": "Tobacco",
+            "forum" : 1
         }
     },
     {
@@ -156,7 +175,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Sesame"
+            "tag": "Sesame",
+            "forum" : 1
         }
     },
     {
@@ -164,7 +184,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Chilli"
+            "tag": "Chilli",
+            "forum" : 1
         }
     },
     {
@@ -172,7 +193,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Sorghum"
+            "tag": "Sorghum",
+            "forum" : 1
         }
     },
     {
@@ -180,7 +202,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Garlic"
+            "tag": "Garlic",
+            "forum" : 1
         }
     },
     {
@@ -188,7 +211,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Brinjal"
+            "tag": "Brinjal",
+            "forum" : 1
         }
     },
     {
@@ -196,7 +220,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Gram"
+            "tag": "Gram",
+            "forum" : 1
         }
     },
     {
@@ -204,7 +229,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Chickpea"
+            "tag": "Chickpea",
+            "forum" : 1
         }
     },
     {
@@ -212,7 +238,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Banana"
+            "tag": "Banana",
+            "forum" : 1
         }
     },
     {
@@ -220,7 +247,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Papaya"
+            "tag": "Papaya",
+            "forum" : 1
         }
     },
     {
@@ -228,7 +256,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Tumeric"
+            "tag": "Tumeric",
+            "forum" : 1
         }
     },
     {
@@ -236,7 +265,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-crop", 
-            "tag": "Other"
+            "tag": "Other",
+            "forum" : 1
         }
     },
      {
@@ -244,7 +274,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Harvesting"
+            "tag": "Harvesting",
+            "forum" : 1
         }
     },
      {
@@ -252,7 +283,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Marketing"
+            "tag": "Marketing",
+            "forum" : 1
         }
     },
     {
@@ -260,7 +292,8 @@
         "model": "AO.tag", 
         "fields": {
             "type": "agri-topic", 
-            "tag": "Other"
+            "tag": "Other",
+            "forum" : 1
         }
     }
     

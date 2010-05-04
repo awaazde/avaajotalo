@@ -57,6 +57,7 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 /**
  * A composite for displaying the details of a voice message.
@@ -65,13 +66,14 @@ public class MessageDetail extends Composite {
 	private FormPanel detailsForm;
 	private Hidden userId, messageForumId, moveDirection;
 	private Button saveButton, moveUpButton, moveDownButton, clickedButton;
-	private VerticalPanel moveButtons, thread, controls;
+	private VerticalPanel moveButtons, thread, controls, metadata;
 	private HorizontalPanel outer, responsePanel;
 	private DockPanel threadPanel;
 	private FlexTable detailsTable;
 	private CheckBox sticky;
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
 	private TagWidget tags;
+	private RoutingWidget routing;
 
   public MessageDetail() {
   	outer = new HorizontalPanel();
@@ -88,12 +90,19 @@ public class MessageDetail extends Composite {
   	threadPanel = new DockPanel();
   	controls = new VerticalPanel();
   	detailsTable = new FlexTable();
+  	metadata = new VerticalPanel();
+  	metadata.setHeight("100%");
   	tags = new AOTagWidget();
+  	routing = new AORoutingWidget();
+  	metadata.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+  	metadata.add(tags);
+  	metadata.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+  	metadata.add(routing);
   	
   	outer.setSpacing(3);
   	outer.add(detailsTable);
   	outer.add(threadPanel);
-  	outer.add(tags);
+  	outer.add(metadata);
   	outer.add(controls);
   	
   	controls.setSize("100%", "100%");
@@ -264,7 +273,10 @@ public class MessageDetail extends Composite {
   	}
   	
   	// Load Tags
-  	tags.loadSelectedTags(messageForum);
+  	tags.loadTags(messageForum);
+  	
+  	// Load routing info
+  	routing.loadRoutingInfo(messageForum);
   	
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
@@ -412,6 +424,7 @@ public class MessageDetail extends Composite {
 		sticky.setValue(false);
 		messageForumId.setValue("");
 		tags.reset();
+		routing.reset();
 	}
 	
 	private void setMovable(boolean canMove)

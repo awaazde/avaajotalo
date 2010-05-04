@@ -66,6 +66,7 @@ public final class JSONRequest {
 		public static final String LOGOUT = "/logout/";
 		public static final String TAGS = "tags/";
 		public static final String MESSAGE_TAGS = "messagetag/";
+		public static final String MESSAGE_RESPONDERS = "messageresponder/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
