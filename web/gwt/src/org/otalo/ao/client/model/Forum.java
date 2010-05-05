@@ -34,5 +34,10 @@ public class Forum extends BaseModel {
 	{
 		return getObject("fields").get("moderated").equals("y");
 	}
+	
+	public boolean routeable()
+	{
+		return getObject("fields").get("routeable").equals("y");
+	}
 
 }

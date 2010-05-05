@@ -52,10 +52,6 @@ public class AOTagWidget extends TagWidget {
 	public void loadTags(MessageForum messageForum)
 	{
 		mf = messageForum;
-		crop.clear();
-		topic.clear();
-		crop.addItem("", "-1");
-		topic.addItem("", "-1");
 		
 		JSONRequest request = new JSONRequest();
 	    request.doFetchURL(AoAPI.TAGS + mf.getForum().getId() + "/?type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
@@ -127,8 +123,12 @@ public class AOTagWidget extends TagWidget {
 	
 	public void reset()
 	{
-		 crop.setSelectedIndex(0);
-		 topic.setSelectedIndex(0);
+		crop.clear();
+		topic.clear();
+		crop.addItem("", "-1");
+		topic.addItem("", "-1");
+		 
+		 
 	}
 
 

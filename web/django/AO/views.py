@@ -25,8 +25,6 @@ from django.db.models import Min, Count
 from datetime import datetime
 import os, stat
 
-json_serializer = serializers.get_serializer("json")()
-
 # Code in order of how they are declared in Message.java
 MESSAGE_STATUS_PENDING = 0
 MESSAGE_STATUS_APPROVED = 1
@@ -123,30 +121,31 @@ def updatemessage(request):
         topic_tag = Tag.objects.get(pk=topic)
         new_topic_tag = Message_tag(message_forum = m, tag=topic_tag)
         new_topic_tag.save()
-        
-    # check routing table
-    routeEnabled = params.__contains__('routeEnabled')
-    if routeEnabled:
-        # checked
-        
-        # do fresh assignments even if it's the same people to start again
-        Message_responder.objects.filter(message_forum=m).delete()
-        responders = get_responders(m)
-        t = datetime.now()
-        for responder in responders:
-            mr = Message_responder(message_forum=m, user=responder, assign_date=t)
-            mr.save();
-    else:
-        # check if tags are being saved for the first time
-        if initial_tag:
+    
+    if m.forum.routeable == 'y':
+        # check routing table
+        routeEnabled = params.__contains__('routeEnabled')
+        if routeEnabled:
+            # checked
+            
+            # do fresh assignments even if it's the same people to start again
+            Message_responder.objects.filter(message_forum=m).delete()
             responders = get_responders(m)
             t = datetime.now()
             for responder in responders:
                 mr = Message_responder(message_forum=m, user=responder, assign_date=t)
                 mr.save();
         else:
-            # unchecked; delete any responder assignments that exist
-            Message_responder.objects.filter(message_forum=m).delete()
+            # check if tags are being saved for the first time
+            if initial_tag:
+                responders = get_responders(m)
+                t = datetime.now()
+                for responder in responders:
+                    mr = Message_responder(message_forum=m, user=responder, assign_date=t)
+                    mr.save();
+            else:
+                # unchecked; delete any responder assignments that exist
+                Message_responder.objects.filter(message_forum=m).delete()
     
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
@@ -422,6 +421,7 @@ def add_child(child, parent):
         
     child.save()
 def send_response(query_set, relations=()):
+    json_serializer = serializers.get_serializer("json")()
     response = HttpResponse(json_serializer.serialize(query_set, relations=relations))
     response['Pragma'] = "no cache"
     response['Cache-Control'] = "no-cache, must-revalidate"
