@@ -22,6 +22,11 @@ class Forum(models.Model):
     moderated = models.CharField(max_length=1)
     posting_allowed = models.CharField(max_length=1)
     responses_allowed = models.CharField(max_length=1)
+    #===========================================================
+    # To determine whether a moderated forum suggests
+    # responders to route top-level posts to upon approval
+    routeable = models.CharField(max_length=1)
+    #===========================================================
     maxlength = models.IntegerField()
 
     def __unicode__(self):

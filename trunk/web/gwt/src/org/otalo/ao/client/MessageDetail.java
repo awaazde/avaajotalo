@@ -236,6 +236,8 @@ public class MessageDetail extends Composite {
   	
   	Forum f = messageForum.getForum();
   	setModerated(f.moderated());
+  	setRouteable(f.routeable());
+  	setTagable(f);
   	
   	switch (messageForum.getStatus())
   	{
@@ -442,6 +444,16 @@ public class MessageDetail extends Composite {
 		sticky.setVisible(canStick);
 	}
 	
+	private void setRouteable(boolean isRouteable)
+	{
+		routing.setVisible(isRouteable);
+	}
+	
+	private void setTagable(Forum f)
+	{
+		tags.setVisible(f.postingAllowed() || f.responsesAllowed());
+	}
+	
 	/**
 	 * We are keeping track of which button was clicked in this class
 	 * because the onSubmit event does not tell us that. To make it work
@@ -478,4 +490,5 @@ public class MessageDetail extends Composite {
 			setMovable(true);
 		}
 	}
+
 }
