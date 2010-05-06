@@ -28,6 +28,8 @@ logfilename = "/home/neil/Log/AO/alert.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
+sessid = os.time();
+
 script_name = "missed_call.lua";
 DIALSTRING_PREFIX = "{ignore_early_media=true}user/"
 wait_interval = 5000;
