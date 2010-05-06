@@ -15,15 +15,16 @@
 #===============================================================================
 import sys
 import time
+from datetime import datetime
 from ESL import *
-from otalo.AO.models import Message, Tag, Message_tag, User, Responder_tag, Message_responder
+from otalo.AO.models import Message_responder
 
-RETRY_THRESH = 3
 IVR_script = 'AO/answer.lua'
 MAX_CHANNELS = 10
 
 def main():
-    # TODO: check for expired reserve_untils and release them
+    now = datetime.now()
+    Message_responder.objects.filter(reserved_until__lt=now).update(reserved_by=None, reserved_until=None)
     
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     
