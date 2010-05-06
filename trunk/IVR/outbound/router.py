@@ -19,10 +19,11 @@ from datetime import datetime
 from ESL import *
 from otalo.AO.models import Message_responder
 
-IVR_script = 'AO/answer.lua'
+IVR_script = 'AO/outbound/answer.lua'
 MAX_CHANNELS = 10
 
 def main():
+    # check for expired reserve_untils and release them
     now = datetime.now()
     Message_responder.objects.filter(reserved_until__lt=now).update(reserved_by=None, reserved_until=None)
     
