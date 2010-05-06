@@ -16,13 +16,9 @@
  */
 package org.otalo.ao.client;
 
-import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratedStackPanel;
-import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -54,7 +50,7 @@ public class Shortcuts extends Composite {
 	 */
 	public Shortcuts(Images images, Fora fora) {
 		this.fora = fora;
-		add(fora, images.messagesgroup(), "Fora");
+		add(fora, images.messagesgroup(), "Forums");
 		initWidget(stackPanel);
 	}
 

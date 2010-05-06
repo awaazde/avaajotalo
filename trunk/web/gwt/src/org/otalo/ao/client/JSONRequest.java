@@ -16,29 +16,15 @@
  */
 package org.otalo.ao.client;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
+
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONException;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.json.client.JSONString;
-import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Tree;
-import com.google.gwt.user.client.ui.TreeItem;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +54,7 @@ public final class JSONRequest {
 		public static final String TAGS = "tags/";
 		public static final String MESSAGE_TAGS = "messagetag/";
 		public static final String MESSAGE_RESPONDERS = "messageresponder/";
+		public static final String USERNAME = "username/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
