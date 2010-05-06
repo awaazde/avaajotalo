@@ -60,7 +60,6 @@
             "number": "1000",         
             "taluka": "",  
             "village": "", 
-            "admin" : "y",
             "allowed" : "y"
         }
     },
@@ -74,7 +73,6 @@
             "taluka_file": "foo.wav", 
             "taluka": "Anand", 
             "village": "Patli", 
-            "admin" : "n",
             "allowed" : "y"
         }
     }, 
@@ -87,7 +85,6 @@
             "number": "1002",            
             "taluka": "", 
             "village": "", 
-            "admin" : "y",
             "allowed" : "y"
         }
     }, 
@@ -100,7 +97,6 @@
             "number": "1003",            
             "taluka": "", 
             "village": "", 
-            "admin" : "n",
             "allowed" : "y"
         }
     },
@@ -113,7 +109,6 @@
             "number": "1004",            
             "taluka": "", 
             "village": "", 
-            "admin" : "n",
             "allowed" : "y"
         }
     },

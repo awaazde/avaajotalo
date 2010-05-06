@@ -15,6 +15,8 @@
 #===============================================================================
 
 from django.db import models
+from django.contrib.auth.models import User as AuthUser
+from django.db.models.signals import post_save
 
 class Forum(models.Model):
     name = models.CharField(max_length=24)
@@ -36,7 +38,6 @@ class Forum(models.Model):
 class User(models.Model):
     number = models.CharField(max_length=24)
     allowed = models.CharField(max_length=1)
-    admin = models.CharField(max_length=1)
     name = models.CharField(max_length=128, blank=True, null=True)
     district = models.CharField(max_length=128, blank=True, null=True)
     taluka = models.CharField(max_length=128, blank=True, null=True)
@@ -118,3 +119,39 @@ class Message_responder(models.Model):
     
     def __unicode__(self):
         return unicode(self.message) + '_' + unicode(self.user)
+
+class Line(models.Model):
+    number = models.CharField(max_length=24)
+    name = models.CharField(max_length=128)
+    name_file = models.CharField(max_length=24, blank=True, null=True)
+
+class Line_forum(models.Model):
+    line = models.ForeignKey(Line)
+    forum = models.ForeignKey(Forum)
+    
+class Admin(models.Model):
+    user = models.ForeignKey(User)
+    forum = models.ForeignKey(Forum)
+
+class Admin_auth(models.Model):
+    user = models.ForeignKey(User)
+    auth_user = models.ForeignKey(AuthUser)
+
+def admin_created_handler(sender, **kwargs):
+    # an AO admin has been saved. Create a corresponding web admin
+    
+    # get the AO_admin instance that was created
+    admin = kwargs['instance']
+    
+    # has this admin already had a web account set up?
+    new_auth = (Admin_auth.objects.filter(user=admin.user).count() == 0)
+    
+    if new_auth:
+        auth_user = AuthUser.objects.create_user(admin.user.name, '')
+        auth_user.save()
+        
+        admin_auth = Admin_auth(user=admin.user, auth_user=auth_user)
+        admin_auth.save()
+    
+post_save.connect(admin_created_handler, sender=Admin)
+    

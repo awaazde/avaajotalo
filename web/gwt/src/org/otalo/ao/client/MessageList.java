@@ -399,7 +399,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   	styleRow(selectedRow, false);
   	String forumId = f.getId();
   	JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.MESSAGES + forumId + "/?" + filterParams, this);
+	request.doFetchURL(AoAPI.MESSAGES + forumId + "/?" + filterParams, this);
   }
 
 	public void dataReceived(List<JSOModel> models) 

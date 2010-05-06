@@ -18,7 +18,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
-from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_tag, Responder_tag, Message_responder
+from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_tag, Responder_tag, Message_responder, Admin, Admin_auth
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Count
@@ -43,10 +43,15 @@ def index(request):
     return render_to_response('Ao.html')
 
 def forum(request):
-    #f = get_object_or_404(Forum,pk=forum_id)
-    #return render_to_response('AO/forum/index.html', {'forum':f})
-
-    fora = Forum.objects.all()
+    auth_user = request.user
+    
+    if not auth_user.is_superuser:
+        admin = Admin_auth.objects.get(auth_user=auth_user)
+        # get all forums that this user has access to
+        fora = Forum.objects.filter(admin__user=admin.user).distinct()
+    else:
+        fora = Forum.objects.all()
+        
     return send_response(fora)
 
 def messages(request, forum_id):
@@ -368,6 +373,12 @@ def messagetag(request, message_forum_id):
 def messageresponder(request, message_forum_id):
     responders = Message_responder.objects.filter(message_forum=message_forum_id)
     return send_response(responders, ('user'))
+
+def username(request):
+    auth_user = request.user
+
+    user = get_list_or_404(User, admin_auth__auth_user=auth_user)
+    return send_response(user)
 
 def get_responders(message_forum):
     

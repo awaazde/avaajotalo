@@ -16,7 +16,12 @@
  */
 package org.otalo.ao.client;
 
+import java.util.List;
+
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.Tag;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -44,10 +49,11 @@ public class TopPanel extends Composite implements ClickHandler {
 
   private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
   private HTML aboutLink = new HTML("<a href='javascript:;'>About</a>");
+  private HorizontalPanel inner;
 
   public TopPanel(Images images) {
     HorizontalPanel outer = new HorizontalPanel();
-    HorizontalPanel inner = new HorizontalPanel();
+    inner = new HorizontalPanel();
 
     outer.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
     inner.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
@@ -59,7 +65,6 @@ public class TopPanel extends Composite implements ClickHandler {
     outer.setCellHorizontalAlignment(logo, HorizontalPanel.ALIGN_LEFT);
 
     outer.add(inner);
-    inner.add(new HTML("<b>Welcome back, dsc@dscindia.org</b>&nbsp;|&nbsp;"));
     inner.add(signOutLink);
     inner.add(aboutLink);
     
@@ -69,7 +74,28 @@ public class TopPanel extends Composite implements ClickHandler {
     initWidget(outer);
     setStyleName("mail-TopPanel");
     inner.setStyleName("mail-TopPanelLinks");
+    getUsername();
   }
+  
+  private void getUsername()
+  {
+	  JSONRequest request = new JSONRequest();
+	  request.doFetchURL(AoAPI.USERNAME, new UsernameRequestor());
+  }
+  
+  private class UsernameRequestor implements JSONRequester {
+		 
+		public void dataReceived(List<JSOModel> models) 
+		{
+			// for e.g. superuser will not have an associated AO_admin record
+			if (models.size() > 0)
+			{
+				User u = new User(models.get(0));
+				inner.insert(new HTML("<b>Welcome back, " + u.getName() + "</b>&nbsp;|&nbsp;"), 0);
+			}
+
+		}
+	 }
 
   public void onClick(ClickEvent event) {
     Object sender = event.getSource();
