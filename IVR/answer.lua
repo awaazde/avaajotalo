@@ -18,26 +18,26 @@ Copyright (c) 2009 Regents of the University of California, Stanford
    --]]
 
 -- INCLUDES
-require "luasql.mysql";
+require "luasql.odbc";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 
 -- overwrite standard logfile
-logfilename = "/home/dsc/Documents/Log/AO/answer.log";
+logfilename = "/home/neil/Log/AO/answer.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
 script_name = "answer.lua";
 DIALSTRING_PREFIX = "{ignore_early_media=true}user/"
 digits = "";
-
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
-session:setInputCallback("my_cb", "arg");
+arg = {};
 
 sessid = os.time();
 userid = argv[1];
+-- for the message_played queue. Make global to record listens
+-- on hangup event
+prevmsgs = {};
 
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
@@ -50,10 +50,10 @@ RESERVE_PERIOD = "2"
 LISTENS_THRESH = "5"
 
 -- sounds
-anssd = aosd .. "/answer/";
+anssd = aosd .. "answer/";
 
 -- Get phone number to call out
-query = "SELECT number FROM AO_user where user_id = ".. userid;
+query = "SELECT number FROM AO_user where id = ".. userid;
 cur = con:execute(query);
 row = {};
 result = cur:fetch(row);
@@ -73,7 +73,8 @@ function hangup()
 
    -- TODO: update retries for listened-to messages
    -- for this user
-  
+   update_listens(prevmsgs, userid);
+ 
    -- cleanup
    con:close();
    env:close();
@@ -267,15 +268,15 @@ end
 
 function get_messages (userid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder";
-   query = query .. "WHERE message.id = message_forum.message_id";
+   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder";
+   query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
-   query = query .. " AND message_forum.status = MESSAGE_STATUS_APPROVED ";
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    query = query .. " AND message_responder.user_id = " .. userid;
    query = query .. " AND message.lft = 1 AND message.rgt = 2 AND message_responder.listens <= " .. LISTENS_THRESH;
+   query = query .. " AND message_responder.passed_date IS NULL ";
    query = query .. " AND (message_responder.reserved_by_id IS NULL OR ";
    query = query .. "      (message_responder.reserved_by_id = " .. userid .. " AND message_responder.reserved_until < now()))"
-   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
 end
 
@@ -285,8 +286,8 @@ end
 
 function ask_later (userid, messageforumid)
    local query = "UPDATE AO_message_responder ";
-   query = query .. "SET reserved_by_id = " .. userid .. " , reserved_until = now() + INTERVAL " .. RESERVE_PERIOD .. " DAY";
-   query = query .. "WHERE message_forum_id = " .. messageforumid;
+   query = query .. " SET reserved_by_id = " .. userid .. " , reserved_until = now() + INTERVAL " .. RESERVE_PERIOD .. " DAY ";
+   query = query .. " WHERE message_forum_id = " .. messageforumid;
    con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 end
@@ -297,8 +298,8 @@ end
 
 function pass_question (userid, messageforumid)
    local query = "UPDATE AO_message_responder ";
-   query = query .. "SET passed_date = now() ";
-   query = query .. "WHERE message_forum_id = " .. messageforumid .. " AND user_id = " .. userid;
+   query = query .. " SET passed_date = now() ";
+   query = query .. " WHERE message_forum_id = " .. messageforumid .. " AND user_id = " .. userid;
    con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 end
@@ -315,7 +316,7 @@ function refer_question(ph_num, messageforumid)
 	
 	if (result == nil) then
 	   -- unregistered number
-	   query = "INSERT INTO AO_user (number, allowed, admin) VALUES ('" ..session:getVariable("caller_id_number").."','y','n')";
+	   query = "INSERT INTO AO_user (number, allowed, admin) VALUES ('" .. ph_num .."','y','n')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
@@ -344,8 +345,8 @@ function update_listens (msgs, userid)
 	for i,msg in ipairs(msgs) do
 		msg_forum_id_list = msg_forum_id_list .. msg[1] .. ", ";
 	end
-	-- remove trailing comma
-	msg_forum_id_list = msg_forum_id_list:sub(msg_forum_id_list, 1, -2);
+	-- remove trailing space and comma
+	msg_forum_id_list = msg_forum_id_list:sub(1, -3);
 	-- close list
 	msg_forum_id_list = msg_forum_id_list .. ")";
 	
@@ -392,6 +393,7 @@ function play_content (summary, content)
    end
    
    arg[1] = sd .. content;
+   freeswitch.consoleLog("info", "playing content " .. arg[1]);
    logfile:write(sessid, "\t",
 		 session:getVariable("caller_id_number"), "\t",
 		 os.time(), "\t", "Stream", "\t", arg[1], "\n");
@@ -447,7 +449,7 @@ function play_messages (userid, msgs)
    -- get the first top-level message for this forum
    local current_msg = msgs();
 
-   local prevmsgs = {};
+   prevmsgs = {};
    table.insert(prevmsgs, current_msg);
    local current_msg_idx = 1;
    local d = "";
@@ -471,9 +473,8 @@ function play_messages (userid, msgs)
       -- don't listen for pre-emptive actions that require
       -- listening to the message at least a little. Make an
       -- exception for responses which we want to encourage
-      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d == GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
+      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
 	 	d = play_message(current_msg);
-	 	update_listens(userid, current_msg);
       end
       
       if (d == GLOBAL_MENU_RESPOND) then
@@ -552,7 +553,6 @@ function play_messages (userid, msgs)
       end
    end -- end while
    
-   update_listens(prevmsgs, userid);
 end
 
 
@@ -655,33 +655,43 @@ end
 -- MAIN 
 -----------
 
--- make the call
-session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num)
-session:setVariable("caller_id_number", phone_num)
-if (session:ready() == true) then
+-- check for messages first so that we don't
+-- make unnecessary calls
 
-	logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
-	"\t", os.time(), "\t", "Start call", "\n");
-	
-	-- sleep for a sec
-	sleep(1000);
-	
-	while (1) do
-	   read(anssd .. "welcome.wav", 500);
-	   -- ignore any barge-in and move on
-	   use();
-	   
-	   -- get messages
-	   msgs = get_messages(userid)
-	   
-	   -- play messages
-	   play_messages(userid, msgs)
-	
-	   -- go back to the main menu
-	   read(aosd .. "mainmenu.wav", 1000);
+-- cursor:numrows doesn't seem to work for all luasql drivers, so
+-- better to just leave it out and take the hit of an extra query
+check_n_msgs = get_messages(userid);
+if (check_n_msgs() ~= nil) then
+	-- make the call
+	session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num)
+	session:setVariable("caller_id_number", phone_num)
+	session:setVariable("playback_terminators", "#");
+	session:setHangupHook("hangup");
+	session:setInputCallback("my_cb", "arg");
+
+	if (session:ready() == true) then
+
+		logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
+		"\t", os.time(), "\t", "Start call", "\n");
+		
+		-- sleep for a sec
+		sleep(1000);
+		
+		while (1) do
+		   read(anssd .. "welcome.wav", 500);
+		   -- ignore any barge-in and move on
+		   use();
+		   
+		   msgs = get_messages(userid);
+
+		   -- play messages
+		   play_messages(userid, msgs);
+		
+		   -- go back to the main menu
+		   read(aosd .. "mainmenu.wav", 1000);
+		end
+		
+		hangup();
 	end
-	
-	hangup();
-end
-
+end -- close num_rows check
 
