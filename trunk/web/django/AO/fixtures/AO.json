@@ -1,4 +1,42 @@
 [
+   {
+        "pk": 1, 
+        "model": "AO.line", 
+        "fields": {
+            "number": "5000", 
+            "name": "DSC's Avaaj Otalo" 
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.line_forum", 
+        "fields": {
+            "line": 1, 
+            "forum": 1
+        }
+    }, 
+     {
+        "pk": 2, 
+        "model": "AO.line_forum", 
+        "fields": {
+            "line": 1, 
+            "forum": 2 
+        }
+    },  {
+        "pk": 3, 
+        "model": "AO.line_forum", 
+        "fields": {
+            "line": 1, 
+            "forum": 3 
+        }
+    },  {
+        "pk": 4, 
+        "model": "AO.line_forum", 
+        "fields": {
+            "line": 1, 
+            "forum": 4 
+        }
+    }, 
     {
         "pk": 1, 
         "model": "AO.forum", 
