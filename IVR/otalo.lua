@@ -18,7 +18,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
    --]]
 
 -- INCLUDES
-require "luasql.mysql";
+require "luasql.odbc";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
@@ -37,7 +37,12 @@ adminmode = false;
 
 phonenum = session:getVariable("caller_id_number");
 freeswitch.consoleLog("info", script_name .. " : caller id = " .. phonenum .. "\n");
-query = "SELECT id, admin FROM AO_user where number = ".. phonenum;
+query = "SELECT DISTINCT(user.id), admin.id ";
+query = query .. " FROM AO_user user LEFT OUTER JOIN AO_admin admin ";
+query = query .. " ON user.id = admin.user_id ";
+query = query .. " WHERE user.number = " .. phonenum;
+query = query .. " GROUP BY user.id";
+
 cur = con:execute(query);
 row = {};
 result = cur:fetch(row);
@@ -54,7 +59,7 @@ if (result == nil) then
    cur:close();
 else
    userid = tostring(row[1]);
-   if (tostring(row[2]) == 'y') then
+   if (tostring(row[2]) ~= "nil") then
       adminmode = true;
    else
       adminmode = false;
@@ -337,7 +342,7 @@ function mainmenu ()
 
    -- TAP: Handle the case where there is only one forum - default
    -- to going straight to that forum.
-   phone_num = session:getVariable("caller_id_number");
+   phone_num = session:getVariable("destination_number");
    local query = "SELECT forum.id, forum.name_file ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forum line_forum ";
    query = query .. " WHERE line.number = ".. phone_num;
