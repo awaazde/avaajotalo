@@ -55,16 +55,6 @@ else
    userid = tostring(row[1]);
 end		
 
--- get admin permissions
-adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
-adminforum = adminrows();
-while (adminforum ~= nil) do
-	-- use the table as a set to make lookup faster
-	adminforums[adminforum[1]] = true;
-	adminforum = adminrows();
-	freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
-end
-freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- FUNCTIONS
 
@@ -250,9 +240,11 @@ end
 
 function is_admin(forumid) 
 	if (forumid == nil) then
+   		freeswitch.consoleLog("info", script_name .. " : is_admin(nil) : " .. tostring(#adminforums>0) .. "\n");
 		return #adminforums > 0;
 	else
-		return adminforums[forumid];
+   		freeswitch.consoleLog("info", script_name .. " : is_admin(" .. forumid ..") : " .. tostring(adminforums[forumid] == true) .. "\n");
+		return adminforums[forumid] == true;
 	end
 end
 
@@ -272,7 +264,7 @@ function getmessages (forumid)
    --end
    -- Sort first by position AND then date
    query = query .. " ORDER BY message_forum.position DESC, message.date DESC";
-  
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
 end
 
@@ -290,7 +282,7 @@ function getreplies (thread)
    -- only order by date.  consider losing the lft, right altogether.
    query = query .. " ORDER BY message.date ASC";
    -- query = query .. "ORDER BY message.lft";
-
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
 end
 
@@ -535,7 +527,7 @@ function playmessages (msgs, listenreplies)
    local d = "";
    
    while (current_msg ~= nil) do
-   	  adminmode = current_msg[6];
+      adminmode = is_admin(current_msg[6]);
       if (d == GLOBAL_MENU_RESPOND) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
@@ -554,7 +546,7 @@ function playmessages (msgs, listenreplies)
       if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
 	 	d = playmessage(current_msg, listenreplies);
       end
-      
+
       if (d == GLOBAL_MENU_RESPOND) then
 		 if (responsesallowed == 'y' or adminmode) then
 		    read(aosd .. "okrecordresponse.wav", 500);
@@ -662,7 +654,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
    until (d == "1");
    
    query1 = "INSERT INTO AO_message (user_id, content_file, date";
-   query2 = " VALUES ('"..userid.."','"..partfilename.."',".."now()";
+   query2 = " VALUES ("..userid..",'"..partfilename.."',".."now()";
    
    if (thread ~= nil) then -- this is a response
       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
@@ -687,9 +679,8 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
    cur:close();
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
-   if (forumid ~= nil) then
       query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
-      query2 = " VALUES ('"..id[1].."','"..forumid.."'";
+      query2 = " VALUES ("..id[1]..","..forumid;
       
       local position = "null";
       if (moderated == 'y' and not adminmode) then
@@ -711,7 +702,6 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
       query = query1 .. query2;
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-   end
 
    read(aosd .. "okrecorded.wav", 500);
    return use();
@@ -724,13 +714,14 @@ end
 
 function playforum (forumid)
    local forum = {};
-   cur = con:execute("SELECT name_file, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. forumid);
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. forumid);
    cur:fetch(forum);
    cur:close();
    local forumname = forum[1];
-   local postingallowed = forum[2];
-   local responsesallowed = forum[3];
-   local maxlength = forum[4];
+   local moderated = forum[2];
+   local postingallowed = forum[3];
+   local responsesallowed = forum[4];
+   local maxlength = forum[5];
    local d = "";
    local adminmode = is_admin(forumid);
 	
@@ -772,6 +763,16 @@ end
 -----------
 -- MAIN 
 -----------
+-- get admin permissions
+adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
+adminforum = adminrows();
+while (adminforum ~= nil) do
+	-- use the table as a set to make lookup faster
+	adminforums[adminforum[1]] = true;
+	freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
+	adminforum = adminrows();
+end
+freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- answer the call
 session:answer();
