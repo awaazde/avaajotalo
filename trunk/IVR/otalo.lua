@@ -337,7 +337,14 @@ function mainmenu ()
 
    -- TAP: Handle the case where there is only one forum - default
    -- to going straight to that forum.
-   for row in rows ("SELECT id, name_file FROM AO_forum ORDER BY id ASC") do
+   phone_num = session:getVariable("caller_id_number");
+   local query = "SELECT forum.id, forum.name_file ";
+   query = query .. "FROM AO_forum forum, AO_line line, AO_line_forum line_forum ";
+   query = query .. " WHERE line.number = ".. phone_num;
+   query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id";
+   query = query .. " ORDER BY forum.id ASC";
+   
+   for row in rows (query) do
       i = i + 1;
       forumids[i] = row[1];
       forumnames[i] = row[2];
