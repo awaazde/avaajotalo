@@ -71,8 +71,6 @@ function hangup()
 		 session:getVariable("caller_id_number"), "\t",
 		 os.time(), "\t", "End call", "\n");
 
-   -- TODO: update retries for listened-to messages
-   -- for this user
    update_listens(prevmsgs, userid);
  
    -- cleanup
@@ -448,6 +446,10 @@ end
 function play_messages (userid, msgs)
    -- get the first top-level message for this forum
    local current_msg = msgs();
+   if (current_msg == nil) then
+      read(aosd .. "nomessages.wav", 1000);
+      return use();
+   end
 
    prevmsgs = {};
    table.insert(prevmsgs, current_msg);
@@ -484,6 +486,7 @@ function play_messages (userid, msgs)
 	    rgt = current_msg[4];
 	    d = record_message (forumid, thread, maxlength, rgt);
 	    if (d == GLOBAL_MENU_MAINMENU) then
+	    	update_listens(prevmsgs, userid);
 	       return d;
 	    else
 	       d = GLOBAL_MENU_RESPOND;
@@ -549,10 +552,11 @@ function play_messages (userid, msgs)
 	  end
       
       if (d == GLOBAL_MENU_MAINMENU) then
+      	update_listens(prevmsgs, userid);
 	 	return d;
       end
    end -- end while
-   
+   update_listens(prevmsgs, userid);
 end
 
 
@@ -635,12 +639,11 @@ function record_message (forumid, thread, maxlength, rgt)
    
    query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
    query2 = " VALUES ('"..id[1].."','"..forumid.."'";
-      
-	 local position = "null";
+   
 	 status = MESSAGE_STATUS_APPROVED; 
 	 
-	  query1 = query1 .. ", status, position)";
-	  query2 = query2 .. "," .. status .. ",".. position..")";
+	  query1 = query1 .. ", status)";
+	  query2 = query2 .. "," .. status ..")";
    
       query = query1 .. query2;
       con:execute(query);
