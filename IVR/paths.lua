@@ -36,7 +36,6 @@ GLOBAL_MENU_SEEK_FWD = "9";
 basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 
-aosd = basedir .. "/scripts/AO/sounds/guj/";
 sd = "/home/dsc/Development/audio/";
 logfilename = "/home/dsc/Documents/Log/AO/ao.log";
 --[[

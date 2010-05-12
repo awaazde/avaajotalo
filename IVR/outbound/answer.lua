@@ -664,7 +664,30 @@ end
 -- cursor:numrows doesn't seem to work for all luasql drivers, so
 -- better to just leave it out and take the hit of an extra query
 check_n_msgs = get_messages(userid);
-if (check_n_msgs() ~= nil) then
+msg = check_n_msgs()
+if (msg ~= nil) then
+	-- set the language
+	query = 		"SELECT DISTINCT(line.language) ";
+	query = query .. " FROM AO_line line, AO_forum forum, AO_message_forum message_forum ";
+	query = query .. " WHERE line.forum_id = forum.id ";
+	query = query .. " AND  message_forum.forum_id = forum.id ";
+	query = query .. " AND  message_forum.id = " .. msg[1];
+	cur = con:execute(query);
+	row = {};
+	result = cur:fetch(row);
+	cur:close();
+	
+	-- it's possible that the admin works in many languages,
+	-- but just choose one of them for the prompting
+	if (result == nil) then
+	   -- default
+	   aosd = basedir .. "/scripts/AO/sounds/eng/";
+	else
+	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
+	end	
+	
+	freeswitch.consoleLog("info", script_name .. " : lang_dir = " .. aosd .. "\n");
+
 	-- make the call
 	session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num)
 	session:setVariable("caller_id_number", phone_num)

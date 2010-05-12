@@ -240,10 +240,8 @@ end
 
 function is_admin(forumid) 
 	if (forumid == nil) then
-   		freeswitch.consoleLog("info", script_name .. " : is_admin(nil) : " .. tostring(#adminforums>0) .. "\n");
 		return #adminforums > 0;
 	else
-   		freeswitch.consoleLog("info", script_name .. " : is_admin(" .. forumid ..") : " .. tostring(adminforums[forumid] == true) .. "\n");
 		return adminforums[forumid] == true;
 	end
 end
@@ -332,10 +330,10 @@ function mainmenu ()
 
    -- TAP: Handle the case where there is only one forum - default
    -- to going straight to that forum.
-   phone_num = session:getVariable("destination_number");
+   local line_num = session:getVariable("destination_number");
    local query = "SELECT forum.id, forum.name_file ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forum line_forum ";
-   query = query .. " WHERE line.number = ".. phone_num;
+   query = query .. " WHERE line.number = ".. line_num;
    query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id";
    query = query .. " ORDER BY forum.id ASC";
    
@@ -679,29 +677,29 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
    cur:close();
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
-      query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
-      query2 = " VALUES ("..id[1]..","..forumid;
+   query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
+   query2 = " VALUES ("..id[1]..","..forumid;
       
-      local position = "null";
-      if (moderated == 'y' and not adminmode) then
-	 	status = MESSAGE_STATUS_PENDING;
-      else
-	 	status = MESSAGE_STATUS_APPROVED; 
-	 	if (thread == nil) then
+   local position = "null";
+   if (moderated == 'y' and not adminmode) then
+	 status = MESSAGE_STATUS_PENDING;
+   else
+	 status = MESSAGE_STATUS_APPROVED; 
+	 if (thread == nil) then
 		    cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
 		    -- only set position if we have to
 		    pos = cur:fetch()
 		    if (pos ~= nil) then 
 		       position = tonumber(pos) + 1;
 		    end
-		end
-      end
-      query1 = query1 .. ", status, position)";
-      query2 = query2 .. "," .. status .. ",".. position..")";
+	 end
+   end
+   query1 = query1 .. ", status, position)";
+   query2 = query2 .. "," .. status .. ",".. position..")";
    
-      query = query1 .. query2;
-      con:execute(query);
-      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+   query = query1 .. query2;
+   con:execute(query);
+   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 
    read(aosd .. "okrecorded.wav", 500);
    return use();
@@ -773,6 +771,22 @@ while (adminforum ~= nil) do
 	adminforum = adminrows();
 end
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
+
+-- set the language
+line_num = session:getVariable("destination_number");
+query = "SELECT language FROM AO_line WHERE number = " .. line_num;
+cur = con:execute(query);
+row = {};
+result = cur:fetch(row);
+cur:close();
+
+if (result == nil) then
+   -- default
+   aosd = basedir .. "/scripts/AO/sounds/eng/";
+else
+   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
+end		
+freeswitch.consoleLog("info", script_name .. " : lang_dir = " .. aosd .. "\n");
 
 -- answer the call
 session:answer();

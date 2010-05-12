@@ -123,19 +123,32 @@ class Message_responder(models.Model):
 class Line(models.Model):
     number = models.CharField(max_length=24)
     name = models.CharField(max_length=128)
+    language = models.CharField(max_length=3)
     name_file = models.CharField(max_length=24, blank=True, null=True)
+    
+    def __unicode__(self):
+        return self.name + '-' + self.number
 
 class Line_forum(models.Model):
     line = models.ForeignKey(Line)
     forum = models.ForeignKey(Forum)
     
+    def __unicode__(self):
+        return unicode(self.line) + '_' + unicode(self.forum)
+    
 class Admin(models.Model):
     user = models.ForeignKey(User)
     forum = models.ForeignKey(Forum)
+    
+    def __unicode__(self):
+        return unicode(self.user) + '_' + unicode(self.forum)
 
 class Admin_auth(models.Model):
     user = models.ForeignKey(User)
     auth_user = models.ForeignKey(AuthUser)
+    
+    def __unicode__(self):
+        return unicode(self.user) + '_' + unicode(self.auth_user)
 
 def admin_created_handler(sender, **kwargs):
     # an AO admin has been saved. Create a corresponding web admin
