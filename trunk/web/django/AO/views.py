@@ -101,7 +101,7 @@ def updatemessage(request):
     # Check to see if there was a response uploaded
     if request.FILES:
         f = request.FILES['response']
-        resp = createmessage(m.forum, f, parent=m)
+        resp = createmessage(request, m.forum, f, parent=m)
         
     # Save tags
     crop = params['crop']
@@ -258,11 +258,11 @@ def uploadmessage(request):
             summary = request.FILES['summary']
 
         f = get_object_or_404(Forum, pk=request.POST['forumid'])
-        m = createmessage(f, main, summary)
+        m = createmessage(request, f, main, summary)
 
         return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
 
-def createmessage(forum, content, summary=False, parent=False):
+def createmessage(request, forum, content, summary=False, parent=False):
     t = datetime.now()
     summary_filename = ''
 
@@ -286,7 +286,7 @@ def createmessage(forum, content, summary=False, parent=False):
         destination.close()
 
     # create a new message for this content
-    admin = get_console_user()
+    admin = get_console_user(request)
     pos = None
     if not parent:
         # only set position if there are some already set
@@ -371,6 +371,7 @@ def messagetag(request, message_forum_id):
     return send_response(tags, ('tag'))
 
 def messageresponder(request, message_forum_id):
+    # TODO: should this list be updated based on passed and reserved settings?
     responders = Message_responder.objects.filter(message_forum=message_forum_id)
     return send_response(responders, ('user'))
 
@@ -399,17 +400,10 @@ def get_responders(message_forum):
 
     return User.objects.filter(id__in=responder_ids) 
   
-# this should return the person logged in.
-# Stub it for now.
-def get_console_user():
-    try:
-        return User.objects.get(name__contains="ADMIN")
-    except User.DoesNotExist:
-        # create
-        u = User(number='1001', name="ADMIN", admin='y', allowed='y')
-        u.save()
-    
-        return u
+def get_console_user(request):
+   auth_user = request.user
+   u = User.objects.get(admin_auth__auth_user=auth_user)
+   return u;
 
 # make child the last of this parent
 def add_child(child, parent):

@@ -4,7 +4,8 @@
         "model": "AO.line", 
         "fields": {
             "number": "5000", 
-            "name": "DSC's Avaaj Otalo" 
+            "name": "DSC's Avaaj Otalo",
+            "language": "eng" 
         }
     }, 
     {
