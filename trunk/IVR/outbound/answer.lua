@@ -479,6 +479,18 @@ function play_messages (userid, msgs)
 	 	d = play_message(current_msg);
       end
       
+      -- seperate check for instructions since it may prompt any of the actions below
+      if (d == GLOBAL_MENU_INSTRUCTIONS) then
+	  	 read(aosd .. "okinstructions.wav", 500);
+		 read(annsd .. "instructions_full.wav", 500);
+		 
+		 d = use();
+		 if (d == "") then
+		    -- default: next message
+		    d = GLOBAL_MENU_NEXT
+		 end
+      end
+      
       if (d == GLOBAL_MENU_RESPOND) then
 	    read(aosd .. "okrecordresponse.wav", 500);
 	    thread = current_msg[1];
