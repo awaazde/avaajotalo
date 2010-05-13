@@ -42,15 +42,13 @@ prevmsgs = {};
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- App-specific GLOBALS
+GLOBAL_MENU_REPLAY = "6";
 GLOBAL_MENU_ASK_LATER = "7";
 GLOBAL_MENU_PASS = "8";
 GLOBAL_MENU_REFER = "9";
 
 RESERVE_PERIOD = "2"
 LISTENS_THRESH = "5"
-
--- sounds
-anssd = aosd .. "answer/";
 
 -- Get phone number to call out
 query = "SELECT number FROM AO_user where id = ".. userid;
@@ -202,7 +200,7 @@ function my_cb(s, type, obj, arg)
       
        if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
 		 read(aosd .. "okinstructions.wav", 500);
-		 read(annsd .. "instructions_full.wav", 500);
+		 read(anssd .. "instructions_full.wav", 500);
 		 if (digits ~= GLOBAL_MENU_MAINMENU) then
 		    use();
 		    read(aosd .. "backtomessage.wav", 1000);
@@ -235,8 +233,8 @@ function my_cb(s, type, obj, arg)
 		 end
       end
 
-      if (obj['digit'] == GLOBAL_MENU_SKIP_FWD) then
-		 digits = GLOBAL_MENU_SKIP_FWD;
+      if (obj['digit'] == GLOBAL_MENU_REPLAY) then
+		 digits = GLOBAL_MENU_REPLAY;
 		 return "break";
       end
 
@@ -457,7 +455,7 @@ function play_messages (userid, msgs)
    local d = "";
    
    while (current_msg ~= nil) do
-      if (d == GLOBAL_MENU_RESPOND) then
+      if (d == GLOBAL_MENU_RESPOND or d== GLOBAL_MENU_REFER or d == GLOBAL_MENU_REPLAY or d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
       elseif (current_msg_idx == 1) then
@@ -479,17 +477,6 @@ function play_messages (userid, msgs)
 	 	d = play_message(current_msg);
       end
       
-      -- seperate check for instructions since it may prompt any of the actions below
-      if (d == GLOBAL_MENU_INSTRUCTIONS) then
-	  	 read(aosd .. "okinstructions.wav", 500);
-		 read(annsd .. "instructions_full.wav", 500);
-		 
-		 d = use();
-		 if (d == "") then
-		    -- default: next message
-		    d = GLOBAL_MENU_NEXT
-		 end
-      end
       
       if (d == GLOBAL_MENU_RESPOND) then
 	    read(aosd .. "okrecordresponse.wav", 500);
@@ -539,8 +526,19 @@ function play_messages (userid, msgs)
 	  	end
 	  	
 	  	-- go back to message
-	  	d = GLOBAL_MENU_RESPOND
-	  	
+	  	d = GLOBAL_MENU_REFER
+      elseif (d == GLOBAL_MENU_REPLAY) then
+		-- do nothing
+      elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
+	  	 read(aosd .. "okinstructions.wav", 500);
+		 read(anssd .. "instructions_full.wav", 500);
+		 
+		 d = use();
+		 -- ignore anything except main menu 
+		if (d ~= GLOBAL_MENU_MAINMENU) then
+		    -- go back to original message
+		    d = GLOBAL_MENU_INSTRUCTIONS;
+		 end
       elseif (d ~= GLOBAL_MENU_MAINMENU) then
 	  	current_msg_idx = current_msg_idx + 1;
 		-- check to see if we are at the last msg in the list
@@ -680,10 +678,12 @@ msg = check_n_msgs()
 if (msg ~= nil) then
 	-- set the language
 	query = 		"SELECT DISTINCT(line.language) ";
-	query = query .. " FROM AO_line line, AO_forum forum, AO_message_forum message_forum ";
-	query = query .. " WHERE line.forum_id = forum.id ";
+	query = query .. " FROM AO_line line, AO_line_forum line_forum, AO_forum forum, AO_message_forum message_forum ";
+	query = query .. " WHERE line.id = line_forum.line_id ";
+	query = query .. " AND  line_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.id = " .. msg[1];
+	freeswitch.consoleLog("info", script_name .. " :  query = " .. query .. "\n");
 	cur = con:execute(query);
 	row = {};
 	result = cur:fetch(row);
@@ -697,6 +697,9 @@ if (msg ~= nil) then
 	else
 	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
 	end	
+	
+	-- script-specific sounds
+	anssd = aosd .. "answer/";
 	
 	freeswitch.consoleLog("info", script_name .. " : lang_dir = " .. aosd .. "\n");
 
