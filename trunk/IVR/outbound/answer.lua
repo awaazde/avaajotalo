@@ -22,6 +22,7 @@ require "luasql.odbc";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
+dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
 logfilename = "/home/neil/Log/AO/answer.log";
@@ -29,8 +30,8 @@ logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
 script_name = "answer.lua";
-DIALSTRING_PREFIX = "{ignore_early_media=true}user/"
 digits = "";
+DIALSTRING_PREFIX = "{ignore_early_media=true}user/"
 arg = {};
 
 sessid = os.time();
@@ -59,77 +60,6 @@ cur:close();
 phone_num = tostring(row[1]);
 
 -- FUNCTIONS
-
------------
--- hangup 
------------
-
-function hangup() 
-   logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t",
-		 os.time(), "\t", "End call", "\n");
-
-   update_listens(prevmsgs, userid);
- 
-   -- cleanup
-   con:close();
-   env:close();
-   logfile:flush();
-   logfile:close();
-   
-   -- hangup
-   session:hangup();
-end
-
------------
--- rows 
------------
-
-function rows (sql_statement)
-   local cursor = assert (con:execute (sql_statement));
-   local closed = false;
-   freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n")
-   return function ()
-	     if (closed) then 
-		return nil;
-	     end;
-	     row = {};
-	     result = cursor:fetch(row);
-	     if (result == nil) then
-		cursor:close();
-		closed = true;
-		return nil;
-	     end;
-	     return row;
-	  end
-end
-
-
------------
--- sleep
------------
-
-function sleep(delay)
-   return read("", delay);
-end
-
-
------------
--- read
------------
-
-function read(file, delay)
-   if (digits == "") then
-      logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
-		    os.time(), "\t", "Prompt", "\t", file, "\n");
-      digits = session:read(1, 1, file, delay, "#");
-      if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
-      end
-   end
-end
-
 -----------
 -- read_phone_num
 -----------
@@ -146,18 +76,6 @@ function read_phone_num(file, delay)
       end
    end
 end
-
-
-----------
--- use
-----------
-
-function use()
-   d = digits;
-   digits = "";
-   return d;
-end
-
 
 -----------
 -- my_cb
@@ -354,54 +272,6 @@ function update_listens (msgs, userid)
 end
 
 -----------
--- play_content
------------
-
-function play_content (summary, content)
-   local d;
-   
-   if (summary ~= nil and summary ~= "") then
-      arg[1] = sd .. summary;
-      logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
-		    os.time(), "\t", "Stream", "\t", arg[1], "\n");
-      session:streamFile(sd .. summary);
-      sleep(1000);
-      
-      d = use();
-      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	 return d;
-      end
-   
-      read(aosd .. "morecontent.wav", 2000);
-      d = use();
-      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	 return d;
-      elseif (d ~= "1") then
-	 return GLOBAL_MENU_NEXT;
-      else
-	 read(aosd .. "okcontent.wav", 500);
-	 d = use();
-	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
-	    return d;
-	 end
-      end
-   end
-   
-   arg[1] = sd .. content;
-   freeswitch.consoleLog("info", "playing content " .. arg[1]);
-   logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t",
-		 os.time(), "\t", "Stream", "\t", arg[1], "\n");
-
-   session:streamFile(sd .. content);
-   sleep(3000);
-   
-   return use();
-end
-
-
------------
 -- play_message
 -----------
 
@@ -410,7 +280,7 @@ function play_message (msg)
   local content = msg[2];
   local summary = msg[3];
 
-  d = play_content(summary, content);
+  d = playcontent(summary, content);
   
   -- remind about the options, and
   -- give some time for users to compose themselves and
