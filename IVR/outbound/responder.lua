@@ -25,11 +25,11 @@ dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
-logfilename = "/home/neil/Log/AO/answer.log";
+logfilename = "/home/neil/Log/AO/responder.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
-script_name = "answer.lua";
+script_name = "responder.lua";
 digits = "";
 DIALSTRING_PREFIX = "{ignore_early_media=true}user/"
 arg = {};

@@ -22,6 +22,7 @@ require "luasql.odbc";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
+dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
 logfilename = "/home/neil/Log/AO/alert.log";
@@ -45,27 +46,6 @@ row = {};
 result = cur:fetch(row);
 cur:close();
 phone_num = tostring(row[1]);
-
--- FUNCTIONS
-
------------
--- hangup 
------------
-
-function hangup() 
-   logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t",
-		 os.time(), "\t", "End call", "\n");
- 
-   -- cleanup
-   con:close();
-   env:close();
-   logfile:flush();
-   logfile:close();
-   
-   -- hangup
-   session:hangup();
-end
 
 -----------
 -- MAIN 
