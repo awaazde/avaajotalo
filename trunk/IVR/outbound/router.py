@@ -21,10 +21,6 @@ from ESL import *
 MAX_CHANNELS = 10
 
 def route_calls(user_ids, IVR_script):
-    # check for expired reserve_untils and release them
-    now = datetime.now()
-    Message_responder.objects.filter(reserved_until__lt=now).update(reserved_by=None, reserved_until=None)
-    
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     
     if not con.connected():
