@@ -14,6 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 import router
+from datetime import datetime
 from otalo.AO.models import Message_responder
 
 IVR_SCRIPT = 'AO/outbound/responder.lua'

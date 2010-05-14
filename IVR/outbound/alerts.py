@@ -15,7 +15,7 @@
 #===============================================================================
 import router
 from datetime import datetime, timedelta
-from otalo.AO.models import Message_responder
+from otalo.AO.models import Message, User
 
 IVR_SCRIPT = 'AO/outbound/missed_call.lua'
 INTERVAL_HOURS = 12
@@ -33,6 +33,6 @@ def new_responses():
      router.route_calls(user_ids, IVR_SCRIPT)
 
 def main():
-   new_reponses()
+   new_responses()
 
 main()
