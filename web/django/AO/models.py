@@ -126,7 +126,7 @@ class Line(models.Model):
     language = models.CharField(max_length=3)
     # for dialing out. The softswitch may need to identify
     # which port/span/group this line is using
-    span = Models.CharField(max_length=24, blank=True, null=True)
+    span = models.CharField(max_length=24, blank=True, null=True)
     name_file = models.CharField(max_length=24, blank=True, null=True)
     
     def __unicode__(self):
