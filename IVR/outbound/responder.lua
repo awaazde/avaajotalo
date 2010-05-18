@@ -31,7 +31,6 @@ logfile:setvbuf("line");
 
 script_name = "responder.lua";
 digits = "";
-DIALSTRING_PREFIX = "{ignore_early_media=true}user/"
 arg = {};
 
 sessid = os.time();
@@ -547,20 +546,23 @@ check_n_msgs = get_messages(userid);
 msg = check_n_msgs()
 if (msg ~= nil) then
 	-- set the language
-	query = 		"SELECT DISTINCT(line.language) ";
+	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix ";
 	query = query .. " FROM AO_line line, AO_line_forums line_forum, AO_forum forum, AO_message_forum message_forum ";
 	query = query .. " WHERE line.id = line_forum.line_id ";
 	query = query .. " AND  line_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.forum_id = forum.id ";
-	query = query .. " AND  message_forum.id = " .. msg[1];
+	query = query .. " AND  message_forum.message_id = " .. msg[1];
 	freeswitch.consoleLog("info", script_name .. " :  query = " .. query .. "\n");
 	cur = con:execute(query);
 	row = {};
 	result = cur:fetch(row);
 	cur:close();
 	
-	-- it's possible that the admin works in many languages,
-	-- but just choose one of them for the prompting
+	-- since we joined on message_forum, we are assured
+	-- that there was only one line returned by the above.
+	-- What we are not doing is adjusting this per message in
+	-- this responder's queue, which we will have to do if
+	-- a responder belongs to multiple lines (then billing the call is an issue)
 	if (result == nil) then
 	   -- default
 	   aosd = basedir .. "/scripts/AO/sounds/eng/";
@@ -568,13 +570,23 @@ if (msg ~= nil) then
 	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
 	end	
 	
+	DIALSTRING_PREFIX = "";
+	DIALSTRING_SUFFIX = "";
+	if (row[2] ~= nil) then
+		DIALSTRING_PREFIX = row[2];
+	end
+	if (row[3] ~= nil) then
+		DIALSTRING_SUFFIX = row[3];
+	end
+	
 	-- script-specific sounds
 	anssd = aosd .. "answer/";
 	
 	freeswitch.consoleLog("info", script_name .. " : lang_dir = " .. aosd .. "\n");
+	freeswitch.consoleLog("info", script_name .. " : calling = " .. DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX .. "\n");
 
 	-- make the call
-	session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num)
+	session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX)
 	session:setVariable("caller_id_number", phone_num)
 	session:setVariable("playback_terminators", "#");
 	session:setHangupHook("hangup");
