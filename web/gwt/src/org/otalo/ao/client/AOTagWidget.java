@@ -21,7 +21,6 @@ import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
-import org.otalo.ao.client.model.MessageTag;
 import org.otalo.ao.client.model.Tag;
 
 import com.google.gwt.user.client.ui.FlexTable;
@@ -102,14 +101,13 @@ public class AOTagWidget extends TagWidget {
 		 
 			public void dataReceived(List<JSOModel> models) {
 				// pre-select the tags previously selected for this message
-				MessageTag mt;
+				Tag t;
 				tagged = false;
 				
 				for (JSOModel model : models)
 			  	{
 			  		tagged = true;
-					mt = new MessageTag(model);
-			  		Tag t = mt.getTag();
+					t = new Tag(model);
 			  		
 			  		if (t.getType().equals(AoAPI.TAG_TYPE_CROP))
 			  		{

@@ -548,7 +548,7 @@ msg = check_n_msgs()
 if (msg ~= nil) then
 	-- set the language
 	query = 		"SELECT DISTINCT(line.language) ";
-	query = query .. " FROM AO_line line, AO_line_forum line_forum, AO_forum forum, AO_message_forum message_forum ";
+	query = query .. " FROM AO_line line, AO_line_forums line_forum, AO_forum forum, AO_message_forum message_forum ";
 	query = query .. " WHERE line.id = line_forum.line_id ";
 	query = query .. " AND  line_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.forum_id = forum.id ";

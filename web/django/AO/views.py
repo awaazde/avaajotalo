@@ -18,7 +18,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
-from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_tag, Responder_tag, Message_responder, Admin, Admin_auth
+from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_responder, Admin
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Count
@@ -46,7 +46,7 @@ def forum(request):
     auth_user = request.user
     
     if not auth_user.is_superuser:
-        admin = Admin_auth.objects.get(auth_user=auth_user)
+        admin = Admin.objects.get(auth_user=auth_user)
         # get all forums that this user has access to
         fora = Forum.objects.filter(admin__user=admin.user).distinct()
     else:
@@ -107,7 +107,7 @@ def updatemessage(request):
     crop = params['crop']
     topic = params['topic']
     
-    tags = Message_tag.objects.filter(message_forum = m)
+    tags = m.tags.all()
     initial_tag = False
     if not tags and (crop != '-1' or topic != '-1'):
         # if there aren't any previous tags
@@ -119,13 +119,11 @@ def updatemessage(request):
     
     if crop != '-1':
         crop_tag = Tag.objects.get(pk=crop)
-        new_crop_tag = Message_tag(message_forum = m, tag=crop_tag)
-        new_crop_tag.save()
+        m.tags.add(crop_tag)
     
     if topic != '-1':
         topic_tag = Tag.objects.get(pk=topic)
-        new_topic_tag = Message_tag(message_forum = m, tag=topic_tag)
-        new_topic_tag.save()
+        m.tags.add(topic_tag)
     
     if m.forum.routeable == 'y':
         # check routing table
@@ -367,7 +365,7 @@ def tags(request, forum_id):
     return send_response(tags)
 
 def messagetag(request, message_forum_id):
-    tags = Message_tag.objects.filter(message_forum=message_forum_id)
+    tags = Tag.objects.filter(message_forum=message_forum_id)
     return send_response(tags, ('tag'))
 
 def messageresponder(request, message_forum_id):
@@ -378,17 +376,17 @@ def messageresponder(request, message_forum_id):
 def username(request):
     auth_user = request.user
 
-    user = get_list_or_404(User, admin_auth__auth_user=auth_user)
+    user = get_list_or_404(User, admin__auth_user=auth_user)
     return send_response(user)
 
 def get_responders(message_forum):
     
-    tag_ids = Message_tag.objects.filter(message_forum = message_forum).values_list('tag', flat=True)
+    tags = Tag.objects.filter(message_forum = message_forum)
     
     # Find users who match at least one of the tags for this message, excluding
     # those who have already passed on this message and have listened to it beyond the listen threshold
     # (the excludes for if a question is re-run for responders), and pick the ones with the least pending questions
-    responder_ids = User.objects.filter(responder_tag__tag__in = tag_ids).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
+    responder_ids = User.objects.filter(tags__in = tags).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__message_forum=message_forum, message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
     responder_ids = [row['id'] for row in responder_ids]
     
     if len(responder_ids) < MIN_RESPONDERS:
@@ -402,7 +400,7 @@ def get_responders(message_forum):
   
 def get_console_user(request):
    auth_user = request.user
-   u = User.objects.get(admin_auth__auth_user=auth_user)
+   u = User.objects.get(admin__auth_user=auth_user)
    return u;
 
 # make child the last of this parent

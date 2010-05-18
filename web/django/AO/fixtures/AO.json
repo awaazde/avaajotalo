@@ -5,7 +5,8 @@
         "fields": {
             "number": "5000", 
             "name": "DSC's Avaaj Otalo",
-            "language": "eng" 
+            "language": "eng",
+            "span" : "1" 
         }
     }, 
     {
