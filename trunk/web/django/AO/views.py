@@ -114,7 +114,7 @@ def updatemessage(request):
         # (even if you can untag completely, we still want this flag set)
         initial_tag = True
     else:   
-        tags.delete()
+        m.tags.clear()
     
     if crop != '-1':
         crop_tag = Tag.objects.get(pk=crop)
