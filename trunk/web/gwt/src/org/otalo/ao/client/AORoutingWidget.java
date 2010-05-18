@@ -12,7 +12,8 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- */
+*/
+
 package org.otalo.ao.client;
 
 import java.util.Iterator;
@@ -22,7 +23,6 @@ import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.MessageResponder;
-import org.otalo.ao.client.model.MessageTag;
 import org.otalo.ao.client.model.Tag;
 import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;

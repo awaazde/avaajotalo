@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Responder_tag, Admin
+from otalo.AO.models import Forum, Message, User, Tag, Admin, Line, Message_forum
 from django.contrib import admin
 
 class MessageAdmin(admin.ModelAdmin):
@@ -26,6 +26,7 @@ admin.site.register(Forum)
 admin.site.register(User)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Tag)
-admin.site.register(Responder_tag)
 admin.site.register(Admin)
+admin.site.register(Line)
+admin.site.register(Message_forum)
 
