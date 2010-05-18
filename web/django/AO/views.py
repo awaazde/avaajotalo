@@ -46,9 +46,8 @@ def forum(request):
     auth_user = request.user
     
     if not auth_user.is_superuser:
-        admin = Admin.objects.get(auth_user=auth_user)
         # get all forums that this user has access to
-        fora = Forum.objects.filter(admin__user=admin.user).distinct()
+        fora = Forum.objects.filter(admin__auth_user=auth_user).distinct()
     else:
         fora = Forum.objects.all()
         
