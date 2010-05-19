@@ -95,8 +95,9 @@ public class AORoutingWidget extends RoutingWidget {
 		  	{
 				ms = new MessageResponder(model);
 		  		User responder = ms.getResponder();
+		  		String label = responder.getName().equals("null") ? responder.getNumber() : responder.getName();
 		  		
-		  		routeTable.add(new Label(responder.getName()));
+		  		routeTable.add(new Label(label));
 		  		routeTable.add(new Hidden("responder"+idx++, responder.getId()));	
 		  	}
 		}
