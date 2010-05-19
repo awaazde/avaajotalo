@@ -1,22 +1,11 @@
-==1. Tagging Content (1 week)==
-  * In the web interface, add the ability to tag questions and answers
-  * Content can have up to two tags: crop and/or topic
-  * Place the tag fields in the details panel which currently has Name, location, etc. fields, but make tagging mandatory before content is approved or rejected
-
-==2. Alerts (2 weeks)==
-When new content of interest (at this time limit this to an answer to a posted question) has been posted to AO, the system leaves you a missed call. This should be implemented as a batch process so that alerts can be sent out at a time when we think callers would be most likely to call the system back.
-
-Why don't we just have the alert be an actual call where the caller can listen to the message? It is a valid question, the main constraint here is cost. A missed call is free, but outgoing calls from AO would incur a charge to the administrator. We also don't have conclusive evidence to suggest that farmers wouldn't be willing to pay to access answers to their questions (after all, they are paying to post the question). For this deployment, we will start with missed calls.
-
-==3. Personal Inbox (1 week)==
-  * A third option for each forum, enabled through a new forum parameter
-  * 3 suboptions
-    ** Listen to threads which you are an author of, by most recently posted
-    ** Listen to recommended content. Implement this as any content that matches the crop tags of personal content. If a user has no content, then there are no recommendations so the prompt suggests asking a question.
-    ** Go back to the forum
-
-==4. Rating of Answers (1 week)==
+==1. Rating of Answers (1 week)==
 After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg. 
+
+==2. Responder Inbox ==
+If you have assigned questions for answering, display an option from the main menu that takes you there and lets you listen and respond. Would need to think about whether the interaction should be identical to the outbound interface (have update_listens, have presentation of short menu after every message), but my sense it to not. If you're going to this section from AO, you know what you're doing.
+
+==3. Pipeline for rejected questions ==
+If a question is rejected, offer something in the interface to give the user feedback, which he can then access through the personal inbox. Having the admin choose from amongst a set of canned responses is one option.
 
 ==Prompts Needed (2.5 weeks, in parallel)==
   * Inbox top-level option
