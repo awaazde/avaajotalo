@@ -22,8 +22,11 @@ class MessageAdmin(admin.ModelAdmin):
     list_filter = ['date', 'user']
     search_fields = ['user']   
 
+class UserAdmin(admin.ModelAdmin):
+   search_fields = ['name']
+
 admin.site.register(Forum)
-admin.site.register(User)
+admin.site.register(User, UserAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Tag)
 admin.site.register(Admin)
