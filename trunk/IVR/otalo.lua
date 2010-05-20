@@ -18,7 +18,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
    --]]
 
 -- INCLUDES
-require "luasql.odbc";
+require "luasql.mysql";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
@@ -46,7 +46,7 @@ cur:close();
 
 if (result == nil) then
    -- first time caller
-   query = "INSERT INTO AO_user (number, allowed, admin) VALUES ('" ..session:getVariable("caller_id_number").."','y','n')";
+   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
    con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
    cur = con:execute("SELECT LAST_INSERT_ID()");
@@ -254,8 +254,8 @@ function mainmenu ()
    -- to going straight to that forum.
    local line_num = session:getVariable("destination_number");
    local query = "SELECT forum.id, forum.name_file ";
-   query = query .. "FROM AO_forum forum, AO_line line, AO_line_forum line_forum ";
-   query = query .. " WHERE line.number = ".. line_num;
+   query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
+   query = query .. " WHERE line.number LIKE '%" .. line_num .. "%' "; 
    query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id";
    query = query .. " ORDER BY forum.id ASC";
    
@@ -650,7 +650,7 @@ freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- set the language
 line_num = session:getVariable("destination_number");
-query = "SELECT language FROM AO_line WHERE number = " .. line_num;
+query = "SELECT language FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
 cur = con:execute(query);
 row = {};
 result = cur:fetch(row);
