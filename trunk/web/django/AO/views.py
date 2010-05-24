@@ -385,7 +385,7 @@ def get_responders(message_forum):
     # Find users who match at least one of the tags for this message, excluding
     # those who have already passed on this message and have listened to it beyond the listen threshold
     # (the excludes for if a question is re-run for responders), and pick the ones with the least pending questions
-    responder_ids = User.objects.filter(tags__in = tags).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__message_forum=message_forum, message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
+    responder_ids = User.objects.filter(tags__in = tags, forum = message_forum.forum).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__message_forum=message_forum, message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
     responder_ids = [row['id'] for row in responder_ids]
     
     if len(responder_ids) < MIN_RESPONDERS:

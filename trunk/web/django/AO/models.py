@@ -80,6 +80,7 @@ class Forum(models.Model):
     # answer cotton questions from a forum for MP farmers.
     # This also makes it so forums develop a specific vocabulary for people to be experts in
     tags = models.ManyToManyField('Tag', blank=True, null=True)
+    responders = models.ManyToManyField(User, blank=True, null=True)
     ########################################################################################
     
     maxlength = models.IntegerField()
