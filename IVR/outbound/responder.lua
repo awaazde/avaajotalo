@@ -528,7 +528,7 @@ function record_message (forumid, thread, maxlength, rgt)
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 
-   read(aosd .. "okrecorded.wav", 500);
+   read(anssd .. "okrecorded.wav", 500);
    return use();
 end
 
