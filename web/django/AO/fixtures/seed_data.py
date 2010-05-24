@@ -83,15 +83,18 @@ def responders():
     
     for line_str, resp_lst in RESPONDERS.items():
         line = Line.objects.get(name__icontains=line_str)
-        tags = Tag.objects.filter(forum__line=line)
-        for responder_str in resp_lst:
-            # give capabilities to just one of the registered numbers
-            responder = User.objects.filter(name__icontains=responder_str)[0]
-            for tag in tags:
-                if not (tag in responder.tags.all()):
-                    responder.tags.add(tag)
-                    print ("adding " + str(responder) + ": " + str(tag))
-                    count += 1
+        forums = Forum.objects.filter(line=line)
+        for forum in forums:
+            tags = Tag.objects.filter(forum=forum)
+            for responder_str in resp_lst:
+                # give capabilities to just one of the registered numbers
+                responder = User.objects.filter(name__icontains=responder_str)[0]
+                forum.responders.add(responder)
+                for tag in tags:
+                    if not (tag in responder.tags.all()):
+                        responder.tags.add(tag)
+                        print ("adding " + str(responder) + ": " + str(tag))
+                        count += 1
        
     print(str(count) + " new responder_tag objs added.")
     
