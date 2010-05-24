@@ -22,8 +22,8 @@ class Line(models.Model):
     name = models.CharField(max_length=128)
     language = models.CharField(max_length=3)
     # for dialing out
-    dialstring_prefix = models.CharField(max_length=24, blank=True, null=True)
-    dialstring_suffix = models.CharField(max_length=24, blank=True, null=True)
+    dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
+    dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     name_file = models.CharField(max_length=24, blank=True, null=True)
     forums = models.ManyToManyField('Forum', blank=True, null=True)
     
