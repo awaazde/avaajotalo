@@ -284,7 +284,7 @@ function mainmenu ()
       read(aosd .. "okyouwant_pre.wav", 0);
       read(aosd .. forumnames[d], 0);
       read(aosd .. "okyouwant_post.wav", 0);
-      playforum(d);
+      playforum(forumids[d]);
    elseif (d == i + 1) then
       read(aosd .. "okyourreplies.wav", 0);
       use();
