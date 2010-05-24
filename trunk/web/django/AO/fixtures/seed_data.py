@@ -29,19 +29,26 @@ def tags():
     forums = Forum.objects.filter(Q(posting_allowed='y') | Q(responses_allowed='y'))
     for forum in forums:
         for crop in CROPS:
-            if not bool(Tag.objects.filter(tag=crop, type='agri-crop', forum=forum)):
+            t = Tag.objects.filter(tag=crop, type='agri-crop')
+            if not bool(t):
                t = Tag(tag=crop, type='agri-crop')
                print ("adding " + str(t))
                t.save()
-               forum.tags.add(t)
                count += 1
+            else:
+                t = t[0]
+            forum.tags.add(t)
+           
         for topic in TOPICS:
-            if not bool(Tag.objects.filter(tag=topic, type='agri-topic', forum=forum)):
+            t = Tag.objects.filter(tag=topic, type='agri-topic')
+            if not bool(t):
                t = Tag(tag=topic, type='agri-topic')
                print ("adding " + str(t))
                t.save()
-               forum.tags.add(t)
                count += 1
+            else:
+                t = t[0]
+            forum.tags.add(t)
            
     print(str(count) + " new tags added.")
    
