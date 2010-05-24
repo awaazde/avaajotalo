@@ -30,15 +30,17 @@ def tags():
     for forum in forums:
         for crop in CROPS:
             if not bool(Tag.objects.filter(tag=crop, type='agri-crop', forum=forum)):
-               t = Tag(tag=crop, type='agri-crop', forum=forum)
+               t = Tag(tag=crop, type='agri-crop')
                print ("adding " + str(t))
                t.save()
+               forum.tags.add(t)
                count += 1
         for topic in TOPICS:
             if not bool(Tag.objects.filter(tag=topic, type='agri-topic', forum=forum)):
-               t = Tag(tag=topic, type='agri-topic', forum=forum)
+               t = Tag(tag=topic, type='agri-topic')
                print ("adding " + str(t))
                t.save()
+               forum.tags.add(t)
                count += 1
            
     print(str(count) + " new tags added.")

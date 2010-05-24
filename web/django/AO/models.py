@@ -73,6 +73,15 @@ class Forum(models.Model):
     # responders to route top-level posts to upon approval
     routeable = models.CharField(max_length=1)
     #===========================================================
+     ########################################################################################
+    # why? so that experts can be associated with not only a topic
+    # but also a community (i.e. forum) where they should share that expertise
+    # Put another way, a cotton expert in Guj may not want or be qualified to
+    # answer cotton questions from a forum for MP farmers.
+    # This also makes it so forums develop a specific vocabulary for people to be experts in
+    tags = models.ManyToManyField('Tag', blank=True, null=True)
+    ########################################################################################
+    
     maxlength = models.IntegerField()
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
 
@@ -83,17 +92,9 @@ class Tag(models.Model):
     tag = models.CharField(max_length=24)
     type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
-    ########################################################################################
-    # why? so that experts can be associated with not only a topic
-    # but also a community (i.e. forum) where they should share that expertise
-    # Put another way, a cotton expert in Guj may not want or be qualified to
-    # answer cotton questions from a forum for MP farmers.
-    # This also makes it so forums develop a specific vocabulary for people to be experts in
-    forum = models.ForeignKey(Forum)
-    ########################################################################################
     
     def __unicode__(self):
-        return self.tag + '_' + unicode(self.forum)
+        return self.tag
  
 class Message_forum(models.Model):
     message = models.ForeignKey(Message)
