@@ -288,10 +288,12 @@ function mainmenu ()
    elseif (d == i + 1) then
       read(aosd .. "okyourreplies.wav", 0);
       use();
-      playmessages(getusermessages(), 'n');
+      playmessages(getusermessages(), 'y');
    elseif (d == i + 2 and adminmode) then
       read(aosd .. "okpending.wav", 0);
       use();
+      -- pending messages shouldn't have replies so
+      -- leave the flag as 'n'
       playmessages(getpendingmessages(), 'n');
    elseif (d ~= nil) then
       freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
