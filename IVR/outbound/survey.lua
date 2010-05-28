@@ -30,6 +30,7 @@ logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
 script_name = "survey.lua";
+aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
 sursd = aosd .. "survey/";
 
@@ -46,9 +47,9 @@ callid = argv[1];
 
 -- get subject id, phone number, and survey id
 query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix ";
-query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call call ";
-query = query .. " WHERE call.id = " .. callid;
-
+query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call c ";
+query = query .. " WHERE c.id = " .. callid;
+freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query)
 subjectid = res[1];
 phonenum = res[2];
@@ -77,7 +78,8 @@ end
 query = 		"SELECT file ";
 query = query .. " FROM surveys_prompt ";
 query = query .. " WHERE survey_id = " .. surveyid;
-query = query .. " ORDER BY order ASC ";
+query = query .. " ORDER BY surveys_prompt.order ASC ";
+freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 
 prompts = rows(query);
 

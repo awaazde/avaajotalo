@@ -66,7 +66,7 @@ function row(sql_statement)
 	local cursor = assert (con:execute (sql_statement));
 	local row = {};
 	result = cursor:fetch(row);
-	cur.close();
+	cursor:close();
 	return row;
 end
 
