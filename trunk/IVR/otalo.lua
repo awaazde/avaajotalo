@@ -506,20 +506,20 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
       d = use();
       
       if (d == GLOBAL_MENU_MAINMENU) then
-	 os.remove(filename);
-	 return d;
+		 os.remove(filename);
+		 return d;
       end
       
       while (d ~= GLOBAL_MENU_MAINMENU and d ~= "1" and d ~= "2" and d ~= "3") do
-	 read(aosd .. "hererecorded.wav", 1000);
-	 read(filename, 1000);
-	 read(aosd .. "notsatisfied.wav", 2000);
-	 sleep(6000)
-	 d = use();
+		 read(aosd .. "hererecorded.wav", 1000);
+		 read(filename, 1000);
+		 read(aosd .. "notsatisfied.wav", 2000);
+		 sleep(6000)
+		 d = use();
       end
       
-      if (d ~= "1" and d ~= "2") then
-	 os.remove(filename);
+     if (d ~= "1" and d ~= "2") then
+	 	os.remove(filename);
 	 if (d == GLOBAL_MENU_MAINMENU) then
 	    return d;
 	 elseif (d == "3") then

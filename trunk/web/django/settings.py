@@ -96,6 +96,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
 	'otalo.AO',
+    'otalo.surveys',
     'django.contrib.admin'
 )
 
