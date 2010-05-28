@@ -20,14 +20,14 @@ from ESL import *
 
 MAX_CHANNELS = 10
 
-def route_calls(user_ids, IVR_script):
+def route_calls(ids, IVR_script):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     
     if not con.connected():
-	print 'Not Connected'
-	sys.exit(2)
+    	print 'Not Connected'
+    	sys.exit(2)
     
-    for user_id in user_ids:
+    for id in ids:
         # only make a call when we are below the threshold
     	# to avoid worrying about race conditions, provision
     	# enough cushion in the threshold by making it conservative
@@ -41,7 +41,7 @@ def route_calls(user_ids, IVR_script):
     	   sleep_secs *= 2
     	
     	print('num channels: ' + str(num_channels))
-    	con.api("luarun " + IVR_script + " " + str(user_id))
+    	con.api("luarun " + IVR_script + " " + str(id))
     	# sleep a bit to let the call register with FS
     	time.sleep(2)
 	   

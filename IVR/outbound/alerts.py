@@ -53,29 +53,29 @@ def missed_call(user_ids):
     
     con.events("plain", "all");
     for uid in user_ids:
-	 user = User.objects.get(pk=uid)
-	 print('user.num= ' + user.number)
-    	 con.api("originate {uid=" + str(uid) +"}sofia/gateway/gizmo/" + str(user.number) + " &echo")
-	 print(str(user.number) + ": originated call")
-	 # either wait for the right event or timeout, whichever comes first
-	 Timer(MAX_WAIT_SECS-3, hangup, (con, uid)).start()
-   	 #s.enter(MAX_WAIT_SECS, 1, hangup, (con, uid))
-	 #s.run()
-	 while 1:
-        	e = con.recvEvent() 
-        	if e:
-			type = e.getType()
-            		print ('Type ' + type)
-	    		if type == 'CHANNEL_STATE':
-				body = e.serialize()
-				m = re.search("Channel-State: CS_(\w+)", body)
-				if m:
-					state = m.group(1)
-					print("CHANNEL state: " + state)
-					#if state == 'EXECUTE':
-	 					#Timer(6, hangup, (con, uid)).start()
-					if state == 'DESTROY':
-						break 						
+        user = User.objects.get(pk=uid)
+        print('user.num= ' + user.number)
+        con.api("originate {uid=" + str(uid) +"}sofia/gateway/gizmo/" + str(user.number) + " &echo")
+        print(str(user.number) + ": originated call")
+        # either wait for the right event or timeout, whichever comes first
+        Timer(MAX_WAIT_SECS-3, hangup, (con, uid)).start()
+         #s.enter(MAX_WAIT_SECS, 1, hangup, (con, uid))
+        #s.run()
+    while 1:
+        e = con.recvEvent() 
+        if e:
+            type = e.getType()
+            print ('Type ' + type)
+            if type == 'CHANNEL_STATE':
+            	body = e.serialize()
+            	m = re.search("Channel-State: CS_(\w+)", body)
+            	if m:
+                	state = m.group(1)
+                	print("CHANNEL state: " + state)
+            	#if state == 'EXECUTE':
+            			#Timer(6, hangup, (con, uid)).start()
+            	if state == 'DESTROY':
+            		break 						
 def main():
    new_responses()
 

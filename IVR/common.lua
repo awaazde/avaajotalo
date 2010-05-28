@@ -60,6 +60,18 @@ function rows (sql_statement)
 end
 
 -----------
+-- row 
+-----------
+function row(sql_statement)
+	local cursor = assert (con:execute (sql_statement));
+	local row = {};
+	result = cursor:fetch(row);
+	cur.close();
+	return row;
+end
+
+
+-----------
 -- sleep
 -----------
 

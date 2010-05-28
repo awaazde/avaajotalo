@@ -581,9 +581,6 @@ if (msg ~= nil) then
 	
 	-- script-specific sounds
 	anssd = aosd .. "answer/";
-	
-	freeswitch.consoleLog("info", script_name .. " : lang_dir = " .. aosd .. "\n");
-	freeswitch.consoleLog("info", script_name .. " : calling = " .. DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX .. "\n");
 
 	-- make the call
 	session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX)
