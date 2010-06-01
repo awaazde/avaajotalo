@@ -25,7 +25,7 @@ OPTION_GOTO = 4
 
 SUBJECTS = [{"name":"Neil", "number":"1001"}, {"name":"Marisa", "number":"5303044777"}]
 SURVEYS = [{"name":"Expert_Strong", "dialstring_prefix":"user/"}, {"name":"Expert_Weak", "dialstring_prefix":"user/"}, {"name":"Peer_Strong", "dialstring_prefix":"user/"}, {"name":"Peer_Weak", "dialstring_prefix":"user/"}]
-PROMPTS  = [{"file":"welcome.wav", "order":1, "bargein":False}, {"file":"tip.wav", "order":2, "bargein":False}, {"file":"confirm.wav", "order":3, "bargein":True, "options":[{"number": "1", "action":OPTION_NEXT}, {"number": "2", "action":OPTION_PREV}, {"number": "", "action":OPTION_REPLAY} ]}, {"file":"behavior.wav", "order":4, "bargein":True, "options":[{"number": "1", "action":OPTION_GOTO, "action_param1":2}, {"number": "", "action":OPTION_REPLAY} ]}]
+PROMPTS  = [{"file":"welcome.wav", "order":1, "bargein":False, "options":[{"number": "", "action":OPTION_NEXT}]}, {"file":"tip.wav", "order":2, "bargein":False, "options":[{"number": "", "action":OPTION_NEXT}]}, {"file":"confirm.wav", "order":3, "bargein":True, "options":[{"number": "1", "action":OPTION_NEXT}, {"number": "2", "action":OPTION_PREV}, {"number": "", "action":OPTION_REPLAY} ]}, {"file":"behavior.wav", "order":4, "bargein":True, "options":[{"number": "1", "action":OPTION_GOTO, "action_param1":2}, {"number": "", "action":OPTION_REPLAY} ]}]
 
 def subjects():
     count = 0
