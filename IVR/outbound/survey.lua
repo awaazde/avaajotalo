@@ -52,7 +52,7 @@ prevprompts = {};
 callid = argv[1];
 
 -- get subject id, phone number, and survey id
-query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix ";
+query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after ";
 query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call c ";
 query = query .. " WHERE c.id = " .. callid;
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
@@ -70,7 +70,38 @@ if (res[5] ~= nil) then
 	DIALSTRING_SUFFIX = res[5];
 end
 
+complete_after_idx = res[6];
+
 freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. phonenum .. " , survey = " .. surveyid .. "\n");
+
+-----------
+-- my_cb
+-----------
+
+function my_cb(s, type, obj, arg)
+   freeswitch.console_log("info", "\ncallback: [" .. obj['digit'] .. "]\n")
+   
+   if (type == "dtmf") then
+      
+      logfile:write(sessid, "\t",
+      session:getVariable("caller_id_number"), "\t", os.time(), "\t",
+      "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
+      
+      freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
+			     .. "]\nduration: [" .. obj['duration'] .. "]\n");
+      
+      
+      digits = obj['digit'];
+      if (bargein) then
+      	return "break";
+      else
+      	return "continue";
+      end
+      
+   else
+      freeswitch.console_log("info", obj:serialize("xml"));
+   end
+end
 
 -----------
 -- get_prompts
@@ -112,6 +143,18 @@ function get_option (promptid, number)
 end
 
 -----------
+-- set_survey_complete
+-----------
+
+function set_survey_complete (callid)
+   local query = " UPDATE call ";
+   query = query .. " SET call.complete = 1 ";
+   query = query .. " WHERE call.id = " .. callid;
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   return row(query);
+end
+
+-----------
 -- play_prompts
 -----------
 
@@ -130,11 +173,13 @@ function play_prompts (prompts)
    	  
    	  if (bargein == "1") then
    	  	read(sursd .. promptfile);
-      	d = use();
       else
-      	session:streamFile(sursd .. promptfile);
-   	  	d = "";
-      	sleep(1000);
+      	read_no_bargein(sursd .. promptfile);
+   	  end
+   	  d = use();
+   	  
+   	  if (complete_after ~= nil and current_prompt_idx == complete_after_idx) then
+   	  	set_survey_complete(callid);
    	  end
    	  
    	  -- get option
@@ -184,7 +229,13 @@ function play_prompts (prompts)
 	  end
     
    end -- end while
-   update_listens(prevprompts, userid);
+   
+   -- if survey doesn't specify a finished prompt,
+   -- that means the survey is finished after all prompts
+   -- have been heard
+   if (complete_after_idx == nil) then
+   		set_survey_complete(callid);
+   end
 end
 
 
@@ -199,7 +250,6 @@ session = freeswitch.Session(DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
 session:setVariable("caller_id_number", phonenum)
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
--- handle bargeins manually
 --session:setInputCallback("my_cb", "arg");
 
 if (session:ready() == true) then
