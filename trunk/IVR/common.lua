@@ -100,6 +100,21 @@ function read(file, delay)
    end
 end
 
+-----------
+-- read_no_bargein
+-----------
+
+function read_no_bargein(file, delay)
+   if (digits == "") then
+      logfile:write(sessid, "\t",
+		    session:getVariable("caller_id_number"), "\t",
+		    os.time(), "\t", "Prompt", "\t", file, "\n");
+      session:streamFile(file);
+      -- ignore any digits
+   	  digits = "";
+      sleep(1000);
+   end
+end
 
 ----------
 -- use
