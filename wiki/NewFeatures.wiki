@@ -1,38 +1,30 @@
-==1. Rating of Answers (1 week)==
-After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg. 
+==1. Responder Inbox ==
+If you have assigned questions for answering, display an option from the main menu that takes you there and lets you listen and respond. Would need to think about whether the interaction should be identical to the outbound interface (have update_listens, have presentation of short menu after every message), but my sense is not. If you're going to this section from AO, you know what you're doing.  (TAP: My intuition *is* to have it as close to the same as possible.)
 
-==2. Responder Inbox ==
-If you have assigned questions for answering, display an option from the main menu that takes you there and lets you listen and respond. Would need to think about whether the interaction should be identical to the outbound interface (have update_listens, have presentation of short menu after every message), but my sense it to not. If you're going to this section from AO, you know what you're doing.
+==2. Pipeline for rejected questions ==
+If a question is rejected, offer something in the interface to give the user feedback, which he can then access through the personal inbox. Having the admin choose from amongst a set of canned responses is one option.  Also, provide another option to search for prior responses that answer this question.  Currently, its fine to search using existing metadata (Tags, User, etc.)  Should also allow uploading of custom response, if not already supported.
 
-==3. Pipeline for rejected questions ==
-If a question is rejected, offer something in the interface to give the user feedback, which he can then access through the personal inbox. Having the admin choose from amongst a set of canned responses is one option.
+==3. Reporting ==
+Provide summary usage reports, including frequent callers, frequent askers, frequent successful askers, frequent responders, etc.  This will be used for rewards, monitoring and control (for example, in a toll free line tracking users who are making excessive calls).
 
-==Prompts Needed (2.5 weeks, in parallel)==
-  * Inbox top-level option
-  * Inbox suboptions
-  * Inbox empty personal or recommended threads
-  * Alert messages for each section
-  * Answerer interface prompts
+==4. Register Users ==
+Allow registering users for specific lines / forums, and specifying "closed" lines and/or forums that only registered users can call and/or listen to.  Again, particularly useful for toll free lines.
 
-==Timeline==
-  * By 3/17
-    * Finalize design of features, call flows and prompts
-    * Development and testing environment setup
+==5. Random Message Access ==
+Allow accessing random messages for a forum, perhaps through numeric serial numbers.  Motivating app: can be used to set up per-video messages for DG.
 
-  * 4/1
-    * Tagging
+==6. Custom Calling Schedules ==
+Allow experts to set custom calling schedules.  At least support calling twice a day.
 
-  * 4/20
-    * CHI
-    * Inbox
-    * Alerts
-    * Guj prompt recording done
+==7. Message Export ==
+Allow exporting a list of messages, for burning onto an MP3 CD.
 
-  * 5/1
-    * Ratings
+==8. Party Line / Conference ==
+Support setting up a party line / conference call, as their own "synchronous fora".
 
-===Other tasks in between===
-  * Study design, development, and (at least pilot) deployment
-  * CHI talk
-  * AO server move and administration
-  
+==9. SMS Alerts ==
+May want to include tag, user, other metadata.  In the future can support sending transcribed messages / responses via SMS.
+
+==10. Rating of Answers ==
+After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg.  (TAP: My intuition is to provide an explicit prompt after the message if desired.) 
+
