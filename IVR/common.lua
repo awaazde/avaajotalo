@@ -48,7 +48,7 @@ function rows (sql_statement)
 	     if (closed) then 
 		return nil;
 	     end;
-	     row = {};
+	     local row = {};
 	     result = cursor:fetch(row);
 	     if (result == nil) then
 		cursor:close();
@@ -67,7 +67,11 @@ function row(sql_statement)
 	local row = {};
 	result = cursor:fetch(row);
 	cursor:close();
-	return row;
+	if (result == nil) then
+		return nil;
+	else
+		return row;
+	end
 end
 
 

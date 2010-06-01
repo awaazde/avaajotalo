@@ -90,8 +90,8 @@ end
 -----------
 
 function get_options (promptid)
-   local query = " SELECT option.number, option.action, option.action_param1, option.action_param2 ";
-   query = query .. " FROM surveys_option option, surveys_prompt prompt ";
+   local query = " SELECT opt.number, opt.action, opt.action_param1, opt.action_param2 ";
+   query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
    query = query .. " WHERE prompt.id = " .. promptid;
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
@@ -102,10 +102,11 @@ end
 -----------
 
 function get_option (promptid, number)
-   local query = " SELECT option.action, option.action_param1, option.action_param2 ";
-   query = query .. " FROM surveys_option option, surveys_prompt prompt ";
+   local query = " SELECT opt.action, opt.action_param1, opt.action_param2 ";
+   query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
    query = query .. " WHERE prompt.id = " .. promptid;
-   query = query .. " AND option.number = '" .. number .. "' ";
+   query = query .. " AND opt.prompt_id = prompt.id ";
+   query = query .. " AND opt.number = '" .. number .. "' ";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return row(query);
 end
@@ -139,10 +140,12 @@ function play_prompts (prompts)
    	  -- get option
    	  option = get_option(promptid, d);
    	  if (option == nil) then
+   		freeswitch.consoleLog("info", script_name .. " : no option: default \n");
    	  	-- default: go to next
    	  	action = OPTION_NEXT
    	  else
    	  	action = option[1];
+   		freeswitch.consoleLog("info", script_name .. " : option:" .. tostring(action) .. "\n");
    	  end
       
       if (action == OPTION_NEXT) then
