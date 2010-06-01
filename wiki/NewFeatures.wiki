@@ -16,14 +16,17 @@ Allow registering users for specific lines / forums, and specifying "closed" lin
 ==6. Random Message Access ==
 Allow accessing random messages for a forum, perhaps through numeric serial numbers.  Motivating app: can be used to set up per-video messages for DG.
 
-==7. Message Export ==
+==7. Web Front End ==
+Provide a web-based front end for browsing, listening to, and possibly even responding to messages, intended for end users, diaspora, etc. (and not only admins)
+
+==8. Message Export ==
 Allow exporting a list of messages, for burning onto an MP3 CD.
 
-==8. Party Line / Conference ==
+==9. Party Line / Conference ==
 Support setting up a party line / conference call, as their own "synchronous fora".
 
-==9. SMS Alerts ==
+==10. SMS Alerts ==
 May want to include tag, user, other metadata.  In the future can support sending transcribed messages / responses via SMS.
 
-==10. Rating of Answers ==
+==11. Rating of Answers ==
 After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg.  (TAP: My intuition is to provide an explicit prompt after the message if desired.) 
