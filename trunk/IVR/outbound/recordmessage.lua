@@ -33,9 +33,8 @@ script_name = "recordmessage.lua";
 digits = "";
 arg = {};
 
-DIALSTRING_PREFIX = "user/";
---DIALSTRING_PREFIX = "sofia/gateway/gizmo/";
-
+--DIALSTRING_PREFIX = "user/";
+DIALSTRING_PREFIX = "sofia/gateway/gizmo/";
 DIALSTRING_SUFFIX = "";
 
 phonenum = argv[1];
@@ -51,6 +50,7 @@ freeswitch.consoleLog("info", script_name .. " : calling = " .. phonenum .. "\n"
 function recordmessage ()
    local partfilename = "recordmsg/" .. os.time() .. ".mp3";
    local filename = sd .. partfilename;
+   local maxlength = 1000 * 60 * 8;
 
    repeat
       read_no_bargein(aosd .. "pleaserecord.wav", 1000);
@@ -66,7 +66,7 @@ function recordmessage ()
       while (d ~= "1" and d ~= "2" and d ~= "3") do
 		 read(aosd .. "hererecorded.wav", 1000);
 		 read(filename, 1000);
-		 read(aosd .. "notsatisfied.wav", 2000);
+		 read(rmsgsd .. "notsatisfied.wav", 2000);
 		 sleep(6000)
 		 d = use();
       end
@@ -74,16 +74,19 @@ function recordmessage ()
      if (d == "3") then
 	 	os.remove(filename);
 		read_no_bargein(aosd .. "messagecancelled.wav", 500);
+		hangup();
       end
       
    until (d == "1");
 
-   read_no_bargein(basedir .. "/scripts/AO/sounds/survey/en/okrecorded.wav", 500);
+   read_no_bargein(rmsgsd .. "okrecorded.wav", 500);
 end
 
 -----------
 -- MAIN 
 -----------
+aosd = basedir .. "/scripts/AO/sounds/eng/";
+rmsgsd = basedir .. "/scripts/AO/sounds/survey/en/";
 
 -- make the call
 session = freeswitch.Session(DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
@@ -93,6 +96,8 @@ session:setHangupHook("hangup");
 --session:setInputCallback("my_cb", "arg");
 
 if (session:ready() == true) then
+	-- sleep for a bit
+	session:sleep(13000);
 
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
