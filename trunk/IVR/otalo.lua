@@ -18,7 +18,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
    --]]
 
 -- INCLUDES
-require "luasql.mysql";
+require "luasql.odbc";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
@@ -316,7 +316,6 @@ function playmessage (msg, listenreplies)
   local summary = msg[3];
   local rgt = tonumber(msg[4]);
   local forumid = msg[6];
-  local responsesallowed = tonumber(msg[7]);
   local moderated = tonumber(msg[8]);
   local status = MESSAGE_STATUS_APPROVED;
   local adminmode = is_admin(forumid);
@@ -403,7 +402,9 @@ function playmessages (msgs, listenreplies)
    local d = "";
    
    while (current_msg ~= nil) do
-      adminmode = is_admin(current_msg[6]);
+      local adminmode = is_admin(current_msg[6]);
+      local responsesallowed = current_msg[7];
+
       if (d == GLOBAL_MENU_RESPOND) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
