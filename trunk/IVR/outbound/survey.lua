@@ -170,9 +170,10 @@ function play_prompts (prompts)
    	  promptid = current_prompt[1];
    	  promptfile = current_prompt[2];
    	  bargein = current_prompt[3];
+   	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
-   	  if (bargein == "1") then
-   	  	read(sursd .. promptfile);
+   	  if (bargein == 1) then
+   	  	read(sursd .. promptfile, 2000);
       else
       	read_no_bargein(sursd .. promptfile);
    	  end
@@ -185,14 +186,15 @@ function play_prompts (prompts)
    	  -- get option
    	  option = get_option(promptid, d);
    	  if (option == nil) then
-   		freeswitch.consoleLog("info", script_name .. " : no option: default \n");
-   	  	-- default: go to next
-   	  	action = OPTION_NEXT
+   	  	-- default: repeat which is safer than NEXT since bad input
+		-- will make the prompt be skipped. Downside is that prompts have to have
+		-- an explicit option for no input, though this is probably better practice.
+   	  	action = OPTION_REPEAT
    	  else
    	  	action = option[1];
-   		freeswitch.consoleLog("info", script_name .. " : option:" .. tostring(action) .. "\n");
    	  end
       
+   		freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
       if (action == OPTION_NEXT) then
 	    current_prompt_idx = current_prompt_idx + 1;
 		-- check to see if we are at the last msg in the list
@@ -206,15 +208,15 @@ function play_prompts (prompts)
 		    -- get msg from the prev list
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
-      elseif (d == OPTION_PREV) then
+      elseif (action == OPTION_PREV) then
 		 if (current_prompt_idx > 1) then
 		    current_prompt_idx = current_prompt_idx - 1;
 		    current_prompt = prevprompts[current_prompt_idx];
 		 end
-      elseif (d == OPTION_REPLAY) then
+      elseif (action == OPTION_REPLAY) then
 		-- do nothing
-      elseif (d == OPTION_GOTO) then
-	  	current_prompt_idx = option[2];
+      elseif (action == OPTION_GOTO) then
+	  	current_prompt_idx = tonumber(option[2]);
 		-- check to see if we are at the last msg in the list
 	 	if (current_prompt_idx > #prevprompts) then
 		    -- get next msg from the cursor
@@ -256,9 +258,6 @@ if (session:ready() == true) then
 
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
-	
-	-- sleep for a sec
-	sleep(1000);
 	
 	while (1) do
 	   -- play prompts
