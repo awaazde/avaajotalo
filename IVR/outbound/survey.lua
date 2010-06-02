@@ -175,7 +175,7 @@ function play_prompts (prompts)
    	  if (bargein == 1) then
    	  	read(sursd .. promptfile, 2000);
       else
-      	read_no_bargein(sursd .. promptfile);
+      	read_no_bargein(sursd .. promptfile, 2000);
    	  end
    	  d = use();
    	  
@@ -255,6 +255,8 @@ session:setHangupHook("hangup");
 --session:setInputCallback("my_cb", "arg");
 
 if (session:ready() == true) then
+	-- sleep for a bit
+	session:sleep(10000);
 
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
 	"\t", os.time(), "\t", "Start call", "\n");

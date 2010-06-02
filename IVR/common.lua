@@ -104,12 +104,12 @@ end
 -- read_no_bargein
 -----------
 
-function read_no_bargein(file)
+function read_no_bargein(file, delay)
       logfile:write(sessid, "\t",
 		    session:getVariable("caller_id_number"), "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       session:streamFile(file);
-      sleep(2000);
+      sleep(delay);
       -- ignore all input
       use();
 end
