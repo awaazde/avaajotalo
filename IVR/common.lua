@@ -104,16 +104,14 @@ end
 -- read_no_bargein
 -----------
 
-function read_no_bargein(file, delay)
-   if (digits == "") then
+function read_no_bargein(file)
       logfile:write(sessid, "\t",
 		    session:getVariable("caller_id_number"), "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       session:streamFile(file);
-      -- ignore any digits
-   	  digits = "";
-      sleep(1000);
-   end
+      sleep(2000);
+      -- ignore all input
+      use();
 end
 
 ----------
@@ -123,6 +121,9 @@ end
 function use()
    d = digits;
    digits = "";
+   -- need the below so any input from the stream
+   -- doesn't carry over to the next
+   session:flushDigits();
    return d;
 end
 
