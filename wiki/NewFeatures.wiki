@@ -25,8 +25,8 @@ Allow exporting a list of messages, for burning onto an MP3 CD.
 ==9. Party Line / Conference ==
 Support setting up a party line / conference call, as their own "synchronous fora".
 
-==10. SMS Alerts ==
-May want to include tag, user, other metadata.  In the future can support sending transcribed messages / responses via SMS.
+==10. Messaging Framework ==
+SMS alerts, including tag, user, other metadata.  In the future can support sending transcribed messages / responses via SMS.  We also want to support asking questions via SMS, and MMS / E-mail, which could include images, for example of plant diseases or pests.
 
 ==11. Rating of Answers ==
 After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg.  (TAP: My intuition is to provide an explicit prompt after the message if desired.) 
