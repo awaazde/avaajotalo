@@ -55,6 +55,7 @@ callid = argv[1];
 query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after ";
 query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call c ";
 query = query .. " WHERE c.id = " .. callid;
+query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query)
 subjectid = res[1];
