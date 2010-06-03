@@ -217,14 +217,16 @@ function play_prompts (prompts)
       elseif (action == OPTION_REPLAY) then
 		-- do nothing
       elseif (action == OPTION_GOTO) then
-	  	current_prompt_idx = tonumber(option[2]);
+	  	local goto_idx = tonumber(option[2]);
 		-- check to see if we are at the last msg in the list
-	 	if (current_prompt_idx > #prevprompts) then
-		    -- get next msg from the cursor
-		    current_prompt = prompts();
-		    if (current_prompt ~= nil) then
-		       table.insert(prevprompts, current_prompt);
-		    end
+	 	if (goto_idx > #prevprompts) then
+		    for i=current_prompt_idx+1, goto_idx do
+			    current_prompt = prompts();
+			    if (current_prompt ~= nil) then
+			       table.insert(prevprompts, current_prompt);
+			    end
+			end
+			current_prompt_idx = goto_idx;
 		else
 		    -- get msg from the prev list
 		    current_prompt = prevprompts[current_prompt_idx];
