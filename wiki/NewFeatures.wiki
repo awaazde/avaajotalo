@@ -1,4 +1,4 @@
-==1. Responder Inbox ==
+==1. Responder Inbox == P1
 If you have assigned questions for answering, display an option from the main menu that takes you there and lets you listen and respond. Would need to think about whether the interaction should be identical to the outbound interface (have update_listens, have presentation of short menu after every message), but my sense is not. If you're going to this section from AO, you know what you're doing.  (TAP: My intuition *is* to have it as close to the same as possible.)
 
 ==2. Pipeline for rejected questions ==
@@ -7,7 +7,7 @@ If a question is rejected, offer something in the interface to give the user fee
 ==3. Reporting ==
 Provide summary usage reports, including frequent callers, frequent askers, frequent successful askers, frequent responders, etc.  This will be used for rewards, monitoring and control (for example, in a toll free line tracking users who are making excessive calls).
 
-==4. Custom Calling Schedules ==
+==4. Custom Calling Schedules == P1
 Allow experts to set custom calling schedules.  At least support calling twice a day.
 
 ==5. Register Users ==
