@@ -99,7 +99,7 @@ def prompts():
             bfilename += ".wav"
         behavior = Prompt(file=bfilename, order=4, bargein=True, survey=survey)
         behavior.save()
-        behavior_opt1 = Option(number="1", action=OPTION_GOTO, action_param1=2, prompt=confirm)
+        behavior_opt1 = Option(number="1", action=OPTION_GOTO, action_param1=2, prompt=behavior)
         behavior_opt1.save()
         count = count + 1
                         

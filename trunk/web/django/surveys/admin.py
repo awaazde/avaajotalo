@@ -17,11 +17,11 @@
 from otalo.surveys.models import Subject, Survey, Call, Prompt, Option
 from django.contrib import admin
 
-class SubjectAdmin(admin.ModelAdmin):
+class NameSearchAdmin(admin.ModelAdmin):
    search_fields = ['name']
 
-admin.site.register(Survey)
-admin.site.register(Subject, SubjectAdmin)
+admin.site.register(Survey, NameSearchAdmin)
+admin.site.register(Subject, NameSearchAdmin)
 admin.site.register(Call)
 admin.site.register(Prompt)
 admin.site.register(Option)
