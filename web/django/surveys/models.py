@@ -40,7 +40,7 @@ class Call(models.Model):
     complete = models.NullBooleanField(blank=True)
     
     def __unicode__(self):
-        return unicode(subject) + '-' + unicode(survey)
+        return unicode(self.subject) + '-' + unicode(self.survey)
     
 class Prompt(models.Model):
     file = models.CharField(max_length=128)

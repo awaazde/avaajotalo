@@ -23,8 +23,13 @@ OPTION_PREV = 2
 OPTION_REPLAY = 3
 OPTION_GOTO = 4
 
+PREFIX = "user/"
+
 SUBJECTS = [{"name":"Neil", "number":"1001"}, {"name":"Marisa", "number":"5303044777"}]
-SURVEYS = [{"name":"Expert_Strong", "dialstring_prefix":"user/"}, {"name":"Expert_Weak", "dialstring_prefix":"user/"}, {"name":"Peer_Strong", "dialstring_prefix":"user/"}, {"name":"Peer_Weak", "dialstring_prefix":"user/"}]
+SOURCES = ["E1", "E2", "P1", "P2"]
+MSGS = ["T1", "T2", "T3", "T4"]
+MSG_TYPES = ["Strong", "Weak"]
+BEH_TYPES = ["BCALL", "BHOLD"]
 PROMPTS  = [{"file":"welcome.wav", "order":1, "bargein":False, "options":[{"number": "", "action":OPTION_NEXT}]}, {"file":"tip.wav", "order":2, "bargein":False, "options":[{"number": "", "action":OPTION_NEXT}]}, {"file":"confirm.wav", "order":3, "bargein":True, "options":[{"number": "1", "action":OPTION_NEXT}, {"number": "2", "action":OPTION_PREV}, {"number": "", "action":OPTION_REPLAY} ]}, {"file":"behavior.wav", "order":4, "bargein":True, "options":[{"number": "1", "action":OPTION_GOTO, "action_param1":2}, {"number": "", "action":OPTION_REPLAY} ]}]
 
 def subjects():
@@ -37,33 +42,66 @@ def subjects():
     
     print(str(count) + " new subjects added")
 
-def surveys():
+def surveys():    
     count = 0
-    for survey in SURVEYS:
-        if Survey.objects.filter(name=survey["name"]).count() == 0:
-            s = Survey(name=survey["name"], dialstring_prefix=survey["dialstring_prefix"])
-            s.save()
-            count = count + 1
-    
+    for source in SOURCES:
+        for msg in MSGS:
+            for mtype in MSG_TYPES:
+                for btype in BEH_TYPES:
+                    surname = source + "_" + msg + "_" + mtype + "_" + btype
+                    if Survey.objects.filter(name=surname).count() == 0:
+                        s = Survey(name=surname, dialstring_prefix=PREFIX)
+                        s.save()
+                        count = count + 1
     print(str(count) + " new surveys added")
 
 def prompts():
     count = 0
     for survey in Survey.objects.all():
-        for prompt in PROMPTS:
-            if Prompt.objects.filter(file__contains=prompt["file"], survey=survey).count() == 0:
-                p = Prompt(file="en/" + survey.name + "_" + prompt["file"], order=prompt["order"], bargein=prompt["bargein"], survey=survey)
-                p.save()
-                count = count + 1
-                if "options" in prompt:
-                    options = prompt["options"]
-                    for option in options:
-                        o = Option(number=option["number"], action=option["action"], prompt=p)
-                        if "action_param1" in option:
-                            o.action_param1 = option["action_param1"]
-                        if "action_param2" in option:
-                            o.action_param1 = option["action_param2"]
-                        o.save()
+        # do this instead of prompt check in case there is a change
+        # in the order or contents of prompts
+        survey.prompt_set.all().delete()
+        surveyname = survey.name
+        
+        # welcome
+        welcome = Prompt(file="en/welcome.wav", order=1, bargein=False, survey=survey)
+        welcome.save()
+        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt.save()
+        count = count + 1
+        
+        # tip
+        tfilename = "en/" + surveyname[:surveyname.index("_B")] + "_tip.wav"
+        tip = Prompt(file=tfilename, order=2, bargein=False, survey=survey)
+        tip.save()
+        tip_opt = Option(number="", action=OPTION_NEXT, prompt=tip)
+        tip_opt.save()
+        count = count + 1
+        
+        # confirm
+        confirm = Prompt(file="en/confirm.wav", order=3, bargein=True, survey=survey)
+        confirm.save()
+        confirm_opt1 = Option(number="1", action=OPTION_NEXT, prompt=confirm)
+        confirm_opt1.save()
+        confirm_opt2 = Option(number="2", action=OPTION_PREV, prompt=confirm)
+        confirm_opt2.save()
+        confirm_opt3 = Option(number="", action=OPTION_REPLAY, prompt=confirm)
+        confirm_opt3.save()
+        count = count + 1
+
+        # behavior
+        tidx = surveyname.index('T')
+        tid = surveyname[tidx+1:tidx+2]
+        bfilename = "en/behavior" + tid[0]
+        if (surveyname.find('HOLD') > -1):
+            bfilename += "H.wav"
+        else:
+            bfilename += ".wav"
+        behavior = Prompt(file=bfilename, order=4, bargein=True, survey=survey)
+        behavior.save()
+        behavior_opt1 = Option(number="1", action=OPTION_GOTO, action_param1=2, prompt=confirm)
+        behavior_opt1.save()
+        count = count + 1
                         
     print(str(count) + " new prompts added")
                   
