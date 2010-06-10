@@ -37,7 +37,7 @@ class Call(models.Model):
     survey = models.ForeignKey(Survey)
     date = models.DateTimeField()
     priority = models.IntegerField()
-    complete = models.NullBooleanField(blank=True)
+    complete = models.NullBooleanField(default=False)
     
     def __unicode__(self):
         return unicode(self.subject) + '-' + unicode(self.survey)
