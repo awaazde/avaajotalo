@@ -50,7 +50,7 @@ def surveys():
                 for btype in BEH_TYPES:
                     surname = source + "_" + msg + "_" + mtype + "_" + btype
                     if Survey.objects.filter(name=surname).count() == 0:
-                        s = Survey(name=surname, complete_after=3, dialstring_prefix=PREFIX)
+                        s = Survey(name=surname, complete_after=4, dialstring_prefix=PREFIX)
                         s.save()
                         count = count + 1
     print(str(count) + " new surveys added")
