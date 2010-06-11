@@ -20,13 +20,25 @@ from ESL import *
 
 MAX_CHANNELS = 10
 
-def route_calls(ids, IVR_script):
+def route_calls(ids, IVR_script, outbound_var_val=False):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     
     if not con.connected():
     	print 'Not Connected'
     	sys.exit(2)
     
+    # this is precautionary in order to kill any rogue calls
+    # but it means you have to be sure that there are no outbound
+    # calls open at this time that you shouldn't be killing
+    if outbound_var_val:
+	print("router.lua: attempting to kill open channels")
+	con.api("hupall normal_clearing " + outbound_var_val)
+	# for good measure, sleep a bit and do it again
+	time.sleep(5)
+	con.api("hupall normal_clearing " + outbound_var_val)
+	# let it marinate before calling out
+	time.sleep(5)
+
     for id in ids:
         # only make a call when we are below the threshold
     	# to avoid worrying about race conditions, provision
@@ -40,7 +52,7 @@ def route_calls(ids, IVR_script):
            num_channels = get_n_channels(con)
     	   sleep_secs *= 2
     	
-    	print('num channels: ' + str(num_channels))
+    	print('running ' + IVR_script + '(' + str(id) + ')')
     	con.api("luarun " + IVR_script + " " + str(id))
     	# sleep a bit to let the call register with FS
     	time.sleep(2)

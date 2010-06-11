@@ -18,6 +18,7 @@ from datetime import datetime
 from otalo.AO.models import Message_responder
 
 IVR_SCRIPT = 'AO/outbound/responder.lua'
+CALLID_VAR_VAL = 'ao_survey true';
 
 def main():
     # check for expired reserve_untils and release them
@@ -26,6 +27,6 @@ def main():
 
     # get every possible responder and let the script figure out which messages to play, etc.
     responder_ids = Message_responder.objects.values_list('user', flat=True).distinct()
-    router.route_calls(responder_ids, IVR_SCRIPT)
+    router.route_calls(responder_ids, IVR_SCRIPT, CALLID_VAR_VAL)
 
 main()
