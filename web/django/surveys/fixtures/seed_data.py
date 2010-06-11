@@ -23,13 +23,13 @@ OPTION_PREV = 2
 OPTION_REPLAY = 3
 OPTION_GOTO = 4
 
-PREFIX = "user/"
+PREFIX = "sofia/gateway/gizmo/"
 
 SUBJECTS = [{"name":"Neil", "number":"1001"}, {"name":"Marisa", "number":"5303044777"}]
 SOURCES = ["E1", "E2", "P1", "P2"]
 MSGS = ["T1", "T2", "T3", "T4"]
 MSG_TYPES = ["Strong", "Weak"]
-BEH_TYPES = ["BCALL", "BHOLD"]
+BEH_TYPES = ["BPRESS", "BCALL", "BHOLD"]
 PROMPTS  = [{"file":"welcome.wav", "order":1, "bargein":False, "options":[{"number": "", "action":OPTION_NEXT}]}, {"file":"tip.wav", "order":2, "bargein":False, "options":[{"number": "", "action":OPTION_NEXT}]}, {"file":"confirm.wav", "order":3, "bargein":True, "options":[{"number": "1", "action":OPTION_NEXT}, {"number": "2", "action":OPTION_PREV}, {"number": "", "action":OPTION_REPLAY} ]}, {"file":"behavior.wav", "order":4, "bargein":True, "options":[{"number": "1", "action":OPTION_GOTO, "action_param1":2}, {"number": "", "action":OPTION_REPLAY} ]}]
 
 def subjects():
@@ -93,14 +93,28 @@ def prompts():
         tidx = surveyname.index('T')
         tid = surveyname[tidx+1:tidx+2]
         bfilename = "en/behavior" + tid[0]
-        if (surveyname.find('HOLD') > -1):
-            bfilename += "H.wav"
-        else:
-            bfilename += ".wav"
+        btypeidx = surveyname.index('B')
+        btype = surveyname[btypeidx+1:btypeidx+2]
+        bfilename += btype + ".wav"
+        
         behavior = Prompt(file=bfilename, order=4, bargein=True, survey=survey)
         behavior.save()
-        behavior_opt1 = Option(number="1", action=OPTION_GOTO, action_param1=2, prompt=behavior)
-        behavior_opt1.save()
+        # special behavior for the press button for more info behavior
+        if btype == 'P':
+            behavior_opt1 = Option(number="1", action=OPTION_NEXT, prompt=behavior)
+            behavior_opt1.save()
+            behavior_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=behavior)
+            behavior_opt2.save()
+            
+            followup = Prompt(file="en/followup.wav", order=5, bargein=True, survey=survey)
+            followup.save()
+            followup_opt = Option(number="", action=OPTION_NEXT, prompt=followup)
+            followup_opt.save()
+            count = count + 1
+        else:
+            behavior_opt1 = Option(number="1", action=OPTION_GOTO, action_param1=2, prompt=behavior)
+            behavior_opt1.save()
+        
         count = count + 1
                         
     print(str(count) + " new prompts added")
