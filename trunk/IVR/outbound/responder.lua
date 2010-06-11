@@ -32,6 +32,7 @@ logfile:setvbuf("line");
 script_name = "responder.lua";
 digits = "";
 arg = {};
+CALLID_VAR = '{ao_responder=true}';
 
 sessid = os.time();
 userid = argv[1];
@@ -583,8 +584,9 @@ if (msg ~= nil) then
 	anssd = aosd .. "answer/";
 
 	-- make the call
-	session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX)
-	session:setVariable("caller_id_number", phone_num)
+	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX)
+	session:setVariable("caller_id_number", phone_num);
+	session:setVariable("destination_number","5109764273");
 	session:setVariable("playback_terminators", "#");
 	session:setHangupHook("hangup");
 	session:setInputCallback("my_cb", "arg");
@@ -595,7 +597,7 @@ if (msg ~= nil) then
 		"\t", os.time(), "\t", "Start call", "\n");
 		
 		-- sleep for a sec
-		sleep(1000);
+		session:sleep(10000);
 		
 		while (1) do
 		   read(anssd .. "welcome.wav", 500);

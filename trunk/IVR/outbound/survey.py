@@ -17,35 +17,41 @@ import router
 from datetime import datetime, timedelta
 from otalo.surveys.models import Call, Subject
 
-INTERVAL_HOURS = 1
+# This should match with how often the cron runs
+INTERVAL_MINS = 15
 IVR_SCRIPT = 'AO/outbound/survey.lua'
+# should match the var in IVR_SCRIPT
+CALLID_VAR_VAL = 'ao_survey true'
 
 def make_calls():
+     call_ids = []
      # Get all calls within the last INTERVAL
-     interval = timedelta(hours=INTERVAL_HOURS)
+     interval = timedelta(minutes=INTERVAL_MINS)
      now = datetime.now()
-     
-     # get calls in the last INTERVAL_HOURS
+ 
+     # get calls in the last INTERVAL
      subjects = Subject.objects.all()
      for subject in subjects:
-         calls = Call.objects.filter(subject=subject, date__gte=now-interval).order_by('priority')
+	 print("found subj " + unicode(subject))
+         calls = Call.objects.filter(subject=subject, complete=False, date__gte=now-interval, date__lt=now).order_by('priority')
          if calls:
              call = calls[0]
+	     print("found call " + unicode(call))
              # The way it works with backups: If we encounter a call scheduled for this run for this
              # subject, only use it if the first priority call time(s) up until this point were not
              # completed or made up
              if call.priority == 1:
                  # if there is a P1, call it
+		 print("appending id " + str(call.id))
                  call_ids.append(call.id)
              else:
                  # only make a P2 call if there have been unfullfilled P1s
                  past_p1_cnt = Call.objects.filter(subject=subject, priority=1, date__lt=now-interval).count()
-                 past_complete_cnt = Call.objects.filter(subject=subject, date__lt=now-interval, complete=True)
-                 if past_p1_cnt > past_complete_cnt and calls.count() > 1:
-                     backup_call = calls[1]
-                     call_ids.append(backup_call.id)      
+                 past_complete_cnt = Call.objects.filter(subject=subject, date__lt=now-interval, complete=True).count()
+                 if past_p1_cnt > past_complete_cnt:
+                     call_ids.append(call.id)      
      
-     router.route_calls(call_ids, IVR_SCRIPT)
+     router.route_calls(call_ids, IVR_SCRIPT, CALLID_VAR_VAL)
 					
 def main():
    make_calls()
