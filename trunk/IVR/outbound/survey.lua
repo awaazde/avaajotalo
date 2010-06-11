@@ -33,6 +33,7 @@ script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
 sursd = aosd .. "survey/";
+CALLID_VAR = '{ao_survey=true}';
 
 digits = "";
 arg = {};
@@ -57,7 +58,7 @@ query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_
 query = query .. " WHERE c.id = " .. callid;
 query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-res = row(query)
+res = row(query);
 subjectid = res[1];
 phonenum = res[2];
 surveyid = res[3];
@@ -73,7 +74,7 @@ end
 
 complete_after_idx = res[6];
 
-freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. phonenum .. " , survey = " .. surveyid .. "\n");
+freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. phonenum .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
 
 -----------
 -- my_cb
@@ -148,11 +149,11 @@ end
 -----------
 
 function set_survey_complete (callid)
-   local query = " UPDATE call ";
-   query = query .. " SET call.complete = 1 ";
-   query = query .. " WHERE call.id = " .. callid;
+   local query = " UPDATE surveys_call ";
+   query = query .. " SET complete = 1 ";
+   query = query .. " WHERE id = " .. callid;
+   con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-   return row(query);
 end
 
 -----------
@@ -166,6 +167,7 @@ function play_prompts (prompts)
    table.insert(prevprompts, current_prompt);
    local current_prompt_idx = 1;
    local d = "";
+   local replay_cnt = 0;
    
    while (current_prompt ~= nil) do
    	  promptid = current_prompt[1];
@@ -173,16 +175,16 @@ function play_prompts (prompts)
    	  bargein = current_prompt[3];
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
-   	  if (bargein == 1) then
-   	  	read(sursd .. promptfile, 2000);
-      else
-      	read_no_bargein(sursd .. promptfile, 2000);
-   	  end
-   	  d = use();
-   	  
-   	  if (complete_after ~= nil and current_prompt_idx == complete_after_idx) then
+	  if (complete_after_idx ~= nil and current_prompt_idx > complete_after_idx) then
    	  	set_survey_complete(callid);
    	  end
+   	  
+   	  if (bargein == 1) then
+   	  	read(sursd .. promptfile, 2000);
+      	  else
+      		read_no_bargein(sursd .. promptfile, 2000);
+   	  end
+   	  d = use();
    	  
    	  -- get option
    	  option = get_option(promptid, d);
@@ -190,12 +192,23 @@ function play_prompts (prompts)
    	  	-- default: repeat which is safer than NEXT since bad input
 		-- will make the prompt be skipped. Downside is that prompts have to have
 		-- an explicit option for no input, though this is probably better practice.
-   	  	action = OPTION_REPEAT
+   	  	action = OPTION_REPLAY;
    	  else
    	  	action = option[1];
    	  end
       
-   		freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
+      freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
+      if (action == OPTION_REPLAY) then
+		replay_cnt = replay_cnt + 1;
+		-- in case this call is going nowhere
+		if (replay_cnt > 5) then
+			hangup();
+		end
+      else
+		replay_cnt = 0;
+      end
+      		freeswitch.consoleLog("info", script_name .. " : replay count = " .. tostring(replay_cnt) .. "\n");
+
       if (action == OPTION_NEXT) then
 	    current_prompt_idx = current_prompt_idx + 1;
 		-- check to see if we are at the last msg in the list
@@ -214,10 +227,9 @@ function play_prompts (prompts)
 		    current_prompt_idx = current_prompt_idx - 1;
 		    current_prompt = prevprompts[current_prompt_idx];
 		 end
-      elseif (action == OPTION_REPLAY) then
-		-- do nothing
       elseif (action == OPTION_GOTO) then
 	  	local goto_idx = tonumber(option[2]);
+   		freeswitch.consoleLog("info", script_name .. " : goto idx is " .. tostring(goto_idx) .. "\n");
 		-- check to see if we are at the last msg in the list
 	 	if (goto_idx > #prevprompts) then
 		    for i=current_prompt_idx+1, goto_idx do
@@ -229,6 +241,7 @@ function play_prompts (prompts)
 			current_prompt_idx = goto_idx;
 		else
 		    -- get msg from the prev list
+		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
 	  end
@@ -251,7 +264,7 @@ end
 prompts = get_prompts(surveyid);
 
 -- make the call
-session = freeswitch.Session(DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
+session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
 session:setVariable("caller_id_number", phonenum)
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
@@ -260,16 +273,13 @@ session:setHangupHook("hangup");
 if (session:ready() == true) then
 	-- sleep for a bit
 	session:sleep(10000);
-
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
 	
 	while (1) do
-	   -- play prompts
-	   play_prompts(prompts);
+		-- play prompts
+	   	play_prompts(prompts);
 	end
-	
-	hangup();
 end
 
 
