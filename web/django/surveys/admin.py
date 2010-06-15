@@ -20,9 +20,12 @@ from django.contrib import admin
 class NameSearchAdmin(admin.ModelAdmin):
    search_fields = ['name']
 
+class DateDisplayAdmin(admin.ModelAdmin):
+    list_display = ('date')
+
 admin.site.register(Survey, NameSearchAdmin)
 admin.site.register(Subject, NameSearchAdmin)
-admin.site.register(Call)
+admin.site.register(Call, DateDisplayAdmin)
 admin.site.register(Prompt)
 admin.site.register(Option)
 
