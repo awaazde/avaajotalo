@@ -21,7 +21,10 @@ class NameSearchAdmin(admin.ModelAdmin):
    search_fields = ['name']
 
 class DateDisplayAdmin(admin.ModelAdmin):
-    list_display = ('date')
+    list_display = ('call', 'date')
+    
+    def call(self, obj):
+        return unicode(obj)
 
 admin.site.register(Survey, NameSearchAdmin)
 admin.site.register(Subject, NameSearchAdmin)
