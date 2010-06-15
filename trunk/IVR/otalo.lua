@@ -268,10 +268,12 @@ function mainmenu ()
       read(aosd .. "listento_post.wav", 0);
       read(aosd .. "digits/" .. i .. ".wav", 500);
    end
-   
-   i = i + 1
+   local numforums = i;
+ 
+   i = i + 1;
+   local chkrepliesidx = i;
    read(aosd .. "checkmyreplies.wav", 0);
-   read(aosd .. "digits/" .. i .. ".wav", 1000);
+   read(aosd .. "digits/" .. chkrepliesidx .. ".wav", 1000);
 
    local chkpendingidx = -1;
    if (adminmode) then
@@ -285,6 +287,7 @@ function mainmenu ()
    local rmsg = check_n_msgs();
    local responderidx = -1;
    if (rmsg ~= nil) then
+      freeswitch.consoleLog("info", script_name .. " :  responder option available \n");
    	  i = i + 1;
    	  responderidx = i;
    	  read(aosd .. "checkmyassignedquestions.wav", 0);
@@ -293,13 +296,13 @@ function mainmenu ()
      
    d = tonumber(use());
    
-   if (d ~= nil and d > 0 and d <= i) then
+   if (d ~= nil and d > 0 and d <= numforums) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
       read(aosd .. "okyouwant_pre.wav", 0);
       read(aosd .. forumnames[d], 0);
       read(aosd .. "okyouwant_post.wav", 0);
       playforum(forumids[d]);
-   elseif (d == i + 1) then
+   elseif (d == chkrepliesidx) then
       read(aosd .. "okyourreplies.wav", 0);
       use();
       playmessages(getusermessages(), 'y');
@@ -311,7 +314,7 @@ function mainmenu ()
       playmessages(getpendingmessages(), 'n');
    elseif (d == responderidx) then
    	  local rmsgs = get_responder_messages(userid);
-      play_responder_messages(userid, msgs);
+      play_responder_messages(userid, rmsgs);
    elseif (d ~= nil) then
       freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
       sleep(500);
