@@ -119,7 +119,7 @@ class Message_responder(models.Model):
     passed_date = models.DateTimeField(blank=True, null=True)
     
     def __unicode__(self):
-        return unicode(self.message) + '_' + unicode(self.user)
+        return unicode(self.message_forum) + '_' + unicode(self.user)
 
 class Admin(models.Model):
     user = models.ForeignKey(User)
