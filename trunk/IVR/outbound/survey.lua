@@ -202,6 +202,7 @@ function play_prompts (prompts)
 		replay_cnt = replay_cnt + 1;
 		-- in case this call is going nowhere
 		if (replay_cnt > 5) then
+			logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "Abort call", "\n");
 			hangup();
 		end
       else
