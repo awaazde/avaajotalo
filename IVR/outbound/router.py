@@ -18,6 +18,7 @@ import time
 from datetime import datetime
 from ESL import *
 
+SCRIPT = 'router.lua: '
 MAX_CHANNELS = 10
 
 def route_calls(ids, IVR_script, outbound_var_val=False):
@@ -31,7 +32,7 @@ def route_calls(ids, IVR_script, outbound_var_val=False):
     # but it means you have to be sure that there are no outbound
     # calls open at this time that you shouldn't be killing
     if outbound_var_val:
-	print("router.lua: attempting to kill open channels")
+	print(SCRIPT + "attempting to kill open channels")
 	con.api("hupall normal_clearing " + outbound_var_val)
 	# for good measure, sleep a bit and do it again
 	time.sleep(5)
@@ -47,12 +48,12 @@ def route_calls(ids, IVR_script, outbound_var_val=False):
     	sleep_secs = 2
     	while (num_channels >= MAX_CHANNELS):
     	   #sleep for a while
-    	   print("too many channels: " + str(num_channels) + ", sleeping for " + str(sleep_secs) + "s")
+    	   print(SCRIPT + "too many channels: " + str(num_channels) + ", sleeping for " + str(sleep_secs) + "s")
     	   time.sleep(sleep_secs)
            num_channels = get_n_channels(con)
     	   sleep_secs *= 2
     	
-    	print('running ' + IVR_script + '(' + str(id) + ')')
+    	print(SCRIPT + 'running ' + IVR_script + ' (' + str(id) + ')')
     	con.api("luarun " + IVR_script + " " + str(id))
     	# sleep a bit to let the call register with FS
     	time.sleep(2)
