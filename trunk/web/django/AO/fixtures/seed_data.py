@@ -36,7 +36,7 @@ MISC = ['Weather', 'Government', 'NGO', 'Insurance']
 ANIMAL = ['Animal Husbandry']
 HORTICULTURE = ['Horticulture']
 
-RESPONDER_TAGS = {'Paresh':[MARKETING, MISC], 'Parina':[LAND, SEEDS, IRRIGATION, MARKETING, MISC, ANIMAL, HORTICULTURE], 'Bharat Patel':[LAND, SEEDS, PD, WEED, MARKETING, ANIMAL, HORTICULTURE], 'Bharat Rajgor':[LAND, FERT, WEED, IRRIGATION], 'Parasara':[SEEDS, PD, IRRIGATION, IPM], 'Amarsinh':[FERT, PD], 'Bhavinbhai':[FERT, WEED, IPM] }
+RESPONDER_TAGS = {'Paresh':[MARKETING, MISC], 'Parina':[LAND, SEEDS, IRRIGATION, MARKETING, MISC, ANIMAL, HORTICULTURE], 'Bharat Patel':[LAND, SEEDS, PD, WEED, MARKETING], 'Bharat Rajgor':[LAND, FERT, WEED, IRRIGATION], 'Parasara':[SEEDS, PD, IRRIGATION, IPM], 'Amarsinh':[FERT, PD], 'Bhavinbhai':[FERT, WEED, IPM], 'Savani':[ANIMAL], 'Borad':[HORTICULTURE] }
 
 def tags():
     count = 0
