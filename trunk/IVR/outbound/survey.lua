@@ -207,7 +207,6 @@ function play_prompts (prompts)
       else
 		replay_cnt = 0;
       end
-      		freeswitch.consoleLog("info", script_name .. " : replay count = " .. tostring(replay_cnt) .. "\n");
 
       if (action == OPTION_NEXT) then
 	    current_prompt_idx = current_prompt_idx + 1;

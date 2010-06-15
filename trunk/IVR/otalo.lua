@@ -268,13 +268,27 @@ function mainmenu ()
       read(aosd .. "listento_post.wav", 0);
       read(aosd .. "digits/" .. i .. ".wav", 500);
    end
+   
+   i = i + 1
+   read(aosd .. "checkmyreplies.wav", 0);
+   read(aosd .. "digits/" .. i .. ".wav", 1000);
 
-   read(aosd .. "checkmyreplies.wav", 1000);
-   read(aosd .. "digits/" .. i + 1 .. ".wav", 500);
-
+   local chkpendingidx = -1;
    if (adminmode) then
-      read(aosd .. "checkpending.wav", 1000);
-      read(aosd .. "digits/" .. i + 2 .. ".wav", 500);
+   	  i = i + 1;
+   	  chkpendingidx = i;
+      read(aosd .. "checkpending.wav", 0);
+      read(aosd .. "digits/" .. chkpendingidx .. ".wav", 1000);
+   end
+   
+   check_n_msgs = get_responder_messages(userid);
+   local rmsg = check_n_msgs();
+   local responderidx = -1;
+   if (rmsg ~= nil) then
+   	  i = i + 1;
+   	  responderidx = i;
+   	  read(aosd .. "checkmyassignedquestions.wav", 0);
+      read(aosd .. "digits/" .. responderidx .. ".wav", 1000);
    end
      
    d = tonumber(use());
@@ -289,12 +303,15 @@ function mainmenu ()
       read(aosd .. "okyourreplies.wav", 0);
       use();
       playmessages(getusermessages(), 'y');
-   elseif (d == i + 2 and adminmode) then
+   elseif (d == chkpendingidx and adminmode) then
       read(aosd .. "okpending.wav", 0);
       use();
       -- pending messages shouldn't have replies so
       -- leave the flag as 'n'
       playmessages(getpendingmessages(), 'n');
+   elseif (d == responderidx) then
+   	  local rmsgs = get_responder_messages(userid);
+      play_responder_messages(userid, msgs);
    elseif (d ~= nil) then
       freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
       sleep(500);
@@ -665,7 +682,9 @@ if (result == nil) then
 else
    aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
 end		
-freeswitch.consoleLog("info", script_name .. " : lang_dir = " .. aosd .. "\n");
+
+-- responder section-specific sounds
+anssd = aosd .. "answer/";
 
 -- answer the call
 session:answer();
