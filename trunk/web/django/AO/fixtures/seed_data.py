@@ -18,10 +18,25 @@ from django.db.models import Q
 from django.contrib.auth.models import User as AuthUser
 
 CROPS = ['Cotton', 'Wheat', 'Cumin', 'Castor', 'Mustard', 'Millet', 'Groundnut', 'Maize', 'Paddy', 'Onion','Tobacco', 'Sesame', 'Chilli','Sorghum', 'Garlic', 'Brinjal', 'Gram', 'Chickpea','Banana','Papaya', 'Tumeric', 'Other' ]
-TOPICS = ['Crop Planning','Seeds', 'Soil Care','Pests', 'Diseases', 'Weeding', 'Irrigation', 'Animal Husbandry', 'Harvesting', 'Marketing', 'Other']
+TOPICS = ['Land Preparation','Crop Planning','Soil Care','Seeds', 'Sowing', 'Crop Variety', 'Fertilizers/Bio-organic', 'Pests', 'Diseases', 'Weed Control', 'Irrigation', 'IPM Strategy', 'Animal Husbandry', 'Horticulture', 'Harvesting', 'Grading', 'Marketing', 'Storage', 'Weather', 'Government', 'NGOs', 'Insurance', 'Other']
 
 ADMINS = {'DSC':['Admin', 'Neil', 'Paresh', 'Parina'], 'UNNATI':['Satyam']}
-RESPONDERS = {'DSC':['Paresh', 'Parasara', 'Manhar Patel', 'Bharat Rajgor', 'Bharat Patel', 'Amarsinh'], 'UNNATI':['UNNATI']}
+RESPONDERS = {'DSC':['Paresh', 'Parasara', 'Bharat Rajgor', 'Bharat Patel', 'Amarsinh', 'Bhavinbhai', 'Parina'], 'UNNATI':['UNNATI']}
+
+# Tag Categories
+LAND = ['Land Prep', 'Soil Care']
+SEEDS =['Seeds', 'Sowing', 'Crop Variety']
+FERT = ['Fertilizers']
+PD = ['Pest', 'Disease']
+WEED = ['Weed']
+IRRIGATION = ['Irrigation']
+IPM = ['IPM']
+MARKETING = ['Grading', 'Marketing', 'Storage']
+MISC = ['Weather', 'Government', 'NGO', 'Insurance']
+ANIMAL = ['Animal Husbandry']
+HORTICULTURE = ['Horticulture']
+
+RESPONDER_TAGS = {'Paresh':[MARKETING, MISC], 'Parina':[LAND, SEEDS, IRRIGATION, MARKETING, MISC, ANIMAL, HORTICULTURE], 'Bharat Patel':[LAND, SEEDS, PD, WEED, MARKETING, ANIMAL, HORTICULTURE], 'Bharat Rajgor':[LAND, FERT, WEED, IRRIGATION], 'Parasara':[SEEDS, PD, IRRIGATION, IPM], 'Amarsinh':[FERT, PD], 'Bhavinbhai':[FERT, WEED, IPM] }
 
 def tags():
     count = 0
@@ -38,7 +53,7 @@ def tags():
             else:
                 t = t[0]
             forum.tags.add(t)
-           
+            
         for topic in TOPICS:
             t = Tag.objects.filter(tag=topic, type='agri-topic')
             if not bool(t):
@@ -70,10 +85,12 @@ def admins():
             else:
                 auth_user = auth_user[0]
             for forum in forums:
-                    a = Admin(user=admin, forum=forum, auth_user=auth_user)
-                    print ("adding " + str(a))
-                    a.save()
-                    count += 1
+                    a = Admin.objects.filter(user=admin, forum=forum, auth_user=auth_user)
+                    if not bool(a):
+                        a = Admin(user=admin, forum=forum, auth_user=auth_user)
+                        print ("adding " + str(a))
+                        a.save()
+                        count += 1
     
     print(str(count) + " new admin objs added.")
                 
@@ -90,11 +107,15 @@ def responders():
                 # give capabilities to just one of the registered numbers
                 responder = User.objects.filter(name__icontains=responder_str)[0]
                 forum.responders.add(responder)
-                for tag in tags:
-                    if not (tag in responder.tags.all()):
-                        responder.tags.add(tag)
-                        print ("adding " + str(responder) + ": " + str(tag))
-                        count += 1
+                
+                resp_key = [key for key in RESPONDER_TAGS.keys() if key in responder.name][0]
+                for topicset in RESPONDER_TAGS[resp_key]:
+                    for topic in topicset:
+                        tag = Tag.objects.filter(tag__contains=topic, type='agri-topic')
+                        if tag and not tag[0] in responder.tags.all():
+                            responder.tags.add(tag[0])
+                            print ("adding " + str(responder) + ": " + str(tag[0]))
+                            count += 1
        
     print(str(count) + " new responder_tag objs added.")
     
