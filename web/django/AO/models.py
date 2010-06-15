@@ -21,6 +21,9 @@ class Line(models.Model):
     number = models.CharField(max_length=24)
     name = models.CharField(max_length=128)
     language = models.CharField(max_length=3)
+    # is this line open to any caller or restricted?
+    # use in combination with user.allowed
+    open = models.BooleanField(default=True)
     # for dialing out
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)

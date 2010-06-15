@@ -25,8 +25,12 @@ def main():
     now = datetime.now()
     Message_responder.objects.filter(reserved_until__lt=now).update(reserved_by=None, reserved_until=None)
 
-    # get every possible responder and let the script figure out which messages to play, etc.
-    responder_ids = Message_responder.objects.values_list('user', flat=True).distinct()
+    if len(sys.argv) == 1:
+        responder_ids = sys.argv[1].split(',')
+    else:
+        # get every possible responder and let the script figure out which messages to play, etc.
+        responder_ids = Message_responder.objects.values_list('user', flat=True).distinct()
+        
     router.route_calls(responder_ids, IVR_SCRIPT, CALLID_VAR_VAL)
 
 main()
