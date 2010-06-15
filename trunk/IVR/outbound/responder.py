@@ -13,6 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
+import sys
 import router
 from datetime import datetime
 from otalo.AO.models import Message_responder
@@ -25,7 +26,7 @@ def main():
     now = datetime.now()
     Message_responder.objects.filter(reserved_until__lt=now).update(reserved_by=None, reserved_until=None)
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 2:
         responder_ids = sys.argv[1].split(',')
     else:
         # get every possible responder and let the script figure out which messages to play, etc.
