@@ -21,7 +21,7 @@ CROPS = ['Cotton', 'Wheat', 'Cumin', 'Castor', 'Mustard', 'Millet', 'Groundnut',
 TOPICS = ['Land Preparation','Crop Planning','Soil Care','Seeds', 'Sowing', 'Crop Variety', 'Fertilizers/Bio-organic', 'Pests', 'Diseases', 'Weed Control', 'Irrigation', 'IPM Strategy', 'Animal Husbandry', 'Horticulture', 'Harvesting', 'Grading', 'Marketing', 'Storage', 'Weather', 'Government', 'NGOs', 'Insurance', 'Other']
 
 ADMINS = {'DSC':['Admin', 'Neil', 'Paresh', 'Parina'], 'UNNATI':['Satyam']}
-RESPONDERS = {'DSC':['Paresh', 'Parasara', 'Bharat Rajgor', 'Bharat Patel', 'Amarsinh', 'Bhavinbhai', 'Parina'], 'UNNATI':['UNNATI']}
+RESPONDERS = {'DSC':['Paresh', 'Parasara', 'Bharat Rajgor', 'Bharat Patel', 'Amarsinh', 'Bhavinbhai', 'Parina', 'Savani', 'Borad'], 'UNNATI':['UNNATI']}
 
 # Tag Categories
 LAND = ['Land Prep', 'Soil Care']
