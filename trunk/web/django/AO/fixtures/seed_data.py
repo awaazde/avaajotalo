@@ -81,11 +81,12 @@ def admins():
             auth_user = AuthUser.objects.filter(username=admin.name)
             if not bool(auth_user):
                 auth_user = AuthUser.objects.create_user(admin.name, '')
+                print ("creating auth user " + str(auth_user))
                 auth_user.save()
             else:
                 auth_user = auth_user[0]
             for forum in forums:
-                    a = Admin.objects.filter(user=admin, forum=forum, auth_user=auth_user)
+                    a = Admin.objects.filter(user=admin, forum=forum)
                     if not bool(a):
                         a = Admin(user=admin, forum=forum, auth_user=auth_user)
                         print ("adding " + str(a))
@@ -108,14 +109,15 @@ def responders():
                 responder = User.objects.filter(name__icontains=responder_str)[0]
                 forum.responders.add(responder)
                 
-                resp_key = [key for key in RESPONDER_TAGS.keys() if key in responder.name][0]
-                for topicset in RESPONDER_TAGS[resp_key]:
-                    for topic in topicset:
-                        tag = Tag.objects.filter(tag__contains=topic, type='agri-topic')
-                        if tag and not tag[0] in responder.tags.all():
-                            responder.tags.add(tag[0])
-                            print ("adding " + str(responder) + ": " + str(tag[0]))
-                            count += 1
+                resp_key = [key for key in RESPONDER_TAGS.keys() if key in responder.name]
+                if resp_key:
+                    for topicset in RESPONDER_TAGS[resp_key[0]]:
+                        for topic in topicset:
+                            tag = Tag.objects.filter(tag__contains=topic, type='agri-topic')
+                            if tag and not tag[0] in responder.tags.all():
+                                responder.tags.add(tag[0])
+                                print ("adding " + str(responder) + ": " + str(tag[0]))
+                                count += 1
        
     print(str(count) + " new responder_tag objs added.")
     
