@@ -42,15 +42,6 @@ prevmsgs = {};
 
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
--- App-specific GLOBALS
-GLOBAL_MENU_REPLAY = "6";
-GLOBAL_MENU_ASK_LATER = "7";
-GLOBAL_MENU_PASS = "8";
-GLOBAL_MENU_REFER = "9";
-
-RESERVE_PERIOD = "2"
-LISTENS_THRESH = "5"
-
 -- Get phone number to call out
 query = "SELECT number FROM AO_user where id = ".. userid;
 cur = con:execute(query);
