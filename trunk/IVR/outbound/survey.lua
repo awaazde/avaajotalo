@@ -198,13 +198,9 @@ function play_prompts (prompts)
    	  end
       
       freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
+      -- abort if 3 replays for any prompt in a row
       if (action == OPTION_REPLAY) then
-		replay_cnt = replay_cnt + 1;
-		-- in case this call is going nowhere
-		if (replay_cnt > 3) then
-			logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "Abort call", "\n");
-			hangup();
-		end
+		replay_cnt = check_abort(replay_cnt, 3);
       else
 		replay_cnt = 0;
       end
