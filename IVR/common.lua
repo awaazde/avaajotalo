@@ -411,7 +411,7 @@ function play_responder_messages (userid, msgs)
 		  	if (d ~= GLOBAL_MENU_MAINMENU and string.len(d) ~= 10) then
 	  			read(anssd .. "invalidphonenum.wav",500)
 	  		end
-	  		check_abort(phone_num_cnt, 4);
+	  		phone_num_cnt = check_abort(phone_num_cnt, 4);
 	  	end
 	  	
 	  	if (d == GLOBAL_MENU_MAINMENU) then
@@ -508,7 +508,7 @@ function record_responder_message (forumid, thread, maxlength, rgt)
 		 read(aosd .. "notsatisfied.wav", 2000);
 		 sleep(6000)
 		 d = use();
-		 check_abort(review_cnt, 4)
+		 review_cnt = check_abort(review_cnt, 4)
       end
       
      if (d ~= "1" and d ~= "2") then
@@ -569,5 +569,7 @@ function check_abort(counter, threshold)
 	if (counter >= threshold) then
 		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "Abort call", "\n");
 		hangup();
+	else
+		return counter;
 	end
 end
