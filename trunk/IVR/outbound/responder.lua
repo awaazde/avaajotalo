@@ -212,9 +212,10 @@ if (msg ~= nil) then
 		logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
 		"\t", os.time(), "\t", "Start call", "\n");
 		
-		-- sleep for a sec
+		-- sleep for some secs
 		session:sleep(10000);
 		
+		local mainmenu_cnt = 0;
 		while (1) do
 		   read(anssd .. "welcome.wav", 500);
 		   -- ignore any barge-in and move on
@@ -224,6 +225,8 @@ if (msg ~= nil) then
 
 		   -- play messages
 		   play_responder_messages(userid, msgs);
+		   
+		   check_abort(mainmenu_cnt, 2);
 		
 		   -- go back to the main menu
 		   read(aosd .. "mainmenu.wav", 1000);

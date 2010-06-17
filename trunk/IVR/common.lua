@@ -402,6 +402,7 @@ function play_responder_messages (userid, msgs)
 
 	  	read_phone_num(anssd .. "referquestion.wav", 3000);
 		d = use();
+		local phone_num_cnt = 0;
 	  	while (d ~= GLOBAL_MENU_MAINMENU and string.len(d) ~= 10) do
 		  	session:execute("playback", "tone_stream://%(500, 0, 620)");
 		  	read_phone_num("", 3000);
@@ -410,7 +411,7 @@ function play_responder_messages (userid, msgs)
 		  	if (d ~= GLOBAL_MENU_MAINMENU and string.len(d) ~= 10) then
 	  			read(anssd .. "invalidphonenum.wav",500)
 	  		end
-	  		
+	  		check_abort(phone_num_cnt, 4);
 	  	end
 	  	
 	  	if (d == GLOBAL_MENU_MAINMENU) then
@@ -500,23 +501,26 @@ function record_responder_message (forumid, thread, maxlength, rgt)
 		 return d;
       end
       
+      local review_cnt = 0;
       while (d ~= GLOBAL_MENU_MAINMENU and d ~= "1" and d ~= "2" and d ~= "3") do
 		 read(aosd .. "hererecorded.wav", 1000);
 		 read(filename, 1000);
 		 read(aosd .. "notsatisfied.wav", 2000);
 		 sleep(6000)
 		 d = use();
+		 check_abort(review_cnt, 4)
       end
       
      if (d ~= "1" and d ~= "2") then
-	 	os.remove(filename);
-	 if (d == GLOBAL_MENU_MAINMENU) then
-	    return d;
-	 elseif (d == "3") then
-	    read(aosd .. "messagecancelled.wav", 500);
-	    return use();
-	 end
-      end
+	 	 os.remove(filename);
+		 if (d == GLOBAL_MENU_MAINMENU) then
+		    return d;
+		 elseif (d == "3") then
+		    read(aosd .. "messagecancelled.wav", 500);
+		    return use();
+		 end
+     end
+   
    until (d == "1");
    
    query1 = "INSERT INTO AO_message (user_id, content_file, date";
@@ -559,3 +563,11 @@ function record_responder_message (forumid, thread, maxlength, rgt)
 end
 
 -- END common resonder functions
+
+function check_abort(counter, threshold)
+	counter = counter + 1;
+	if (counter >= threshold) then
+		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "Abort call", "\n");
+		hangup();
+	end
+end
