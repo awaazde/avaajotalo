@@ -210,7 +210,6 @@ function get_responder_messages (userid)
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    query = query .. " AND message_responder.user_id = " .. userid;
    query = query .. " AND message.lft = 1 AND message.rgt = 2 AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";

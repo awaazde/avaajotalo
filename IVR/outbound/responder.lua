@@ -227,8 +227,6 @@ if (msg ~= nil) then
 		   play_responder_messages(userid, msgs);
 		   
 		   mainmenu_cnt = check_abort(mainmenu_cnt, 2);
-		   freeswitch.consoleLog("info", script_name .. " :  mm_cnt = " .. mainmenu_cnt .. "\n");
-		
 		   -- go back to the main menu
 		   read(aosd .. "mainmenu.wav", 1000);
 		end
