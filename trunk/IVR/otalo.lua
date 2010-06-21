@@ -213,9 +213,9 @@ end
 
 function getusermessages ()
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
-   query = query .. "WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id";
+   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. " WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
+   query = query .. " AND message_forum.forum_id = forum.id";
    query = query .. " ORDER BY message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
