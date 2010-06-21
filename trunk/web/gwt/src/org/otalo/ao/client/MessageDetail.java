@@ -244,7 +244,7 @@ public class MessageDetail extends Composite {
   	{
   		case PENDING:
 	  	  	setMovable(false); 
-	  	  	setCanRespond(false); 
+	  	  	setCanRespond(true); 
 	  	  	setSticky(false);
 	  	  	break;
   		case APPROVED:
@@ -254,7 +254,7 @@ public class MessageDetail extends Composite {
 	  	  	break;
   		case REJECTED:
   			setMovable(false);
-  			setCanRespond(false);
+  			setCanRespond(true);
   			setSticky(false);
   	}
   	
@@ -278,8 +278,8 @@ public class MessageDetail extends Composite {
   	// Load Tags
   	tags.loadTags(messageForum);
   	
-  	// Load routing info
-  	routing.loadRoutingInfo(messageForum);
+  	// Load Message responders
+  	routing.loadResponders(messageForum);
   	
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
@@ -414,12 +414,7 @@ public class MessageDetail extends Composite {
 			
 		}
 	}
-	
-	public String validateTags()
-	{
-		return tags.getErrorText();
-	}
-	
+
 	public void reset()
 	{
 		detailsForm.reset();

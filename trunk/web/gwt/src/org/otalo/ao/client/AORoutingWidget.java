@@ -16,78 +16,85 @@
 
 package org.otalo.ao.client;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.MessageResponder;
-import org.otalo.ao.client.model.Tag;
 import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
-import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class AORoutingWidget extends RoutingWidget {
 	private MessageForum mf;
-	private CheckBox routeEnabled = new CheckBox("Call Automatically");
+	private ListBox responders = new ListBox(true);
 	private VerticalPanel routeTable = new VerticalPanel();
+	private Hidden respondersChanged = new Hidden("responders_changed", "0");
 	
 	public AORoutingWidget()
 	{
-		routeEnabled.setText("Call Automatically");
-		routeEnabled.setName("routeEnabled");
-		routeTable.add(routeEnabled);
+		Label title = new Label("Assigned Responders:");
+		routeTable.add(title);
+		responders.setName("responders");
+		responders.addChangeHandler(new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				respondersChanged.setValue("1");
+			}
+		});
+		routeTable.add(respondersChanged);
+		responders.setVisibleItemCount(5);
+		routeTable.add(responders);
 		initWidget(routeTable);
 	}
 	
-	public void loadRoutingInfo(MessageForum messageForum)
+	public void loadResponders(MessageForum messageForum)
 	{
 		mf = messageForum;
-		
-		if (!messageForum.isResponse())
+		if (mf.getStatus() == MessageStatus.PENDING || mf.getStatus() == MessageStatus.APPROVED)
 		{
-			// Check to see if checkbox should be enabled and checked.
-			// First thing is to check if this message has been tagged
+			responders.setEnabled(true);
+			
+			// load up responders for this forum
 			JSONRequest request = new JSONRequest();
-		    request.doFetchURL(AoAPI.MESSAGE_TAGS + mf.getId() + "/", new MessageTagRequestor());
+		    request.doFetchURL(AoAPI.RESPONDERS + mf.getForum().getId() + "/", new ResponderRequestor());
 		}
 	}
 	
-	 private class MessageTagRequestor implements JSONRequester {
+	private class ResponderRequestor implements JSONRequester {
 		 
-			public void dataReceived(List<JSOModel> models) 
-			{
-				if (models.size() > 0)
-				{
-					// This message has been tagged, so proceed to check
-					// if it has been assigned responders
-					loadResponders();
-				}
-			}
+		public void dataReceived(List<JSOModel> models) {
+			User u;
+			
+			for (JSOModel model : models)
+		  	{
+				u = new User(model);
+		  		responders.addItem(u.getName(), u.getId());
+		  	}
+			
+			// now that responders have been loaded,
+			// check which have been assigned
+			loadSelectedResponders(mf);
+
+		}
 	 }
 	 
-	private void loadResponders()
+	private void loadSelectedResponders(MessageForum messageForum)
 	{
-		if (mf.getStatus() == MessageStatus.PENDING || mf.getStatus() == MessageStatus.APPROVED)
-		{
-			routeEnabled.setEnabled(true);
-			// get responders
-			JSONRequest request = new JSONRequest();
-		    request.doFetchURL(AoAPI.MESSAGE_RESPONDERS + mf.getId() + "/", new MessageResponderRequestor());
-		}
+		JSONRequest request = new JSONRequest();
+	    request.doFetchURL(AoAPI.MESSAGE_RESPONDERS + mf.getId() + "/", new MessageResponderRequestor());
 	}
 	
 	private class MessageResponderRequestor implements JSONRequester {
 		 
 		public void dataReceived(List<JSOModel> models) 
 		{
-			if (models.size() > 0) routeEnabled.setValue(true);
 			MessageResponder ms;
 			int idx = 0;
 			
@@ -95,24 +102,21 @@ public class AORoutingWidget extends RoutingWidget {
 		  	{
 				ms = new MessageResponder(model);
 		  		User responder = ms.getResponder();
-		  		String label = responder.getName().equals("null") ? responder.getNumber() : responder.getName();
-		  		
-		  		routeTable.add(new Label(label));
-		  		routeTable.add(new Hidden("responder"+idx++, responder.getId()));	
+		  		for (int i=0; i < responders.getItemCount(); i++)
+		  		{
+		  			if (responders.getValue(i).equals(responder.getId()))
+		  			{
+		  				responders.setItemSelected(i, true);
+		  			}
+		  		}
 		  	}
 		}
 	}
 	
 	public void reset()
 	{
-		routeEnabled.setEnabled(false);
-		routeEnabled.setValue(false);
-		for (Iterator<Widget> iter = routeTable.iterator(); iter.hasNext();)
-		{
-			if (!iter.next().equals(routeEnabled))
-			{
-				iter.remove();
-			}
-		}
+		responders.setEnabled(false);
+		responders.clear();
+		respondersChanged.setValue("0");
 	}
 }

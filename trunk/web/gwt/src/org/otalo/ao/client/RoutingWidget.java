@@ -26,6 +26,6 @@ import com.google.gwt.user.client.ui.Composite;
  *
  */
 public abstract class RoutingWidget extends Composite {
-	public abstract void loadRoutingInfo(MessageForum messageForum);
+	public abstract void loadResponders(MessageForum messageForum);
 	public abstract void reset();
 }
