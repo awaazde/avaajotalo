@@ -103,52 +103,45 @@ def updatemessage(request):
         resp = createmessage(request, m.forum, f, parent=m)
         
     # Save tags
-    crop = params['crop']
-    topic = params['topic']
-    
-    tags = m.tags.all()
-    initial_tag = False
-    if not tags and (crop != '-1' or topic != '-1'):
-        # if there aren't any previous tags
-        # and there is at least one new one
-        # (even if you can untag completely, we still want this flag set)
-        initial_tag = True
-    else:   
+    tags_changed = int(params['tags_changed'])
+    if tags_changed:
+        crop = params['crop']
+        topic = params['topic']
+        
         m.tags.clear()
     
-    if crop != '-1':
-        crop_tag = Tag.objects.get(pk=crop)
-        m.tags.add(crop_tag)
-    
-    if topic != '-1':
-        topic_tag = Tag.objects.get(pk=topic)
-        m.tags.add(topic_tag)
+        if crop != '-1':
+            crop_tag = Tag.objects.get(pk=crop)
+            m.tags.add(crop_tag)
+        
+        if topic != '-1':
+            topic_tag = Tag.objects.get(pk=topic)
+            m.tags.add(topic_tag)
     
     if m.forum.routeable == 'y':
-        # check routing table
-        routeEnabled = params.__contains__('routeEnabled')
-        if routeEnabled:
-            # checked
+        # Only run routing algorithm if tags have been updated.
+        # But don't override manual setting of responders if they
+        # were also made
+        responders_changed = int(params['responders_changed'])
+        if responders_changed or tags_changed:
+            if responders_changed:
+                responders = []
+                if params.__contains__('responders'):
+                    responder_ids = params.getlist('responders')
+                    for responder_id in responder_ids:
+                        responder = User.objects.get(pk=responder_id)
+                        responders.append(responder)
+            else: #get responders based on new tags
+                responders = get_responders(m)
             
-            # do fresh assignments even if it's the same people to start again
+            # must do this delete after get_responders so the routing algorithm
+            # can take into account previous pass and listen histories
             Message_responder.objects.filter(message_forum=m).delete()
-            responders = get_responders(m)
             t = datetime.now()
             for responder in responders:
                 mr = Message_responder(message_forum=m, user=responder, assign_date=t)
                 mr.save();
-        else:
-            # check if tags are being saved for the first time
-            if initial_tag:
-                responders = get_responders(m)
-                t = datetime.now()
-                for responder in responders:
-                    mr = Message_responder(message_forum=m, user=responder, assign_date=t)
-                    mr.save();
-            else:
-                # unchecked; delete any responder assignments that exist
-                Message_responder.objects.filter(message_forum=m).delete()
-    
+                
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
     # user hits the Back button.
@@ -366,6 +359,11 @@ def tags(request, forum_id):
 def messagetag(request, message_forum_id):
     tags = Tag.objects.filter(message_forum=message_forum_id)
     return send_response(tags, ('tag'))
+
+def responders(request, forum_id):
+    forum = get_object_or_404(Forum, pk=forum_id)
+    responders = forum.responders.all()
+    return send_response(responders, ('user'))
 
 def messageresponder(request, message_forum_id):
     # TODO: should this list be updated based on passed and reserved settings?

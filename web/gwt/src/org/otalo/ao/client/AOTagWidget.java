@@ -23,12 +23,16 @@ import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Tag;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 
 public class AOTagWidget extends TagWidget {
 	private ListBox crop, topic;
+	private Hidden tagsChanged;
 	private boolean tagged;
 	private MessageForum mf;
 	
@@ -46,21 +50,26 @@ public class AOTagWidget extends TagWidget {
 		Label cropLabel = new Label("Crop");
 		Label topicLabel = new Label("Topic");
 		
+		tagsChanged = new Hidden("tags_changed", "0");
+		crop.addChangeHandler(new TopicChangedHandler());
+		topic.addChangeHandler(new TopicChangedHandler());
+		
 		FlexTable tagTable = new FlexTable();
 		tagTable.setWidget(0, 0, cropLabel);
 		tagTable.setWidget(0, 1, crop);
 		tagTable.setWidget(1, 0, topicLabel);
 		tagTable.setWidget(1, 1, topic);
+		tagTable.setWidget(2, 0, tagsChanged);
 		
 		initWidget(tagTable);
 	}
 	
-	public String getErrorText() {
-		String errorText = null;
-		if (!tagged)
-			errorText = "Please choose and save a crop and/or topic for this message";
+	private class TopicChangedHandler implements ChangeHandler {
+
+		public void onChange(ChangeEvent event) {
+			tagsChanged.setValue("1");	
+		}
 		
-		return errorText;
 	}
 	
 	public void loadTags(MessageForum messageForum)
@@ -140,7 +149,7 @@ public class AOTagWidget extends TagWidget {
 		topic.clear();
 		crop.addItem("", "-1");
 		topic.addItem("", "-1");
-		 
+		tagsChanged.setValue("0");
 		 
 	}
 

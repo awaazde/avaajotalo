@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.thread'),
     (r'^tags/(?P<forum_id>\d+)/$', 'otalo.AO.views.tags'),
     (r'^messagetag/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messagetag'),
+    (r'^responders/(?P<forum_id>\d+)/$', 'otalo.AO.views.responders'),
     (r'^messageresponder/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messageresponder'),
     (r'^username/$', 'otalo.AO.views.username'),
 )
