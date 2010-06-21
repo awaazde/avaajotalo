@@ -8,7 +8,7 @@ If a question is rejected, offer something in the interface to give the user fee
 Provide summary usage reports, including frequent callers, frequent askers, frequent successful askers, frequent responders, etc.  This will be used for rewards, monitoring and control (for example, in a toll free line tracking users who are making excessive calls).
 
 ==4. Custom Calling Schedules (P1)==
-Allow experts to set custom calling schedules.  At least support calling twice a day.
+Allow experts to set custom calling schedules.  At least support calling twice a day.  Also, maybe support multiple re-tries per call.
 
 ==5. Register Users ==
 Allow registering users for specific lines / forums, and specifying "closed" lines and/or forums that only registered users can call and/or listen to.  Again, particularly useful for toll free lines.
