@@ -19,8 +19,8 @@ Allow accessing random messages for a forum, perhaps through numeric serial numb
 ==7. Web Front End ==
 Provide a web-based front end for browsing, listening to, and possibly even responding to messages, intended for end users, diaspora, etc. (and not only admins)
 
-==8. Message Export ==
-Allow exporting a list of messages, for burning onto an MP3 CD.
+==8. Message Move / Export ==
+Allow moving / copying messages between forums.  Also allo exporting a list of messages, for burning onto an MP3 CD.
 
 ==9. Party Line / Conference ==
 Support setting up a party line / conference call, as their own "synchronous fora".
