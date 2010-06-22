@@ -214,7 +214,8 @@ function get_responder_messages (userid)
    query = query .. " AND message.lft = 1 AND message.rgt = 2 AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";
    query = query .. " AND (message_responder.reserved_by_id IS NULL OR ";
-   query = query .. "      (message_responder.reserved_by_id = " .. userid .. " AND message_responder.reserved_until < now()))"
+   query = query .. "      (message_responder.reserved_by_id = " .. userid .. " AND message_responder.reserved_until < now())) ";
+   query = query .. " ORDER BY message.date DESC";
    return rows(query);
 end
 
