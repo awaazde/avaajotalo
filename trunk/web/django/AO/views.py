@@ -394,7 +394,8 @@ def get_responders(message_forum):
   
 def get_console_user(request):
    auth_user = request.user
-   u = User.objects.get(admin__auth_user=auth_user).distinct()
+   u = User.objects.filter(admin__auth_user=auth_user).distinct()
+   u = u[0]
    return u;
 
 # make child the last of this parent
