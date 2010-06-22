@@ -202,7 +202,6 @@ if (msg ~= nil) then
 	-- make the call
 	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX)
 	session:setVariable("caller_id_number", phone_num);
-	session:setVariable("destination_number","5109764273");
 	session:setVariable("playback_terminators", "#");
 	session:setHangupHook("hangup");
 	session:setInputCallback("my_cb", "arg");
