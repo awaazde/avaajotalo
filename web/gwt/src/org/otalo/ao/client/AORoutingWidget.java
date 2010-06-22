@@ -57,14 +57,11 @@ public class AORoutingWidget extends RoutingWidget {
 	public void loadResponders(MessageForum messageForum)
 	{
 		mf = messageForum;
-		if (mf.getStatus() == MessageStatus.PENDING || mf.getStatus() == MessageStatus.APPROVED)
-		{
-			responders.setEnabled(true);
-			
-			// load up responders for this forum
-			JSONRequest request = new JSONRequest();
-		    request.doFetchURL(AoAPI.RESPONDERS + mf.getForum().getId() + "/", new ResponderRequestor());
-		}
+		responders.setEnabled(true);
+		
+		// load up responders for this forum
+		JSONRequest request = new JSONRequest();
+	    request.doFetchURL(AoAPI.RESPONDERS + mf.getForum().getId() + "/", new ResponderRequestor());
 	}
 	
 	private class ResponderRequestor implements JSONRequester {
