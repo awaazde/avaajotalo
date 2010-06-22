@@ -340,9 +340,6 @@ def updatestatus(request, action):
                 msg.save()
 
             m.position = None
-        
-        # remove any assignments to answer this question
-        Message_responder.objects.filter(message_forum=m).delete()
 
     m.save()
     
@@ -397,7 +394,7 @@ def get_responders(message_forum):
   
 def get_console_user(request):
    auth_user = request.user
-   u = User.objects.get(admin__auth_user=auth_user)
+   u = User.objects.get(admin__auth_user=auth_user).distinct()
    return u;
 
 # make child the last of this parent
