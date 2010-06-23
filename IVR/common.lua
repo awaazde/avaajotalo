@@ -180,6 +180,7 @@ GLOBAL_MENU_REPLAY = "6";
 GLOBAL_MENU_ASK_LATER = "7";
 GLOBAL_MENU_PASS = "8";
 GLOBAL_MENU_REFER = "9";
+GLOBAL_MENU_CANCEL_REFERRAL = "*";
 
 RESERVE_PERIOD = "2"
 LISTENS_THRESH = "5"
@@ -403,18 +404,18 @@ function play_responder_messages (userid, msgs)
 	  	read_phone_num(anssd .. "referquestion.wav", 3000);
 		d = use();
 		local phone_num_cnt = 0;
-	  	while (d ~= GLOBAL_MENU_MAINMENU and string.len(d) ~= 10) do
+	  	while (d ~= GLOBAL_MENU_CANCEL_REFERRAL and string.len(d) ~= 10) do
 		  	session:execute("playback", "tone_stream://%(500, 0, 620)");
 		  	read_phone_num("", 3000);
 		  	d = use();
 		  	
-		  	if (d ~= GLOBAL_MENU_MAINMENU and string.len(d) ~= 10) then
+		  	if (d ~= GLOBAL_MENU_CANCEL_REFERRAL and string.len(d) ~= 10) then
 	  			read(anssd .. "invalidphonenum.wav",500)
 	  		end
 	  		phone_num_cnt = check_abort(phone_num_cnt, 4);
 	  	end
 	  	
-	  	if (d == GLOBAL_MENU_MAINMENU) then
+	  	if (d == GLOBAL_MENU_CANCEL_REFERRAL) then
 	  		read(aosd .. "messagecancelled.wav", 500);
 	  	else
 	  		local msgforumid = current_msg[6];
