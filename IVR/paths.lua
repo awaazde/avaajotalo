@@ -36,7 +36,7 @@ GLOBAL_MENU_SEEK_FWD = "9";
 basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 
-sd = "/home/dsc/Development/audio/";
+sd = "/home/dsc/media/";
 logfilename = "/home/dsc/Documents/Log/AO/ao.log";
 --[[
 aosd = basedir .. "/scripts/AO/sounds/eng/";
@@ -44,7 +44,7 @@ sd = basedir .. "/storage/otalo/";
 logfilename = sd .. "ao.log";
       --]]
 
-env = assert (luasql.mysql());
+env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 
 logfile = io.open(logfilename, "a");
