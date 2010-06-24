@@ -386,7 +386,7 @@ def get_responders(message_forum):
     if len(responder_ids) < MIN_RESPONDERS:
         old = responder_ids
         # If too few, pick the X with the fewest pending questions
-        responder_ids = User.objects.exclude(id__in=old).values('id').annotate(num_assigned=Count('message_responder__message_forum')).order_by('num_assigned')[:MAX_RESPONDERS-len(old)]
+        responder_ids = User.objects.exclude(id__in=old, forum).filter(forum = message_forum.forum).values('id').annotate(num_assigned=Count('message_responder__message_forum')).order_by('num_assigned')[:MAX_RESPONDERS-len(old)]
         responder_ids = [row['id'] for row in responder_ids]
         responder_ids.extend(old)
 
