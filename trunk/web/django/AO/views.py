@@ -383,12 +383,7 @@ def get_responders(message_forum):
     responder_ids = User.objects.filter(tags__in = tags, forum = message_forum.forum).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__message_forum=message_forum, message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
     responder_ids = [row['id'] for row in responder_ids]
     
-    if len(responder_ids) < MIN_RESPONDERS:
-        old = responder_ids
-        # If too few, pick the X with the fewest pending questions
-        responder_ids = User.objects.exclude(id__in=old, forum).filter(forum = message_forum.forum).values('id').annotate(num_assigned=Count('message_responder__message_forum')).order_by('num_assigned')[:MAX_RESPONDERS-len(old)]
-        responder_ids = [row['id'] for row in responder_ids]
-        responder_ids.extend(old)
+    # don't do any minimum checking, since tags are optional and manual assignment is possible
 
     return User.objects.filter(id__in=responder_ids) 
   
