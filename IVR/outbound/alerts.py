@@ -13,16 +13,20 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import router
+import sys,router
 from datetime import datetime, timedelta
-from otalo.AO.models import Message, User
+from otalo.AO.models import Message, User, Line
 from ESL import *
 import re, time, sched
 from threading import Timer
 
 INTERVAL_HOURS = 12
 IVR_SCRIPT = 'AO/outbound/missed_call.lua'
-MAX_WAIT_SECS = 8
+MAX_WAIT_SECS = 12
+EXEC_WAIT_SECS = 7
+# since it's just a missed call, it doesn't matter which
+# line we use (there is no charge)
+line = Line.objects.get(pk=1)
 
 def new_responses():
      # Get all new responses in the last INTERVAL_HOURS
@@ -37,10 +41,11 @@ def new_responses():
      #router.route_calls(user_ids, IVR_SCRIPT)
      missed_call(user_ids)
 
-def hangup(con, uid):
+def hangup(uid):
 	# hangup call
-	print(str(uid) + ": hangup command")
-	con.api("hupall normal_clearing uid" + str(uid))
+	print("hupall normal_clearing uid " + str(uid) + ": hangup command")
+    	con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
+	con.api('hupall normal_clearing uid ' + str(uid))
 	     
 def missed_call(user_ids):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
@@ -49,18 +54,14 @@ def missed_call(user_ids):
         print 'Not Connected'
         sys.exit(2)
 
-    s = sched.scheduler(time.time, time.sleep)
-    
     con.events("plain", "all");
     for uid in user_ids:
         user = User.objects.get(pk=uid)
         print('user.num= ' + user.number)
-        con.api("originate {uid=" + str(uid) +"}sofia/gateway/gizmo/" + str(user.number) + " &echo")
+        con.api("originate {uid=" + str(uid) + "}" + str(line.dialstring_prefix) + str(user.number) +  str(line.dialstring_suffix) + " &echo")
         print(str(user.number) + ": originated call")
         # either wait for the right event or timeout, whichever comes first
-        Timer(MAX_WAIT_SECS-3, hangup, (con, uid)).start()
-         #s.enter(MAX_WAIT_SECS, 1, hangup, (con, uid))
-        #s.run()
+        Timer(MAX_WAIT_SECS, hangup, [uid]).start()
     while 1:
         e = con.recvEvent() 
         if e:
@@ -72,9 +73,10 @@ def missed_call(user_ids):
             	if m:
                 	state = m.group(1)
                 	print("CHANNEL state: " + state)
-            	#if state == 'EXECUTE':
-            			#Timer(6, hangup, (con, uid)).start()
-            	if state == 'DESTROY':
+            	if state == 'EXECUTE':
+        		Timer(EXEC_WAIT_SECS, hangup, [uid]).start()
+		if state == 'DESTROY':
+            		hangup(uid)
             		break 						
 def main():
     if len(sys.argv) == 2:
