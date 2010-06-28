@@ -157,7 +157,7 @@ public class Messages implements EntryPoint, ResizeHandler {
 
     // Get rid of scrollbars, and clear out the window's built-in margin,
     // because we want to take advantage of the entire client area.
-    Window.enableScrolling(false);
+    //Window.enableScrolling(false);
     Window.setMargin("0px");
 
     // Finally, add the outer panel to the RootPanel, so that it will be
