@@ -77,6 +77,10 @@ def missed_call(user_ids):
             	if state == 'DESTROY':
             		break 						
 def main():
-   new_responses()
+    if len(sys.argv) == 2:
+        responder_id = sys.argv[1]
+        missed_call([responder_id])
+    else:
+        new_responses()
 
 main()
