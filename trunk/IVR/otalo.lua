@@ -424,6 +424,7 @@ function playmessages (msgs, listenreplies)
    while (current_msg ~= nil) do
       local adminmode = is_admin(current_msg[6]);
       local responsesallowed = current_msg[7];
+      local moderated = current_msg[8];
 
       if (d == GLOBAL_MENU_RESPOND) then
 		 -- if last msg played recd a response
