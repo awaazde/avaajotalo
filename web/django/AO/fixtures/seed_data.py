@@ -106,18 +106,20 @@ def responders():
             tags = Tag.objects.filter(forum=forum)
             for responder_str in resp_lst:
                 # give capabilities to just one of the registered numbers
-                responder = User.objects.filter(name__icontains=responder_str)[0]
-                forum.responders.add(responder)
-                
-                resp_key = [key for key in RESPONDER_TAGS.keys() if key in responder.name]
-                if resp_key:
-                    for topicset in RESPONDER_TAGS[resp_key[0]]:
-                        for topic in topicset:
-                            tag = Tag.objects.filter(tag__contains=topic, type='agri-topic')
-                            if tag and not tag[0] in responder.tags.all():
-                                responder.tags.add(tag[0])
-                                print ("adding " + str(responder) + ": " + str(tag[0]))
-                                count += 1
+                responder = User.objects.filter(name__icontains=responder_str)
+                if responder:
+                    responder = responder[0]
+                    forum.responders.add(responder)
+                    
+                    resp_key = [key for key in RESPONDER_TAGS.keys() if key in responder.name]
+                    if resp_key:
+                        for topicset in RESPONDER_TAGS[resp_key[0]]:
+                            for topic in topicset:
+                                tag = Tag.objects.filter(tag__contains=topic, type='agri-topic')
+                                if tag and not tag[0] in responder.tags.all():
+                                    responder.tags.add(tag[0])
+                                    print ("adding " + str(responder) + ": " + str(tag[0]))
+                                    count += 1
        
     print(str(count) + " new responder_tag objs added.")
     
