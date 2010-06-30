@@ -354,11 +354,22 @@ function playmessage (msg, listenreplies)
      read(aosd .. "approvereject.wav", 500);
      d = use();
      if (d == "1") then
-	con:execute("UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_APPROVED .. " WHERE message_id = " .. id);
-	read(aosd .. "messageapproved.wav", 0);
+     	local position = 'null';
+     	local cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
+	    -- only set position if we have to
+	    local pos = cur:fetch()
+	    if (pos ~= nil) then 
+	       position = tonumber(pos) + 1;
+	    end
+	    local query = "UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_APPROVED .. ", position = " .. position .. " WHERE message_id = " .. id .. " AND forum_id = " .. forumid;
+		con:execute(query);
+		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+		read(aosd .. "messageapproved.wav", 0);
      elseif (d == "2") then
-	con:execute("UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_REJECTED .. " WHERE message_id = " .. id);
-	read(aosd .. "messagerejected.wav", 0);
+     	local query = "UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_REJECTED .. " WHERE message_id = " .. id .. " AND forum_id = " .. forumid; 
+		con:execute(query);
+		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+		read(aosd .. "messagerejected.wav", 0);
      elseif (d == GLOBAL_MENU_MAINMENU) then
 	return d;
      end
