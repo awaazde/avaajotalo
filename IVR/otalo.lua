@@ -226,11 +226,11 @@ end
 -- getpendingmessages
 -----------
 
-function getpendingmessages ()
+function getpendingmessages (lineid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum, AO_line_forums line_forum ";
    query = query .. "WHERE message.id = message_forum.message_id";
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING .. " AND message_forum.forum_id = forum.id";
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING .. " AND message_forum.forum_id = forum.id AND line_forum.forum_id = forum.id AND line_forum.line_id = " .. lineid;
    query = query .. " ORDER BY message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
@@ -247,13 +247,14 @@ function mainmenu ()
    
    local forumids = {};
    local forumnames = {};
+   local lineid = nil;
    local i = 0;
    local adminmode = is_admin(nil);
 
    -- TAP: Handle the case where there is only one forum - default
    -- to going straight to that forum.
    local line_num = session:getVariable("destination_number");
-   local query = "SELECT forum.id, forum.name_file ";
+   local query = "SELECT forum.id, forum.name_file, line.id ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
    query = query .. " WHERE line.number LIKE '%" .. line_num .. "%' "; 
    query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id";
@@ -263,6 +264,7 @@ function mainmenu ()
       i = i + 1;
       forumids[i] = row[1];
       forumnames[i] = row[2];
+      lineid = row[3];
       read(aosd .. "listento_pre.wav", 0);
       read(aosd .. forumnames[i], 0);
       read(aosd .. "listento_post.wav", 0);
@@ -311,7 +313,7 @@ function mainmenu ()
       use();
       -- pending messages shouldn't have replies so
       -- leave the flag as 'n'
-      playmessages(getpendingmessages(), 'n');
+      playmessages(getpendingmessages(lineid), 'n');
    elseif (d == responderidx) then
    	  local rmsgs = get_responder_messages(userid);
       play_responder_messages(userid, rmsgs);
