@@ -289,7 +289,6 @@ function mainmenu ()
    local rmsg = check_n_msgs();
    local responderidx = -1;
    if (rmsg ~= nil) then
-      freeswitch.consoleLog("info", script_name .. " :  responder option available \n");
    	  i = i + 1;
    	  responderidx = i;
    	  read(aosd .. "checkmyassignedquestions.wav", 0);
@@ -339,7 +338,7 @@ function playmessage (msg, listenreplies)
   local rgt = tonumber(msg[4]);
   local forumid = msg[6];
   local moderated = tonumber(msg[8]);
-  local status = MESSAGE_STATUS_APPROVED;
+  local status = msg[9];
   local adminmode = is_admin(forumid);
 
   if (adminmode) then
@@ -352,7 +351,7 @@ function playmessage (msg, listenreplies)
      return d;
   end
 
-  if (status == MESSAGE_STATUS_PENDING and adminmode) then
+  if (status == tostring(MESSAGE_STATUS_PENDING) and adminmode) then
      read(aosd .. "approvereject.wav", 500);
      d = use();
      if (d == "1") then
