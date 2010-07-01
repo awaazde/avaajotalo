@@ -71,7 +71,7 @@ function my_cb(s, type, obj, arg)
    if (type == "dtmf") then
       
       logfile:write(sessid, "\t",
-      session:getVariable("caller_id_number"), "\t", os.time(), "\t",
+      session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t",
       "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
       
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
@@ -533,7 +533,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 80 2");
       --sleep(1000);
@@ -705,7 +705,7 @@ anssd = aosd .. "answer/";
 -- answer the call
 session:answer();
 
-logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
+logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 "\t", os.time(), "\t", "Start call", "\n");
 
 -- sleep for a sec

@@ -86,7 +86,7 @@ function my_cb(s, type, obj, arg)
    if (type == "dtmf") then
       
       logfile:write(sessid, "\t",
-      session:getVariable("caller_id_number"), "\t", os.time(), "\t",
+      session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t",
       "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
       
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
@@ -269,7 +269,7 @@ session:setHangupHook("hangup");
 if (session:ready() == true) then
 	-- sleep for a bit
 	session:sleep(10000);
-	logfile:write(sessid, "\t", session:getVariable("caller_id_number"),
+	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
 	
 	while (1) do
