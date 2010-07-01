@@ -54,7 +54,7 @@ phone_num = tostring(row[1]);
 -- make the call
 session = freeswitch.Session(DIALSTRING_PREFIX .. phone_num)
 session:setHangupHook("hangup");
-logfile:write(sessid, "\t", phone_num,
+logfile:write(sessid, "\t", phone_num, "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Missed Call", "\n");
 
 -- This needs to be tuned

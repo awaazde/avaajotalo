@@ -23,7 +23,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 
 function hangup() 
    logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t",
+		 session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		 os.time(), "\t", "End call", "\n");
 
    -- cleanup
@@ -91,11 +91,11 @@ end
 function read(file, delay)
    if (digits == "") then
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       digits = session:read(1, 1, file, delay, "#");
       if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
+	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
    end
 end
@@ -106,7 +106,7 @@ end
 
 function read_no_bargein(file, delay)
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       session:streamFile(file);
       sleep(delay);
@@ -137,7 +137,7 @@ function playcontent (summary, content)
    if (summary ~= nil and summary ~= "") then
       arg[1] = sd .. summary;
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		    os.time(), "\t", "Stream", "\t", arg[1], "\n");
       session:streamFile(sd .. summary);
       sleep(1000);
@@ -164,7 +164,7 @@ function playcontent (summary, content)
    
    arg[1] = sd .. content;
    logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t",
+		 session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		 os.time(), "\t", "Stream", "\t", arg[1], "\n");
 
    session:streamFile(sd .. content);
@@ -192,12 +192,12 @@ LISTENS_THRESH = "5"
 function read_phone_num(file, delay)
    if (digits == "") then
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
 	  -- allow 1 or 10 (1 to cancel)
       digits = session:read(1, 10, file, delay, "#");
       if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
+	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
    end
 end
@@ -491,7 +491,7 @@ function record_responder_message (forumid, thread, maxlength, rgt)
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 80 2");
       --sleep(1000);
@@ -568,7 +568,7 @@ end
 function check_abort(counter, threshold)
 	counter = counter + 1;
 	if (counter >= threshold) then
-		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", os.time(), "\t", "Abort call", "\n");
+		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "Abort call", "\n");
 		hangup();
 	else
 		return counter;
