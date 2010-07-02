@@ -650,7 +650,7 @@ function playforum (forumid)
 		    read(aosd .. "backtoforum.wav", 1000);
 		    -- else continue to playing messages
 		 end
-      until (d ~= "1" and d ~= "2");
+      until (d == "2");
       
       read(aosd .. "okplay.wav", 1000);
    end
