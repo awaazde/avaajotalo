@@ -27,7 +27,7 @@ _This are high-level instructions. The links below should provide you with info 
   # Be sure that the paths in django.wsgi, settings.py, and the paths in your apache config file are all matched up
 
 == IVR ==
-  # Download and install FreeSWITCH
+  # Download and install FreeSWITCH, with mod_shout enabled
   # Download and install lua and luasql
   # Open ports 5060, 5080 tcp and udp in server firewall (for centOS, use /sbin/iptables command)
   # Checkout trunk/IVR and drop the directory into /usr/local/freeswitch/scripts/AO (i.e. call the downloaded directory 'AO')
