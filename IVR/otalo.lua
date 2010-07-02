@@ -381,27 +381,27 @@ function playmessage (msg, listenreplies)
      d = use();
 	 
      if (d == "1") then
-	read(aosd .. "okreplies.wav", 500);
-	d = use();
-	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
-	   return d;
-	end
-	
-	d = playmessages(getreplies(id), 'n');
-	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
-	   return d;
-	end
-	
-	read(aosd .. "backtoforum.wav", 1000);
-	d = use();
-	if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
-	   return d;
-	end
+		read(aosd .. "okreplies.wav", 500);
+		d = use();
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+		   return d;
+		end
+		
+		d = playmessages(getreplies(id), 'n');
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+		   return d;
+		end
+		
+		read(aosd .. "backtoforum.wav", 1000);
+		d = use();
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+		   return d;
+		end
 
         -- dont catch RESPOND because it could also be NO
-     elseif (d == GLOBAL_MENU_MAINMENU) then
-  	return d;
-     end  
+    elseif (d == GLOBAL_MENU_MAINMENU) then
+  		return d;
+    end  
   end -- close check for replies
 
   -- give some time for users to compose themselves and
@@ -637,20 +637,20 @@ function playforum (forumid)
 	
    if (postingallowed == 'y' or adminmode) then
       repeat
-	 read(aosd .. "recordorlisten.wav", 3000);
-	 d = use();
-	 if (d == GLOBAL_MENU_MAINMENU) then
-	    return;
-	 end
-	 if (d == "1") then
-	    read(aosd .. "okrecord.wav", 1000);
-	    if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode) == GLOBAL_MENU_MAINMENU) then
-	       return;
-	    end
-	    read(aosd .. "backtoforum.wav", 1000);
-	    -- else continue to playing messages
-	 end
-      until (d ~= "1");
+		 read(aosd .. "recordorlisten.wav", 3000);
+		 d = use();
+		 if (d == GLOBAL_MENU_MAINMENU) then
+		    return;
+		 end
+		 if (d == "1") then
+		    read(aosd .. "okrecord.wav", 1000);
+		    if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode) == GLOBAL_MENU_MAINMENU) then
+		       return;
+		    end
+		    read(aosd .. "backtoforum.wav", 1000);
+		    -- else continue to playing messages
+		 end
+      until (d ~= "1" and d ~= "2");
       
       read(aosd .. "okplay.wav", 1000);
    end
