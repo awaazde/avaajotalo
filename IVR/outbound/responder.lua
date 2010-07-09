@@ -39,6 +39,7 @@ userid = argv[1];
 -- for the message_played queue. Make global to record listens
 -- on hangup event
 prevmsgs = {};
+adminforums = {};
 
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
@@ -174,6 +175,16 @@ if (msg ~= nil) then
 	row = {};
 	result = cur:fetch(row);
 	cur:close();
+	
+	-- get admin permissions
+	adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
+	adminforum = adminrows();
+	while (adminforum ~= nil) do
+		-- use the table as a set to make lookup faster
+		adminforums[adminforum[1]] = true;
+		freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
+		adminforum = adminrows();
+	end
 	
 	-- since we joined on message_forum, we are assured
 	-- that there was only one line returned by the above.
