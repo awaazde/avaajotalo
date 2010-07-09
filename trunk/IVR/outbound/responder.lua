@@ -234,7 +234,7 @@ if (msg ~= nil) then
 		   msgs = get_responder_messages(userid);
 
 		   -- play messages
-		   play_responder_messages(userid, msgs);
+		   play_responder_messages(userid, msgs, adminforums);
 		   
 		   mainmenu_cnt = check_abort(mainmenu_cnt, 2);
 		   -- go back to the main menu

@@ -157,18 +157,6 @@ function my_cb(s, type, obj, arg)
 end
 
 -----------
--- is_admin 
------------
-
-function is_admin(forumid) 
-	if (forumid == nil) then
-		return #adminforums > 0;
-	else
-		return adminforums[forumid] == true;
-	end
-end
-
------------
 -- getmessages
 -----------
 
@@ -249,7 +237,7 @@ function mainmenu ()
    local forumnames = {};
    local lineid = nil;
    local i = 0;
-   local adminmode = is_admin(nil);
+   local adminmode = is_admin(nil, adminforums);
 
    -- TAP: Handle the case where there is only one forum - default
    -- to going straight to that forum.
@@ -339,7 +327,7 @@ function playmessage (msg, listenreplies)
   local forumid = msg[6];
   local moderated = tonumber(msg[8]);
   local status = tonumber(msg[9]);
-  local adminmode = is_admin(forumid);
+  local adminmode = is_admin(forumid, adminforums);
 
   if (adminmode) then
      local status = tonumber(msg[9]);
@@ -434,7 +422,7 @@ function playmessages (msgs, listenreplies)
    local d = "";
    
    while (current_msg ~= nil) do
-      local adminmode = is_admin(current_msg[6]);
+      local adminmode = is_admin(current_msg[6], adminforums);
       local responsesallowed = current_msg[7];
       local moderated = current_msg[8];
 
@@ -633,7 +621,7 @@ function playforum (forumid)
    local responsesallowed = forum[4];
    local maxlength = forum[5];
    local d = "";
-   local adminmode = is_admin(forumid);
+   local adminmode = is_admin(forumid, adminforums);
 	
    if (postingallowed == 'y' or adminmode) then
       repeat
