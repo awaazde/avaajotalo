@@ -25,7 +25,7 @@ dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
-logfilename = "/home/neil/Log/AO/responder.log";
+logfilename = "/home/dsc/Documents/Log/AO/responder.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
@@ -176,16 +176,6 @@ if (msg ~= nil) then
 	result = cur:fetch(row);
 	cur:close();
 	
-	-- get admin permissions
-	adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
-	adminforum = adminrows();
-	while (adminforum ~= nil) do
-		-- use the table as a set to make lookup faster
-		adminforums[adminforum[1]] = true;
-		freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
-		adminforum = adminrows();
-	end
-	
 	-- since we joined on message_forum, we are assured
 	-- that there was only one line returned by the above.
 	-- What we are not doing is adjusting this per message in
@@ -197,6 +187,16 @@ if (msg ~= nil) then
 	else
 	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
 	end	
+
+	-- get admin permissions
+	adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
+	adminforum = adminrows();
+	while (adminforum ~= nil) do
+		-- use the table as a set to make lookup faster
+		adminforums[adminforum[1]] = true;
+		freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
+		adminforum = adminrows();
+	end
 	
 	DIALSTRING_PREFIX = "";
 	DIALSTRING_SUFFIX = "";
