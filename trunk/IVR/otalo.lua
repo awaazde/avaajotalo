@@ -711,12 +711,16 @@ logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", sessi
 -- sleep for a sec
 sleep(1000);
 
+local mm_cnt = 0;
 while (1) do
    -- choose a forum
    mainmenu();
 
    -- go back to the main menu
    read(aosd .. "mainmenu.wav", 1000);
+   
+   -- prevent the non-deterministic spinning forever
+   mm_cnt = check_abort(mm_cnt, 10)
 end
 
 -- say goodbye 
