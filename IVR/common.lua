@@ -338,7 +338,7 @@ end
 -- play_responder_messagess
 -----------
 
-function play_responder_messages (userid, msgs)
+function play_responder_messages (userid, msgs, adminforums)
    -- get the first top-level message for this forum
    local current_msg = msgs();
    if (current_msg == nil) then
@@ -377,11 +377,12 @@ function play_responder_messages (userid, msgs)
       
       if (d == GLOBAL_MENU_RESPOND) then
 	    read(aosd .. "okrecordresponse.wav", 500);
-	    thread = current_msg[1];
-	    forumid = current_msg[5];
-	    rgt = current_msg[4];
-	    moderated = current_msg[7];
-	    d = record_responder_message (forumid, thread, maxlength, rgt, moderated);
+	    local thread = current_msg[1];
+	    local forumid = current_msg[5];
+	    local rgt = current_msg[4];
+	    local moderated = current_msg[7];
+	    local adminmode = is_admin(forumid, adminforums);
+	    d = record_responder_message (forumid, thread, maxlength, rgt, moderated, adminmode);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	    	update_listens(prevmsgs, userid);
 	       return d;
@@ -473,7 +474,7 @@ end
 -- record_responder_message
 -----------
 
-function record_responder_message (forumid, thread, maxlength, rgt, moderated)
+function record_responder_message (forumid, thread, maxlength, rgt, moderated, adminmode)
    local forumid = forumid or nil;
    local thread = thread or nil;
    local moderated = moderated or nil;
@@ -481,7 +482,6 @@ function record_responder_message (forumid, thread, maxlength, rgt, moderated)
    local rgt = rgt or 1;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
-   local adminmode = is_admin(forumid);
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
@@ -571,7 +571,11 @@ function record_responder_message (forumid, thread, maxlength, rgt, moderated)
    return use();
 end
 
--- END common resonder functions
+-- END common responder functions
+
+-----------
+-- check_abort
+-----------
 
 function check_abort(counter, threshold)
 	counter = counter + 1;
@@ -580,5 +584,17 @@ function check_abort(counter, threshold)
 		hangup();
 	else
 		return counter;
+	end
+end
+
+-----------
+-- is_admin 
+-----------
+
+function is_admin(forumid, forums) 
+	if (forumid == nil) then
+		return #forums > 0;
+	else
+		return forums[forumid] == true;
 	end
 end
