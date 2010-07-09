@@ -207,9 +207,10 @@ end
 -----------
 
 function get_responder_messages (userid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id ";
-   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated ";
+   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder, AO_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
+   query = query .. " AND forum.id = message_forum.forum_id ";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
    query = query .. " AND message_responder.user_id = " .. userid;
    query = query .. " AND message.lft = 1 AND message.rgt = 2 AND message_responder.listens <= " .. LISTENS_THRESH;
@@ -379,7 +380,8 @@ function play_responder_messages (userid, msgs)
 	    thread = current_msg[1];
 	    forumid = current_msg[5];
 	    rgt = current_msg[4];
-	    d = record_responder_message (forumid, thread, maxlength, rgt);
+	    moderated = current_msg[7];
+	    d = record_responder_message (forumid, thread, maxlength, rgt, moderated);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	    	update_listens(prevmsgs, userid);
 	       return d;
@@ -471,7 +473,7 @@ end
 -- record_responder_message
 -----------
 
-function record_responder_message (forumid, thread, maxlength, rgt)
+function record_responder_message (forumid, thread, maxlength, rgt, moderated)
    local forumid = forumid or nil;
    local thread = thread or nil;
    local moderated = moderated or nil;
@@ -479,6 +481,7 @@ function record_responder_message (forumid, thread, maxlength, rgt)
    local rgt = rgt or 1;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
+   local adminmode = is_admin(forumid);
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
@@ -550,14 +553,19 @@ function record_responder_message (forumid, thread, maxlength, rgt)
    query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
    query2 = " VALUES ('"..id[1].."','"..forumid.."'";
    
+   local status = "null";
+   if (moderated == 'y' and not adminmode) then
+	 status = MESSAGE_STATUS_PENDING;
+   else
 	 status = MESSAGE_STATUS_APPROVED; 
+   end
 	 
-	  query1 = query1 .. ", status)";
-	  query2 = query2 .. "," .. status ..")";
+	query1 = query1 .. ", status)";
+	query2 = query2 .. "," .. status ..")";
    
-      query = query1 .. query2;
-      con:execute(query);
-      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+    query = query1 .. query2;
+    con:execute(query);
+    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 
    read(anssd .. "okrecorded.wav", 500);
    return use();
