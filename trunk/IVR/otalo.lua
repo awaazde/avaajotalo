@@ -36,31 +36,62 @@ sessid = os.time();
 userid = nil;
 adminforums = {};
 
-phonenum = session:getVariable("caller_id_number");
-freeswitch.consoleLog("info", script_name .. " : caller id = " .. phonenum .. "\n");
-query = "SELECT id FROM AO_user WHERE number = " .. phonenum;
+-- set the language, check if line is restricted
+line_num = session:getVariable("destination_number");
+query = "SELECT language, open FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
 cur = con:execute(query);
-row = {};
-result = cur:fetch(row);
+line_info = {};
+result = cur:fetch(line_info);
 cur:close();
 
 if (result == nil) then
-   -- first time caller
-   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
-   con:execute(query);
-   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-   cur = con:execute("SELECT LAST_INSERT_ID()");
-   userid = tostring(cur:fetch());
-   cur:close();
+   -- default
+   aosd = basedir .. "/scripts/AO/sounds/eng/";
 else
-   userid = tostring(row[1]);
+   aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";
 end		
 
+-- responder section-specific sounds
+anssd = aosd .. "answer/";
+
+local open = line_info[2];
+
+phonenum = session:getVariable("caller_id_number");
+freeswitch.consoleLog("info", script_name .. " : caller id = " .. phonenum .. "\n");
+query = "SELECT id, allowed FROM AO_user WHERE number = " .. phonenum;
+cur = con:execute(query);
+uid = {};
+result = cur:fetch(uid);
+cur:close();
+
+if (open == 1) then
+	if (result == nil) then
+	   -- first time caller
+	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
+	   con:execute(query);
+	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+	   cur = con:execute("SELECT LAST_INSERT_ID()");
+	   userid = tostring(cur:fetch());
+	   cur:close();
+	else
+	   userid = tostring(uid[1]);
+	end		
+else -- line restricted
+	if (result == nil) then
+		-- number not pre-registered; exit
+	else
+		local allowed = uid[2];
+		if (allowed == 'y') then
+			userid = tostring(uid[1]);
+		else
+			-- number not allowed; exit
+		end
+	end
+end
+
+freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- FUNCTIONS
-
-
-
 -----------
 -- my_cb
 -----------
@@ -670,25 +701,6 @@ while (adminforum ~= nil) do
 	freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
 	adminforum = adminrows();
 end
-freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
-
--- set the language
-line_num = session:getVariable("destination_number");
-query = "SELECT language FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
-cur = con:execute(query);
-row = {};
-result = cur:fetch(row);
-cur:close();
-
-if (result == nil) then
-   -- default
-   aosd = basedir .. "/scripts/AO/sounds/eng/";
-else
-   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
-end		
-
--- responder section-specific sounds
-anssd = aosd .. "answer/";
 
 -- answer the call
 session:answer();
