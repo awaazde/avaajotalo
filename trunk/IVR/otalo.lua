@@ -79,12 +79,14 @@ if (open == 1) then
 else -- line restricted
 	if (result == nil) then
 		-- number not pre-registered; exit
+		exit(1);
 	else
 		local allowed = uid[2];
 		if (allowed == 'y') then
 			userid = tostring(uid[1]);
 		else
 			-- number not allowed; exit
+			exit(1);
 		end
 	end
 end
