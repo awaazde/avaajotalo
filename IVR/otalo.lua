@@ -373,7 +373,7 @@ function playmessage (msg, listenreplies)
   end
 
   if (status == MESSAGE_STATUS_PENDING and adminmode) then
-     read(aosd .. "approvereject.wav", 500);
+     read(aosd .. "approvereject.wav", 2000);
      d = use();
      if (d == "1") then
      	local position = 'null';
