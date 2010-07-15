@@ -33,9 +33,8 @@ script_name = "recordmessage.lua";
 digits = "";
 arg = {};
 
---DIALSTRING_PREFIX = "user/";
-DIALSTRING_PREFIX = "sofia/gateway/gizmo/";
-DIALSTRING_SUFFIX = "";
+session:setVariable("playback_terminators", "#");
+session:setHangupHook("hangup");
 
 phonenum = argv[1];
 sessid = os.time();
@@ -88,12 +87,8 @@ end
 aosd = basedir .. "/scripts/AO/sounds/eng/";
 rmsgsd = basedir .. "/scripts/AO/sounds/survey/en/";
 
--- make the call
-session = freeswitch.Session(DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
-session:setVariable("caller_id_number", phonenum)
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
---session:setInputCallback("my_cb", "arg");
+-- answer the call
+session:answer();
 
 if (session:ready() == true) then
 	-- sleep for a bit
