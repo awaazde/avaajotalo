@@ -25,7 +25,7 @@ dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
-logfilename = "/home/neil/Log/AO/recordmsg.log";
+logfilename = "/home/dsc/Documents/Log/AO/recordmsg.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
@@ -36,7 +36,7 @@ arg = {};
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 
-phonenum = argv[1];
+phonenum = session:getVariable("caller_id_number");
 sessid = os.time();
 
 
@@ -65,7 +65,7 @@ function recordmessage ()
       while (d ~= "1" and d ~= "2" and d ~= "3") do
 		 read(aosd .. "hererecorded.wav", 1000);
 		 read(filename, 1000);
-		 read(rmsgsd .. "notsatisfied.wav", 2000);
+		 read(aosd .. "notsatisfied.wav", 2000);
 		 sleep(6000)
 		 d = use();
       end
@@ -78,13 +78,13 @@ function recordmessage ()
       
    until (d == "1");
 
-   read_no_bargein(rmsgsd .. "okrecorded.wav", 500);
+   read_no_bargein(aosd .. "okrecorded.wav", 500);
 end
 
 -----------
 -- MAIN 
 -----------
-aosd = basedir .. "/scripts/AO/sounds/eng/";
+aosd = basedir .. "/scripts/AO/sounds/guj/";
 rmsgsd = basedir .. "/scripts/AO/sounds/survey/en/";
 
 -- answer the call
@@ -92,7 +92,7 @@ session:answer();
 
 if (session:ready() == true) then
 	-- sleep for a bit
-	session:sleep(13000);
+	session:sleep(1000);
 
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
