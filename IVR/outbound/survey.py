@@ -36,13 +36,13 @@ def make_calls():
          calls = Call.objects.filter(subject=subject, complete=False, date__gte=now-interval, date__lt=now).order_by('priority')
          if calls:
              call = calls[0]
-	     print("found call " + unicode(call))
+             print("found call " + unicode(call))
              # The way it works with backups: If we encounter a call scheduled for this run for this
              # subject, only use it if the first priority call time(s) up until this point were not
              # completed or made up
              if call.priority == 1:
                  # if there is a P1, call it
-		 print("appending id " + str(call.id))
+                 print("appending id " + str(call.id))
                  call_ids.append(call.id)
              else:
                  # only make a P2 call if there have been unfullfilled P1s
