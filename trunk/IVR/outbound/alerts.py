@@ -16,6 +16,7 @@
 import sys,router
 from datetime import datetime, timedelta
 from otalo.AO.models import Message, User, Line
+from otalo.AO.views import *
 from ESL import *
 import re, time, sched
 from threading import Timer
@@ -32,8 +33,8 @@ def new_responses(line, user_ids=False):
      	interval = timedelta(hours=INTERVAL_HOURS)
      	now = datetime.now()
      
-    	# Get messages with responses in the last INTERVAL_HOURS
-     	new_response_thread_ids = Message.objects.filter(lft__gt=1, date__gte=now-interval, message_forum__forum__line=line).values_list('thread', flat=True).distinct()
+    	# Get responses in the last INTERVAL_HOURS
+     	new_response_thread_ids = Message.objects.filter(lft__gt=1, date__gte=now-interval, message_forum__forum__line=line, message_forum__status=MESSAGE_STATUS_APPROVED).values_list('thread', flat=True).distinct()
      	# Get the authors of the creators of the threads
      	user_ids = User.objects.filter(message__id__in=new_response_thread_ids).values_list('id', flat=True).distinct()
      
