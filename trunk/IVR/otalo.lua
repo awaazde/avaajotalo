@@ -64,8 +64,16 @@ uid = {};
 result = cur:fetch(uid);
 cur:close();
 
-if (open == 1) then
-	if (result == nil) then
+if (result ~= nil) then
+	local allowed = uid[2];
+	if (allowed == 'n') then
+		-- number not allowed; exit
+		return;
+	end
+	
+	userid = tostring(uid[1]);
+else
+	if (open == 1) then
 	   -- first time caller
 	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
 	   con:execute(query);
@@ -74,21 +82,9 @@ if (open == 1) then
 	   userid = tostring(cur:fetch());
 	   cur:close();
 	else
-	   userid = tostring(uid[1]);
+	   -- restricted line and number not pre-registered; exit
+	   return;
 	end		
-else -- line restricted
-	if (result == nil) then
-		-- number not pre-registered; exit
-		return;
-	else
-		local allowed = uid[2];
-		if (allowed == 'y') then
-			userid = tostring(uid[1]);
-		else
-			-- number not allowed; exit
-			return;
-		end
-	end
 end
 
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
