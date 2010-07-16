@@ -17,7 +17,7 @@
 from django.db import models
 
 class Subject(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, blank=True, null=True)
     number = models.CharField(max_length=24)
     
     def __unicode__(self):
