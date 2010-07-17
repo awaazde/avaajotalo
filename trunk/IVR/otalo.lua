@@ -394,7 +394,7 @@ function playmessage (msg, listenreplies)
   end
   
   if (rgt > 2 and listenreplies == 'y') then
-     read(aosd .. "listenreplies.wav", 2000);
+     read(aosd .. "listenreplies.wav", 6000);
      d = use();
 	 
      if (d == "1") then
