@@ -57,6 +57,9 @@ class Prompt(models.Model):
     survey = models.ForeignKey(Survey)
     delay = models.IntegerField(default=2000)
     
+    def __unicode__(self):
+        return self.file + '-' + unicode(self.survey) + '-' + str(self.order)
+    
 class Option(models.Model):
     # use string to represent no input value
     number = models.CharField(max_length=2)

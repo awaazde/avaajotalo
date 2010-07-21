@@ -155,6 +155,7 @@ def prompts():
             tip = surveyname[tipidx:surveyname.index('_',tipidx)]
             numfile = INBOUND[tip]
             phonenum = Prompt(file="guj/" + numfile + ".wav", order=5, bargein=False, delay=0, survey=survey)
+            phonenum.save()
             
             repeat = Prompt(file="guj/repeat.wav", order=6, bargein=True, delay=5000, survey=survey)
             repeat.save()
