@@ -21,7 +21,7 @@ class NameSearchAdmin(admin.ModelAdmin):
    search_fields = ['name']
 
 class DateDisplayAdmin(admin.ModelAdmin):
-    list_display = ('call', 'date')
+    list_display = ('call', 'date', 'subject')
     
     def call(self, obj):
         return unicode(obj)
