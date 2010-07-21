@@ -637,11 +637,13 @@ end
 -----------
 
 function set_survey_complete (callid)
-   local query = " UPDATE surveys_call ";
-   query = query .. " SET complete = 1 ";
-   query = query .. " WHERE id = " .. callid;
-   con:execute(query);
-   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   if (callid ~= nil) then
+   	local query = " UPDATE surveys_call ";
+   	query = query .. " SET complete = 1 ";
+   	query = query .. " WHERE id = " .. callid;
+   	con:execute(query);
+   	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   end
 end
 
 -----------
@@ -692,6 +694,9 @@ function play_prompts (prompts)
 		replay_cnt = check_abort(replay_cnt, 3);
       else
 		replay_cnt = 0;
+      end
+      if (session:ready() == false) then
+		hangup();
       end
 
       if (action == OPTION_NEXT) then
