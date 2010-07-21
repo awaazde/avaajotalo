@@ -32,7 +32,7 @@ dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
-logfilename = "/home/neil/Log/AO/survey_in.log";
+logfilename = "/home/dsc/Documents/Log/AO/survey_in.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
@@ -53,6 +53,8 @@ prevprompts = {};
 survey_phonenum = session:getVariable("destination_number");
 -- caller's number
 phonenum = session:getVariable("caller_id_number");
+-- there is no outbound call
+callid = nil;
 
 -- get survey id
 query = 		"SELECT survey.id, survey.complete_after ";
@@ -63,7 +65,7 @@ res = row(query);
 surveyid = res[1];
 complete_after_idx = res[2];
 
-freeswitch.consoleLog("info", script_name .. " , num = " .. phonenum .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
+freeswitch.consoleLog("info", script_name .. " , num = " .. phonenum .. " , survey = " .. surveyid .. "\n");
 
 -----------
 -- my_cb
