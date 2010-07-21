@@ -17,6 +17,13 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 
 --]]
 
+--[[ 
+*************************************************************
+********* NOTE: This is an inbound version 
+********* 		of outbound/survey.lua
+*************************************************************
+--]]
+
 -- INCLUDES
 require "luasql.odbc";
 
@@ -25,7 +32,7 @@ dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 -- overwrite standard logfile
-logfilename = "/home/neil/Log/AO/survey.log";
+logfilename = "/home/neil/Log/AO/survey_in.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
@@ -33,7 +40,6 @@ script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
 sursd = aosd .. "survey/";
-CALLID_VAR = '{ao_survey=true}';
 
 digits = "";
 arg = {};
@@ -43,32 +49,21 @@ sessid = os.time();
 -- on hangup event
 prevprompts = {};
 
--- receive the call object
-callid = argv[1];
+-- survey phonenumber
+survey_phonenum = session:getVariable("destination_number");
+-- caller's number
+phonenum = session:getVariable("caller_id_number");
 
--- get subject id, phone number, and survey id
-query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after ";
-query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call c ";
-query = query .. " WHERE c.id = " .. callid;
-query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
+-- get survey id
+query = 		"SELECT survey.id, survey.complete_after ";
+query = query .. " FROM surveys_survey survey ";
+query = query .. " WHERE number LIKE '%" .. survey_phonenum .. "%'";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query);
-subjectid = res[1];
-phonenum = res[2];
-surveyid = res[3];
+surveyid = res[1];
+complete_after_idx = res[2];
 
-DIALSTRING_PREFIX = "";
-DIALSTRING_SUFFIX = "";
-if (res[4] ~= nil) then
-	DIALSTRING_PREFIX = res[4];
-end
-if (res[5] ~= nil) then
-	DIALSTRING_SUFFIX = res[5];
-end
-
-complete_after_idx = res[6];
-
-freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. phonenum .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
+freeswitch.consoleLog("info", script_name .. " , num = " .. phonenum .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
 
 -----------
 -- my_cb
@@ -105,16 +100,13 @@ end
 
 prompts = get_prompts(surveyid);
 
--- make the call
-session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
-session:setVariable("caller_id_number", phonenum)
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
---session:setInputCallback("my_cb", "arg");
+-- answer the call
+session:answer();
 
 if (session:ready() == true) then
 	-- sleep for a bit
-	session:sleep(10000);
+	session:sleep(1000);
+	
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
 	
