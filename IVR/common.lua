@@ -173,7 +173,11 @@ function playcontent (summary, content)
    return use();
 end
 
--- BEGIN common resonder functions
+--[[ 
+**********************************************************
+********* BEGIN COMMON RESPONDER FUNCTIONS
+**********************************************************
+--]]
 
 -- App-specific GLOBALS
 GLOBAL_MENU_REPLAY = "6";
@@ -571,7 +575,177 @@ function record_responder_message (forumid, thread, maxlength, rgt, moderated, a
    return use();
 end
 
--- END common responder functions
+--[[ 
+**********************************************************
+********* END COMMON RESPONDER FUNCTIONS
+**********************************************************
+--]]
+
+--[[ 
+**********************************************************
+********* BEGIN COMMON SURVEY FUNCTIONS
+**********************************************************
+--]]
+-- This is the ground truth set of constants. Scripts that
+-- work with survyes should sync with this
+OPTION_NEXT = 1;
+OPTION_PREV = 2;
+OPTION_REPLAY = 3;
+OPTION_GOTO = 4;
+
+-----------
+-- get_prompts
+-----------
+
+function get_prompts(surveyid)
+	local query = 	"SELECT id, file, bargein, delay ";
+	query = query .. " FROM surveys_prompt ";
+	query = query .. " WHERE survey_id = " .. surveyid;
+	query = query .. " ORDER BY surveys_prompt.order ASC ";
+	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+	return rows(query);
+end
+
+-----------
+-- get_options
+-----------
+
+function get_options (promptid)
+   local query = " SELECT opt.number, opt.action, opt.action_param1, opt.action_param2 ";
+   query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
+   query = query .. " WHERE prompt.id = " .. promptid;
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   return rows(query);
+end
+
+-----------
+-- get_option
+-----------
+
+function get_option (promptid, number)
+   local query = " SELECT opt.action, opt.action_param1, opt.action_param2 ";
+   query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
+   query = query .. " WHERE prompt.id = " .. promptid;
+   query = query .. " AND opt.prompt_id = prompt.id ";
+   query = query .. " AND opt.number = '" .. number .. "' ";
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   return row(query);
+end
+
+-----------
+-- set_survey_complete
+-----------
+
+function set_survey_complete (callid)
+   local query = " UPDATE surveys_call ";
+   query = query .. " SET complete = 1 ";
+   query = query .. " WHERE id = " .. callid;
+   con:execute(query);
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+end
+
+-----------
+-- play_prompts
+-----------
+
+function play_prompts (prompts)
+   -- get the first prompt
+   local current_prompt = prompts();
+   prevprompts = {};
+   table.insert(prevprompts, current_prompt);
+   local current_prompt_idx = 1;
+   local d = "";
+   local replay_cnt = 0;
+   
+   while (current_prompt ~= nil) do
+   	  promptid = current_prompt[1];
+   	  promptfile = current_prompt[2];
+   	  bargein = current_prompt[3];
+   	  delay = current_prompt[4];
+   	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
+   	  
+	  if (complete_after_idx ~= nil and current_prompt_idx > complete_after_idx) then
+   	  	set_survey_complete(callid);
+   	  end
+   	  
+   	  if (bargein == 1) then
+   	  	read(sursd .. promptfile, delay);
+  	  else
+  		read_no_bargein(sursd .. promptfile, delay);
+   	  end
+   	  d = use();
+   	  
+   	  -- get option
+   	  option = get_option(promptid, d);
+   	  if (option == nil) then
+   	  	-- default: repeat which is safer than NEXT since bad input
+		-- will make the prompt be skipped. Downside is that prompts have to have
+		-- an explicit option for no input, though this is probably better practice.
+   	  	action = OPTION_REPLAY;
+   	  else
+   	  	action = option[1];
+   	  end
+      
+      freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
+      -- abort if 3 replays for any prompt in a row
+      if (action == OPTION_REPLAY) then
+		replay_cnt = check_abort(replay_cnt, 3);
+      else
+		replay_cnt = 0;
+      end
+
+      if (action == OPTION_NEXT) then
+	    current_prompt_idx = current_prompt_idx + 1;
+		-- check to see if we are at the last msg in the list
+	 	if (current_prompt_idx > #prevprompts) then
+		    -- get next msg from the cursor
+		    current_prompt = prompts();
+		    if (current_prompt ~= nil) then
+		       table.insert(prevprompts, current_prompt);
+		    end
+		else
+		    -- get msg from the prev list
+		    current_prompt = prevprompts[current_prompt_idx];
+	    end
+      elseif (action == OPTION_PREV) then
+		 if (current_prompt_idx > 1) then
+		    current_prompt_idx = current_prompt_idx - 1;
+		    current_prompt = prevprompts[current_prompt_idx];
+		 end
+      elseif (action == OPTION_GOTO) then
+	  	local goto_idx = tonumber(option[2]);
+   		freeswitch.consoleLog("info", script_name .. " : goto idx is " .. tostring(goto_idx) .. "\n");
+		-- check to see if we are at the last msg in the list
+	 	if (goto_idx > #prevprompts) then
+		    for i=current_prompt_idx+1, goto_idx do
+			    current_prompt = prompts();
+			    if (current_prompt ~= nil) then
+			       table.insert(prevprompts, current_prompt);
+			    end
+			end
+			current_prompt_idx = goto_idx;
+		else
+		    -- get msg from the prev list
+		    current_prompt_idx = goto_idx;
+		    current_prompt = prevprompts[current_prompt_idx];
+	    end
+	  end
+    
+   end -- end while
+   
+   -- if survey doesn't specify a finished prompt,
+   -- that means the survey is finished after all prompts
+   -- have been heard
+   if (complete_after_idx == nil) then
+   		set_survey_complete(callid);
+   end
+end
+
+--[[ 
+**********************************************************
+********* END COMMON RESPONDER FUNCTIONS
+**********************************************************
+--]]
 
 -----------
 -- check_abort
