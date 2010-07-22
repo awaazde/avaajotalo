@@ -24,6 +24,7 @@ from django.conf import settings
 from django.db.models import Min, Count
 from datetime import datetime
 import os, stat
+import alerts
 
 # Code in order of how they are declared in Message.java
 MESSAGE_STATUS_PENDING = 0
@@ -319,6 +320,12 @@ def updatestatus(request, action):
             msgs = Message_forum.objects.filter(forum=m.forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
             if msgs.count() > 0 and msgs[0].position != None:
                 m.position = msgs[0].position + 1
+        else:
+            # this is a reply, send an alert to the original poster
+            orig_msg = Message.objects.get(pk=m.message.thread)
+            userid = orig_msg.user.id
+            alerts.missed_call(m.forum.line, [userid])
+            
             
     elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
         m.status = MESSAGE_STATUS_REJECTED
