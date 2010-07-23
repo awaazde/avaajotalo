@@ -291,7 +291,9 @@ def createmessage(request, forum, content, summary=False, parent=False):
 
     if parent:
         add_child(resp_msg, parent.message)
-
+        # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
+        # from otalo.notification import notification_utils as notut
+        # notut.process_notification(resp_msg, parent)
     resp_msg_forum.save()
 
     return resp_msg_forum
