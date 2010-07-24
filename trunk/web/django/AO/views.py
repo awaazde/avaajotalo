@@ -291,9 +291,6 @@ def createmessage(request, forum, content, summary=False, parent=False):
 
     if parent:
         add_child(resp_msg, parent.message)
-        # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
-        # from otalo.notification import notification_utils as notut
-        # notut.process_notification(resp_msg, parent)
     resp_msg_forum.save()
 
     return resp_msg_forum
@@ -326,6 +323,9 @@ def updatestatus(request, action):
             # this is a reply, send an alert to the original poster
             orig_msg = Message.objects.get(pk=m.message.thread)
             userid = orig_msg.user.id
+            # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
+            # from otalo.notification import notification_utils as notut
+            # notut.process_notification(resp_msg, parent)
             alerts.missed_call(m.forum.line, [userid])
             
             
