@@ -20,7 +20,7 @@ from django.contrib import admin
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('date', 'user')
     list_filter = ['date', 'user']
-    search_fields = ['user']   
+    search_fields = ['user__name', 'user__number']   
 
 class UserAdmin(admin.ModelAdmin):
    search_fields = ['name']
