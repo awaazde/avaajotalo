@@ -82,7 +82,7 @@ def surveys():
                 surname = source + "_" + msg + "_" + btype
                 s = Survey.objects.filter(name=surname)
                 if not bool(s):
-                    s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX)
+                    s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=2)
                     print ("adding survey " + str(s))
                     s.save()
                     count = count + 1
@@ -138,8 +138,6 @@ def prompts():
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
-            survey.complete_after = 5
-            survey.save()
             
             # solution
             sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution" + SOUND_EXT
@@ -176,11 +174,7 @@ def prompts():
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
-            survey.complete_after = 6
-            survey.save()
         elif btype == 'H':
-            survey.complete_after = 3
-            survey.save()
             # hold
             action = Prompt(file="guj/hold" + SOUND_EXT, order=4, bargein=False, delay=0, survey=survey)
             action.save()
@@ -214,7 +208,7 @@ def inbound_surveys():
             number = INBOUND[msg]
             s = Survey.objects.filter(name=surname)
             if not bool(s):
-                s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, number=number)
+                s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, number=number, complete_after=1)
                 print ("adding inbound survey " + str(s))
                 s.save()
                 count = count + 1
