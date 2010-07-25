@@ -79,7 +79,7 @@ def surveys():
                 surname = source + "_" + msg + "_" + btype
                 s = Survey.objects.filter(name=surname)
                 if not bool(s):
-                    s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX)
+                    s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=2)
                     print ("adding survey " + str(s))
                     s.save()
                     count = count + 1
@@ -110,8 +110,6 @@ def prompts():
         tip_opt = Option(number="", action=OPTION_NEXT, prompt=tip)
         tip_opt.save()
         count = count + 1
-        survey.complete_after = 2
-        survey.save()
 
         # behavior
         bfilename = "guj/behavior" + SOUND_EXT
@@ -207,7 +205,7 @@ def inbound_surveys():
             number = INBOUND[msg]
             s = Survey.objects.filter(name=surname)
             if not bool(s):
-                s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, number=number)
+                s = Survey(name=surname, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, number=number, complete_after=1)
                 print ("adding inbound survey " + str(s))
                 s.save()
                 count = count + 1
