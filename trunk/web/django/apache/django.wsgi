@@ -19,6 +19,8 @@ import sys
 
 sys.path.append('/home/dsc/Development')
 sys.path.append('/home/dsc/Development/otalo')
+sys.path.append('/usr/local/freeswitch/scripts/AO')
+sys.path.append('/usr/local/freeswitch/scripts/AO/outbound')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'otalo.settings'
 
