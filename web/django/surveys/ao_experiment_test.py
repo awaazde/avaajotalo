@@ -128,6 +128,8 @@ def prompts():
         if btype == 'P':
             action = Prompt(file="guj/press.mp3", order=4, bargein=False, delay=0, survey=survey)
             action.save()
+            action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
+            action_opt.save()
             
             repeat = Prompt(file="guj/repeat.mp3", order=5, bargein=True, delay=5000, survey=survey)
             repeat.save()
@@ -155,6 +157,8 @@ def prompts():
         elif btype == 'C':
             action = Prompt(file="guj/call.mp3", order=4, bargein=False, delay=0, survey=survey)
             action.save()
+            action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
+            action_opt.save()
             
             # phone num
             tipidx = surveyname.index('T')
@@ -162,11 +166,15 @@ def prompts():
             numfile = INBOUND[tip]
             phonenum = Prompt(file="guj/" + numfile + ".mp3", order=5, bargein=False, delay=0, survey=survey)
             phonenum.save()
+            phonenum_opt = Option(number="", action=OPTION_NEXT, prompt=phonenum)
+            phonenum_opt.save()
             
             repeat = Prompt(file="guj/repeat.mp3", order=6, bargein=True, delay=5000, survey=survey)
             repeat.save()
-            repeat_opt1 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
+            repeat_opt1 = Option(number="", action=OPTION_GOTO, action_param1=3, prompt=repeat)
             repeat_opt1.save()
+            repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
+            repeat_opt2.save()
             survey.complete_after = 6
             survey.save()
         elif btype == 'H':
@@ -175,8 +183,10 @@ def prompts():
             # hold
             action = Prompt(file="guj/hold.mp3", order=4, bargein=False, delay=0, survey=survey)
             action.save()
-            action_opt1 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=action)
+            action_opt1 = Option(number="", action=OPTION_NEXT, prompt=action)
             action_opt1.save()
+            action_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=action)
+            action_opt2.save()
             
             # solution
             sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution.mp3"
