@@ -134,6 +134,7 @@ def prompts():
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
             survey.complete_after = 5
+            survey.save()
             
             # solution
             sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution.mp3"
@@ -165,8 +166,10 @@ def prompts():
             repeat_opt1 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt1.save()
             survey.complete_after = 6
+            survey.save()
         elif btype == 'H':
             survey.complete_after = 3
+            survey.save()
             # hold
             action = Prompt(file="guj/hold.mp3", order=4, bargein=False, delay=0, survey=survey)
             action.save()
