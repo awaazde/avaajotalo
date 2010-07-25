@@ -321,7 +321,7 @@ def updatestatus(request, action):
                 m.position = msgs[0].position + 1
         else:
             # this is a reply, send an alert to the original poster
-            orig_msg = Message.objects.get(pk=m.message.thread)
+            orig_msg = Message.objects.get(pk=m.message.thread.id)
             userid = orig_msg.user.id
             # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
             # from otalo.notification import notification_utils as notut
