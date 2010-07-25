@@ -26,6 +26,7 @@ OPTION_GOTO = 4
 
 PREFIX = "openzap/smg_prid/a/"
 SUFFIX = "@g2"
+SOUND_EXT = ".mp3"
 
 SOURCES = ["E1", "E2", "P1", "P2"]
 MSGS = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"]
@@ -96,14 +97,14 @@ def prompts():
         surveyname = survey.name
         
         # welcome
-        welcome = Prompt(file="guj/welcome.wav", order=1, bargein=False, survey=survey)
+        welcome = Prompt(file="guj/welcome" + SOUND_EXT, order=1, bargein=False, survey=survey)
         welcome.save()
         welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
         welcome_opt.save()
         count = count + 1
         
         # tip
-        tfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_tip.wav"
+        tfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_tip" + SOUND_EXT
         tip = Prompt(file=tfilename, order=2, bargein=False, survey=survey)
         tip.save()
         tip_opt = Option(number="", action=OPTION_NEXT, prompt=tip)
@@ -111,9 +112,11 @@ def prompts():
         count = count + 1
 
         # behavior
-        bfilename = "guj/behavior.wav"
+        bfilename = "guj/behavior" + SOUND_EXT
         behavior = Prompt(file=bfilename, order=3, bargein=False, delay=0, survey=survey)
         behavior.save()
+        beh_opt = Option(number="", action=OPTION_NEXT, prompt=behavior)
+        beh_opt.save()
         count = count + 1
         
         # Action step prompt
@@ -121,19 +124,22 @@ def prompts():
         btype = surveyname[btypeidx+1:btypeidx+2]
         # special behavior for the press button for more info behavior
         if btype == 'P':
-            action = Prompt(file="guj/press.wav", order=4, bargein=False, delay=0, survey=survey)
+            action = Prompt(file="guj/press" + SOUND_EXT, order=4, bargein=False, delay=0, survey=survey)
             action.save()
+            action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
+            action_opt.save()
             
-            repeat = Prompt(file="guj/repeat.wav", order=5, bargein=True, delay=5000, survey=survey)
+            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=5, bargein=True, delay=5000, survey=survey)
             repeat.save()
             repeat_opt1 = Option(number="1", action=OPTION_NEXT, prompt=repeat)
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
             survey.complete_after = 5
+            survey.save()
             
             # solution
-            sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution.wav"
+            sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution" + SOUND_EXT
             solution = Prompt(file=sfilename, order=6, bargein=False, survey=survey)
             solution.save()
             soln_opt = Option(number="", action=OPTION_NEXT, prompt=solution)
@@ -141,37 +147,47 @@ def prompts():
             count = count + 1
             
             # followup
-            followup = Prompt(file="guj/followup.wav", order=7, bargein=True, survey=survey)
+            followup = Prompt(file="guj/followup" + SOUND_EXT, order=7, bargein=True, survey=survey)
             followup.save()
             followup_opt = Option(number="", action=OPTION_GOTO, action_param1=6, prompt=followup)
             followup_opt.save()
             count = count + 1
         elif btype == 'C':
-            action = Prompt(file="guj/call.wav", order=4, bargein=False, delay=0, survey=survey)
+            action = Prompt(file="guj/call" + SOUND_EXT, order=4, bargein=False, delay=0, survey=survey)
             action.save()
+            action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
+            action_opt.save()
             
             # phone num
             tipidx = surveyname.index('T')
             tip = surveyname[tipidx:surveyname.index('_',tipidx)]
             numfile = INBOUND[tip]
-            phonenum = Prompt(file="guj/" + numfile + ".wav", order=5, bargein=False, delay=0, survey=survey)
+            phonenum = Prompt(file="guj/" + numfile + SOUND_EXT, order=5, bargein=False, delay=0, survey=survey)
             phonenum.save()
+            phonenum_opt = Option(number="", action=OPTION_NEXT, prompt=phonenum)
+            phonenum_opt.save()
             
-            repeat = Prompt(file="guj/repeat.wav", order=6, bargein=True, delay=5000, survey=survey)
+            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=6, bargein=True, delay=5000, survey=survey)
             repeat.save()
-            repeat_opt1 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
+            repeat_opt1 = Option(number="", action=OPTION_GOTO, action_param1=3, prompt=repeat)
             repeat_opt1.save()
+            repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
+            repeat_opt2.save()
             survey.complete_after = 6
+            survey.save()
         elif btype == 'H':
             survey.complete_after = 3
+            survey.save()
             # hold
-            action = Prompt(file="guj/hold.wav", order=4, bargein=False, delay=0, survey=survey)
+            action = Prompt(file="guj/hold" + SOUND_EXT, order=4, bargein=False, delay=0, survey=survey)
             action.save()
-            action_opt1 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=action)
+            action_opt1 = Option(number="", action=OPTION_NEXT, prompt=action)
             action_opt1.save()
+            action_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=action)
+            action_opt2.save()
             
             # solution
-            sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution.wav"
+            sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution" + SOUND_EXT
             solution = Prompt(file=sfilename, order=5, bargein=False, survey=survey)
             solution.save()
             soln_opt = Option(number="", action=OPTION_NEXT, prompt=solution)
@@ -179,7 +195,7 @@ def prompts():
             count = count + 1
             
             # followup
-            followup = Prompt(file="guj/followup.wav", order=6, bargein=True, survey=survey)
+            followup = Prompt(file="guj/followup" + SOUND_EXT, order=6, bargein=True, survey=survey)
             followup.save()
             followup_opt = Option(number="", action=OPTION_GOTO, action_param1=5, prompt=followup)
             followup_opt.save()
@@ -213,7 +229,7 @@ def inbound_prompts():
         surveyname = survey.name
         
         # solution
-        sfilename = "guj/" + surveyname[:surveyname.index("_inbound")] + "_solution.wav"
+        sfilename = "guj/" + surveyname[:surveyname.index("_inbound")] + "_solution" + SOUND_EXT
         solution = Prompt(file=sfilename, order=1, bargein=False, survey=survey)
         solution.save()
         soln_opt = Option(number="", action=OPTION_NEXT, prompt=solution)
@@ -221,7 +237,7 @@ def inbound_prompts():
         count = count + 1
         
         # followup
-        followup = Prompt(file="guj/followup.wav", order=2, bargein=True, survey=survey)
+        followup = Prompt(file="guj/followup" + SOUND_EXT, order=2, bargein=True, survey=survey)
         followup.save()
         followup_opt = Option(number="", action=OPTION_PREV, prompt=followup)
         followup_opt.save()
@@ -409,7 +425,7 @@ def backup_calls(survey_label, nums, start_time, end_time):
     print(str(count) + " new backup calls added.")   
     
     return scheduled_calls
-    				
+                    
 def main():
     subjects()
     surveys()
@@ -417,3 +433,4 @@ def main():
     calls()
 
 main()
+
