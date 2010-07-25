@@ -117,6 +117,8 @@ def prompts():
         bfilename = "guj/behavior.mp3"
         behavior = Prompt(file=bfilename, order=3, bargein=False, delay=0, survey=survey)
         behavior.save()
+        beh_opt = Option(number="", action=OPTION_NEXT, prompt=tip)
+        beh_opt.save()
         count = count + 1
         
         # Action step prompt
