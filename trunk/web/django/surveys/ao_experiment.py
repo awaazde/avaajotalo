@@ -105,11 +105,13 @@ def prompts():
         
         # tip
         tfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_tip" + SOUND_EXT
-        tip = Prompt(file=tfilename, order=2, bargein=False, survey=survey)
+        tip = Prompt(file=tfilename, order=2, bargein=False, delay=0, survey=survey)
         tip.save()
         tip_opt = Option(number="", action=OPTION_NEXT, prompt=tip)
         tip_opt.save()
         count = count + 1
+        survey.complete_after = 2
+        survey.save()
 
         # behavior
         bfilename = "guj/behavior" + SOUND_EXT
@@ -135,8 +137,6 @@ def prompts():
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
-            survey.complete_after = 5
-            survey.save()
             
             # solution
             sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution" + SOUND_EXT
@@ -173,11 +173,7 @@ def prompts():
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
-            survey.complete_after = 6
-            survey.save()
         elif btype == 'H':
-            survey.complete_after = 3
-            survey.save()
             # hold
             action = Prompt(file="guj/hold" + SOUND_EXT, order=4, bargein=False, delay=0, survey=survey)
             action.save()
