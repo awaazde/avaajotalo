@@ -326,7 +326,7 @@ def updatestatus(request, action):
             # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
             # from otalo.notification import notification_utils as notut
             # notut.process_notification(resp_msg, parent)
-            #alerts.missed_call(m.forum.line, [userid])
+            #alerts.missed_call(m.forum.line_set.all()[0], [userid])
             
             
     elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
