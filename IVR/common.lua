@@ -666,15 +666,17 @@ function play_prompts (prompts)
    	  delay = current_prompt[4];
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
-	  if (complete_after_idx ~= nil and current_prompt_idx > complete_after_idx) then
-   	  	set_survey_complete(callid);
-   	  end
-   	  
    	  if (bargein == 1) then
    	  	read(sursd .. promptfile, delay);
   	  else
   		read_no_bargein(sursd .. promptfile, delay);
    	  end
+   	  
+   	  -- Do this check right after the prompt plays in case of there are no more prompts
+	  if (complete_after_idx ~= nil and current_prompt_idx >= complete_after_idx) then
+   	  	set_survey_complete(callid);
+   	  end
+   	  
    	  d = use();
    	  
    	  -- get option
