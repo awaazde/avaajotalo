@@ -325,7 +325,9 @@ def updatestatus(request, action):
             userid = orig_msg.user.id
             # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
             # from otalo.notification import notification_utils as notut
-            # notut.process_notification(resp_msg, parent)
+            # if m.thread and m.thread.message_forum_set.count()>=1:
+            #     parent = m.thread.message_forum_set.all()[0]
+            #     notut.process_notification(m, parent)
             #alerts.missed_call(m.forum.line_set.all()[0], [userid])
             
             

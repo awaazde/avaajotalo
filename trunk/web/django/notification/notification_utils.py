@@ -12,6 +12,10 @@ def process_notification(message, parent_message_forum):
     We do not send more than one message to a user.
     """
     if parent_message_forum is None or parent_message_forum.message is None:
+        # problem
+        return
+    if m.status != MESSAGE_STATUS_APPROVED:
+        # Message was not approved yet
         return
     # print "CHECK notification", message
     # print "parent", parent_message_forum
