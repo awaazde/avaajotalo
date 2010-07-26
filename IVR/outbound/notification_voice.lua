@@ -56,6 +56,15 @@ res = row(query);
 phonenum = res[1];
 tag = res[2];
 
+-- get the tag file
+query = 		"SELECT  tag_file ";
+query = query .. " FROM AO_tag";
+query = query .. " WHERE tag = '" .. tag .. "'";
+freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+res = row(query);
+tag_file = res[1];
+
+
 DIALSTRING_PREFIX = "";
 DIALSTRING_SUFFIX = "";
 
