@@ -384,6 +384,16 @@ def username(request):
     user = get_list_or_404(User, admin__auth_user=auth_user)
     return send_response(user)
 
+def line(request):
+    auth_user = request.user
+
+    # get the first line based on the first forum that this
+    # admin is associated with
+    admin = Admin.objects.filter(auth_user=auth_user)[0]
+    forum = admin.forum
+    line = forum.line_set.all()[:1]
+    return send_response(line)
+
 def get_responders(message_forum):
     
     tags = Tag.objects.filter(message_forum = message_forum)

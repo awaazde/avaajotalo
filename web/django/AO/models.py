@@ -28,6 +28,7 @@ class Line(models.Model):
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     name_file = models.CharField(max_length=24, blank=True, null=True)
+    logo_file = models.CharField(max_length=24, blank=True, null=True)
     forums = models.ManyToManyField('Forum', blank=True, null=True)
     
     def __unicode__(self):

@@ -37,6 +37,7 @@ urlpatterns = patterns('',
     (r'^responders/(?P<forum_id>\d+)/$', 'otalo.AO.views.responders'),
     (r'^messageresponder/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messageresponder'),
     (r'^username/$', 'otalo.AO.views.username'),
+    (r'^line/$', 'otalo.AO.views.line'),
 )
 
 if settings.DEVELOPMENT:

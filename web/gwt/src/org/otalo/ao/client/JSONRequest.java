@@ -56,6 +56,7 @@ public final class JSONRequest {
 		public static final String RESPONDERS = "responders/";
 		public static final String MESSAGE_RESPONDERS = "messageresponder/";
 		public static final String USERNAME = "username/";
+		public static final String LINE = "line/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
