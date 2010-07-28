@@ -114,7 +114,7 @@ session:setHangupHook("hangup");
 
 if (session:ready() == true) then
 	-- sleep for a bit
-	session:sleep(10000);
+	session:sleep(1000);
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
 	
