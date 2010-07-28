@@ -33,7 +33,7 @@ script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
 sursd = aosd .. "survey/";
-CALLID_VAR = '{ao_survey=true}';
+CALLID_VAR = '{ao_survey=true,ignore_early_media=true}';
 
 digits = "";
 arg = {};
