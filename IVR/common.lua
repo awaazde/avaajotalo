@@ -673,7 +673,7 @@ function play_prompts (prompts)
    	  end
    	  
    	  -- Do this check right after the prompt plays in case of there are no more prompts
-	  if (session:ready() == true and complete_after_idx ~= nil and current_prompt_idx >= complete_after_idx) then
+	  if (complete_after_idx ~= nil and current_prompt_idx >= complete_after_idx) then
    	  	set_survey_complete(callid);
    	  end
    	  
