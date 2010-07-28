@@ -32,7 +32,7 @@ logfile:setvbuf("line");
 script_name = "responder.lua";
 digits = "";
 arg = {};
-CALLID_VAR = '{ao_responder=true}';
+CALLID_VAR = '{ao_responder=true,ignore_early_media=true}';
 
 sessid = os.time();
 userid = argv[1];
@@ -223,7 +223,7 @@ if (msg ~= nil) then
 		"\t", os.time(), "\t", "Start call", "\n");
 		
 		-- sleep for some secs
-		session:sleep(10000);
+		session:sleep(2000);
 		
 		local mainmenu_cnt = 0;
 		while (1) do
