@@ -56,7 +56,7 @@ STUDY_START = datetime(year=2010, month=7, day=31)
 STUDY_DURATION_DAYS = 16
 
 REMINDER_START_DATE = datetime(year=2010, month=7, day=30)
-REMINDER_DURATION_DAYS = 2
+REMINDER_DURATION_DAYS = 1
 REMINDER_START = timedelta(hours=8)
 REMINDER_END = timedelta(hours=18)
 
