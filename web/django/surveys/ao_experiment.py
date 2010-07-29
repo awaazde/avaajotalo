@@ -97,9 +97,13 @@ def surveys():
 
 def prompts():
     count = 0
+    
+    surveys = []
+    for surname in SURVEYS:
+        surveys += Survey.objects.filter(name__contains=surname)
             
     # iterate through all outbound surveys only
-    for survey in Survey.objects.filter(number__isnull=True):
+    for survey in surveys:
         # do this instead of prompt check in case there is a change
         # in the order or contents of prompts
         survey.prompt_set.all().delete()
