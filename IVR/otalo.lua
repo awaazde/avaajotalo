@@ -331,6 +331,8 @@ function mainmenu ()
       -- leave the flag as 'n'
       playmessages(getpendingmessages(lineid), 'n');
    elseif (d == responderidx) then
+   	  read(aosd .. "okresponder.mp3", 0);
+      use();
    	  local rmsgs = get_responder_messages(userid);
       play_responder_messages(userid, rmsgs);
    elseif (d ~= nil) then
