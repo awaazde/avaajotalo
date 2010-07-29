@@ -39,7 +39,7 @@ INBOUND = {}
 EITHER = [9979403085,9879677274,9979254830,9924057403,9879417564,9558576090,9824387276,9727304678,9727281248,9726488991,9725317885,9723202471,9714174065,9712410421,9624235420,9510748795,9429260174,9429122745,9428897286,9428485487,9428459215,9427258722,9427037241,8140128125,9998750661,9979780231]
 AM = []
 PM = [9978171686, 9913461992]
-GROUPS = [["E1","E2","P1","P2","E1","P1","E2","P2"], ["E2","E1","P2","P1","E2","P2","E1","P1"], ["P1","P2","E1","E2","P1","E1","P2","E2"], ["P1","P2","E1","E2","P2","E2","P1","E1"]]
+GROUPS = [["E1","E2","P1","P2","E1","P1","E2","P2"], ["E2","E1","P2","P1","E2","P2","E1","P1"], ["P1","P2","E1","E2","P1","E1","P2","E2"], ["P2","P1","E2","E1","P2","E2","P1","E1"]]
 SUBJ_GROUPS = {}
 
 AM_START = timedelta(hours=6)
@@ -476,10 +476,12 @@ def backup_calls(survey_label, nums, start_time, end_time, survey=False):
                 if not survey:
                     group_id = SUBJ_GROUPS[subject]
                     messenger_label = GROUPS[group_id][SURVEYS.index(survey_label)]
-                    survey = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
-                call = Call.objects.filter(survey=survey, subject=subject, date=call_time, priority=2)
+                    s = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
+                else:
+                    s = survey
+                call = Call.objects.filter(survey=s, subject=subject, date=call_time, priority=2)
                 if not bool(call):
-                    call = Call(survey=survey, subject=subject, date=call_time, priority=2)
+                    call = Call(survey=s, subject=subject, date=call_time, priority=2)
                     print ("adding call " + str(call))
                     call.save()
                     count += 1
