@@ -253,6 +253,24 @@ function getpendingmessages (lineid)
    return rows(query);
 end
 
+-----------
+-- isresponder
+-----------
+
+function isresponder (userid, linenum)
+   local query = "SELECT 1 ";
+   query = query .. "FROM AO_forum_responders fr, AO_line line, AO_line_forums lf, AO_forum forum ";
+   query = query .. " WHERE line.number LIKE '%" .. line_num .. "%' "; 
+   query = query .. " AND line.id = lf.line_id and lf.forum_id = forum.id AND forum.id = fr.forum_id and fr.user_id = " .. userid;
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   cur = con:execute(query);
+   result = cur:fetch();
+   cur:close();
+	
+   return (result == nil)
+end
+
+
 
 -----------
 -- mainmenu
@@ -302,10 +320,8 @@ function mainmenu ()
       read(aosd .. "digits/" .. chkpendingidx .. ".wav", 1000);
    end
    
-   check_n_msgs = get_responder_messages(userid);
-   local rmsg = check_n_msgs();
    local responderidx = -1;
-   if (rmsg ~= nil) then
+   if (isresponder(userid, line_num)) then
    	  i = i + 1;
    	  responderidx = i;
    	  read(aosd .. "checkmyassignedquestions.wav", 0);
