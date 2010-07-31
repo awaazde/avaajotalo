@@ -267,7 +267,7 @@ function isresponder (userid, linenum)
    result = cur:fetch();
    cur:close();
 	
-   return (result == nil)
+   return (result ~= nil)
 end
 
 
