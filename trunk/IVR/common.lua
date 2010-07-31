@@ -217,7 +217,14 @@ function get_responder_messages (userid)
    query = query .. " AND forum.id = message_forum.forum_id ";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
    query = query .. " AND message_responder.user_id = " .. userid;
-   query = query .. " AND message.lft = 1 AND message.rgt = 2 AND message_responder.listens <= " .. LISTENS_THRESH;
+   -- Next part says to only select a msg if 
+   -- no other registered responder has responded
+   query = query .. " AND EXISTS (SELECT 1 ";
+   query = query .. "			  FROM AO_message msg, AO_message_forum mf ";
+   query = query .. "			  WHERE msg.id = mf.message_id ";
+   query = query .. "			  AND msg.thread_id = message.id ";
+   query = query .. "			  AND message.user_id IN (SELECT user_id from AO_forum_responders where forum_id = mf.forum_id) ) ";
+   query = query .. " AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";
    query = query .. " AND (message_responder.reserved_by_id IS NULL OR ";
    query = query .. "      (message_responder.reserved_by_id = " .. userid .. " AND message_responder.reserved_until < now())) ";
@@ -750,7 +757,7 @@ end
 
 --[[ 
 **********************************************************
-********* END COMMON RESPONDER FUNCTIONS
+********* END COMMON SURVEY FUNCTIONS
 **********************************************************
 --]]
 
