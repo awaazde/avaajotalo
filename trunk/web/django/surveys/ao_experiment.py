@@ -504,7 +504,15 @@ def backup_calls(survey_label, nums, start_time, end_time, survey=False):
     print(str(count) + " new backup calls added.")   
     
     return scheduled_calls
-                    
+
+def shift_calls(starting, timeshift):
+    calls = Call.objects.filter(date__gte=starting)
+    
+    for call in calls:
+        print ("shifting " + str(call) + " to date " + str(call.date + timeshift))
+        call.date += timeshift
+        call.save()
+                 
 def main():
     # create inbound number assignments
     suffix = INBOUND_SUFFIX_START
@@ -520,6 +528,10 @@ def main():
     inbound_surveys()
     reminder_survey()
     reminder_calls()
+    
+    shift_start = datetime(year=2010, month=8, day=2)
+    oneday = timedelta(days=1)
+    #shift_calls(shift_start, oneday)
 
 main()
 
