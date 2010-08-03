@@ -1,0 +1,81 @@
+import otalo_utils
+import sys
+from datetime import datetime
+
+SOURCES = ["E1", "E2", "P1", "P2"]
+
+def get_followups(filename, destnum=False, phone_num_filter=0, date_filter=0, quiet=False):
+	calls = {}
+	current_week_start = 0
+	total = 0
+	
+	f = open(filename)
+	
+	while(True):
+		line = f.readline()
+		if not line:
+			break
+		try:
+		
+		#################################################
+		## Use the calls here to determine what pieces
+		## of data must exist for the line to be valid.
+		## All of those below should probably always be.
+		
+			phone_num = otalo_utils.get_phone_num(line)
+			current_date = otalo_utils.get_date(line)
+			dest = otalo_utils.get_destination(line)			
+		##
+		################################################
+			#print(phone_num + ': dest = ' + dest)
+			
+			if phone_num_filter and not phone_num in phone_num_filter:
+				continue
+			
+			if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
+				continue
+			
+			if destnum and destnum.find(dest) == -1:
+				continue
+
+			for source in SOURCES:
+				if line.find(source) != -1:
+					if source in calls:
+						calls[source] += 1
+					else:
+						calls[source] = 1
+					
+		except ValueError as err:
+			#print("ValueError: " + line)
+			continue
+		except IndexError as err:
+			#print("IndexError: " + line)
+			continue
+		except otalo_utils.PhoneNumException:
+			#print("PhoneNumException: " + line)
+			continue
+	
+	if not quiet:
+		if phone_num_filter:
+			print("Data for phone numbers: " + str(phone_num_filter))
+
+		print("Number of followups, by source:")
+		sources = calls.keys()
+		for source in sources:
+			total += calls[source]
+			print(source +": "+str(calls[source]))
+
+		print("total is " + str(total))
+	
+	return calls
+	
+	
+def main():
+	if not len(sys.argv) > 1:
+		print("Wrong")
+	else:
+		f = sys.argv[1]
+		
+	get_followups(f)
+			
+#main()
