@@ -43,9 +43,7 @@ def get_followups(filename, destnum=False, phone_num_filter=0, date_filter=0, qu
 				calls_by_caller[phone_num] = []
 			
 			if otalo_utils.is_prompt(line):
-				print ("prompt found")
 				prompt = otalo_utils.get_prompt(line)
-				print ("prompt is " + prompt)
 				for source in SOURCES:
 					# don't count duplicate accesses by the same caller
 					if prompt.find(source) != -1 and not prompt in calls_by_caller[phone_num]:
