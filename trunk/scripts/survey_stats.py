@@ -6,6 +6,7 @@ SOURCES = ["E1", "E2", "P1", "P2"]
 
 def get_followups(filename, destnum=False, phone_num_filter=0, date_filter=0, quiet=False):
 	calls = {}
+	calls_by_caller = {}
 	current_week_start = 0
 	total = 0
 	
@@ -34,16 +35,26 @@ def get_followups(filename, destnum=False, phone_num_filter=0, date_filter=0, qu
 			
 			if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
 				continue
-			
+
 			if destnum and destnum.find(dest) == -1:
 				continue
 
-			for source in SOURCES:
-				if line.find(source) != -1:
-					if source in calls:
-						calls[source] += 1
-					else:
-						calls[source] = 1
+			if not phone_num in calls_by_caller:
+				calls_by_caller[phone_num] = []
+			
+			if otalo_utils.is_prompt(line):
+				print ("prompt found")
+				prompt = otalo_utils.get_prompt(line)
+				print ("prompt is " + prompt)
+				for source in SOURCES:
+					# don't count duplicate accesses by the same caller
+					if prompt.find(source) != -1 and not prompt in calls_by_caller[phone_num]:
+						if source in calls:
+							calls[source] += 1
+						else:
+							calls[source] = 1
+						calls_by_caller[phone_num].append(prompt)
+					
 					
 		except ValueError as err:
 			#print("ValueError: " + line)
@@ -78,4 +89,4 @@ def main():
 		
 	get_followups(f)
 			
-#main()
+main()

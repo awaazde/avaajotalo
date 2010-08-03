@@ -4,7 +4,7 @@ blacklist = ["9537165413", "5303044777", "15303044777", "1000", "1001", "1002", 
 
 class PhoneNumException(Exception):
 	pass
-	
+
 def get_phone_num(line):
 	data = line.split('\t')
 	num = data[1]
@@ -34,11 +34,23 @@ def get_date(line, legacy_log=False):
 
 	return d
 
-def is_prompt(line):
+def is_prompt(line, legacy_log=False):
 	data = line.split('\t')
-	type = int(data[4])
+	if not legacy_log:
+		type = data[4]
+	else:
+		type = data[3]
 	
 	return type == "Prompt"
+
+def get_prompt(line, legacy_log=False):
+	data = line.split('\t')
+	if not legacy_log:
+		prompt = data[5]
+	else:
+		prompt = data[4]
+		
+	return prompt
 	
 def get_time(line):
 	data = line.split('\t')
