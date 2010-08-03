@@ -236,7 +236,7 @@ if (msg ~= nil) then
 		   -- play messages
 		   play_responder_messages(userid, msgs, adminforums);
 		   
-		   mainmenu_cnt = check_abort(mainmenu_cnt, 2);
+		   mainmenu_cnt = check_abort(mainmenu_cnt, 5);
 		   -- go back to the main menu
 		   read(aosd .. "mainmenu.wav", 1000);
 		end
