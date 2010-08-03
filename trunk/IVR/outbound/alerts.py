@@ -83,4 +83,4 @@ def main():
         	new_responses(line, user_ids.split(','))
 	else:
 		new_responses(line)
-main()
+#main()
