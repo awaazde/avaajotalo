@@ -20,7 +20,7 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, dat
 		## of data must exist for the line to be valid.
 		## All of those below should probably always be.
 		
-			phone_num = otalo_utils.get_phone_num(line, legacy_log)
+			phone_num = otalo_utils.get_phone_num(line)
 			current_date = otalo_utils.get_date(line, legacy_log)
 			dest = otalo_utils.get_destination(line, legacy_log)			
 		##
@@ -96,7 +96,7 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 		## of data must exist for the line to be valid.
 		## All of those below should probably always be.
 		
-			phone_num = otalo_utils.get_phone_num(line, legacy_log)
+			phone_num = otalo_utils.get_phone_num(line)
 			current_date = otalo_utils.get_date(line, legacy_log)
 			dest = otalo_utils.get_destination(line, legacy_log)					
 		##
@@ -540,4 +540,4 @@ def main():
 		#get_log_as_percent(f, log="match")
 		#get_num_questions(f)
 			
-main()
+#main()

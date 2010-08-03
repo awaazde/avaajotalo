@@ -5,22 +5,19 @@ blacklist = ["9537165413", "5303044777", "15303044777", "1000", "1001", "1002", 
 class PhoneNumException(Exception):
 	pass
 	
-def get_phone_num(line, legacy_log=False):
+def get_phone_num(line):
 	data = line.split('\t')
 	num = data[1]
 	
 	if num in blacklist:
 		raise PhoneNumException
 	
-	#print("phone num is " + num)
 	return num
 
 def get_destination(line, legacy_log=False):
 	if not legacy_log:
 		data = line.split('\t')
 		num = data[2]
-		
-		#print("dest num is " + num)
 		
 		return num
 	else:

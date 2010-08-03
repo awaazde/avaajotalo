@@ -18,7 +18,7 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_filter=0
 		## of data must exist for the line to be valid.
 		## All of those below should probably always be.
 
-			phone_num = otalo_utils.get_phone_num(line, legacy_log)
+			phone_num = otalo_utils.get_phone_num(line)
 			current_date = otalo_utils.get_date(line, legacy_log)
 			dest = otalo_utils.get_destination(line, legacy_log)		
 		##
@@ -169,7 +169,7 @@ def get_guj_nums_only(filename, log="welcome", quiet=False, legacy_log=False):
 		## of data must exist for the line to be valid.
 		## All of those below should probably always be.
 
-			phone_num = otalo_utils.get_phone_num(line, legacy_log)
+			phone_num = otalo_utils.get_phone_num(line)
 			current_date = otalo_utils.get_date(line, legacy_log)
 			dest = otalo_utils.get_destination(line, legacy_log)		
 		##
@@ -219,4 +219,4 @@ def main():
 		#get_calls_by_feature(f)
 		#get_calls_by_geography(f, demographics_file)
 			
-main()
+#main()
