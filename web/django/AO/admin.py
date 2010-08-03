@@ -23,7 +23,7 @@ class MessageAdmin(admin.ModelAdmin):
     search_fields = ['user__name', 'user__number']   
 
 class UserAdmin(admin.ModelAdmin):
-   search_fields = ['name']
+   search_fields = ['name', 'number']
 
 admin.site.register(Forum)
 admin.site.register(User, UserAdmin)
