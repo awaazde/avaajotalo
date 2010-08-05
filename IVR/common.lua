@@ -378,7 +378,7 @@ function refer_question(ph_num, messageforumid)
 	
 	if (result == nil) then
 	   -- unregistered number
-	   query = "INSERT INTO AO_user (number, allowed, admin) VALUES ('" .. ph_num .."','y','n')";
+	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" .. ph_num .."','y')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
