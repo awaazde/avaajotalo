@@ -40,6 +40,18 @@ def main():
 		print("<td width='40px'>"+str(source)+"</td>")
 		print("<td>"+str(ncalls)+"</td>")
 		print("</tr>")
+		
+	
+	# num followups
+	print("<div><h4>Overall</h4></div>")
+	print("<table>")
+
+	followups = survey_stats.get_followups(filename=f, quiet=True)
+	for source, ncalls in followups.items():
+		print("<tr>")
+		print("<td width='40px'>"+str(source)+"</td>")
+		print("<td>"+str(ncalls)+"</td>")
+		print("</tr>")
 	
 	print("</table>")
 	
