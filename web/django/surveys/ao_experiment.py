@@ -142,7 +142,7 @@ def prompts():
             action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
             action_opt.save()
             
-            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=5, bargein=True, delay=5000, survey=survey)
+            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=5, bargein=True, delay=2000, survey=survey)
             repeat.save()
             repeat_opt1 = Option(number="1", action=OPTION_NEXT, prompt=repeat)
             repeat_opt1.save()
@@ -185,7 +185,7 @@ def prompts():
             phonenum_opt = Option(number="", action=OPTION_NEXT, prompt=phonenum)
             phonenum_opt.save()
             
-            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=6, bargein=True, delay=5000, survey=survey)
+            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=6, bargein=True, delay=1000, survey=survey)
             repeat.save()
             repeat_opt1 = Option(number="", action=OPTION_GOTO, action_param1=3, prompt=repeat)
             repeat_opt1.save()
