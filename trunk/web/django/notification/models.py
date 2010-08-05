@@ -42,17 +42,26 @@ class NotificationUser(models.Model):
 class NotificationMessage(models.Model):
     """ Individual messages that have to be sent to the user
     """
+    # User to which the notification message is delivered
     user =              models.ForeignKey(User)
+    # date of creation of this object
     created_on =        models.DateTimeField(auto_now_add=True)
+    # date at which the notification was sent(or attempted to be sent)
     sent_on =           models.DateTimeField(null=True, blank=True)
+
     # typ: 0 sms, 1 voice
     typ =               models.IntegerField(null=False)
     number =            models.CharField(max_length=255, null=False)
+
     # for when typ==0
     text_message =      models.CharField(max_length=255, null=True, blank=True)
+
     # for when typ=1
+    # id of the voice message in case we have several
     voice_message_number = models.IntegerField(null=True, blank=True)
+    # name of the tag that we are using e.g. 'cotton'
     voice_message_tag = models.CharField(max_length=50,null=True, blank=True)
+
     # 1 if there was an error
     error =             models.IntegerField(null=False, default=0)
     

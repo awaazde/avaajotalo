@@ -1,11 +1,23 @@
-import router
+import sys
+d = "/var/www/"
+if d not in sys.path:
+    sys.path.insert(0, d)
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = "otalo.settings"
+
 from datetime import datetime, timedelta
+import time
+
 from otalo.surveys.models import Call, Subject
 from otalo.notification.models import NotificationMessage
 from otalo.notification import sms_utils
 
+import router
+from ESL import *
+
+MAX_CHANNELS = 10
 # This should match with how often the cron runs
-INTERVAL_MINS =     10
+INTERVAL_MINS =     30
 IVR_SCRIPT =        'AO/outbound/notification_voice.lua'
 # should match the var in IVR_SCRIPT
 CALLID_VAR_VAL =    'ao_notification true'
@@ -13,14 +25,24 @@ CALLID_VAR_VAL =    'ao_notification true'
 SCRIPT =            "notifications.py / notification_voice.lua:"
 
 def deliver_notifications():
+    """Get all the notification messages objects that have not been sent,
+    and deliver the notification message if the user has not just been 
+    notified already.
+    """
     # get all messages that have not been sent
-    users_done = [] # not many voice calls to the same one
+    users_done_voice = [] # not many voice calls to the same one
+    users_done_sms = [] # not many sms to the same one
+    print "Retrieve notification messages to be sent"
     for notmsg in NotificationMessage.objects.filter(sent_on__isnull=True).all():
-        if notmsg.user in users_done:
-            continue
-        users_done.append(notmsg.user)
         # SMS
         if notmsg.typ == 0: 
+            if notmsg.user in users_done_sms:
+                notmsg.sent_on = datetime.now()
+                notmsg.error = 2
+                notmsg.save()
+                continue
+            users_done_sms.append(notmsg.user)
+            print "SMS NOTIFICATION"
             ok = sms_utils.send_sms(notmsg.number, notmsg.text_message, sms_utils.OVI_NUM_FROM)
             if not ok:
                 notmsg.error = 2
@@ -28,8 +50,15 @@ def deliver_notifications():
             notmsg.save()
         # voice call
         elif notmsg.typ==1:
+            if notmsg.user in users_done_voice:
+                notmsg.sent_on = datetime.now()
+                notmsg.error = 3
+                notmsg.save()
+                continue
+            users_done_voice.append(notmsg.user)
+            print 'VOICE NOTIFICATION'
             make_voice_call(notmsg.id)
-            # the lua script updates the sent_on field
+            time.sleep(60 * 3) # minutes
 
 def make_voice_call(notmsg_id):
     outbound_var_val=False
@@ -61,8 +90,8 @@ def make_voice_call(notmsg_id):
         time.sleep(sleep_secs)
         num_channels = _get_n_channels(con)
         sleep_secs *= 2	
-    print(SCRIPT + 'running ' + IVR_script + ' (' + str(notmsg_id) + ')')
-    con.api("luarun " + IVR_script + " " + str(notmsg_id))
+    print(SCRIPT + 'running ' + IVR_SCRIPT + ' (' + str(notmsg_id) + ')')
+    con.api("luarun " + IVR_SCRIPT + " " + str(notmsg_id))
     # sleep a bit to let the call register with FS
     time.sleep(2)
     
