@@ -15,15 +15,15 @@
 #===============================================================================
 import sys,router
 from datetime import datetime, timedelta
-from otalo.AO.models import Message, User, Line
-from otalo.AO.views import *
+from otalo.AO.models import Message, User, Line, User
+from otalo.settings import MEDIA_ROOT
 from ESL import *
 import re, time, sched
 from threading import Timer
 
 # should match the interval of the cron running this script
 INTERVAL_HOURS = 1
-IVR_SCRIPT = 'AO/outbound/missed_call.lua'
+SURVEY_SCRIPT = 'AO/outbound/survey.lua'
 MAX_WAIT_SECS = 12
 EXEC_WAIT_SECS = 7
 
@@ -43,9 +43,9 @@ def new_responses(line, user_ids=False):
 def hangup(uid):
 	# hangup call
 	#print("hupall normal_clearing uid " + str(uid) + ": hangup command")
-    	con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
-	con.api('hupall normal_clearing uid ' + str(uid))
-	con.disconnect()
+    con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
+    con.api('hupall normal_clearing uid ' + str(uid))
+    con.disconnect()
 	     
 def missed_call(line, user_ids):
     for uid in user_ids:
@@ -73,6 +73,54 @@ def missed_call(line, user_ids):
             					hangup(uid)
             					break 						
 	con.disconnect()
+
+def answer_call(answer, userid):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    
+    asker = User.objects.get(pk=userid)
+    now = datetime.now()
+    
+    s = Survey(name="AnswerCall_" + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=2)
+    print ("adding announcement survey " + str(s))
+    s.save()
+
+    # welcome
+    welcome = Prompt(file="welcome_answercall.mp3", order=1, bargein=False, survey=s)
+    welcome.save()
+    welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
+    welcome_opt.save()
+    
+
+    a = Prompt(file=MEDIA_ROOT+answer.message.content_file, order=2, bargein=False, survey=s)
+    a.save()
+    a_opt = Option(number="", action=OPTION_NEXT, prompt=a)
+    a_opt.save()
+    
+    # thanks
+    thanks = Prompt(file="thankyou_answercall.mp3", order=3, bargein=False, survey=s)
+    thanks.save()
+    thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
+    thanks_opt.save()
+    
+    #create a call
+    call = Call(survey=s, subject=asker, date=now, priority=1)
+    print ("adding call " + str(call))
+    call.save()
+    
+    # create calls little while from now and tommorow as backups
+    onehour = timedelta(hours=1)
+    call = Call(survey=s, subject=asker, date=now+onehour, priority=2)
+    print ("adding backup call " + str(call))
+    call.save()
+    
+    tomorrow_morn = datetime(year=now.year, month=now.month, day=now.day) + timedelta(days=1, hours=7)
+    call = Call(survey=s, subject=asker, date=tomorrow_morn, priority=2)
+    print ("adding backup call " + str(call))
+    call.save()
+    
+    #make the call
+    router.route_calls([call.id], SURVEY_SCRIPT)
 	
 def main():
     if len(sys.argv) > 1:
