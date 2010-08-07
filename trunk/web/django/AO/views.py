@@ -329,7 +329,7 @@ def updatestatus(request, action):
             #     parent = m.thread.message_forum_set.all()[0]
             #     notut.process_notification(m, parent)
             #alerts.missed_call(m.forum.line_set.all()[0], [userid])
-            #alerts.answer_call(m, userid)
+            #alerts.answer_call((m.forum.line_set.all()[0], userid, m)
             
             
     elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
