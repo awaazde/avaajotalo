@@ -97,7 +97,7 @@ def answer_call(line, userid, answer):
     now = datetime.now()
     
     s = Survey(name="AnswerCall_" + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=2)
-    print ("adding announcement survey " + str(s))
+    #print ("adding announcement survey " + str(s))
     s.save()
 
     # welcome
@@ -120,18 +120,18 @@ def answer_call(line, userid, answer):
     
     #create a call
     call = Call(survey=s, subject=asker, date=now, priority=1)
-    print ("adding call " + str(call))
+    #print ("adding call " + str(call))
     call.save()
     
     # create calls little while from now and tommorow as backups
     onehour = timedelta(hours=1)
     call = Call(survey=s, subject=asker, date=now+onehour, priority=2)
-    print ("adding backup call " + str(call))
+    #print ("adding backup call " + str(call))
     call.save()
     
     tomorrow_morn = datetime(year=now.year, month=now.month, day=now.day) + timedelta(days=1, hours=7)
     call = Call(survey=s, subject=asker, date=tomorrow_morn, priority=2)
-    print ("adding backup call " + str(call))
+    #print ("adding backup call " + str(call))
     call.save()
     
     #make the call
