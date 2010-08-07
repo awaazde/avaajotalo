@@ -118,10 +118,13 @@ if (session:ready() == true) then
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
 	
-	while (1) do
-		-- play prompts
-	   	play_prompts(prompts);
-	end
+	-- play prompts
+   	play_prompts(prompts);
+   	
+   	-- assume that the suvey will make any loops
+   	-- that are necessary itself
+	hangup();
+
 end
 
 

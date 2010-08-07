@@ -682,9 +682,17 @@ function play_prompts (prompts)
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
    	  if (bargein == 1) then
-   	  	read(sursd .. promptfile, delay);
+   	  	if (promptfile:sub(0,1) == '/') then
+   	  		read(promptfile, delay);
+   	  	else
+   	  		read(sursd .. promptfile, delay);
+   	  	end
   	  else
-  		read_no_bargein(sursd .. promptfile, delay);
+  	  	if (promptfile:sub(0,1) == '/') then
+  	  		read_no_bargein(promptfile, delay);
+  	  	else
+  			read_no_bargein(sursd .. promptfile, delay);
+  		end
    	  end
    	  
    	  -- Do this check right after the prompt plays in case of there are no more prompts
