@@ -88,12 +88,13 @@ def answer_call(line, userid, answer):
     suffix = line.dialstring_suffix
     
     user = User.objects.get(pk=userid)
-    asker = Subject.objects.filter(pk=user.number)
+    asker = Subject.objects.filter(number=user.number)
     if not bool(asker):
-	asker = Subject(name=user.name, number=user.number)
-	asker.save()
+    	asker = Subject(name=user.name, number=user.number)
+    	asker.save()
     else:
-	asker = asker[0]
+	    asker = asker[0]
+        
     now = datetime.now()
     
     s = Survey(name="AnswerCall_" + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=2)
