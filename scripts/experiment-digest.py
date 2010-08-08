@@ -34,7 +34,7 @@ def main():
 	print("<div><h4>Followups by info source</h4></div>")
 	print("<table>")
 
-	followups = survey_stats.get_followups(filename=f, date_filter=today, quiet=True)
+	followups = survey_stats.get_followups(filename=f, date_start=today, date_end=today+oneday, quiet=True)
 	for source, ncalls in followups.items():
 		print("<tr>")
 		print("<td width='40px'>"+str(source)+"</td>")
@@ -46,7 +46,8 @@ def main():
 	print("<div><h4>Overall</h4></div>")
 	print("<table>")
 
-	followups = survey_stats.get_followups(filename=f, quiet=True)
+	exp_start = datetime(year=2010, month=7, day=31)
+	followups = survey_stats.get_followups(filename=f, date_start=exp_start, quiet=True)
 	for source, ncalls in followups.items():
 		print("<tr>")
 		print("<td width='40px'>"+str(source)+"</td>")
