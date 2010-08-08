@@ -547,7 +547,7 @@ def main():
     shift_start = datetime(year=2010, month=8, day=2)
     oneday = timedelta(days=1)
     #shift_calls(shift_start, oneday)
-    changes = {"T5_BCALL":"T5_BPRESS"}
+    changes = {"T5_BCALL":"T5_BPRESS", "T6_BCALL":"T6_BPRESS"}
     change_surveys(changes)
 
 main()
