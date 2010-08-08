@@ -50,7 +50,8 @@ PM_END = timedelta(hours=21)
 # NOTE: surveys will be scheduled in order of their survey_id
 #        if there are gaps in the ids, there will be a gap in the
 #        time period between surveys
-SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD"]
+#SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD"]
+SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD", "T5_BPRESS", "T6_BPRESS", "T7_BPRESS", "T8_BPRESS"]
 
 STUDY_START = datetime(year=2010, month=7, day=31)
 STUDY_DURATION_DAYS = 16
@@ -142,7 +143,7 @@ def prompts():
             action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
             action_opt.save()
             
-            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=5, bargein=True, delay=2000, survey=survey)
+            repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=5, bargein=True, delay=3000, survey=survey)
             repeat.save()
             repeat_opt1 = Option(number="1", action=OPTION_NEXT, prompt=repeat)
             repeat_opt1.save()
@@ -472,7 +473,7 @@ def backup_calls(survey_label, nums, start_time, end_time, survey=False):
     i = 0
     while i < len(nums):
         scheduled_cnt = Call.objects.filter(date=call_time).count()
-        if scheduled_cnt == 0:
+        if scheduled_cnt < 20:
             # get a block of numbers to call
             num_block = nums[i:i+CALL_BLOCK_SIZE]
             for num in num_block:
@@ -512,7 +513,21 @@ def shift_calls(starting, timeshift):
         print ("shifting " + str(call) + " to date " + str(call.date + timeshift))
         call.date += timeshift
         call.save()
-                 
+
+#to_change of the form {"TX_BY":"TR_BS", ... }
+def change_surveys(to_change):
+    for oldname,newname in to_change.items():
+        olds = Survey.objects.filter(name__contains=oldname)
+        for old in olds:
+            #get source
+            source = old.name[:old.name.index('_')]
+            # get new
+            new = Survey.objects.get(name=source+'_'+newname)
+            calls = Call.objects.filter(survey=old)
+            for call in calls:
+                print("changing call " + str(call) + " to have survey " + str(new))
+                call.survey = new
+                call.save()
 def main():
     # create inbound number assignments
     suffix = INBOUND_SUFFIX_START
@@ -522,16 +537,18 @@ def main():
             INBOUND[surname] = INBOUND_PREFIX + str(suffix)
             suffix += 1
             
-    subjects()
+    #subjects()
     surveys()
-    calls()
-    inbound_surveys()
-    reminder_survey()
-    reminder_calls()
+    #calls()
+    #inbound_surveys()
+    #reminder_survey()
+    #reminder_calls()
     
     shift_start = datetime(year=2010, month=8, day=2)
     oneday = timedelta(days=1)
     #shift_calls(shift_start, oneday)
+    changes = {"T5_BCALL":"T5_BPRESS"}
+    change_surveys(changes)
 
 main()
 
