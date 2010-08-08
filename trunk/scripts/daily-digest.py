@@ -39,7 +39,7 @@ def main():
 	print("<div><h4>Who called today?</h4></div>")
 	print("<table>")
 	
-	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_filter=today, quiet=True)
+	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
 	calls_sorted = sorted(calls.iteritems(), key=lambda(k,v): (v,k))
 	calls_sorted.reverse()
 	for num, tot in calls_sorted:

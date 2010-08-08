@@ -2,7 +2,7 @@ import otalo_utils
 import sys
 from datetime import datetime
 
-def get_calls_by_number(filename, destnum=False, log="Start call", date_filter=0, quiet=False, legacy_log=False):
+def get_calls_by_number(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False):
 	calls = {}
 	
 	f = open(filename)
@@ -23,9 +23,14 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_filter=0
 			dest = otalo_utils.get_destination(line, legacy_log)		
 		##
 		################################################
-			if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
-				continue
-			
+			if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
+					
 			if destnum and destnum.find(dest) == -1:
 				#print("dest num not = " + destnum)
 				continue
