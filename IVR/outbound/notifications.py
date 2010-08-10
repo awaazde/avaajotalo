@@ -1,10 +1,4 @@
 import sys
-d = "/var/www/"
-if d not in sys.path:
-    sys.path.insert(0, d)
-import os
-os.environ['DJANGO_SETTINGS_MODULE'] = "otalo.settings"
-
 from datetime import datetime, timedelta
 import time
 
@@ -58,7 +52,6 @@ def deliver_notifications():
             users_done_voice.append(notmsg.user)
             print 'VOICE NOTIFICATION'
             make_voice_call(notmsg.id)
-            time.sleep(60 * 3) # minutes
 
 def make_voice_call(notmsg_id):
     outbound_var_val=False
