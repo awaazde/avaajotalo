@@ -34,7 +34,6 @@ aosd = basedir .. "/sounds/notifications/";
 -- script-specific sounds XXXX TO DO - where are the tag files
 tagsd = aosd .. "";
 notsd = aosd .. "";
-CALLID_VAR = '{ao_responder=true,ignore_early_media=true}';
 
 digits = "";
 arg = {};
@@ -48,19 +47,19 @@ prevprompts = {};
 notification_message_id = argv[1];
 
 -- get subject id, phone number, and survey id
-query = 		"SELECT  number, voice_message_tag ";
+query = 		"SELECT  number, tag_id ";
 query = query .. " FROM notification_notificationmessage";
 query = query .. " WHERE id = " .. notification_message_id;
 logfile:write("info", script_name .. " : query : " .. query .. "\n");
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query);
 phonenum = res[1];
-tag = res[2];
+tagid = res[2];
 
 -- get the tag file
 query = 		"SELECT  tag_file ";
 query = query .. " FROM AO_tag";
-query = query .. " WHERE tag = '" .. tag .. "'";
+query = query .. " WHERE id = '" .. tagid .. "'";
 logfile:write("info", script_name .. " : query : " .. query .. "\n");
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query);
@@ -87,10 +86,9 @@ session:setHangupHook("hangup");
 if (session:ready() == true) then
 	-- sleep for a bit
 	session:sleep(10000);
-	logfile:write("MAKING CALL sessid=" .. sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
-	"\t", os.time(), "\t", "Start call", "\n");
+	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
+"\t", os.time(), "\t", "Start call", "\n");
 	
-	logfile:write("READ  " .. notsd .. "youhavemessages_pre.wav" .. "\n");
 	read(notsd .. "youhavemessages_pre.wav", 500);
 	-- XXXX TODO use the file that has for instance: millet.wav (one for each tag)
 	read(tagsd .. tag_file, 1000);
@@ -98,13 +96,11 @@ if (session:ready() == true) then
 	read(notsd .. "youhavemessages_post.wav", 1500);
 
 	-- update the DB
-	logfile:write("update DB  " .. "\n");
-	query = " UPDATE notification_notificationmessage ";
+	local query = " UPDATE notification_notificationmessage ";
 	query = query .. " SET sent_on = now()";
 	query = query .. " WHERE id = " .. notification_message_id;
-	logfile:write("info", script_name .. " : query : " .. query .. "\n");
-	-- con:execute(query);
-	res = row(query);
+	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+	con:execute(query);
 
 	hangup();
 end

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
-from otalo.AO.models import User
+from otalo.AO.models import User, Tag
 
 class Notification(models.Model):
     """Contains all the information for a notification
@@ -60,7 +60,7 @@ class NotificationMessage(models.Model):
     # id of the voice message in case we have several
     voice_message_number = models.IntegerField(null=True, blank=True)
     # name of the tag that we are using e.g. 'cotton'
-    voice_message_tag = models.CharField(max_length=50,null=True, blank=True)
+    tag = models.ForeignKey(Tag)
 
     # 1 if there was an error
     error =             models.IntegerField(null=False, default=0)

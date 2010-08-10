@@ -57,8 +57,7 @@ def __get_function__(func):
 # Action functions
 
 def action_detailed_sms_to_user(user, notification, tag):
-    """ Send an SMS to every user who has asked a question with the same
-    tag
+    """ Send an SMS to user
     """
     # create a notification message
     msg = NotificationMessage()
@@ -87,8 +86,8 @@ def action_voice_call(user, notification, tag):
     msg.typ = 1
     msg.number = user.number
     # msg.voice_message_number # not used yet - would need grouping on user
-    msg.voice_message_tag = tag.tag
-    msg.save()
+    msg.voice_message_tag = tag
+    msg.save()  
     
 ###############################################################################
 # other
