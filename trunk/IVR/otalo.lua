@@ -270,6 +270,25 @@ function isresponder (userid, linenum)
    return (result ~= nil)
 end
 
+-----------
+-- hasreplies
+-----------
+
+function hasreplies (msgid)
+   local query = "SELECT 1 ";
+   query = query .. "FROM AO_message m, AO_message_forum mf ";
+   query = query .. " WHERE mf.message_id = m.id ";
+   query = query .. " AND m.thread_id = " .. msgid;
+   query = query .. " AND m.lft > 1 "
+   query = query .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED;
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   cur = con:execute(query);
+   result = cur:fetch();
+   cur:close();
+	
+   return (result ~= nil)
+end
+
 
 
 -----------
@@ -411,7 +430,7 @@ function playmessage (msg, listenreplies)
      end
   end
   
-  if (rgt > 2 and listenreplies == 'y') then
+  if (hasreplies(id) and listenreplies == 'y') then
      read(aosd .. "listenreplies.wav", 6000);
      d = use();
 	 
