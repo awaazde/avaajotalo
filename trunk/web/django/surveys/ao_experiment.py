@@ -36,28 +36,19 @@ BEH_TYPES = ["BPRESS", "BCALL", "BHOLD"]
 INBOUND_PREFIX = "793014"
 INBOUND_SUFFIX_START = 2001
 INBOUND = {}
-EITHER = [9979403085,9879677274,9979254830,9924057403,9879417564,9558576090,9824387276,9727304678,9727281248,9726488991,9725317885,9723202471,9714174065,9712410421,9624235420,9510748795,9429260174,9429122745,9428897286,9428485487,9428459215,9427258722,9427037241,8140128125,9998750661,9979780231]
-AM = []
-PM = [9978171686, 9913461992]
-GROUPS = [["E1","E2","P1","P2","E1","P1","E2","P2"], ["E2","E1","P2","P1","E2","P2","E1","P1"], ["P1","P2","E1","E2","P1","E1","P2","E2"], ["P2","P1","E2","E1","P2","E2","P1","E1"]]
-SUBJ_GROUPS = {}
+#EITHER = [9979403085,9879677274,9979254830,9924057403,9879417564,9558576090,9824387276,9727304678,9727281248,9726488991,9725317885,9723202471,9714174065,9712410421,9624235420,9510748795,9429260174,9429122745,9428897286,9428485487,9428459215,9427258722,9427037241,8140128125,9998750661,9979780231]
+#AM = []
+#PM = [9978171686, 9913461992]
+EITHER = [2877222260,9723037029,9624820573,9726766913,2742295194,9327572297,9978063662,9925795859,9974572646,9913127379,9909484864,9909480769,9909397629,9904689792,9904075323,9898836049,9898533546,9879732707,9879350157,9825875631,9909189931,9726660105,9725729441,9714560511,9714327015,9714246198,9624086950,9574978416,9574416890,9574188431,9429352624,9227352190,9904622685,9824262550,9428671603,9723332236,9426373684,9428500591,9925525663,9426554773,9979711961,9979087320,9714001359,9427535277,9428984533,9726485205,9724632394,9978719704,9924284505,9725850145,8140252102,9979273464,9909621073,9879841603,9879069329,9825524687,9825279001,9726883910,9737369863,9737694692,9824784871,9879274611,9825951687,9723149575]
+AM = [9925546520,7567331806,2737236315,9998952575,9974540063,9913921466,9925716672,9723800850,9726331577,9429251501,9228816198,9099514664,9904259110,9909840752,9428136567,9428063295,8000688598,9998088731,9925880755,9924584010,9913657611,9624372044,9909233817,9574013934,9327538732,9725331043,9979459741,9723181832,9974541880,9909893827,9712756833]
+PM = [9726051598,9909839117,9428557642,9924500374,9825578331,9824171748,9724700753,9714934982,9925513984,9427379911,2697342397,9428126906,9016249969,9924341087,9909759893,9724884238,8140437612,2833295141,7567164618,9925364656,9913398273,9601567245,9586132465,9426320340,9998318554,9624045636,9978173169,9925660140,9825726214,9727696899,9726814182,9638346557,8980271921,9925583401,9712198296,9824367539,9724443284,9427249401,9016840997,8141847594,9913991823,9893966806,9979314531,9724581388,9624451766,9913332272,9427555857,9638660663,9924355148,9427564859,9974484853,9925145434,9924528796,9913422018,9912011936,9909492653,9909399897,9909070236,9904622512,9726592964,8140255231,2744253277,9726061931,9428987491,9428241676,9979625862,9879876394,9974961909,9974122869,9925310504,9824829592,9924885762,9924773951,9737232762,9725102377,9724774625,9714959731,9714736647,9714148023,9687433392,9624779381,9601145413,9586312853,9904001667,9537559883,9537293638,9429943304,9429609357,9429527617,9228064441,8140877835,9925684373,9687193246,9974669323,9714785932,9638844584,9998664234,9723887815,9427145486,9974641216,9978163140,9429269788,9276502212,9978564476,9879318158,9586058070,9925316417,9924834046,9427667496,9727281416,9974852923,9925618145,9427330743,9978305087,9978383329,9727128162,9904634418,9726356814,9429140966,9879337160,9428568904,9724537977,9638391892,9099193500,9726659436,9723658772,9429218227,9016638646,9925508550,9327477984,9913282079,9913213272,9909847737,9904925740,9904575420,9825378326,9726046695,9726186380,9726477492,9726489610,9726665628,9879879905,9727281261,9727608301,9727641947,9727642827,9727689590,9727696645,9737362944,9737389044,9737583425,9737871915,9824241614,9824928848,9824992905,9879632462,9879319268,9879188943,9879099378,9879044080,9879022533,9825336919,9824967764,9737622557,9737386565,9737125763,9727307784,9726668506,9726592014,9726492370,9726406074,9726384118,9726324249,9725061283,9725040752,9724522159,9723684923,9723011177,9638099359,9726074838,9727424483,9727722178]
 
-AM_START = timedelta(hours=6)
-AM_END = timedelta(hours=9)
-PM_START = timedelta(hours=18)
-PM_END = timedelta(hours=21)
+GROUPS = [["REMINDER_DUMMY","E1","E2","P1","P2","E1","P1","E2","P2"], ["REMINDER_DUMMY","E2","E1","P2","P1","E2","P2","E1","P1"], ["REMINDER_DUMMY","P1","P2","E1","E2","P1","E1","P2","E2"], ["REMINDER_DUMMY","P2","P1","E2","E1","P2","E2","P1","E1"]]
+# prompts for all of these surveys will get created
+SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD", "T1_BPRESS", "T2_BPRESS", "T3_BPRESS", "T4_BPRESS", "T5_BPRESS", "T6_BPRESS", "T7_BPRESS", "T8_BPRESS"]
 
-# NOTE: surveys will be scheduled in order of their survey_id
-#        if there are gaps in the ids, there will be a gap in the
-#        time period between surveys
-#SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD"]
-SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD", "T5_BPRESS", "T6_BPRESS", "T7_BPRESS", "T8_BPRESS"]
-
-STUDY_START = datetime(year=2010, month=7, day=31)
-STUDY_DURATION_DAYS = 16
-
-REMINDER_START_DATE = datetime(year=2010, month=7, day=30)
-REMINDER_DURATION_DAYS = 1
+REMINDER_START_DATE = datetime(year=2010, month=8, day=14)
+REMINDER_DURATION_DAYS = 2
 REMINDER_START = timedelta(hours=8)
 REMINDER_END = timedelta(hours=18)
 
@@ -67,15 +58,18 @@ CALL_BLOCK_INTERVAL_MINUTES = timedelta(minutes=10)
 
 def subjects():
     count = 0
-    group_assignment = 0;
     
     all = EITHER + AM + PM
+    group_assignment = 0;
     for number in all:
         s = Subject.objects.filter(number = number)
         if not bool(s):
-            s = Subject(number=str(number))
+            s = Subject(number=str(number), group=group_assignment)
             print ("adding subject " + str(s))
             s.save()
+            group_assignment += 1
+            if group_assignment == len(GROUPS):
+                group_assignment = 0
             count += 1
     
     print(str(count) + " new subjects added.")
@@ -142,6 +136,7 @@ def prompts():
             action.save()
             action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
             action_opt.save()
+            count = count + 1
             
             repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=5, bargein=True, delay=3000, survey=survey)
             repeat.save()
@@ -149,6 +144,7 @@ def prompts():
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
+            count = count + 1
             
             # solution confirm
             oksolution = Prompt(file="guj/oksolution" + SOUND_EXT, order=6, bargein=False, survey=survey)
@@ -176,6 +172,7 @@ def prompts():
             action.save()
             action_opt = Option(number="", action=OPTION_NEXT, prompt=action)
             action_opt.save()
+            count = count + 1
             
             # phone num
             tipidx = surveyname.index('T')
@@ -185,6 +182,7 @@ def prompts():
             phonenum.save()
             phonenum_opt = Option(number="", action=OPTION_NEXT, prompt=phonenum)
             phonenum_opt.save()
+            count = count + 1
             
             repeat = Prompt(file="guj/repeat" + SOUND_EXT, order=6, bargein=True, delay=1000, survey=survey)
             repeat.save()
@@ -192,6 +190,7 @@ def prompts():
             repeat_opt1.save()
             repeat_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=repeat)
             repeat_opt2.save()
+            count = count + 1
         elif btype == 'H':
             # hold
             action = Prompt(file="guj/hold" + SOUND_EXT, order=4, bargein=False, delay=0, survey=survey)
@@ -200,6 +199,7 @@ def prompts():
             action_opt1.save()
             action_opt2 = Option(number="2", action=OPTION_GOTO, action_param1=2, prompt=action)
             action_opt2.save()
+            count = count + 1
             
             # solution
             sfilename = "guj/" + surveyname[:surveyname.index("_B")] + "_solution" + SOUND_EXT
@@ -281,230 +281,6 @@ def reminder_survey():
         count = count + 1
     
     print(str(count) + " new reminder survey added")
-    
-def reminder_calls():
-    count = 0
-    reminder_survey = Survey.objects.get(name=REMINDER_NAME)
-    # This is the only survey to send, so the
-    # block is the entire duration period
-    survey_block_days = REMINDER_DURATION_DAYS
-    
-    all_nums = AM + EITHER + PM
-    
-    survey_start_day = REMINDER_START_DATE
-    assigned_p1s = []
-    for survey_block_day in range(survey_block_days):
-        survey_day = survey_start_day + timedelta(days=survey_block_day)
-        call_time = survey_day + REMINDER_START
-        
-        if len(assigned_p1s) < len(all_nums):
-            pending_p1s = [num for num in all_nums if num not in assigned_p1s]
-            i = 0
-            while i < len(pending_p1s):
-                num_block = pending_p1s[i:i+CALL_BLOCK_SIZE]
-                for num in num_block:
-                    subject = Subject.objects.get(number=str(num))
-                    call = Call.objects.filter(survey=reminder_survey, subject=subject, priority=1)
-                    if not bool(call):
-                        call = Call(survey=reminder_survey, subject=subject, date=call_time, priority=1)
-                        print ("adding reminder call " + str(call))
-                        call.save()
-                        count += 1
-                        assigned_p1s.append(num)
-                    
-                i += CALL_BLOCK_SIZE
-                call_time += CALL_BLOCK_INTERVAL_MINUTES
-                
-                if call_time > survey_day + REMINDER_END:
-                    break
-        
-        # end P1 assignments
-        # with any remaining time left, assign P2's
-        backup_calls("", all_nums, survey_day + REMINDER_START, survey_day + REMINDER_END, survey=reminder_survey)   
-
-def calls():
-    count = 0
-    survey_block_days = STUDY_DURATION_DAYS / len(SURVEYS)
-    
-    all_nums = AM + EITHER + PM
-    
-    # randomly assign groups to subjects
-    group_assignment = 0
-    for num in all_nums:
-        s = Subject.objects.get(number=str(num))
-        SUBJ_GROUPS[s] = group_assignment
-        group_assignment += 1
-        if group_assignment == len(GROUPS):
-            group_assignment = 0
-
-    for survey_label in SURVEYS:
-        assigned_p1s = []
-        
-        # surveys are spread out evenly over the study period.
-        # IMPORTANT ASSUMPTIONS: 
-        #    1. There is at least one day for each survey
-        #    2. Within each survey period there is enough time to schedule P1s for
-        #       every number given the CALL_BLOCK_SIZE and the CALL_BLOCK_INTERVAL
-        survey_start_day = STUDY_START + timedelta(days=survey_block_days) * SURVEYS.index(survey_label)
-        
-        for survey_block_day in range(survey_block_days):
-            survey_day = survey_start_day + timedelta(days=survey_block_day)
-            call_time = survey_day + AM_START
-            
-            if len(assigned_p1s) < len(all_nums):
-                # there are still some P1 calls to assign
-                
-                # AM
-                pending_AM_p1s = [num for num in AM if num not in assigned_p1s]
-                i = 0
-                while i < len(pending_AM_p1s):
-                    # get a block of numbers to call
-                    num_block = pending_AM_p1s[i:i+CALL_BLOCK_SIZE]
-                    for num in num_block:
-                        subject = Subject.objects.get(number=str(num))
-                        group_id = SUBJ_GROUPS[subject]
-                        messenger_label = GROUPS[group_id][SURVEYS.index(survey_label)]
-                        #print "looking for survey " + messenger_label+'_'+survey_label
-                        survey = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
-                        call = Call.objects.filter(survey=survey, subject=subject, priority=1)
-                        if not bool(call):
-                            call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                            print ("adding call " + str(call))
-                            call.save()
-                            count += 1
-                            assigned_p1s.append(num)
-                        
-                    i += CALL_BLOCK_SIZE
-                    call_time += CALL_BLOCK_INTERVAL_MINUTES
-                    
-                    if call_time > survey_day + AM_END:
-                        break
-                    
-                if call_time <= survey_day + AM_END:
-                    # start assigning EITHER calls from where we left off above
-                    pending_EITHER_p1s = [num for num in EITHER if num not in assigned_p1s]
-                    i = 0
-                    while i < len(pending_EITHER_p1s):
-                        # get a block of numbers to call
-                        num_block = pending_EITHER_p1s[i:i+CALL_BLOCK_SIZE]
-                        for num in num_block:
-                            subject = Subject.objects.get(number=str(num))
-                            group_id = SUBJ_GROUPS[subject]
-                            messenger_label = GROUPS[group_id][SURVEYS.index(survey_label)]
-                            survey = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
-                            call = Call.objects.filter(survey=survey, subject=subject, priority=1)
-                            if not bool(call):
-                                call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                                print ("adding call " + str(call))
-                                call.save()
-                                count += 1
-                                assigned_p1s.append(num)
-                            
-                        i += CALL_BLOCK_SIZE
-                        call_time += CALL_BLOCK_INTERVAL_MINUTES
-                        
-                        if call_time > survey_day + AM_END:
-                            break
-                        
-                #PM
-                call_time = survey_day + PM_START
-                pending_PM_p1s = [num for num in PM if num not in assigned_p1s]
-                i = 0
-                while i < len(pending_PM_p1s):
-                    # get a block of numbers to call
-                    num_block = pending_PM_p1s[i:i+CALL_BLOCK_SIZE]
-                    for num in num_block:
-                        subject = Subject.objects.get(number=str(num))
-                        group_id = SUBJ_GROUPS[subject]
-                        messenger_label = GROUPS[group_id][SURVEYS.index(survey_label)]
-                        survey = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
-                        call = Call.objects.filter(survey=survey, subject=subject, priority=1)
-                        if not bool(call):
-                            call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                            print ("adding call " + str(call))
-                            call.save()
-                            count += 1
-                            assigned_p1s.append(num)
-                        
-                    i += CALL_BLOCK_SIZE
-                    call_time += CALL_BLOCK_INTERVAL_MINUTES
-                    
-                    if call_time > survey_day + PM_END:
-                        break
-                    
-                if call_time <= survey_day + PM_END:  
-                    # start assigning EITHER calls from where we left off above
-                    pending_EITHER_p1s = [num for num in EITHER if num not in assigned_p1s]
-                    i = 0
-                    while i < len(pending_EITHER_p1s):
-                        # get a block of numbers to call
-                        num_block = pending_EITHER_p1s[i:i+CALL_BLOCK_SIZE]
-                        for num in num_block:
-                            subject = Subject.objects.get(number=str(num))
-                            group_id = SUBJ_GROUPS[subject]
-                            messenger_label = GROUPS[group_id][SURVEYS.index(survey_label)]
-                            survey = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
-                            call = Call.objects.filter(survey=survey, subject=subject, priority=1)
-                            if not bool(call):
-                                call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                                print ("adding call " + str(call))
-                                call.save()
-                                count += 1
-                                assigned_p1s.append(num)
-                            
-                        i += CALL_BLOCK_SIZE
-                        call_time += CALL_BLOCK_INTERVAL_MINUTES
-                        
-                        if call_time > survey_day + PM_END:
-                            break
-            # end P1 assignments
-            # with any remaining time left, assign P2's
-            backup_calls(survey_label, AM+EITHER, survey_day + AM_START, survey_day + AM_END)
-            backup_calls(survey_label, PM+EITHER, survey_day + PM_START, survey_day + PM_END)
-                    
-    print(str(count) + " new calls added.")            
-
-# keep adding, as many times as possible,
-# backup phone calls in the given range
-def backup_calls(survey_label, nums, start_time, end_time, survey=False):
-    scheduled_calls = []
-    count = 0
-    call_time = start_time
-    i = 0
-    while i < len(nums):
-        scheduled_cnt = Call.objects.filter(date=call_time).count()
-        if scheduled_cnt < 20:
-            # get a block of numbers to call
-            num_block = nums[i:i+CALL_BLOCK_SIZE]
-            for num in num_block:
-                subject = Subject.objects.get(number=str(num))
-                if not survey:
-                    group_id = SUBJ_GROUPS[subject]
-                    messenger_label = GROUPS[group_id][SURVEYS.index(survey_label)]
-                    s = Survey.objects.get(name__contains=messenger_label+'_'+survey_label)
-                else:
-                    s = survey
-                call = Call.objects.filter(survey=s, subject=subject, date=call_time, priority=2)
-                if not bool(call):
-                    call = Call(survey=s, subject=subject, date=call_time, priority=2)
-                    print ("adding call " + str(call))
-                    call.save()
-                    count += 1
-                    scheduled_calls.append(num)
-            
-            i += CALL_BLOCK_SIZE
-            # keep adding the numbers over and over
-            if i >= len(nums):
-                i = 0
-                
-        call_time += CALL_BLOCK_INTERVAL_MINUTES
-        
-        if call_time > end_time:
-            break
-    
-    print(str(count) + " new backup calls added.")   
-    
-    return scheduled_calls
 
 def shift_calls(starting, timeshift):
     calls = Call.objects.filter(date__gte=starting)
@@ -537,18 +313,16 @@ def main():
             INBOUND[surname] = INBOUND_PREFIX + str(suffix)
             suffix += 1
             
-    #subjects()
+    subjects()
     surveys()
-    #calls()
     #inbound_surveys()
     #reminder_survey()
-    #reminder_calls()
     
-    shift_start = datetime(year=2010, month=8, day=2)
-    oneday = timedelta(days=1)
+    #shift_start = datetime(year=2010, month=8, day=2)
+    #oneday = timedelta(days=1)
     #shift_calls(shift_start, oneday)
-    changes = {"T5_BCALL":"T5_BPRESS", "T6_BCALL":"T6_BPRESS"}
-    change_surveys(changes)
+    #changes = {"T7_BCALL":"T7_BPRESS"}
+    #change_surveys(changes)
 
 main()
 
