@@ -19,12 +19,13 @@ from django.db import models
 class Subject(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
     number = models.CharField(max_length=24)
+    group = models.IntegerField(blank=True, null=True)
     
     def __unicode__(self):
         if self.name:
-            return self.name + '-' + self.number
+            return self.name + '-' + self.number + '-g' + str(self.group)
         else:
-            return self.number
+            return self.number+ '-g' + str(self.group)
     
 class Survey(models.Model):
     name = models.CharField(max_length=128)
