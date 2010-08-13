@@ -18,34 +18,6 @@ TEST_NUM = "919880703078" #91-98807-03078
 TEST_NUM = "919880700000"
 
 def send_sms(deviceAddress, messageText, _from):
-    """ Send an SMS to the given deviceAddress phone.
-    Considering we send only messages to India, we add the India prefix here.
-    
-    deviceAddress: cellphone number in India only
-    messageText: content of SMS
-    _from: cellphone number for the 'from' phone
-    """
-    # Fix the number if necessary
-    if len(deviceAddress)==10:
-        deviceAddress = "91"+deviceAddress # India country code
-    elif deviceAddress[0:4]=="0091":
-        deviceAddress = deviceAddress[2:]
-
-    data = {'deviceAddress':deviceAddress,
-            'messageText':  messageText,
-            'fromAddress':  _from and _from or OVI_NUM_FROM,
-            'password':     "847yhhgfj",
-            }
-    http = httplib2.Http()
-    resp, content = http.request(GATEWAY_URL + "?" + urlencode(data), "GET")
-    if content and content[0:2]=="OK":
-        return True
-    return False
-
-
-
-# def send_sms(deviceAddress, messageText, _from):
-def send_sms_direct_to_gateway(deviceAddress, messageText, _from):
     data = {'deviceAddress':deviceAddress,
             'messageText':  messageText,
             'from':         _from and _from or OVI_NUM_FROM,
