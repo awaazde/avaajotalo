@@ -64,7 +64,7 @@ class Message(models.Model):
     # Leave out many_to_many with responder since it has two foreign keys into User
     
     def __unicode__(self):
-        return str(self.date) + '_' + unicode(self.user)
+        return str(self.date) + '_' + unicode(self.user) + '_(' + str(self.id) + ')'
       
 class Forum(models.Model):
     name = models.CharField(max_length=24)
@@ -109,7 +109,7 @@ class Message_forum(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, null=True)
     
     def __unicode__(self):
-        return unicode(self.message) + '_' + unicode(self.forum)
+        return unicode(self.message) + '_' + unicode(self.forum) + '_(' + str(self.id) + ')'
     
 class Message_responder(models.Model):
     # need forum so that you can retrieve responders
