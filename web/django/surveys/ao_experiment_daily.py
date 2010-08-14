@@ -108,7 +108,7 @@ def calls(days_from_start):
                 call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                 if not bool(call):
                     call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     completed.append(num)
@@ -133,7 +133,7 @@ def calls(days_from_start):
                     call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                     if not bool(call):
                         call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                        print ("adding call " + str(call))
+                        #print ("adding call " + str(call))
                         call.save()
                         count += 1
                         completed.append(num)
@@ -158,7 +158,7 @@ def calls(days_from_start):
                 call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                 if not bool(call):
                     call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     completed.append(num)
@@ -183,7 +183,7 @@ def calls(days_from_start):
                     call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                     if not bool(call):
                         call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                        print ("adding call " + str(call))
+                        #print ("adding call " + str(call))
                         call.save()
                         count += 1
                         completed.append(num)
@@ -222,7 +222,7 @@ def reminder_calls(days_from_start):
                 call = Call.objects.filter(survey=reminder_survey, subject=subject, date__gte=survey_day, priority=1)
                 if not bool(call):
                     call = Call(survey=reminder_survey, subject=subject, date=call_time, priority=1)
-                    print ("adding reminder call " + str(call))
+                    #print ("adding reminder call " + str(call))
                     call.save()
                     count += 1
                     completed.append(num)
@@ -263,7 +263,7 @@ def backup_calls(survey_label, nums, start_time, end_time, survey=False):
                 call = Call.objects.filter(survey=s, subject=subject, date=call_time, priority=2)
                 if not bool(call):
                     call = Call(survey=s, subject=subject, date=call_time, priority=2)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     scheduled_calls.append(num)
