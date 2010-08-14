@@ -47,15 +47,6 @@ GROUPS = [["REMINDER_DUMMY","E1","E2","P1","P2","E1","P1","E2","P2"], ["REMINDER
 # prompts for all of these surveys will get created
 SURVEYS = ["T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD", "T1_BPRESS", "T2_BPRESS", "T3_BPRESS", "T4_BPRESS", "T5_BPRESS", "T6_BPRESS", "T7_BPRESS", "T8_BPRESS"]
 
-REMINDER_START_DATE = datetime(year=2010, month=8, day=14)
-REMINDER_DURATION_DAYS = 2
-REMINDER_START = timedelta(hours=8)
-REMINDER_END = timedelta(hours=18)
-
-CALL_BLOCK_SIZE = 10
-# should match INTERVAL_MINS in survey.py and the frequency of the cron
-CALL_BLOCK_INTERVAL_MINUTES = timedelta(minutes=10)
-
 def subjects():
     count = 0
     

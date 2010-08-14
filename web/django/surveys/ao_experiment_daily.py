@@ -60,13 +60,13 @@ PM_START = timedelta(hours=18)
 PM_END = timedelta(hours=21)
 
 # The actual surveys to run, in the order to run them in
-SURVEYS = ["REMINDER", "T1_BPRESS", "T2_BCALL", "T3_BPRESS", "T4_BPRESS", "T5_BPRESS", "T6_BPRESS", "T7_BPRESS", "T8_BHOLD"]
+SURVEYS = ["REMINDER", "T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD"]
 
 STUDY_START = datetime(year=2010, month=8, day=14)
 STUDY_DURATION_DAYS = 18
 
-REMINDER_START = timedelta(hours=8)
-REMINDER_END = timedelta(hours=18)
+REMINDER_START = timedelta(hours=6)
+REMINDER_END = timedelta(hours=21)
 
 CALL_BLOCK_SIZE = 10
 # should match INTERVAL_MINS in survey.py and the frequency of the cron
