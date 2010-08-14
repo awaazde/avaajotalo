@@ -391,6 +391,7 @@ function playmessage (msg, listenreplies)
   local summary = msg[3];
   local rgt = tonumber(msg[4]);
   local forumid = msg[6];
+  local responsesallowed = msg[7];
   local moderated = tonumber(msg[8]);
   local status = tonumber(msg[9]);
   local adminmode = is_admin(forumid, adminforums);
@@ -458,10 +459,21 @@ function playmessage (msg, listenreplies)
     end  
   end -- close check for replies
 
+  -- remind about the options, and
   -- give some time for users to compose themselves and
   -- potentially respond
   if (d == "") then
-     sleep(3000)
+    if (responsesallowed == 'y') then
+	  	read(aosd .. "instructions_between.wav", 1000)
+	  	d = use();
+	end
+  	if (d == "") then
+     	sleep(3000)
+    else
+    	return d;
+    end
+  else
+  	return d;
   end
 	
   -- default	
