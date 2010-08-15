@@ -17,7 +17,7 @@ def main():
 	print("<html>")
 	print("<div> Below is today's experiment report. </div>")
 	# num subjects
-	nsubjects = Call.objects.values('subject').distinct().count()
+	nsubjects = Call.objects.filter(date__gte=today).values('subject').distinct().count()
 	print("<br/><div>")
 	print("<b>Number of subjects:</b> ")
 	print(nsubjects)
