@@ -7,7 +7,7 @@ def print_digest(f, date):
 	oneday = timedelta(days=1)
 	
 	print("<html>")
-	print("<div> Below is today's experiment report. </div>")
+	print("<div> Below is the experiment report for " + datetime.strftime(date,'%m-%d-%Y') + " </div>")
 	# num subjects
 	nsubjects = Call.objects.filter(date__gte=date).values('subject').distinct().count()
 	print("<br/><div>")
