@@ -18,7 +18,7 @@ from otalo.surveys.models import Subject, Survey, Call, Prompt, Option
 from django.contrib import admin
 
 class NameSearchAdmin(admin.ModelAdmin):
-   search_fields = ['name']
+   search_fields = ['name', 'number']
 
 class DateDisplayAdmin(admin.ModelAdmin):
     list_display = ('call', 'date', 'subject')
