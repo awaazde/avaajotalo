@@ -54,9 +54,9 @@ def get_followups(filename, destnum=False, prompt_filter=False, phone_num_filter
 						# don't count duplicate accesses by the same caller
 						if prompt.find(source) != -1 and not prompt in calls_by_caller[phone_num]:
 							if source in calls:
-								calls[source] += 1
+								calls[source].append(phone_num)
 							else:
-								calls[source] = 1
+								calls[source] = [phone_num]
 							calls_by_caller[phone_num].append(prompt)
 					
 					
