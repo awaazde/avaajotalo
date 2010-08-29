@@ -57,7 +57,7 @@ GROUPS = [["REMINDER_DUMMY","E1","E2","P1","P2","E1","P1","E2","P2"], ["REMINDER
 AM_START = timedelta(hours=6)
 AM_END = timedelta(hours=9)
 PM_START = timedelta(hours=18)
-PM_END = timedelta(hours=23)
+PM_END = timedelta(hours=21)
 
 # The actual surveys to run, in the order to run them in
 SURVEYS = ["REMINDER", "T1_BCALL", "T2_BCALL", "T3_BCALL", "T4_BCALL", "T5_BCALL", "T6_BCALL", "T7_BCALL", "T8_BHOLD"]
@@ -108,7 +108,7 @@ def calls(days_from_start):
                 call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                 if not bool(call):
                     call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     completed.append(num)
@@ -133,7 +133,7 @@ def calls(days_from_start):
                     call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                     if not bool(call):
                         call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                        print ("adding call " + str(call))
+                        #print ("adding call " + str(call))
                         call.save()
                         count += 1
                         completed.append(num)
@@ -158,7 +158,7 @@ def calls(days_from_start):
                 call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                 if not bool(call):
                     call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     completed.append(num)
@@ -183,7 +183,7 @@ def calls(days_from_start):
                     call = Call.objects.filter(survey=survey, subject=subject, date__gte=survey_day, priority=1)
                     if not bool(call):
                         call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                        print ("adding call " + str(call))
+                        #print ("adding call " + str(call))
                         call.save()
                         count += 1
                         completed.append(num)
@@ -198,7 +198,7 @@ def calls(days_from_start):
     backup_calls(survey_label, list(set(pending_p1s)-set(PM)), survey_day + AM_START, survey_day + AM_END)
     backup_calls(survey_label, list(set(pending_p1s)-set(AM)), survey_day + PM_START, survey_day + PM_END)
                     
-    print(str(count) + " new calls added.")   
+    #print(str(count) + " new calls added.")   
     
 def reminder_calls(days_from_start):
     count = 0
@@ -237,7 +237,7 @@ def reminder_calls(days_from_start):
     # with any remaining time left, assign P2's
     backup_calls(REMINDER_NAME, pending_p1s, survey_day + REMINDER_START, survey_day + REMINDER_END, survey=reminder_survey)
     
-    print(str(count) + " new reminder calls added.")
+    #print(str(count) + " new reminder calls added.")
        
 # keep adding, as many times as possible,
 # backup phone calls in the given range
@@ -263,7 +263,7 @@ def backup_calls(survey_label, nums, start_time, end_time, survey=False):
                 call = Call.objects.filter(survey=s, subject=subject, date=call_time, priority=2)
                 if not bool(call):
                     call = Call(survey=s, subject=subject, date=call_time, priority=2)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     scheduled_calls.append(num)
@@ -278,7 +278,7 @@ def backup_calls(survey_label, nums, start_time, end_time, survey=False):
         if call_time > end_time:
             break
     
-    print(str(count) + " new backup calls added.")   
+    #print(str(count) + " new backup calls added.")   
     
     return scheduled_calls
 
