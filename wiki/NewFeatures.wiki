@@ -30,3 +30,7 @@ SMS alerts, including tag, user, other metadata.  In the future can support send
 
 ==11. Rating of Answers ==
 After listening to an answer, prompt user to rate it. Asking whether you liked/didn't like is too direct and there is no incentive to truthful. The rating system needs to have a consequence to the system and the user, as is the case in Digg.  (TAP: My intuition is to provide an explicit prompt after the message if desired.) 
+
+== Recent requests ==
+  * better indication of reply or top-level post in inbox
+  * ability to re-apply answers to multiple questions
