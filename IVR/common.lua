@@ -177,12 +177,13 @@ end
 -- recordmessage
 -----------
 
-function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
+function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, okrecordedprompt)
    local forumid = forumid or nil;
    local thread = thread or nil;
    local moderated = moderated or nil;
    local maxlength = maxlength or 60000;
    local rgt = rgt or 1;
+   local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
 
@@ -279,7 +280,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode)
    con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 
-   read(aosd .. "okrecorded.wav", 500);
+   read(okrecordedprompt, 500);
    return use();
 end
 
@@ -503,7 +504,8 @@ function play_responder_messages (userid, msgs, adminforums)
 	    local rgt = current_msg[4];
 	    local moderated = current_msg[7];
 	    local adminmode = is_admin(forumid, adminforums);
-	    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode);
+	    local okrecordedprompt = anssd .. "okrecorded.wav";
+	    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, okrecordedprompt);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	    	update_listens(prevmsgs, userid);
 	       return d;
