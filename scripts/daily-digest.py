@@ -1,8 +1,9 @@
 import sys
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
+from django.db.models import Count
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
-from otalo.AO.models import Message, Message_forum, Line
+from otalo.AO.models import Message, Message_forum, Line, User, Message_responder
+from otalo.AO.views import LISTEN_THRESH
 
 def main():
 	if len(sys.argv) < 2:
@@ -101,7 +102,7 @@ def main():
 	
 	print("</table>")
 	
-	# questions
+	# answers
 	print("<div><h4>Number of Answers</h4></div>")
 	print("<table>")
 	
@@ -111,6 +112,32 @@ def main():
 		print("<td width='60px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
 		print("<td>"+str(ncalls)+"</td>")
+		print("</tr>")
+	
+	print("</table>")
+	
+	# answers by responder
+	print("<div><h4>Number of Responses by Responder (last 7 days)</h4></div>")
+	print("<table>")
+	print("<tr>")
+	print("<td width='100px'><u>Responder</u></td><td width='100px'><u>Assigned</u></td><td width='100px'><u>Responses</u></td>")
+	print("</tr>")
+	
+	oneweek = timedelta(days=7)
+	# get responders ordered by number of responses
+	responders = User.objects.filter(forum__line=line, message__date__gte=today-oneweek, message__lft__gt=1).annotate(nresponses=Count('message')).order_by('-nresponses') | User.objects.filter(forum__line=line)
+	
+	for responder in responders:
+		print("<tr>")
+		print("<td>"+responder.name+"</td>")
+		
+		# get active assigments only
+		nassigned = Message_responder.objects.filter(user=responder, assign_date__gte=today-oneweek, passed_date__isnull=True, listens__lte=LISTEN_THRESH).count()
+		print("<td>"+str(nassigned)+"</td>")
+		
+		# count the answers whether they have been approved or not
+		nresponses = Message_forum.objects.filter(message__date__gte=today-oneweek, message__user=responder, message__lft__gt=1).count()
+		print("<td>"+str(nresponses)+"</td>")
 		print("</tr>")
 	
 	print("</table>")
