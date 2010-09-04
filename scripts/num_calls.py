@@ -103,15 +103,13 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 		##
 		################################################
 			
-			current_time = otalo_utils.get_time(line)
-			
 			if phone_num_filter and not phone_num in phone_num_filter:
 				continue
 			
 			if not current_week_start:
 				current_week_start = current_date
-				
-			if destnum.find(dest) == -1:
+
+			if not legacy_log and destnum and destnum.find(dest) == -1:
 				continue
 
 			delta = current_date - current_week_start
@@ -124,7 +122,7 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 			
 			if not current_week_start in features:
 				features[current_week_start] = {'q':0, 'a':0, 'r':0, 'e':0} 
-	
+			
 			if line.find("Start call") != -1:
 				# check to see if this caller already has one open
 				if phone_num in open_calls:
@@ -158,7 +156,7 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 				feature_chosen = 0
 			
 		except KeyError as err:
-			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date) + " " + otalo.time_str(current_time))
+			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
 			raise
 		except ValueError as err:
 			#print("ValueError: " + line)
@@ -203,8 +201,6 @@ def get_features_within_call(filename, destnum, date_filter=0, phone_num_filter=
 			dest = otalo_utils.get_destination(line)			
 		##
 		################################################
-			
-			current_time = otalo_utils.get_time(line)
 			
 			if phone_num_filter and not phone_num in phone_num_filter:
 				continue
@@ -533,7 +529,7 @@ def main():
 			line = Line.objects.get(pk=lineid)
 		
 		#get_calls(f, legacy_log=True)
-		get_calls_by_feature(f, line.number)
+		get_calls_by_feature(f, line.number, legacy_log=True)
 		#get_features_within_call(f)
 		#get_listens_within_call(f)
 		#get_log_as_percent(f, "instructions_full")
@@ -542,4 +538,4 @@ def main():
 		#get_log_as_percent(f, log="match")
 		#get_num_questions(f)
 			
-#main()
+main()
