@@ -71,7 +71,7 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, dat
 		dates.sort()
 		for date in dates:
 			total += calls[date]
-			print(date.strftime('%Y-%m-%d') +": "+str(calls[date]))
+			print(otalo_utils.date_str(date) +": "+str(calls[date]))
 
 		print("total is " + str(total))
 	

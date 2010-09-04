@@ -61,7 +61,7 @@ def get_time(line):
 	
 def date_str(date):
 	#return date.strftime('%Y-%m-%d')
-	return date.strftime('%b %d')
+	return date.strftime('%b,%d,%Y')
 	
 def time_str(time):
 	return time.strftime("%I:%M:%S %p")
