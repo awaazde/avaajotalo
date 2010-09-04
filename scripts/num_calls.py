@@ -1,6 +1,7 @@
 import otalo_utils
 import sys
 from datetime import datetime
+from otalo.AO.models import Line
 
 def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, date_filter=0, quiet=False, legacy_log=False):
 	calls = {}
@@ -528,10 +529,11 @@ def main():
 		f = sys.argv[1]
 		line = False
 		if len(sys.argv) == 3:
-			line = sys.argv[2]
+			lineid = sys.argv[2]
+			line = Line.objects.get(pk=lineid)
 		
-		get_calls(f, legacy_log=True)
-		#get_calls_by_feature(f, line)
+		#get_calls(f, legacy_log=True)
+		get_calls_by_feature(f, line.number)
 		#get_features_within_call(f)
 		#get_listens_within_call(f)
 		#get_log_as_percent(f, "instructions_full")
