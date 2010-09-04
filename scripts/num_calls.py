@@ -1,7 +1,8 @@
 import otalo_utils
 import sys
-from datetime import datetime
-from otalo.AO.models import Line
+from datetime import datetime,timedelta
+from otalo.AO.models import Message, Line
+from django.db.models import Max
 
 def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, date_filter=0, quiet=False, legacy_log=False):
 	calls = {}
@@ -516,7 +517,29 @@ def get_log_as_percent(filename, log, phone_num_filter=0):
 	for date in dates:
 		print(date.strftime('%Y-%m-%d') +": "+str(calls[date]))
 		
+def get_num_qna(line, quiet=False):
+	qna = {}
+	start_date = datetime(year=2010,month=1,day=1)
+	oneweek = timedelta(days=7)
+	end_date = Message.objects.filter(message_forum__forum__line=line).aggregate(Max('date'))
+	end_date = end_date[end_date.keys()[0]]
 	
+	while(start_date < end_date):   
+		qcount = Message.objects.filter(message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft=1).count()
+		acount = Message.objects.filter(message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft__gt=1).count()
+		qna[start_date] = [qcount, acount]
+		
+		start_date += oneweek
+	
+	if not quiet:	
+		print("Number of questions and responses, by week:")
+		print("\t\tquestions\tresponses")
+		dates = qna.keys()
+		dates.sort()
+		for date in dates:
+			print(otalo_utils.date_str(date) +": \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]))
+	
+	return qna
 	
 def main():
 	if not len(sys.argv) > 1:
@@ -529,7 +552,7 @@ def main():
 			line = Line.objects.get(pk=lineid)
 		
 		#get_calls(f, legacy_log=True)
-		get_calls_by_feature(f, line.number, legacy_log=True)
+		#get_calls_by_feature(f, line.number, legacy_log=True)
 		#get_features_within_call(f)
 		#get_listens_within_call(f)
 		#get_log_as_percent(f, "instructions_full")
@@ -537,5 +560,6 @@ def main():
 		#get_listens_within_call(f)
 		#get_log_as_percent(f, log="match")
 		#get_num_questions(f)
+		get_num_qna(line)
 			
-main()
+#main()
