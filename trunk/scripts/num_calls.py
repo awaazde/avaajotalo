@@ -537,7 +537,7 @@ def get_num_qna(line, quiet=False):
 		dates = qna.keys()
 		dates.sort()
 		for date in dates:
-			print(otalo_utils.date_str(date) +": \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]))
+			print(otalo_utils.date_str(date) +" \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]))
 	
 	return qna
 	
@@ -562,4 +562,4 @@ def main():
 		#get_num_questions(f)
 		get_num_qna(line)
 			
-#main()
+main()
