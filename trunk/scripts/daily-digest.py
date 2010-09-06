@@ -29,7 +29,7 @@ def main():
 		calls = num_calls.get_calls(filename=f, destnum=str(line.number), date_filter=today-oneday*i, quiet=True)
 		ncalls = calls[calls.keys()[0]] if calls else 0
 		print("<tr>")
-		print("<td width='60px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
+		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
 		print("<td>"+str(ncalls)+"</td>")
 		print("</tr>")
@@ -95,7 +95,7 @@ def main():
 	for i in range (0,4):
 		ncalls = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft=1).count()
 		print("<tr>")
-		print("<td width='60px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
+		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
 		print("<td>"+str(ncalls)+"</td>")
 		print("</tr>")
@@ -109,7 +109,7 @@ def main():
 	for i in range (0,4):
 		ncalls = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft__gt=1).count()
 		print("<tr>")
-		print("<td width='60px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
+		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
 		print("<td>"+str(ncalls)+"</td>")
 		print("</tr>")
