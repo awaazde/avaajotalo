@@ -19,6 +19,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
 from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_responder, Admin
+from otalo.surveys.models import Prompt
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Count
@@ -285,15 +286,21 @@ def createmessage(request, forum, content, summary=False, parent=False):
         if msgs.count() > 0 and msgs[0].position != None:
             pos = msgs[0].position + 1
     
-    resp_msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
-    resp_msg.save()
-    resp_msg_forum = Message_forum(message=resp_msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position = pos)
+    msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
+    msg.save()
+    msg_forum = Message_forum(message=msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position = pos)
 
     if parent:
-        add_child(resp_msg, parent.message)
-    resp_msg_forum.save()
+        add_child(msg, parent.message)
+        # if an upload happens, send the reply outbound no
+        # matter the status of the message
+        alerts.answer_call(forum.line_set.all()[0], parent.message.user.id, msg_forum)
+        
+    msg_forum.save()
+    
+   
 
-    return resp_msg_forum
+    return msg_forum
 
 def thread(request, message_forum_id):
     m = get_object_or_404(Message_forum, pk=message_forum_id)
@@ -329,7 +336,8 @@ def updatestatus(request, action):
             #     parent = m.thread.message_forum_set.all()[0]
             #     notut.process_notification(m, parent)
             #alerts.missed_call(m.forum.line_set.all()[0], [userid])
-            #alerts.answer_call((m.forum.line_set.all()[0], userid, m)
+            if not Prompt.objects.filter(file__contains=m.message.content_file):
+                alerts.answer_call(m.forum.line_set.all()[0], userid, m)
             
             
     elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
