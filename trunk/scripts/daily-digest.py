@@ -125,19 +125,24 @@ def main():
 	
 	oneweek = timedelta(days=7)
 	# get responders ordered by number of responses
-	responders = User.objects.filter(forum__line=line, message__date__gte=today-oneweek, message__lft__gt=1).annotate(nresponses=Count('message')).order_by('-nresponses') | User.objects.filter(forum__line=line)
-	
+	responders = User.objects.filter(forum__line=line).distinct()
+	responder_counts = {}
 	for responder in responders:
-		print("<tr>")
-		print("<td>"+responder.name+"</td>")
-		
-		# get active assigments only
-		nassigned = Message_responder.objects.filter(user=responder, assign_date__gte=today-oneweek, passed_date__isnull=True, listens__lte=LISTEN_THRESH).count()
-		print("<td>"+str(nassigned)+"</td>")
-		
+		# get active assignments only
+		nassigned = Message_responder.objects.filter(user=responder, assign_date__gte=today-oneweek, passed_date__isnull=True, listens__lte=LISTEN_THRESH).count()		
 		# count the answers whether they have been approved or not
 		nresponses = Message_forum.objects.filter(message__date__gte=today-oneweek, message__user=responder, message__lft__gt=1).count()
-		print("<td>"+str(nresponses)+"</td>")
+		responder_counts[responder] = [nassigned, nresponses]
+	
+	# sort by number of responses
+	responder_counts = sorted(responder_counts.iteritems(), key=lambda(k,v): v[1], reverse=True)	
+		
+	
+	for responder,counts in responder_counts:
+		print("<tr>")
+		print("<td>"+responder.name+"</td>")
+		print("<td>"+str(counts[0])+"</td>")
+		print("<td>"+str(counts[1])+"</td>")
 		print("</tr>")
 	
 	print("</table>")
