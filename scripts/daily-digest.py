@@ -137,7 +137,6 @@ def main():
 	# sort by number of responses
 	responder_counts = sorted(responder_counts.iteritems(), key=lambda(k,v): v[1], reverse=True)	
 		
-	
 	for responder,counts in responder_counts:
 		print("<tr>")
 		print("<td>"+responder.name+"</td>")
