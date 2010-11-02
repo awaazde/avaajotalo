@@ -84,7 +84,7 @@ def get_followups(filename, destnum=False, prompt_filter=False, phone_num_filter
 	
 	return calls
     
-def get_followups_by_number(filename, destnum=False, phone_num_filter=0, date_filter=0, quiet=False):
+def get_followups_by_number(filename, destnum=False, phone_num_filter=0, date_start=False, date_end=False, quiet=False):
     calls = {}
     calls_by_caller = {}
     current_week_start = 0
@@ -113,8 +113,13 @@ def get_followups_by_number(filename, destnum=False, phone_num_filter=0, date_fi
             if phone_num_filter and not phone_num in phone_num_filter:
                 continue
             
-            if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
-                continue
+            if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
 
             if destnum and destnum.find(dest) == -1:
                 continue
