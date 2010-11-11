@@ -41,7 +41,7 @@ def get_call_durations(filename, destnum, date_filter=0, quiet=False):
 
 			if delta.days > 6:
 				#flush all open calls
-				flush_open_calls(open_calls, current_week_start)				
+				flush_open_calls(durations, open_calls, current_week_start)				
 				open_calls = {}
 				
 				current_week_start = current_date
@@ -93,7 +93,7 @@ def get_call_durations(filename, destnum, date_filter=0, quiet=False):
 			continue
 	
 	#flush the last week
-	flush_open_calls(open_calls, current_week_start)
+	flush_open_calls(durations, open_calls, current_week_start)
 	
 	if not quiet:
 		print("Average call duration, by week (s):")
@@ -206,7 +206,7 @@ def bucket_duration(dur, durations):
 		durations['+300'] += 1
 	
 
-def flush_open_calls(open_calls, week):
+def flush_open_calls(durations, open_calls, week):
 	for num in open_calls.keys():
 		last = open_calls[num]['last']
 		dur = last - open_calls[num]['start']
@@ -218,7 +218,7 @@ def main():
 		print("Wrong")
 	else:
 		f = sys.argv[1]
-		get_call_durations(f)
-		get_calls_by_duration(f)
+		get_call_durations(f, destnum='30142000')
+		#get_calls_by_duration(f)
 
 #main()
