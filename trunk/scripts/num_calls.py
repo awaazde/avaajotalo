@@ -562,4 +562,4 @@ def main():
 		#get_num_questions(f)
 		get_num_qna(line)
 			
-main()
+#main()

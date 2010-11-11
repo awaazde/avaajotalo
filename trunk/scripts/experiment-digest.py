@@ -26,7 +26,8 @@ def print_digest(f, date):
 	print("<div><h4>Followups by info source (with phone numbers)</h4></div>")
 	print("<table>")
 
-	followups = survey_stats.get_followups(filename=f, date_start=date, date_end=date+oneday, quiet=True)
+	#followups = survey_stats.get_followups(filename=f, date_start=date, date_end=date+oneday, quiet=True)
+	followups = survey_stats.get_followups(filename=f, date_start=date, date_end=date+oneday, quiet=True, prompt_filter='solution')
 	for source, calllst in followups.items():
 		print("<tr>")
 		print("<td width='40px'>"+str(source)+"</td>")
@@ -39,8 +40,9 @@ def print_digest(f, date):
 	print("<div><h4>Overall</h4></div>")
 	print("<table>")
 
-	exp_start = datetime(year=2010, month=7, day=31)
-	followups = survey_stats.get_followups(filename=f, date_start=exp_start, quiet=True)
+	exp_start = datetime(year=2010, month=8, day=16)
+	#followups = survey_stats.get_followups(filename=f, date_start=exp_start, quiet=True)
+	followups = survey_stats.get_followups(filename=f, date_start=exp_start, quiet=True, prompt_filter='solution')
 	for source, calllst in followups.items():
 		print("<tr>")
 		print("<td width='40px'>"+str(source)+"</td>")
