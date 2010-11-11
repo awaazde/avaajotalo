@@ -219,7 +219,7 @@ def main():
 		if len(sys.argv) == 4:
 			demographics_file = sys.argv[3]
 		
-		get_calls_by_number(f, legacy_log=True)
+		get_calls_by_number(f,destnum='30142000')
 		#get_guj_nums_only(f, legacy_log=True)
 		#get_calls_by_feature(f)
 		#get_calls_by_geography(f, demographics_file)
