@@ -1,4 +1,4 @@
-A combination of wish-list and upcoming features:
+# A combination of wish-list and upcoming features
 
 ==1. Pipeline for rejected questions ==
 If a question is rejected, offer something in the interface to give the user feedback, which he can then access through the personal inbox. Having the admin choose from amongst a set of canned responses is one option.  Also, provide another option to search for prior responses that answer this question.  Currently, its fine to search using existing metadata (Tags, User, etc.)  Should also allow uploading of custom response, if not already supported.
