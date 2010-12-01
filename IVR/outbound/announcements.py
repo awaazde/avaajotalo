@@ -50,7 +50,7 @@ def subjects(f, line):
     
     for number in numbers[:MAX_N_NUMS]:
         u = User.objects.filter(number=number)
-        if bool(u) and u.allowed == 'n':
+        if bool(u) and u[0].allowed == 'n':
             continue
         
         s = Subject.objects.filter(number = number)
