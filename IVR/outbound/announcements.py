@@ -71,7 +71,7 @@ def announce(announcements, name, line):
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
-        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=2)
+        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1)
         print ("adding announcement survey " + str(s))
         s.save()
     
