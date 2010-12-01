@@ -177,17 +177,19 @@ def main():
     else:
         f = sys.argv[1]
         forumid = sys.argv[2]
+    
+    now = datetime.now()
+    today = datetime(year=now.year, month=now.month, day=now.day)
         
     if len(sys.argv) > 3:
-        today = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        since = datetime.strptime(sys.argv[3], "%m-%d-%Y")
     else:
-        now = datetime.now()
-        today = datetime(year=now.year, month=now.month, day=now.day)
+        since = today
         
     forum = Forum.objects.get(pk=forumid)
 
     # check if there were new announcements within the past day
-    announcements = Message_forum.objects.filter(forum=forum, message__date__gte=today, status=MESSAGE_STATUS_APPROVED).order_by('-message__date')
+    announcements = Message_forum.objects.filter(forum=forum, message__date__gte=since, status=MESSAGE_STATUS_APPROVED).order_by('-message__date')
     if bool(announcements):
         line = forum.line_set.all()[0]
         oneday = timedelta(days=1)
