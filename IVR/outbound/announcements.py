@@ -15,7 +15,7 @@
 #===============================================================================
 import sys
 from datetime import datetime, timedelta
-from otalo.AO.models import Forum, Line, Message_forum
+from otalo.AO.models import Forum, Line, Message_forum, User
 from otalo.AO.views import MESSAGE_STATUS_APPROVED
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option
 import otalo_utils, stats_by_phone_num
@@ -49,6 +49,10 @@ def subjects(f, line):
     subjects = []
     
     for number in numbers[:MAX_N_NUMS]:
+        u = User.objects.filter(number=number)
+        if bool(u) and u.allowed == 'n':
+            continue
+        
         s = Subject.objects.filter(number = number)
         if not bool(s):
             s = Subject(number=str(number))
@@ -182,12 +186,9 @@ def main():
         
     forum = Forum.objects.get(pk=forumid)
 
-    print(str(forum))
-    print(str(today))
     # check if there were new announcements within the past day
     announcements = Message_forum.objects.filter(forum=forum, message__date__gte=today, status=MESSAGE_STATUS_APPROVED).order_by('-message__date')
     if bool(announcements):
-        print("found announc")
         line = forum.line_set.all()[0]
         oneday = timedelta(days=1)
         announcement_name = 'Announcement_' + forum.name + '_' + str(today)
