@@ -83,7 +83,7 @@ def announce(announcements, name, line):
         
         order=2
         for announcement in announcements:
-            a = Prompt(file=announcement.message.content_file, order=order, bargein=False, survey=s)
+            a = Prompt(file=MEDIA_PATH+announcement.message.content_file, order=order, bargein=False, survey=s)
             a.save()
             a_opt = Option(number="", action=OPTION_NEXT, prompt=a)
             a_opt.save()
