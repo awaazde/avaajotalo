@@ -717,7 +717,7 @@ if (session:ready() == true) then
 	-- Caller wants to be put through;
 	-- answer the call
 	session:answer();
-elseif (callback_allowed) then
+elseif (callback_allowed == 1) then
 	-- Missed call; 
 	-- call the user back
 	session:hangup();
