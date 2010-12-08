@@ -54,6 +54,9 @@ end
 -- responder section-specific sounds
 anssd = aosd .. "answer/";
 
+-- tagfiles
+tagsd = aosd .. "tag/";
+
 local open = line_info[2];
 
 phonenum = session:getVariable("caller_id_number");
@@ -189,16 +192,16 @@ end
 -- getmessages
 -----------
 
-function getmessages (forumid)
+function getmessages (forumid, tagid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
-   query = query .. "WHERE forum.id = " .. forumid .. " AND message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
-   -- NP: I think this would be confusing to Pareshbhai, especially since there is a dedicated section to approving messages. Leaving out.
-   --if (adminmode) then
-    --  query = query .. " AND NOT message_forum.status = " .. MESSAGE_STATUS_REJECTED;
-   --else
+   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. " WHERE forum.id = " .. forumid .. " AND message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
-   --end
+   if (tagid ~= nil) then
+   		query = query .. " AND EXISTS (SELECT 1 ";
+   		query = query .. " 				FROM AO_message_forum_tags mf_tags ";
+   		query = query .. " 				WHERE mf_tags.message_forum_id = message_forum.id AND mf_tags.tag_id = " .. tagid .. ") ";
+   end
    -- Sort first by position AND then date
    query = query .. " ORDER BY message_forum.position DESC, message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
@@ -305,8 +308,8 @@ function mainmenu ()
    local i = 0;
    local adminmode = is_admin(nil, adminforums);
 
-   -- TAP: Handle the case where there is only one forum - default
-   -- to going straight to that forum.
+   -- Don't need to handle single forum case because of the
+   -- auxilary options (there is at least the checkmyreplies option)
    local line_num = session:getVariable("destination_number");
    local query = "SELECT forum.id, forum.name_file, line.id ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
@@ -580,7 +583,7 @@ end
 
 function playforum (forumid)
    local forum = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength FROM AO_forum WHERE id = " .. forumid);
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code FROM AO_forum WHERE id = " .. forumid);
    cur:fetch(forum);
    cur:close();
    local forumname = forum[1];
@@ -588,29 +591,102 @@ function playforum (forumid)
    local postingallowed = forum[3];
    local responsesallowed = forum[4];
    local maxlength = forum[5];
+   local filter_code = tonumber(forum[6]);
    local d = "";
    local adminmode = is_admin(forumid, adminforums);
-	
-   if (postingallowed == 'y' or adminmode) then
-      repeat
-		 read(aosd .. "recordorlisten.wav", 3000);
-		 d = use();
-		 if (d == GLOBAL_MENU_MAINMENU) then
-		    return;
-		 end
-		 if (d == "1") then
-		    read(aosd .. "okrecord.wav", 1000);
-		    if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode) == GLOBAL_MENU_MAINMENU) then
-		       return;
-		    end
-		    read(aosd .. "backtoforum.wav", 1000);
-		    -- else continue to playing messages
-		 end
-      until (d == "2");
-      
-      read(aosd .. "okplay.wav", 1000);
-   end
+   local tagid = nil;
+   local first_listen_opt = nil;
+   local listen_opts_ids = {}
+   local listen_opts_names = {}
+   local i = 1;
+   
+   repeat
+   	  if (postingallowed == 'y' or adminmode) then
+	   	 read(aosd .. "record.wav", 0);
+	   	 i = i + 1;
+	  elseif (filter_code == FILTER_CODE_ALL_ONLY) then 	 
+	  	 -- short-circuit prompt to go straight
+	  	 -- to playing messages
+	  	 d = "1";
+	  end
+	  first_listen_opt = i;
 
+   	  if (filter_code == FILTER_CODE_ALL_ONLY) then
+	  	 read(aosd .. "listen.wav", 3000);
+	  else
+		 if (filter_code == FILTER_CODE_ALL_FIRST) then
+		  	 read(aosd .. "listen_all.wav", 0);
+		  	 read(aosd .. "digits/" .. i .. ".wav", 500);
+		  	 listen_opts_ids[i] = nil;
+		  	 listen_opts_names[i] = "listen_all.wav";
+		  	 i = i + 1;
+		 end
+		 
+		 local query = "SELECT tag.id, tag.tag_file ";
+		 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tags forum_tags ";
+		 query = query .. " WHERE forum.id = " .. forumid; 
+		 query = query .. " AND forum_tags.forum_id = forum.id AND forum_tags.tag_id = tag.id ";
+		 query = query .. " AND tag.filtering_allowed = 1 ";
+		 query = query .. " ORDER BY tag.id ASC";
+		   
+		 for row in rows (query) do
+		      listen_opts_ids[i] = row[1];
+		      listen_opts_names[i] = row[2];
+		      lineid = row[3];
+		      read(aosd .. "listento_tag_pre.wav", 0);
+		      read(tagsd .. listen_opts_names[i], 0);
+		      read(aosd .. "listento_tag_post.wav", 0);
+		      read(aosd .. "digits/" .. i .. ".wav", 500);
+		      i = i + 1;
+		 end
+		 
+		 if (filter_code == FILTER_CODE_ALL_LAST) then
+		 	  read(aosd .. "listen_all.wav", 0);
+		  	  read(aosd .. "digits/" .. i .. ".wav", 500);
+		  	  listen_opts_ids[i] = nil;
+		  	  listen_opts_names[i] = "listen_all.wav";
+		 end
+	  end
+	  	 
+	  d = use();
+	  if (d == GLOBAL_MENU_MAINMENU) then
+	     return;
+	  end
+	  if ((postingallowed == 'y' or adminmode) and d == "1") then
+	     read(aosd .. "okrecord.wav", 1000);
+	     if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode) == GLOBAL_MENU_MAINMENU) then
+	        return;
+	     end
+	     read(aosd .. "backtoforum.wav", 1000);
+	     -- else continue to playing messages
+	  end
+   until (tonumber(d) >= first_listen_opt);
+  
+   if (postingallowed == 'y' or adminmode) then
+   		if (filter_code == FILTER_CODE_ALL_ONLY) then
+   			read(aosd .. "okplay.wav", 1000);
+   		else
+   			tagid = listen_opts_ids[tonumber(d)]
+   			if (tagid == nil) then
+   				read(aosd .. "okplay_all.wav", 1000);
+   			else
+   				read(aosd .. "okyouwant_tag_pre.wav", 0)
+   				read(tagsd .. listen_opts_names[tonumber(d)], 0);
+		      	read(aosd .. "okyouwant_tag_post.wav", 0);
+		     
+   			end
+   		end
+   elseif (filter_code ~= FILTER_CODE_ALL_ONLY) then
+   		tagid = listen_opts_ids[tonumber(d)]
+		if (tagid == nil) then
+			read(aosd .. "okplay_all.wav", 1000);
+		else
+	   		read(aosd .. "okyouwant_tag_pre.wav", 0)
+			read(tagsd .. listen_opts_names[tonumber(d)], 0);
+	      	read(aosd .. "okyouwant_tag_post.wav", 0);
+	    end
+   end
+   
    if (responsesallowed == 'y' or adminmode) then
       read(aosd .. "instructions_short.wav", 1000);
    else
@@ -621,7 +697,7 @@ function playforum (forumid)
       return;
    end
 
-   playmessages(getmessages(forumid), 'y');
+   playmessages(getmessages(forumid, tagid), 'y');
    return;
 end
 
