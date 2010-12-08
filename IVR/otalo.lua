@@ -38,18 +38,13 @@ adminforums = {};
 
 -- set the language, check if line is restricted
 line_num = session:getVariable("destination_number");
-query = "SELECT language, open FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
+query = "SELECT language, open, dialstring_prefix, dialstring_suffix, callback FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
 cur = con:execute(query);
 line_info = {};
 result = cur:fetch(line_info);
 cur:close();
 
-if (result == nil) then
-   -- default
-   aosd = basedir .. "/scripts/AO/sounds/eng/";
-else
-   aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";
-end		
+aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		
 
 -- responder section-specific sounds
 anssd = aosd .. "answer/";
@@ -58,6 +53,9 @@ anssd = aosd .. "answer/";
 tagsd = aosd .. "tag/";
 
 local open = line_info[2];
+local DIALSTRING_PREFIX = line_info[3];
+local DIALSTRING_SUFFIX = line_info[4];
+local callback_allowed = line_info[5];
 
 phonenum = session:getVariable("caller_id_number");
 freeswitch.consoleLog("info", script_name .. " : caller id = " .. phonenum .. "\n");
@@ -715,8 +713,25 @@ while (adminforum ~= nil) do
 	adminforum = adminrows();
 end
 
--- answer the call
-session:answer();
+-- Allow for missed calls to be made
+session:execute("ring_ready");
+session:sleep(5000);
+
+if (session:ready() == true) then
+	-- Caller wants to be put through
+	-- answer the call
+	session:answer();
+elseif (callback_allowed) then
+	-- missed call; call the user back
+	session = freeswitch.Session('{ignore_early_media=true}' .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
+	session:setVariable("caller_id_number", phonenum)
+	session:setVariable("playback_terminators", "#");
+	session:setHangupHook("hangup");
+	
+	if (session:ready() == false) then
+		hangup();
+	end
+end
 
 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 "\t", os.time(), "\t", "Start call", "\n");
