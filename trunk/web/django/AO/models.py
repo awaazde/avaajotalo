@@ -20,10 +20,13 @@ from django.contrib.auth.models import User as AuthUser
 class Line(models.Model):
     number = models.CharField(max_length=24)
     name = models.CharField(max_length=128)
-    language = models.CharField(max_length=3)
+    language = models.CharField(max_length=24)
     # is this line open to any caller or restricted?
     # use in combination with user.allowed
     open = models.BooleanField(default=True)
+    # does this line allow missed calls to be called back?
+    # use in combination with user.quota (TODO)
+    callback = models.BooleanField(default=False)
     # for dialing out
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
@@ -77,6 +80,8 @@ class Forum(models.Model):
     # responders to route top-level posts to upon approval
     routeable = models.CharField(max_length=1)
     #===========================================================
+    # The coded value specified for the object must be consistent with paths.lua
+    filter_code = models.IntegerField(default=0)
      ########################################################################################
     # why? so that experts can be associated with not only a topic
     # but also a community (i.e. forum) where they should share that expertise
@@ -97,6 +102,7 @@ class Tag(models.Model):
     tag = models.CharField(max_length=24)
     type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
+    filtering_allowed = models.BooleanField(default=False)
     
     def __unicode__(self):
         return self.tag
