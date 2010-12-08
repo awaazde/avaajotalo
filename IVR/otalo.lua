@@ -28,10 +28,6 @@ script_name = "otalo.lua";
 digits = "";
 arg = {};
 
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
-session:setInputCallback("my_cb", "arg");
-
 sessid = os.time();
 userid = nil;
 adminforums = {};
@@ -715,23 +711,32 @@ end
 
 -- Allow for missed calls to be made
 session:execute("ring_ready");
-session:sleep(5000);
+session:sleep(8000);
 
 if (session:ready() == true) then
-	-- Caller wants to be put through
+	-- Caller wants to be put through;
 	-- answer the call
 	session:answer();
 elseif (callback_allowed) then
-	-- missed call; call the user back
+	-- Missed call; 
+	-- call the user back
+	session:hangup();
 	session = freeswitch.Session('{ignore_early_media=true}' .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
 	session:setVariable("caller_id_number", phonenum)
-	session:setVariable("playback_terminators", "#");
-	session:setHangupHook("hangup");
 	
+	-- wait a while before testing
+	sleep(2000);
 	if (session:ready() == false) then
 		hangup();
 	end
 end
+
+-- put hangup hook after session init in case of missed call;
+-- if old session closes and hangup() is invoked, the db conn
+-- and logfile will get clobbered
+session:setVariable("playback_terminators", "#");
+session:setHangupHook("hangup");
+session:setInputCallback("my_cb", "arg");
 
 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 "\t", os.time(), "\t", "Start call", "\n");
