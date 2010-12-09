@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from otalo.AO.models import Forum, Message, User, Tag, Admin, Line, Message_forum
+from otalo.AO.models import Forum, Message, User, Tag, Admin, Line, Message_forum, Forum_tag
 from django.contrib import admin
 
 class MessageAdmin(admin.ModelAdmin):
@@ -24,8 +24,15 @@ class MessageAdmin(admin.ModelAdmin):
 
 class UserAdmin(admin.ModelAdmin):
    search_fields = ['name', 'number']
+   
+class ForumTagInline(admin.TabularInline):
+    model = Forum_tag
+    extra = 1
+    
+class ForumAdmin(admin.ModelAdmin):
+    inlines = (ForumTagInline,)
 
-admin.site.register(Forum)
+admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Tag)
