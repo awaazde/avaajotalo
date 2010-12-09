@@ -709,26 +709,31 @@ while (adminforum ~= nil) do
 	adminforum = adminrows();
 end
 
--- Allow for missed calls to be made
-session:execute("ring_ready");
-session:sleep(8000);
-
-if (session:ready() == true) then
-	-- Caller wants to be put through;
-	-- answer the call
-	session:answer();
-elseif (callback_allowed == 1) then
-	-- Missed call; 
-	-- call the user back
-	session:hangup();
-	session = freeswitch.Session('{ignore_early_media=true}' .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
-	session:setVariable("caller_id_number", phonenum)
+if (callback_allowed == 1) then
+	-- Allow for missed calls to be made
+	session:execute("ring_ready");
+	session:sleep(8000);
 	
-	-- wait a while before testing
-	sleep(2000);
-	if (session:ready() == false) then
-		hangup();
+	if (session:ready() == true) then
+		-- Caller wants to be but straight through;
+		-- answer the call
+		session:answer();
+	else
+		-- Missed call; 
+		-- call the user back
+		session:hangup();
+		session = freeswitch.Session('{ignore_early_media=true}' .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
+		session:setVariable("caller_id_number", phonenum)
+		
+		-- wait a while before testing
+		sleep(2000);
+		if (session:ready() == false) then
+			hangup();
+		end
 	end
+else
+	-- No callback allowed; just answer the call
+	session:answer();
 end
 
 -- put hangup hook after session init in case of missed call;
