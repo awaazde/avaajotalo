@@ -193,7 +193,7 @@ function getmessages (forumid, tagid)
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    if (tagid ~= nil) then
    		query = query .. " AND EXISTS (SELECT 1 ";
-   		query = query .. " 				FROM AO_message_forum_tags mf_tags ";
+   		query = query .. " 				FROM AO_message_forum_tag mf_tags ";
    		query = query .. " 				WHERE mf_tags.message_forum_id = message_forum.id AND mf_tags.tag_id = " .. tagid .. ") ";
    end
    -- Sort first by position AND then date
@@ -617,7 +617,7 @@ function playforum (forumid)
 		 end
 		 
 		 local query = "SELECT tag.id, tag.tag_file ";
-		 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tags forum_tags ";
+		 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tag forum_tags ";
 		 query = query .. " WHERE forum.id = " .. forumid; 
 		 query = query .. " AND forum_tags.forum_id = forum.id AND forum_tags.tag_id = tag.id ";
 		 query = query .. " AND tag.filtering_allowed = 1 ";
