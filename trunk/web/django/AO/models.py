@@ -88,7 +88,7 @@ class Forum(models.Model):
     # Put another way, a cotton expert in Guj may not want or be qualified to
     # answer cotton questions from a forum for MP farmers.
     # This also makes it so forums develop a specific vocabulary for people to be experts in
-    tags = models.ManyToManyField('Tag', blank=True, null=True)
+    tags = models.ManyToManyField('Tag', through='Forum_tags', blank=True, null=True)
     responders = models.ManyToManyField(User, blank=True, null=True)
     ########################################################################################
     
@@ -102,10 +102,17 @@ class Tag(models.Model):
     tag = models.CharField(max_length=24)
     type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
-    filtering_allowed = models.BooleanField(default=False)
     
     def __unicode__(self):
         return self.tag
+    
+class Forum_tags(models.Model):
+    forum = models.ForeignKey(Forum)
+    tag = models.ForeignKey(Tag)
+    filtering_allowed = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return unicode(self.forum) + '_' + unicode(self.tag)
  
 class Message_forum(models.Model):
     message = models.ForeignKey(Message)
