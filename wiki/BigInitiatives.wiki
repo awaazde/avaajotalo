@@ -1,6 +1,7 @@
 #summary A list of all the bigger initiatives moving forward
 
   # Port all code to Python
+  # Rename code from AO to Awaaz De (including name of Goog Code project)
   # Develop with GSM gateway/cheap line serving options
   # Develop thin distributed client for cheap long distance calling (or get carriers to forward calls to IP address)
   # Analytics platform (with public and internal interfaces) a la DG
