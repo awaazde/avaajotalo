@@ -617,10 +617,10 @@ function playforum (forumid)
 		 end
 		 
 		 local query = "SELECT tag.id, tag.tag_file ";
-		 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tag forum_tags ";
+		 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tag forum_tag ";
 		 query = query .. " WHERE forum.id = " .. forumid; 
-		 query = query .. " AND forum_tags.forum_id = forum.id AND forum_tags.tag_id = tag.id ";
-		 query = query .. " AND tag.filtering_allowed = 1 ";
+		 query = query .. " AND forum_tag.forum_id = forum.id AND forum_tag.tag_id = tag.id ";
+		 query = query .. " AND forum_tag.filtering_allowed = 1 ";
 		 query = query .. " ORDER BY tag.id ASC";
 		   
 		 for row in rows (query) do
