@@ -193,7 +193,7 @@ function getmessages (forumid, tagid)
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    if (tagid ~= nil) then
    		query = query .. " AND EXISTS (SELECT 1 ";
-   		query = query .. " 				FROM AO_message_forum_tag mf_tags ";
+   		query = query .. " 				FROM AO_message_forum_tags mf_tags ";
    		query = query .. " 				WHERE mf_tags.message_forum_id = message_forum.id AND mf_tags.tag_id = " .. tagid .. ") ";
    end
    -- Sort first by position AND then date
@@ -592,16 +592,16 @@ function playforum (forumid)
    local first_listen_opt = nil;
    local listen_opts_ids = {}
    local listen_opts_names = {}
-   local i = 1;
    
    repeat
+   	  local i = 1;
    	  if (postingallowed == 'y' or adminmode) then
 	   	 read(aosd .. "record.wav", 0);
 	   	 i = i + 1;
 	  elseif (filter_code == FILTER_CODE_ALL_ONLY) then 	 
 	  	 -- short-circuit prompt to go straight
 	  	 -- to playing messages
-	  	 d = "1";
+	  	 break;
 	  end
 	  first_listen_opt = i;
 
@@ -653,8 +653,10 @@ function playforum (forumid)
 	     end
 	     read(aosd .. "backtoforum.wav", 1000);
 	     -- else continue to playing messages
+	  elseif (d == "") then
+	     sleep(6000);
 	  end
-   until (tonumber(d) >= first_listen_opt);
+   until (d ~= "" and tonumber(d) >= first_listen_opt);
   
    if (postingallowed == 'y' or adminmode) then
    		if (filter_code == FILTER_CODE_ALL_ONLY) then
@@ -666,7 +668,7 @@ function playforum (forumid)
    			else
    				read(aosd .. "okyouwant_tag_pre.wav", 0)
    				read(tagsd .. listen_opts_names[tonumber(d)], 0);
-		      	read(aosd .. "okyouwant_tag_post.wav", 0);
+		      		read(aosd .. "okyouwant_tag_post.wav", 0);
 		     
    			end
    		end
@@ -677,7 +679,7 @@ function playforum (forumid)
 		else
 	   		read(aosd .. "okyouwant_tag_pre.wav", 0)
 			read(tagsd .. listen_opts_names[tonumber(d)], 0);
-	      	read(aosd .. "okyouwant_tag_post.wav", 0);
+	      		read(aosd .. "okyouwant_tag_post.wav", 0);
 	    end
    end
    
