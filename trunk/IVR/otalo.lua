@@ -54,6 +54,7 @@ local DIALSTRING_SUFFIX = line_info[4];
 local callback_allowed = line_info[5];
 
 phonenum = session:getVariable("caller_id_number");
+phonenum = phonenum:sub(-10);
 freeswitch.consoleLog("info", script_name .. " : caller id = " .. phonenum .. "\n");
 query = "SELECT id, allowed FROM AO_user WHERE number = " .. phonenum;
 cur = con:execute(query);
@@ -304,7 +305,6 @@ function mainmenu ()
 
    -- Don't need to handle single forum case because of the
    -- auxilary options (there is at least the checkmyreplies option)
-   local line_num = session:getVariable("destination_number");
    local query = "SELECT forum.id, forum.name_file, line.id ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
    query = query .. " WHERE line.number LIKE '%" .. line_num .. "%' "; 
@@ -715,10 +715,10 @@ if (callback_allowed == 1) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	session:sleep(8000);
-	
+
 	if (session:ready() == true) then
 		-- Caller wants to be but straight through;
-		-- answer the call
+		-- answer the call		
 		session:answer();
 	else
 		-- Missed call; 
@@ -726,9 +726,10 @@ if (callback_allowed == 1) then
 		session:hangup();
 		session = freeswitch.Session('{ignore_early_media=true}' .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
 		session:setVariable("caller_id_number", phonenum)
+		session:setVariable("destination_number", line_num)
 		
 		-- wait a while before testing
-		sleep(2000);
+		session:sleep(2000);
 		if (session:ready() == false) then
 			hangup();
 		end
