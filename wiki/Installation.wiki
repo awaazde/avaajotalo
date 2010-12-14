@@ -14,7 +14,7 @@ _This are high-level instructions. The links below should provide you with info 
   # Install Eclipse
   # Install Subclipse eclipse plugin
   # Install GWT eclipse plugin
-  # Checkout gwt folder from the repository (trunk/web/), following the instructions [http://code.google.com/p/avaajotalo/source/checkout here]. Be sure to check out the code as a GWT project and name it 'ao' with package name 'org.otalo.ao'.
+  # Checkout gwt folder from the repository (trunk/web/). You can follow the instructions [http://blog.msbbc.co.uk/2007/06/using-googles-free-svn-repository-with.html here]. Be sure to check out the code as a GWT project and name it 'ao' with package name 'org.otalo.ao'.
   # Checkout trunk/web/django into a new project ao_server. Optionally use python project plugin
   # Checkout trunk/IVR into a new project ao_IVR. Optionally use lua plugin
 
