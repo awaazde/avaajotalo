@@ -1,9 +1,11 @@
 import otalo_utils
 import sys
 from datetime import datetime
+from otalo.AO.models import User, Message
 
 def get_calls_by_number(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False):
 	calls = {}
+	phone_nums = ''
 	
 	f = open(filename)
 
@@ -40,6 +42,7 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_start=Fa
 					calls[phone_num] += 1
 				else:
 					calls[phone_num] = 1
+					phone_nums += phone_num + ','
 
 		except ValueError as err:
 			#print("ValueError: " + str(err.args))
@@ -59,6 +62,7 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_start=Fa
 			print(num +": "+str(tot))
 			
 		print('total is ' + str(total));	
+		print('numbers are ' + phone_nums)
 	return calls
 
 def get_calls_by_feature(filename):		
@@ -160,6 +164,7 @@ def get_calls_by_geography(filename, demographics):
 
 def get_guj_nums_only(filename, log="welcome", quiet=False, legacy_log=False):
 	calls = {}
+	phone_nums = ''
 	
 	f = open(filename)
 
@@ -187,6 +192,7 @@ def get_guj_nums_only(filename, log="welcome", quiet=False, legacy_log=False):
 					calls[phone_num] += 1
 				else:
 					calls[phone_num] = 1
+					phone_nums += phone_num + ','
 
 		except ValueError as err:
 			#print("ValueError: " + str(err.args))
@@ -205,8 +211,36 @@ def get_guj_nums_only(filename, log="welcome", quiet=False, legacy_log=False):
 			total += tot
 			print(num +": "+str(tot))
 			
-		print('total is ' + str(total));	
+		print('total is ' + str(total))
+		print('numbers are ' + phone_nums)
 	return calls
+
+def get_messages_by_number(numbers, date_start=False, date_end=False, quiet=False):
+	numbers = set(numbers)
+	messages = {}
+	users = User.objects.filter(number__in=numbers)
+	
+	for user in users:
+		msgs = Message.objects.filter(user=user)
+		if date_start:
+			msgs = msgs.filter(date__gte=date_start)
+		if date_end:
+			msgs = msgs.filter(date__lte=date_end)
+		
+		messages[user.number] = msgs.count()
+			
+	if not quiet:
+		print("Number of messages by phone number:")
+		msgs_sorted = sorted(messages.iteritems(), key=lambda(k,v): (v,k))
+		msgs_sorted.reverse()
+		total = 0
+		for num, tot in msgs_sorted:
+			total += tot
+			print(num +": "+str(tot))
+			
+		print('total is ' + str(total))
+
+	return messages
 	
 def main():
 	if not len(sys.argv) > 1:
@@ -219,9 +253,10 @@ def main():
 		if len(sys.argv) == 4:
 			demographics_file = sys.argv[3]
 		
-		get_calls_by_number(f,destnum='30142000')
+		#get_calls_by_number(f,destnum='7930142000')
 		#get_guj_nums_only(f, legacy_log=True)
 		#get_calls_by_feature(f)
 		#get_calls_by_geography(f, demographics_file)
+		#get_messages_by_number(['9586550654'])
 			
 #main()
