@@ -218,6 +218,7 @@ def get_guj_nums_only(filename, log="welcome", quiet=False, legacy_log=False):
 def get_messages_by_number(numbers, date_start=False, date_end=False, quiet=False):
 	numbers = set(numbers)
 	messages = {}
+	responses = {}
 	users = User.objects.filter(number__in=numbers)
 	
 	for user in users:
@@ -226,17 +227,21 @@ def get_messages_by_number(numbers, date_start=False, date_end=False, quiet=Fals
 			msgs = msgs.filter(date__gte=date_start)
 		if date_end:
 			msgs = msgs.filter(date__lte=date_end)
-		
+			
 		messages[user.number] = msgs.count()
+		
+		resp_msgs = Message.objects.filter(thread__in=msgs, lft__gt=1)
+		responses[user.number] = resp_msgs.count()
 			
 	if not quiet:
-		print("Number of messages by phone number:")
+		print("Number of messages and responses received by phone number:")
 		msgs_sorted = sorted(messages.iteritems(), key=lambda(k,v): (v,k))
 		msgs_sorted.reverse()
 		total = 0
 		for num, tot in msgs_sorted:
 			total += tot
-			print(num +": "+str(tot))
+			resps = responses[num]
+			print(num +": "+str(tot)+","+str(resps))
 			
 		print('total is ' + str(total))
 
@@ -257,6 +262,6 @@ def main():
 		#get_guj_nums_only(f, legacy_log=True)
 		#get_calls_by_feature(f)
 		#get_calls_by_geography(f, demographics_file)
-		#get_messages_by_number(['9586550654'])
+		get_messages_by_number(['9586550654'])
 			
 #main()
