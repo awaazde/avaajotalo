@@ -244,25 +244,21 @@ public class MessageDetail extends Composite {
   	{
   		case PENDING:
 	  	  	setMovable(false); 
-	  	  	setCanRespond(true); 
 	  	  	setSticky(false);
 	  	  	break;
   		case APPROVED:
 	  	  	setMovable(true);
-	  	  	setCanRespond(true); 
 	  	  	setSticky(true);
 	  	  	break;
   		case REJECTED:
   			setMovable(false);
-  			setCanRespond(true);
   			setSticky(false);
   	}
   	
-  	//special case
+  	//special case: Moderated responses
   	if (messageForum.isResponse() && messageForum.getStatus() != MessageStatus.PENDING)
   	{
-  		setMovable(false);
-  		setCanRespond(false); 
+  		setMovable(false); 
   		setSticky(false);
   	}
   	messageForumId.setValue(messageForum.getId());
@@ -428,11 +424,6 @@ public class MessageDetail extends Composite {
 	private void setMovable(boolean canMove)
 	{
 		moveButtons.setVisible(canMove);
-	}
-	
-	private void setCanRespond(boolean canRespond)
-	{
-		responsePanel.setVisible(canRespond);
 	}
 	
 	private void setSticky(boolean canStick)
