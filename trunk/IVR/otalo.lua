@@ -724,9 +724,12 @@ if (callback_allowed == 1) then
 		-- Missed call; 
 		-- call the user back
 		session:hangup();
-		session = freeswitch.Session('{ignore_early_media=true}' .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
-		session:setVariable("caller_id_number", phonenum)
-		session:setVariable("destination_number", line_num)
+		local vars = '{';
+		vars = vars .. 'ignore_early_media=true';
+		vars = vars .. ',caller_id_number='..phonenum;
+		vars = vars .. ',origination_caller_id_number='..line_num;
+		vars = vars .. '}'
+		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
 		
 		-- wait a while before testing
 		session:sleep(2000);
