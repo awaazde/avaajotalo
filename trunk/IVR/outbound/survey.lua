@@ -33,7 +33,6 @@ script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
 sursd = aosd .. "survey/";
-CALLID_VAR = '{ao_survey=true,ignore_early_media=true}';
 
 digits = "";
 arg = {};
@@ -47,15 +46,18 @@ prevprompts = {};
 callid = argv[1];
 
 -- get subject id, phone number, and survey id
-query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after ";
+query = 		"SELECT subject.id, subject.number, survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.number ";
 query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call c ";
 query = query .. " WHERE c.id = " .. callid;
 query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-res = row(query);
-subjectid = res[1];
-phonenum = res[2];
-surveyid = res[3];
+local res = row(query);
+local subjectid = res[1];
+local phonenum = res[2];
+local surveyid = res[3];
+local originationnum = res[7] or "";
+
+CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..originationnum..'}';
 
 DIALSTRING_PREFIX = "";
 DIALSTRING_SUFFIX = "";
