@@ -25,7 +25,7 @@ from django.conf import settings
 from django.db.models import Min, Count
 from datetime import datetime
 import os, stat
-#import alerts
+import alerts
 
 # Code in order of how they are declared in Message.java
 MESSAGE_STATUS_PENDING = 0
