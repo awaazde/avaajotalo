@@ -461,14 +461,10 @@ function playmessage (msg, listenreplies)
   -- potentially respond
   if (d == "") then
     if (responsesallowed == 'y') then
-	  	read(aosd .. "instructions_between.wav", 1000)
+	  	read(aosd .. "instructions_between.wav", 4000)
 	  	d = use();
 	end
-  	if (d == "") then
-     	sleep(3000)
-    else
-    	return d;
-    end
+    return d;
   else
   	return d;
   end
