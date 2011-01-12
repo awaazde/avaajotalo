@@ -399,7 +399,7 @@ function playmessage (msg, listenreplies)
 
   d = playcontent(summary, content);
 
-  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND) then
+  if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
      return d;
   end
 
@@ -435,18 +435,18 @@ function playmessage (msg, listenreplies)
      if (d == "1") then
 		read(aosd .. "okreplies.wav", 500);
 		d = use();
-		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
 		end
 		
 		d = playmessages(getreplies(id), 'n');
-		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
 		end
 		
 		read(aosd .. "backtoforum.wav", 1000);
 		d = use();
-		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD) then
+		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
 		end
 
@@ -501,7 +501,7 @@ function playmessages (msgs, listenreplies)
       local responsesallowed = current_msg[7];
       local moderated = current_msg[8];
 
-      if (d == GLOBAL_MENU_RESPOND) then
+      if (d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
 		 -- do this first b/c its helpful to know when u are at the
@@ -516,7 +516,7 @@ function playmessages (msgs, listenreplies)
 
       d = use();
       -- check if a pre-emptive action was taken
-      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND) then
+      if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND and d ~= GLOBAL_MENU_INSTRUCTIONS) then
 	 	d = playmessage(current_msg, listenreplies);
       end
 
@@ -543,6 +543,12 @@ function playmessages (msgs, listenreplies)
 		    current_msg_idx = current_msg_idx - 1;
 		    current_msg = prevmsgs[current_msg_idx];
 		 end
+	 elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
+	 	 read(aosd .. "okinstructions.wav", 500);
+		 read(anssd .. "instructions_full.wav", 500);
+		 
+		 d = use();
+	 	
       elseif (d ~= GLOBAL_MENU_MAINMENU) then
 		 current_msg_idx = current_msg_idx + 1;
 		 -- check to see if we are at the last msg in the forum
