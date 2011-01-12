@@ -692,9 +692,15 @@ function playforum (forumid)
    else
       read(aosd .. "instructions_short_noresponse.wav", 1000);
    end
-    
-   if (use() == GLOBAL_MENU_MAINMENU) then
+   
+   d = use(); 
+   if (d == GLOBAL_MENU_MAINMENU) then
       return;
+   elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
+   	  read(aosd .. "okinstructions.wav", 500);
+	  read(anssd .. "instructions_full.wav", 500);
+	 
+	  d = use();
    end
 
    playmessages(getmessages(forumid, tagid), 'y');
