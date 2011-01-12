@@ -464,7 +464,9 @@ function playmessage (msg, listenreplies)
 	  	read(aosd .. "instructions_between.wav", 4000)
 	  	d = use();
 	end
-    return d;
+    if (d ~= "") then
+    	return d;
+    end
   else
   	return d;
   end

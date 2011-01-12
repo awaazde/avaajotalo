@@ -435,13 +435,7 @@ function play_responder_message (msg)
   -- give some time for users to compose themselves and
   -- potentially respond
   if (d == "") then
-  	read(anssd .. "instructions_short.wav", 1000)
-  	d = use();
-  	if (d == "") then
-     	sleep(3000)
-    else
-    	return d;
-    end
+  	read(anssd .. "instructions_short.wav", 4000)
   else
   	return d;
   end
