@@ -19,6 +19,10 @@ from django.contrib.auth.models import User as AuthUser
 
 class Line(models.Model):
     number = models.CharField(max_length=24)
+    # if the outbound calling number for this number needs to be explicitly
+    # set. Useful for toll-free lines which can use a dedicated number in
+    # the block other than the pilot to send calls, and then deflect inbound calls
+    outbound_number = models.CharField(max_length=24, blank=True, null=True)
     name = models.CharField(max_length=128)
     language = models.CharField(max_length=24)
     # is this line open to any caller or restricted?
