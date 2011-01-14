@@ -97,7 +97,12 @@ def answer_call(line, userid, answer):
         
     now = datetime.now()
     
-    s = Survey(name="AnswerCall_" + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, number=line.number)
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
+        
+    s = Survey(name="AnswerCall_" + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, number=num)
     #print ("adding announcement survey " + str(s))
     s.save()
 

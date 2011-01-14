@@ -68,10 +68,14 @@ def announce(announcements, name, line):
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
     language = line.language
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
-        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1)
+        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, number=num)
         print ("adding announcement survey " + str(s))
         s.save()
     
