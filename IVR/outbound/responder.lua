@@ -163,7 +163,7 @@ check_n_msgs = get_responder_messages(userid);
 msg = check_n_msgs();
 if (msg ~= nil) then
 	-- set the language
-	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix, line.number ";
+	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix, line.number, line.outbound_number ";
 	query = query .. " FROM AO_line line, AO_line_forums line_forum, AO_forum forum, AO_message_forum message_forum ";
 	query = query .. " WHERE line.id = line_forum.line_id ";
 	query = query .. " AND  line_forum.forum_id = forum.id ";
@@ -206,7 +206,7 @@ if (msg ~= nil) then
 		DIALSTRING_SUFFIX = row[3];
 	end
 	
-	local originationnum = row[4];
+	local originationnum = row[5] or row[4];
 	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..originationnum..'}';
 	
 	-- script-specific sounds
