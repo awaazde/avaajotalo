@@ -99,7 +99,6 @@ INSTALLED_APPS = (
     'otalo.surveys',
     'otalo.notification',
     'django.contrib.admin',
-    'django_extensions'
 )
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
