@@ -140,8 +140,6 @@ def answer_call(line, userid, answer):
     #print ("adding backup call " + str(call))
     call.save()
     
-    #make the call
-    router.route_calls([call.id], SURVEY_SCRIPT)
 	
 def main():
     if len(sys.argv) > 1:
