@@ -73,7 +73,7 @@ if (result ~= nil) then
 else
 	if (open == 1) then
 	   -- first time caller
-	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
+	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..phonenum.."','y')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
