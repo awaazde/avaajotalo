@@ -200,7 +200,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, o
       logfile:write(sessid, "\t",
 		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
 		    os.time(), "\t", "Record", "\t", filename, "\n");
-      session:execute("record", filename .. " " .. maxlength .. " 80 2");
+      session:execute("record", filename .. " " .. maxlength .. " 100 5");
       --sleep(1000);
       d = use();
       
