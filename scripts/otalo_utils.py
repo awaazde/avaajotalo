@@ -7,9 +7,10 @@ class PhoneNumException(Exception):
 
 def get_phone_num(line):
 	data = line.split('\t')
-	num = data[1]
+	# get last 10 digits only
+	num = data[1][-10:]
 	
-	if num[-10:] in blacklist:
+	if num in blacklist:
 		raise PhoneNumException
 	
 	return num
