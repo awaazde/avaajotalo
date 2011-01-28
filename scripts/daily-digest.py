@@ -45,7 +45,7 @@ def main():
 	calls_sorted.reverse()
 	for num, tot in calls_sorted:
 		print("<tr>")
-		print("<td width='100px'>"+num+"</td>")
+		print("<td width='100px'>"+num[-10:]+"</td>")
 		print("<td>"+str(tot)+"</td>")
 		print("</tr>")
 	
