@@ -724,6 +724,7 @@ end
 if (callback_allowed == 1) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
+	session:execute("pre_answer");
 	session:sleep(8000);
 
 	if (session:ready() == true) then
