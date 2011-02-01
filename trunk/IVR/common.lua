@@ -670,6 +670,11 @@ function play_prompts (prompts)
    local d = "";
    local replay_cnt = 0;
    
+   -- a complete_after 0 means it's complete if they've picked up the call
+   if (complete_after_idx ~= nil and complete_after_idx == 0) then
+   	  	set_survey_complete(callid);
+   end
+   
    while (current_prompt ~= nil) do
    	  promptid = current_prompt[1];
    	  promptfile = current_prompt[2];
