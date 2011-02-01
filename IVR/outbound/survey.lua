@@ -68,7 +68,7 @@ if (res[5] ~= nil) then
 	DIALSTRING_SUFFIX = res[5];
 end
 
-complete_after_idx = res[6];
+complete_after_idx = tonumber(res[6]);
 
 freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. phonenum .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
 
