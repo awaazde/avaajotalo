@@ -31,14 +31,17 @@ def route_calls(ids, IVR_script, outbound_var_val=False):
     # this is precautionary in order to kill any rogue calls
     # but it means you have to be sure that there are no outbound
     # calls open at this time that you shouldn't be killing
-    if outbound_var_val:
-	#print(SCRIPT + "attempting to kill open channels")
-	con.api("hupall normal_clearing " + outbound_var_val)
-	# for good measure, sleep a bit and do it again
-	time.sleep(5)
-	con.api("hupall normal_clearing " + outbound_var_val)
-	# let it marinate before calling out
-	time.sleep(5)
+    # UPDATE: Disabling this because it looks like the normal_clearings are mis-timed
+    # with the call outs below (i.e. calls are getting cleared after being executed)
+    # Trust the survey app to hangup itself.
+    #if ids and outbound_var_val:
+    	#print(SCRIPT + "attempting to kill open channels")
+    #	con.api("hupall normal_clearing " + outbound_var_val)
+    	# for good measure, sleep a bit and do it again
+    #	time.sleep(5)
+    #	con.api("hupall normal_clearing " + outbound_var_val)
+    	# let it marinate before calling out
+    #	time.sleep(5)
 
     for id in ids:
         # only make a call when we are below the threshold
