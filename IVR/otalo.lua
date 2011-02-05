@@ -543,7 +543,7 @@ function playmessages (msgs, listenreplies)
 		 end
 	 elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
 	 	 read(aosd .. "okinstructions.wav", 500);
-		 read(anssd .. "instructions_full.wav", 500);
+		 read(aosd .. "instructions_full.wav", 500);
 		 
 		 d = use();
 	 	
@@ -698,7 +698,7 @@ function playforum (forumid)
       return;
    elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
    	  read(aosd .. "okinstructions.wav", 500);
-	  read(anssd .. "instructions_full.wav", 500);
+	  read(aosd .. "instructions_full.wav", 500);
 	 
 	  d = use();
    end
