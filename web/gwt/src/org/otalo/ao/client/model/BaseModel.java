@@ -15,14 +15,15 @@
  */
 package org.otalo.ao.client.model;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 
-public abstract class BaseModel {
+public class BaseModel {
 
     protected JSOModel data;
 
@@ -30,6 +31,11 @@ public abstract class BaseModel {
         this.data = data;
     }
 
+    protected JSOModel getData()
+    {
+    	return data;
+    }
+    
     public String get(String field) {
         String val = this.data.get(field);
         if (val != null && "null".equals(val) || "undefined".equals(val)) {
@@ -74,5 +80,10 @@ public abstract class BaseModel {
     public String getField(String field)
     {
     	return getObject("fields").get(field);
+    }
+    
+    public JsArray<JSOModel> getArray(String key)
+    {
+    	return this.data.getArray(key);
     }
 }

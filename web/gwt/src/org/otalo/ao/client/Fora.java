@@ -21,45 +21,43 @@ import java.util.List;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.ImageBundle;
-import com.google.gwt.user.client.ui.TreeImages;
+import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A panel of fora, each presented as a tree.
  */
 public class Fora extends Composite implements JSONRequester, ClickHandler {
-  private ArrayList<ForumWidget> widgets = new ArrayList();
+  private ArrayList<ForumWidget> widgets = new ArrayList<ForumWidget>();
 	
 	/**
    * Specifies the images that will be bundled for this Composite and specify
    * that tree's images should also be included in the same bundle.
    */
-  public interface Images extends ImageBundle, TreeImages {
-    AbstractImagePrototype inbox();
+  public interface Images extends ClientBundle, Tree.Resources {
+  	ImageResource inbox();
     
-    AbstractImagePrototype home();
+    ImageResource home();
 
-    AbstractImagePrototype drafts();
+    ImageResource drafts();
     
-    AbstractImagePrototype sent();
+    ImageResource sent();
     
-    @Resource("noimage.png")
-    AbstractImagePrototype treeLeaf();
+    ImageResource treeLeaf();
+    
+    ImageResource broadcast();
   }
 
   private Images images;
   private VerticalPanel p;
+  private SurveyWidget surveys;
 
   /**
    * Constructs a new list of forum widgets with a bundle of images.
@@ -88,6 +86,9 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   	}
   	
   	loadFora(fora);
+  	surveys = new SurveyWidget(images, this);
+  	p.add(surveys.getWidget());
+  	
   }
 
 
@@ -135,6 +136,11 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		{
 			if (!w.contains(source))
 				w.close();
+		}
+		
+		if (!surveys.contains(source))
+		{
+			surveys.close();
 		}
 		
 	}

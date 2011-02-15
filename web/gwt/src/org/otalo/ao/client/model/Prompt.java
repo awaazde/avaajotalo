@@ -15,42 +15,24 @@
  */
 package org.otalo.ao.client.model;
 
-
-public class Forum extends BaseModel {
+public class Prompt extends BaseModel {
 	
-	
-	public Forum(JSOModel data) 
-	{
+	public Prompt(JSOModel data) {
 		super(data);
 	}
 	
-	public String getName() {
+	public String getName()
+	{
 		return getField("name");
 	}
-	
-	public boolean postingAllowed()
-	{
-		return getField("posting_allowed").equals("y");
-	}
-	
-	public boolean responsesAllowed()
-	{
-		return getField("responses_allowed").equals("y");
-	}
-	
-	public boolean moderated()
-	{
-		return getField("moderated").equals("y");
-	}
-	
-	public boolean routeable()
-	{
-		return getField("routeable").equals("y");
-	}
-	
-	public static boolean isForum(JSOModel data)
-	{
-		return data.get("model").equals("AO.forum");
-	}
 
+	public String getOrder()
+	{
+		return getField("order");
+	}
+	
+	public Survey getSurvey()
+	{
+		return new Survey(getObject("fields").getObject("survey"));
+	}
 }

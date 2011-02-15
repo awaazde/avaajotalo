@@ -16,6 +16,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
+from otalo.surveys.models import Survey
+from datetime import datetime
 
 class Line(models.Model):
     number = models.CharField(max_length=24)
@@ -55,8 +57,8 @@ class User(models.Model):
     tags = models.ManyToManyField('Tag', blank=True, null=True)
 
     def __unicode__(self):
-        if self.name:
-            return self.name + '-' + self.number
+        if self.name and self.name != '':
+            return self.name
         else:
             return self.number
         
@@ -71,7 +73,7 @@ class Message(models.Model):
     # Leave out many_to_many with responder since it has two foreign keys into User
     
     def __unicode__(self):
-        return str(self.date) + '_' + unicode(self.user) + '_(' + str(self.id) + ')'
+        return datetime.strftime(self.date, '%b-%d-%Y') + '_' + unicode(self.user)
       
 class Forum(models.Model):
     name = models.CharField(max_length=24)
@@ -98,6 +100,7 @@ class Forum(models.Model):
     
     maxlength = models.IntegerField()
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
+    bcast_template = models.ForeignKey(Survey, blank=True, null=True)
 
     def __unicode__(self):
         return self.name

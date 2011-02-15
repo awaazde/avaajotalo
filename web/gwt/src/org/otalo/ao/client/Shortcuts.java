@@ -16,6 +16,7 @@
  */
 package org.otalo.ao.client;
 
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratedStackPanel;
@@ -35,12 +36,11 @@ public class Shortcuts extends Composite {
 	 * images needed in child widgets.
 	 */
 	public interface Images extends Fora.Images {
-		AbstractImagePrototype messagesgroup();
+		ImageResource messagesgroup();
 	}
 
 	private int nextHeaderIndex = 0;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
-	private Fora fora;
 
 	/**
 	 * Constructs a new shortcuts widget using the specified images.
@@ -49,7 +49,6 @@ public class Shortcuts extends Composite {
 	 *            a bundle that provides the images for this widget
 	 */
 	public Shortcuts(Images images, Fora fora) {
-		this.fora = fora;
 		add(fora, images.messagesgroup(), "Forums");
 		initWidget(stackPanel);
 	}
@@ -60,10 +59,10 @@ public class Shortcuts extends Composite {
 		stackPanel.showStack(0);
 	}
 
-	private void add(Widget widget, AbstractImagePrototype imageProto,
+	private void add(Widget widget, ImageResource resource,
 			String caption) {
 		widget.addStyleName("mail-StackContent");
-		stackPanel.add(widget, createHeaderHTML(imageProto, caption), true);
+		stackPanel.add(widget, createHeaderHTML(resource, caption), true);
 	}
 
 	/**
@@ -76,10 +75,10 @@ public class Shortcuts extends Composite {
 	 *            the group caption
 	 * @return the header HTML fragment
 	 */
-	private String createHeaderHTML(AbstractImagePrototype imageProto,
+	private String createHeaderHTML(ImageResource resource,
 			String caption) {
 		nextHeaderIndex++;
-
+		AbstractImagePrototype imageProto = AbstractImagePrototype.create(resource);
 		String captionHTML = "<table class='caption' cellpadding='0' cellspacing='0'>"
 				+ "<tr><td class='lcaption'>"
 				+ imageProto.getHTML()

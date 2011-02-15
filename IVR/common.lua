@@ -603,13 +603,14 @@ OPTION_NEXT = 1;
 OPTION_PREV = 2;
 OPTION_REPLAY = 3;
 OPTION_GOTO = 4;
+OPTION_RECORD = 5;
 
 -----------
 -- get_prompts
 -----------
 
 function get_prompts(surveyid)
-	local query = 	"SELECT id, file, bargein, delay ";
+	local query = 	"SELECT id, file, bargein, delay, captureinput ";
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
@@ -668,6 +669,7 @@ function play_prompts (prompts)
    table.insert(prevprompts, current_prompt);
    local current_prompt_idx = 1;
    local d = "";
+   local input = "";
    local replay_cnt = 0;
    
    -- a complete_after 0 means it's complete if they've picked up the call
@@ -680,6 +682,7 @@ function play_prompts (prompts)
    	  promptfile = current_prompt[2];
    	  bargein = current_prompt[3];
    	  delay = current_prompt[4];
+   	  captureinput = current_prompt[5];
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
    	  if (bargein == 1) then
@@ -702,9 +705,10 @@ function play_prompts (prompts)
    	  end
    	  
    	  d = use();
+   	  input = d;
    	  
    	  -- get option
-   	  option = get_option(promptid, d);
+   	  option = get_option(promptid, input);
    	  if (option == nil) then
    	  	-- default: repeat which is safer than NEXT since bad input
 		-- will make the prompt be skipped. Downside is that prompts have to have
@@ -760,7 +764,17 @@ function play_prompts (prompts)
 		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
+	  elseif (action == OPTION_RECORD) then
+	    local maxlength = tonumber(option[2]);
+	  	input = recordsurveyinput(callid, promptid, maxlength);
 	  end
+	  
+	  if (captureinput == 1) then
+	  	query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
+   		query = query .. " VALUES ("..callid..","..promptid..",'"..input.."')";
+   		con:execute(query);
+   		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+	  end	
     
    end -- end while
    
@@ -770,6 +784,25 @@ function play_prompts (prompts)
    if (complete_after_idx == nil) then
    		set_survey_complete(callid);
    end
+end
+
+-----------
+-- recordsurveyinput
+-----------
+
+function recordsurveyinput (callid, promptid, maxlength)
+   local maxlength = maxlength or 180000;
+   local partfilename = os.time() .. ".mp3";
+   local filename = sd .. partfilename;
+
+   session:execute("playback", "tone_stream://%(500, 0, 620)");
+   freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
+   logfile:write(sessid, "\t",
+	    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
+	    os.time(), "\t", "Record", "\t", filename, "\n");
+   session:execute("record", filename .. " " .. maxlength .. " 100 5");
+   
+   return partfilename;
 end
 
 --[[ 

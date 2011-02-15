@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from otalo.surveys.models import Subject, Survey, Call, Prompt, Option
+from otalo.surveys.models import Subject, Survey, Call, Prompt, Option, Input
 from django.contrib import admin
 
 class NameSearchAdmin(admin.ModelAdmin):
@@ -31,4 +31,5 @@ admin.site.register(Subject, NameSearchAdmin)
 admin.site.register(Call, DateDisplayAdmin)
 admin.site.register(Prompt)
 admin.site.register(Option)
+admin.site.register(Input)
 

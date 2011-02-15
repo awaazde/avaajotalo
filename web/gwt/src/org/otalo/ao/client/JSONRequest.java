@@ -17,6 +17,11 @@
 package org.otalo.ao.client;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.otalo.ao.client.model.JSOModel;
+
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -24,12 +29,6 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
-
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.otalo.ao.client.model.JSOModel;
 
 /**
  * Class that acts as a client to a JSON service. 
@@ -57,6 +56,13 @@ public final class JSONRequest {
 		public static final String MESSAGE_RESPONDERS = "messageresponder/";
 		public static final String USERNAME = "username/";
 		public static final String LINE = "line/";
+		public static final String DOWNLOAD = "download/mf/";
+		public static final String DOWNLOAD_SURVEY_INPUT = "download/si/";
+		public static final String SURVEY = "survey/";
+		public static final String BCAST_MESSAGE = "bcast/";
+		public static final String FORWARD_THREAD = "fwdthread/";
+		public static final String SURVEY_INPUT = "surveyinput/";
+		public static final String PROMPT_RESPONSES = "promptresponses/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
@@ -64,6 +70,8 @@ public final class JSONRequest {
 		
 		public static final String TAG_TYPE_CROP = "agri-crop";
 		public static final String TAG_TYPE_TOPIC = "agri-topic";
+		
+		public static final String MSG_METADATA = "MESSAGE_METADATA";
 	}
 	public static List<JSOModel> getModels(String jsonStr)
 	{

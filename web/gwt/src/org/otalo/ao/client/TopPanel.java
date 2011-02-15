@@ -21,39 +21,27 @@ import java.util.List;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
-import org.otalo.ao.client.model.Tag;
 import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.ImageBundle;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * The top panel, which contains the 'welcome' message and various links.
  */
 public class TopPanel extends Composite implements ClickHandler {
 
-  /**
-   * An image bundle for this widgets images.
-   */
-  public interface Images extends ImageBundle {
-    AbstractImagePrototype logo();
-  }
-
   private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
   private HTML aboutLink = new HTML("<a href='javascript:;'>About</a>");
   private HorizontalPanel outer, inner;
-  private Image logo;
+  private Line line = null;
 
-  public TopPanel(Images images) {
+  public TopPanel() {
     outer = new HorizontalPanel();
     inner = new HorizontalPanel();
 
@@ -88,6 +76,11 @@ public class TopPanel extends Composite implements ClickHandler {
 	  
   }
   
+  public Line getLine()
+  {
+  	return line;
+  }
+  
   private class UsernameRequestor implements JSONRequester {
 		 
 		public void dataReceived(List<JSOModel> models) 
@@ -109,10 +102,10 @@ public class TopPanel extends Composite implements ClickHandler {
 			// for e.g. superuser will not have an associated AO_admin record
 			if (models.size() > 0)
 			{
-				Line l = new Line(models.get(0));
-				if (!"null".equals(l.getLogoFile()) && !"".equals(l.getLogoFile()))
+				line = new Line(models.get(0));
+				if (!"null".equals(line.getLogoFile()) && !"".equals(line.getLogoFile()))
 				{
-					Image logo = new Image(l.getLogoFile());
+					Image logo = new Image(line.getLogoFile());
 					outer.insert(logo, 0);
 					outer.setCellHorizontalAlignment(logo, HorizontalPanel.ALIGN_LEFT);
 				    

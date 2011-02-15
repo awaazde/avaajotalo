@@ -15,6 +15,7 @@
  */
 package org.otalo.ao.client.model;
 
+
 public class Line extends BaseModel {
 	
 	public Line(JSOModel data) {
@@ -22,7 +23,15 @@ public class Line extends BaseModel {
 	}
 	
 	public String getLogoFile() {
-		return getObject("fields").get("logo_file");
+		return getField("logo_file");
+	}
+	
+	public String[] getForumIds() {
+		
+		String lst = getField("forums");
+		lst = lst.replace("[","");
+		return lst.split(",");
+
 	}
 
 }
