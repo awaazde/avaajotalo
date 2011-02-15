@@ -19,11 +19,17 @@ import org.otalo.ao.client.model.Message.MessageStatus;
 
 public class MessageForum extends BaseModel {
 	private Message m;
+	public static String MODEL_TYPE = "AO.message_forum";
 	
 	public MessageForum(JSOModel data) {
 		super(data);
 		
 		m = new Message(getObject("fields").getObject("message"));
+	}
+	
+	public MessageForum(BaseModel model)
+	{
+		this(model.getData());
 	}
 
 	public String getPosition()
@@ -89,5 +95,15 @@ public class MessageForum extends BaseModel {
 	public String getRgt()
 	{
 		return m.getRgt();
+	}
+	
+	public static boolean isMessageForum(JSOModel data)
+	{
+		return data.get("model").equals(MODEL_TYPE);
+	}
+	
+	public static boolean isMessageForum(BaseModel model)
+	{
+		return isMessageForum(model.getData());
 	}
 }

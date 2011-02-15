@@ -13,18 +13,18 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-
+import os, stat
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
-from otalo.AO.models import Forum, Message, Message_forum, User, Tag, Message_responder, Admin
-from otalo.surveys.models import Prompt
+from otalo.AO.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
+from otalo.surveys.models import Survey, Prompt, Input
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Count
-from datetime import datetime
-import os, stat
+from datetime import datetime, timedelta
+from django.core.servers.basehttp import FileWrapper
 import alerts
 
 # Code in order of how they are declared in Message.java
@@ -38,6 +38,8 @@ MIN_RESPONDERS = 2
 MAX_QUESTIONS_PER_RESPONDER = 10
 # should match answer.lua
 LISTEN_THRESH = 5
+# This variable should be consistent with MessageList.java
+VISIBLE_MESSAGE_COUNT = 10
 
 @login_required
 def index(request):
@@ -53,7 +55,7 @@ def forum(request):
     else:
         fora = Forum.objects.all()
         
-    return send_response(fora)
+    return send_response(fora, excludes=('messages','tags','responders'))
 
 def messages(request, forum_id):
     params = request.GET
@@ -67,8 +69,49 @@ def messages(request, forum_id):
         message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status, message__lft__gt=1).order_by('-position', '-message__date')
     elif posttype == 'all':
         message_forums = Message_forum.objects.filter(forum=forum_id, status__in=status).order_by('-position', '-message__date')
-       
-    return send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':()}})
+    
+    count = message_forums.count()  
+   
+    if params.__contains__('messageforumid'):
+        targetid = params['messageforumid']
+        found = False
+        for start in range(0, count, VISIBLE_MESSAGE_COUNT):
+            chunk = message_forums[start:start+VISIBLE_MESSAGE_COUNT]
+            for mf in chunk:
+                if mf.id == long(targetid):
+                    message_forums = chunk
+                    found = True
+            if found:
+                break
+            
+        if not found:
+            # Then this message left the list on a previous action
+            # (like moderation), in which case we assume we have
+            # been sent the original startIndex
+            start = int(params['start'])
+            # If the disappeared message was the first on the next page
+            # boundary (really should only need to be == comparison),
+            # set the start to one page earlier
+            if start >= count:
+                start -= VISIBLE_MESSAGE_COUNT
+                
+    else:
+        start = int(params['start'])
+        # fell off the page
+        if start >= count and start > 0:
+            start -= VISIBLE_MESSAGE_COUNT
+        message_forums = message_forums[start:min(message_forums.count(),start+VISIBLE_MESSAGE_COUNT)]
+        
+    resp = send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('name', 'moderated', 'responses_allowed', 'posting_allowed', 'routeable')}})
+    
+    if count > 0:
+        # append some meta info about the messages
+        # remove end bracket
+        json = resp.content[:-1]
+        json += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+'}]'
+        resp.content = json
+        
+    return resp
 
 def messageforum(request, message_forum_id):
     # Note use of filter instead of get to return a query set
@@ -297,8 +340,6 @@ def createmessage(request, forum, content, summary=False, parent=False):
         alerts.answer_call(forum.line_set.all()[0], parent.message.user.id, msg_forum)
         
     msg_forum.save()
-    
-   
 
     return msg_forum
 
@@ -365,11 +406,21 @@ def updatestatus(request, action):
     
     return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
 
-def tags(request, forum_id):
+def tags(request):
     params = request.GET
     
-    types = params['type'].split()
-    tags = Tag.objects.filter(forum=forum_id, type__in=types)
+    if params.__contains__('forumid'):
+        forum_id = int(params['forumid'])
+        tags = Tag.objects.filter(forum=forum_id).distinct()
+    elif params.__contains__('lineid'):
+        line_id = int(params['lineid'])
+        tags = Tag.objects.filter(forum__line=line_id).distinct()
+    else:
+        tags = Tag.objects.all()
+    
+    if params.__contains__('type'):
+        types = params['type'].split()
+        tags.filter(type__in=types)
        
     return send_response(tags)
 
@@ -403,6 +454,153 @@ def line(request):
     line = forum.line_set.all()[:1]
     return send_response(line)
 
+'''
+Do this below the other imports bc
+broadcast mod itself imports from this file
+'''
+import broadcast
+def survey(request):
+    params = request.GET
+    
+    surveys = Survey.objects.filter(broadcast=True)
+    if params.__contains__('lineid'):
+        line_id = int(params['lineid'])
+        line = get_object_or_404(Line, pk=line_id)
+        surveys = Survey.objects.filter(number__in=[line.number,line.outbound_number]).distinct()
+       
+    return send_response(surveys)
+
+def bcast(request):
+    params = request.POST
+        
+    # Get subjects
+    who = params['who']
+    if who == 'numbers':
+        numsRaw = params['numbersarea']
+        if '\n' in numsRaw:
+            numbers = numsRaw.split('\n')
+        if ',' in numsRaw:
+            numbers = numsRaw.split(',')
+        
+        subjects = broadcast.subjects_by_numbers(numbers)  
+    
+    elif who == 'tag':
+        tagids = params.getlist('tag')
+        tags = Tag.objects.filter(pk__in=tagids)
+        subjects = broadcast.subjects_by_tags(tags)
+    
+    elif who == 'log':
+        lastncallers = params['lastncallers']
+        since = params['since']
+        
+        if lastncallers == 'ALL':
+            lastncallers = 0
+        else:
+            lastncallers = int(lastncallers)
+        since = datetime.strptime(since, '%b-%d-%Y')
+        
+        line_id = int(params['lineid'])
+        line = get_object_or_404(Line, pk=line_id)         
+        subjects = broadcast.subjects_by_log(settings.IVR_LOGFILE, line, since, lastncallers)
+
+    # Get message
+    what = params['what']
+    if what == 'file':
+        line_id = int(params['lineid'])
+        line = get_object_or_404(Line, pk=line_id) 
+        bcastfile = request.FILES['bcastfile']
+        survey = broadcast.single(bcastfile, line)
+    
+    #elif params.__contains__('sms'):
+        #TODO
+    elif what == 'survey':
+        surveyid = params['survey']
+        survey = get_object_or_404(Survey, pk=surveyid)
+        if survey.template:
+            message_forum_id = int(params['messageforumid'])
+            mf = get_object_or_404(Message_forum, pk=message_forum_id) 
+            survey = broadcast.thread(mf, survey) 
+        
+    # Get schedule
+    when = params['when']
+    if when == 'now':
+        now = datetime.now()
+        start_date = datetime(year=now.year, month=now.month, day=now.day)
+    elif when == 'date':
+        bcastdate = params['bcastdate']
+        start_date = datetime.strptime(bcastdate, '%b-%d-%Y')
+    
+    fromtime = timedelta(hours=int(params['fromtime']))
+    tilltime = timedelta(hours=int(params['tilltime']))
+    duration = int(params['duration'])
+
+    broadcast.broadcast_calls(survey, subjects, start_date, bcast_start_time=fromtime, bcast_end_time=tilltime, duration=duration)
+    
+    if params['messageforumid']:
+        return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(params['messageforumid']),)))
+    else:
+        return HttpResponseRedirect(reverse('otalo.AO.views.forum'))
+
+def forwardthread(request, message_forum_id):
+    mf = get_object_or_404(Message_forum, pk=message_forum_id)
+    
+    # check if this forum has a designated template
+    template = mf.forum.bcast_template
+    
+    if template:
+        templates = [template]
+    else:
+        lines = mf.forum.line_set.all()
+        numbers = []
+        for line in lines:
+            if line.number not in numbers:
+                numbers.append(line.number)
+            if line.outbound_number not in numbers:
+                numbers.append(line.outbound_number)
+                
+        templates = Survey.objects.filter(template=True, number__in=numbers)
+    
+    return send_response(templates)
+
+def surveyinput(request):
+    params = request.GET
+    
+    if params.__contains__('lineid'):
+        lines = Line.objects.filter(pk=params['lineid'])
+    else:
+        lines = Line.objects.all()
+    
+    numbers = []
+    for line in lines:
+        if line.number not in numbers:
+            numbers.append(line.number)
+        if line.outbound_number not in numbers:
+            numbers.append(line.outbound_number)  
+        
+    # get all surveys (and their prompts) which have recorded input
+    prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
+    
+    return send_response(prompts, relations=('survey',))
+
+def promptresponses(request, prompt_id):
+    params = request.GET
+    
+    prompt = get_object_or_404(Prompt, pk=prompt_id)
+    start = int(params['start'])
+    input = Input.objects.filter(prompt=prompt)[start:start+VISIBLE_MESSAGE_COUNT]
+    count = input.count()
+    
+    resp = send_response(input, relations={'call':{'relations':{'subject':{'fields':('name','number',)}}}, 'prompt':()} )
+    
+    if count > 0:
+        # append some meta info about the messages
+        # remove end bracket
+        json = resp.content[:-1]
+        json += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+'}]'
+        resp.content = json
+    
+    return resp
+    
 def get_responders(message_forum):
     
     tags = Tag.objects.filter(message_forum = message_forum)
@@ -443,9 +641,42 @@ def add_child(child, parent):
         m.save()
         
     child.save()
-def send_response(query_set, relations=()):
+
+def download(request, model, model_id):
+    if model == 'mf':
+        mf = get_object_or_404(Message_forum, pk=model_id)
+        fname = mf.message.content_file
+    elif model == 'si':
+        input = get_object_or_404(Input, pk=model_id)
+        fname = input.input
+    
+    fname = settings.MEDIA_ROOT + '/' + fname
+    return send_file(fname,'application/octet-stream')
+
+from django.utils.encoding import smart_str
+
+def send_file(filename, content_type):
+    """                                                                         
+    Send a file through Django without loading the whole file into              
+    memory at once. The FileWrapper will turn the file object into an           
+    iterator for chunks of 8KB.                                                 
+    """                            
+    wrapper = FileWrapper(file(filename))
+    response = HttpResponse(wrapper, content_type=content_type)
+    response['Content-Length'] = os.path.getsize(filename)
+    response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(filename)
+    return response
+
+# Expects data to be in JSON format i.e. {a:b, c:{d:e}}
+def send_data(json_data):
+    response = HttpResponse(json_data)
+    response['Pragma'] = "no cache"
+    response['Cache-Control'] = "no-cache, must-revalidate"
+    return response;
+
+def send_response(query_set, relations=(), excludes=()):
     json_serializer = serializers.get_serializer("json")()
-    response = HttpResponse(json_serializer.serialize(query_set, relations=relations))
+    response = HttpResponse(json_serializer.serialize(query_set, relations=relations, excludes=excludes))
     response['Pragma'] = "no cache"
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response;

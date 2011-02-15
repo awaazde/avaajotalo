@@ -20,35 +20,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.model.BaseModel;
+import org.otalo.ao.client.model.Call;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Message;
-import org.otalo.ao.client.model.MessageForum;
-import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;
+import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.Prompt;
+import org.otalo.ao.client.model.Subject;
+import org.otalo.ao.client.model.SurveyInput;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Hidden;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ImageBundle;
-import com.google.gwt.user.client.ui.TreeImages;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLTable.Cell;
-import com.google.gwt.user.client.ui.ImageBundle.Resource;
+import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 
 /**
  * A composite that displays voice messages.
  */
 public class MessageList extends Composite implements ClickHandler, JSONRequester {
 
+	/*
+	 * This variable should be consistent with otalo/views.py
+	 */
   private static final int VISIBLE_MESSAGE_COUNT = 10;
 
   private HTML countLabel = new HTML();
@@ -56,12 +63,13 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       true);
   private HTML olderButton = new HTML("<a href='javascript:;'>older &gt;</a>",
       true);
-  private int startIndex, selectedRow = -1;
+  private HandlerRegistration newButtonReg=null, oldButtonReg=null;
+  private int startIndex, count, selectedRow = -1;
   private FlexTable table = new FlexTable();
   private FormPanel detailsForm = new FormPanel();
   private HorizontalPanel navBar = new HorizontalPanel();
-  private List<MessageForum> messages = new ArrayList();
-  private MessageForum selectMessage;
+  private List<BaseModel> messages = new ArrayList<BaseModel>();
+  private BaseModel selectMessage;
   private Forum forum;
   private Hidden messageForumId;
   private Images images;
@@ -70,10 +78,10 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
    * Specifies the images that will be bundled for this Composite and specify
    * that tree's images should also be included in the same bundle.
    */
-  public interface Images extends ImageBundle {
-    AbstractImagePrototype approve();
+  public interface Images extends ClientBundle {
+    ImageResource approve();
     
-    AbstractImagePrototype reject();
+    ImageResource reject();
   }
 
   public MessageList(Images images) {
@@ -90,8 +98,6 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 
     // Hook up events.
     table.addClickHandler(this);
-    newerButton.addClickHandler(this);
-    olderButton.addClickHandler(this);
 
     // Create the 'navigation' bar at the upper-right.
     HorizontalPanel innerNavBar = new HorizontalPanel();
@@ -112,36 +118,14 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 
   public void onClick(ClickEvent event) {
     Object sender = event.getSource();
-    if (sender == olderButton) {
-      // Move forward a page.
-      startIndex += VISIBLE_MESSAGE_COUNT;
-      if (startIndex >= messages.size()) {
-        startIndex -= VISIBLE_MESSAGE_COUNT;
-      } else {
-        styleRow(selectedRow, false);
-        selectedRow = -1;
-        update();
-      }
-    } else if (sender == newerButton) {
-      // Move back a page.
-      startIndex -= VISIBLE_MESSAGE_COUNT;
-      if (startIndex < 0) {
-        startIndex = 0;
-      } else {
-        styleRow(selectedRow, false);
-        selectedRow = -1;
-        update();
-      }
-    } else if (sender == table) {
-      // Select the row that was clicked (-1 to account for header row).
-      Cell cell = table.getCellForEvent(event);
-      if (cell != null) {
-        int row = cell.getRowIndex();
-        if (row > 0) {
-          selectRow(row - 1);
-        }
-      }
-    }
+	  // Select the row that was clicked (-1 to account for header row).
+	  Cell cell = table.getCellForEvent(event);
+	  if (cell != null) {
+	    int row = cell.getRowIndex();
+	    if (row > 0) {
+	      selectRow(row - 1);
+	    }
+	  }
   }
 
   /**
@@ -178,11 +162,10 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   private void selectRow(int row) {
     // When a row (other than the first one, which is used as a header) is
     // selected, display its associated details.
-    MessageForum message = messages.get(startIndex + row);
-    if (message == null) {
+    if (messages.size() <= row || messages.get(row) == null) {
       return;
     }
-
+    
     styleRow(selectedRow, false);
     styleRow(row, true);
 
@@ -190,75 +173,119 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     //message.read = true;
     selectedRow = row;
 
-    Messages.get().setItem(message);
+    BaseModel message = messages.get(row);
+    if (MessageForum.isMessageForum(message))
+    	Messages.get().setItem(new MessageForum(message));
   }
 
   private void styleRow(int row, boolean selected) {
     if (row != -1) {
       if (selected) {
         table.getRowFormatter().addStyleName(row + 1, "mail-SelectedRow");
+        BaseModel message = messages.get(row);
+        String content = "";
+        if (MessageForum.isMessageForum(message))
+        	content = (new MessageForum(message)).getContent();
+        else if (SurveyInput.isSurveyInput(message))
+        {
+        	content = (new SurveyInput(message)).getInput();
+        }
+        SoundWidget sound = new SoundWidget(content);
+        table.setHTML(row + 1, 2, sound.getWidget().getHTML());
       } else {
         table.getRowFormatter().removeStyleName(row + 1, "mail-SelectedRow");
+        table.clearCell(row + 1, 2);
       }
     }
   }
 
   private void update() {
     // Update the older/newer buttons & label.
-    int count = messages.size();
     int max = startIndex + VISIBLE_MESSAGE_COUNT;
     if (max > count) {
       max = count;
     }
-
+    
     newerButton.setVisible(startIndex != 0);
     olderButton.setVisible(startIndex + VISIBLE_MESSAGE_COUNT < count);
+    
+    if (newButtonReg != null) {newButtonReg.removeHandler(); newButtonReg = null;}
+    if (oldButtonReg != null) {oldButtonReg.removeHandler(); oldButtonReg = null;}
+   
+    if (count > 0)
+    {
+	    BaseModel message = messages.get(0);
+	    newButtonReg = newerButton.addClickHandler(new PageOverHandler("newer", message));
+	    oldButtonReg = olderButton.addClickHandler(new PageOverHandler("older", message));
+
+    }
+
     countLabel.setText("" + (startIndex + 1) + " - " + max + " of " + count);
 
     // Show the selected messages.
     int i = 0;
     for (; i < VISIBLE_MESSAGE_COUNT; ++i) {
-      // Don't read past the end.
-      if (startIndex + i >= messages.size()) {
+    	// Don't read past the end.
+      if (i >= messages.size()) {
         break;
       }
-
-      MessageForum message = messages.get(startIndex + i);
-
-      // Add a new row to the table, then set each of its columns
-      table.setText(i + 1, 0, message.getDate());
-      User user = message.getAuthor();
-      String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
-      table.setText(i + 1, 1, callerText);
-      SoundWidget sound = new SoundWidget(message.getContent());
-      table.setHTML(i + 1, 2, sound.getWidget().getHTML());
       
-      if (forum != null && forum.moderated())
+      BaseModel message = messages.get(i);
+      
+      if (MessageForum.isMessageForum(message))
       {
-    	  HTML approveButton = new HTML(images.approve().getHTML());
-	      approveButton.addClickHandler(new MessageApproveHandler(AoAPI.APPROVE, message));
+	      MessageForum mf = new MessageForum(message);
+      	// Add a new row to the table, then set each of its columns
+	      table.setText(i + 1, 0, mf.getDate());
+	      User user = mf.getAuthor();
+	      String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
+	      table.setText(i + 1, 1, callerText);
 	      
-	      HTML rejectButton = new HTML(images.reject().getHTML());
-	      rejectButton.addClickHandler(new MessageApproveHandler(AoAPI.REJECT, message));
-	      
-	      switch (message.getStatus()){
-	      case APPROVED:
-	        table.setWidget(i+1, 3, rejectButton);
-	        table.setHTML(i+1, 4, "&nbsp");
-	      	break;
-	      case REJECTED:
-	      	table.setWidget(i+1, 3, approveButton);
-		    table.setHTML(i+1, 4, "&nbsp");
-	      	break;
-	      case PENDING:
-	      	table.setWidget(i+1, 3, approveButton);
-	      	table.setWidget(i+1, 4, rejectButton);
+	      if (forum != null && forum.moderated())
+	      {
+	    	  AbstractImagePrototype approveHTML = AbstractImagePrototype.create(images.approve());
+	    	  HTML approveButton = new HTML(approveHTML.getHTML());
+		      approveButton.addClickHandler(new MessageApproveHandler(AoAPI.APPROVE, mf));
+		      
+		      AbstractImagePrototype rejectHTML = AbstractImagePrototype.create(images.reject());
+		      HTML rejectButton = new HTML(rejectHTML.getHTML());
+		      rejectButton.addClickHandler(new MessageApproveHandler(AoAPI.REJECT, mf));
+		      
+		      switch (mf.getStatus()){
+		      case APPROVED:
+		        table.setWidget(i+1, 3, rejectButton);
+		        table.setHTML(i+1, 4, "&nbsp");
+		      	break;
+		      case REJECTED:
+		      	table.setWidget(i+1, 3, approveButton);
+			    table.setHTML(i+1, 4, "&nbsp");
+		      	break;
+		      case PENDING:
+		      	table.setWidget(i+1, 3, approveButton);
+		      	table.setWidget(i+1, 4, rejectButton);
+		      }
+	      }
+	      else
+	      {
+	      	table.setHTML(i+1, 3, "&nbsp");
+	      	table.setHTML(i+1, 4, "&nbsp");
 	      }
       }
-      else
+      else if (SurveyInput.isSurveyInput(message))
       {
-      	table.setHTML(i+1, 3, "&nbsp");
-      	table.setHTML(i+1, 4, "&nbsp");
+      	SurveyInput input = new SurveyInput(message);
+        Call call = input.getCall();
+
+        // Add a new row to the table, then set each of its columns
+	      table.setText(i + 1, 0, call.getDate());
+	      Subject subject = call.getSubject();
+	      String callerText = ("".equals(subject.getName()) || "null".equals(subject.getName())) ? subject.getNumber() : subject.getName() + " (" + subject.getNumber() + ")";
+	      table.setText(i + 1, 1, callerText);
+	       
+	     	// TODO: add download link
+	      Anchor downloadLink = new Anchor("Download", AoAPI.DOWNLOAD_SURVEY_INPUT + input.getId());
+	      table.setWidget(i+1, 3, downloadLink);
+	      table.setHTML(i+1, 4, "&nbsp");
       }
     }
 
@@ -280,6 +307,12 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       selectRow(0);
     }
   }
+  
+	public void displaySurveyInput(Prompt p, int start)
+	{
+		JSONRequest request = new JSONRequest();
+		request.doFetchURL(AoAPI.PROMPT_RESPONSES + p.getId() + "/?start=" + String.valueOf(start), this);
+	}
   
   private class MessageApproveHandler implements ClickHandler {
   	private String action;
@@ -304,18 +337,13 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   private class MessageStatusUpdated implements SubmitCompleteHandler {
 		
 		public void onSubmitComplete(SubmitCompleteEvent event) {
-			// get the message that was updated
-			JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
-			MessageForum m = new MessageForum(model);
-			
-			
 			ConfirmDialog saved = new ConfirmDialog("Updated!");
 			saved.show();
 			saved.center();
 			
 			// call the dispatcher just so we can search
 			// in the code
-			MessageForum mf = selectMessage;
+			MessageForum mf = new MessageForum(selectMessage);
 			selectMessage = null;
 			if (mf.isResponse() && mf.getStatus() != MessageStatus.PENDING)
 			{
@@ -328,7 +356,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 			else
 			{
 				// reload this message's old home folder
-				Messages.get().displayMessages(mf.getForum(), mf.getStatus());
+				Messages.get().displayMessages(mf.getForum(), mf.getStatus(), startIndex);
 			}
 			
 		}
@@ -337,39 +365,53 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   public void getMessages(MessageForum m)
   {
   	selectMessage = m;
+  	
   	if (m.isResponse() && m.getStatus() != MessageStatus.PENDING)
   	{
   		// call dispatcher in order to set forum widget
-  		Messages.get().displayResponses(m.getForum());
+  		Messages.get().displayResponses(m);
   	}
   	else
   	{
   		ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
     	statuses.add(m.getStatus());
-  		getMessages(m.getForum(), statuses);
+    	String filterParams = getFilterParams(statuses) + "&start=" + String.valueOf(startIndex) + "&messageforumid=" + m.getId();
+  		getMessages(m.getForum(), filterParams);
   	}
   }
   
-  public void getMessages(Forum f, MessageStatus status)
+  public void getMessages(Forum f, MessageStatus status, int start)
   {
   	ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
   	statuses.add(status);
-  	getMessages(f, statuses);
+  	String filterParams = getFilterParams(statuses) + "&start=" + String.valueOf(start);
+  	getMessages(f, filterParams);
   	
   }
   
-  public void getResponses(Forum f)
+  public void getResponses(MessageForum mf)
   {
   	ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
   	statuses.add(MessageStatus.APPROVED);
   	statuses.add(MessageStatus.REJECTED);
-  	getMessages(f, statuses);
+  	String filterParams = getFilterParams(statuses) + "&start=" + String.valueOf(startIndex) + "&messageforumid=" + mf.getId();
+  	getMessages(mf.getForum(), filterParams);
   	
   }
   
-  private void getMessages(Forum f, List<MessageStatus> statuses)
+  public void getResponses(Forum f, int start)
   {
-  	String filterParams = "status=";
+  	ArrayList<MessageStatus> statuses = new ArrayList<MessageStatus>();
+  	statuses.add(MessageStatus.APPROVED);
+  	statuses.add(MessageStatus.REJECTED);
+  	String filterParams = getFilterParams(statuses) + "&start=" + String.valueOf(start);
+  	getMessages(f, filterParams);
+  	
+  }
+  
+  private String getFilterParams(List<MessageStatus> statuses)
+  {
+  	String filterParams = "/?status=";
   	for (MessageStatus status : statuses)
   	{
   		filterParams += status.ordinal() + " ";
@@ -388,10 +430,15 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   		filterParams += "&posttype=" + AoAPI.POSTS_RESPONSES;
   	}
   	
+  	return filterParams;
+  }
+  
+  private void getMessages(Forum f, String filterParams)
+  {
   	styleRow(selectedRow, false);
   	String forumId = f.getId();
   	JSONRequest request = new JSONRequest();
-	request.doFetchURL(AoAPI.MESSAGES + forumId + "/?" + filterParams, this);
+  	request.doFetchURL(AoAPI.MESSAGES + forumId + filterParams, this);
   }
 
 	public void dataReceived(List<JSOModel> models) 
@@ -399,19 +446,29 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 		// Start with a fresh set of messages
 		messages.clear();
   	
-  	for (JSOModel model : models)
-  	{
-  		messages.add(new MessageForum(model));
-  	}
-  	
   	// do this instead of initializing selectedRow
   	// to 0 in case there are no messages in this folder
   	startIndex = 0;
   	selectedRow = -1;
+  	count = 0;
+  	
+  	for (JSOModel model : models)
+  	{
+  		if (model.get("model").equals(AoAPI.MSG_METADATA))
+  		{
+  			count = Integer.valueOf(model.get("count"));
+  			startIndex = Integer.valueOf(model.get("start"));
+  		}
+  		else // Assume it's a data model
+  		{
+  			messages.add(new BaseModel(model));
+  		}
+  	}
   	
   	boolean msgFound = false;
   	if (!messages.isEmpty()) {
-  		forum = messages.get(0).getForum();
+  		if (MessageForum.isMessageForum(messages.get(0)))
+  			forum = new MessageForum(messages.get(0)).getForum();
   		// at the very least we will select the first msg
   		msgFound = true;
   		selectedRow = 0;
@@ -421,26 +478,65 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   	{
   		// GWT gives some funny compilation problems if the below
   		// line is inlined in the if statement, so keep this variable
-  		int messageForumId = Integer.valueOf(selectMessage.getId());
+  		int messageId = Integer.valueOf(selectMessage.getId());
   		// find this message and select it
   		for (int i = selectedRow; i < messages.size(); i++)
   		{
-  			if (Integer.valueOf(messages.get(i).getId()) == messageForumId)
+  			if (Integer.valueOf(messages.get(i).getId()) == messageId)
   			{
   				break;
   			}
   			
   			selectedRow++;
   			
-  			if (selectedRow == VISIBLE_MESSAGE_COUNT) 
-  			{
-  				startIndex += VISIBLE_MESSAGE_COUNT;
-  				selectedRow = 0;
-  			}
   		}
   	}
   	update();
- 		if (msgFound) selectRow(selectedRow);
-		selectMessage = null;
+  	if (msgFound) selectRow(selectedRow);
+  	selectMessage = null;
 	}
+	
+	public class PageOverHandler implements ClickHandler {
+  	private String direction;
+		private BaseModel message;
+  	
+  	public PageOverHandler(String direction, BaseModel message) {
+  		this.direction = direction;
+  		this.message = message;
+  	}
+		public void onClick(ClickEvent event) {
+			 if (direction.equals("older")) {
+				 // Move forward a page.
+				 startIndex += VISIBLE_MESSAGE_COUNT;
+				 if (startIndex >= count) {
+					 startIndex -= VISIBLE_MESSAGE_COUNT;
+				 } 
+			 }
+			 else if (direction.equals("newer")) {
+				 // Move back a page.
+		     startIndex -= VISIBLE_MESSAGE_COUNT;
+		     if (startIndex < 0) {
+		       startIndex = 0;
+		     }
+			 }
+			 
+			 styleRow(selectedRow, false);
+		   selectedRow = -1;
+		   if (MessageForum.isMessageForum(message))
+		   {
+			   MessageForum mf = new MessageForum(message);
+		  	 if (mf.isResponse() && mf.getStatus() != MessageStatus.PENDING)
+			  	 Messages.get().displayResponses(mf.getForum(), startIndex);
+			   else
+			  	 Messages.get().displayMessages(mf.getForum(), mf.getStatus(), startIndex);
+		   }
+		   else if (SurveyInput.isSurveyInput(message))
+		   {
+		  	 SurveyInput input = new SurveyInput(message);
+		  	 Messages.get().displaySurveyInput(input.getPrompt(), startIndex);
+		   }
+		}
+  	
+  }
+	
 }

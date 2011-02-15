@@ -19,23 +19,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.Fora.Images;
-import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
-import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Message;
-import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 
 /**
  * A wrapper class for Forums to be able to act on their widget
@@ -61,14 +58,14 @@ public class ForumWidget implements ClickHandler {
 		
 		tree = new Tree(images);
 		rootHTML = imageItemHTML(images.home(), forum.getName());
-    root = new TreeItem(rootHTML);
-    tree.addItem(root);
+	    root = new TreeItem(rootHTML);
+	    tree.addItem(root);
     
     if (forum.moderated())
     {
     	inboxHTML = imageItemHTML(images.inbox(), "Inbox");
-      inbox = new TreeItem(inboxHTML);
-      root.addItem(inbox);
+        inbox = new TreeItem(inboxHTML);
+        root.addItem(inbox);
     
     	approvedHTML = imageItemHTML(images.drafts(), "Approved");
 	    approved = new TreeItem(approvedHTML);
@@ -115,7 +112,8 @@ public class ForumWidget implements ClickHandler {
    * @param title the title of the item
    * @return the resultant HTML
    */
-  private HTML imageItemHTML(AbstractImagePrototype imageProto, String title) {
+  private HTML imageItemHTML(ImageResource res, String title) {
+	AbstractImagePrototype imageProto = AbstractImagePrototype.create(res);
     HTML label = new HTML(imageProto.getHTML() + " " + title);
     label.addClickHandler(this);
   	label.addClickHandler((ClickHandler)parent);
@@ -141,20 +139,20 @@ public class ForumWidget implements ClickHandler {
      Object sender = event.getSource();
     if (sender == inboxHTML) 
     {
-    	Messages.get().displayMessages(forum, MessageStatus.PENDING);
+    	Messages.get().displayMessages(forum, MessageStatus.PENDING, 0);
     } 
     else if (sender == approvedHTML) 
     {
-    	Messages.get().displayMessages(forum, MessageStatus.APPROVED);
+    	Messages.get().displayMessages(forum, MessageStatus.APPROVED, 0);
     }
     else if (sender == rejectedHTML) 
     {
-    	Messages.get().displayMessages(forum, MessageStatus.REJECTED);
+    	Messages.get().displayMessages(forum, MessageStatus.REJECTED, 0);
     }
     else if (sender == responsesHTML) 
     {
   		responsesSelected = true;
-    	Messages.get().displayResponses(forum);
+    	Messages.get().displayResponses(forum, 0);
     }
     else if (sender == uploadHTML)
     {
@@ -184,11 +182,11 @@ public class ForumWidget implements ClickHandler {
   	
   	if (forum.moderated())
   	{
-  		Messages.get().displayMessages(forum, MessageStatus.PENDING);
+  		Messages.get().displayMessages(forum, MessageStatus.PENDING, 0);
   	}
   	else
   	{
-  		Messages.get().displayMessages(forum, MessageStatus.APPROVED);
+  		Messages.get().displayMessages(forum, MessageStatus.APPROVED, 0);
   	}
 	}
 	public class UploadComplete implements SubmitCompleteHandler {
@@ -200,7 +198,7 @@ public class ForumWidget implements ClickHandler {
 				saved.center();
 				
 				// get the message that was updated
-				Messages.get().displayMessages(forum, MessageStatus.APPROVED);
+				Messages.get().displayMessages(forum, MessageStatus.APPROVED, 0);
 		}
 	}
 	

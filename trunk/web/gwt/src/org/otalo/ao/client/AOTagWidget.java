@@ -18,7 +18,6 @@ package org.otalo.ao.client;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Tag;
@@ -33,7 +32,6 @@ import com.google.gwt.user.client.ui.ListBox;
 public class AOTagWidget extends TagWidget {
 	private ListBox crop, topic;
 	private Hidden tagsChanged;
-	private boolean tagged;
 	private MessageForum mf;
 	
 	public AOTagWidget()
@@ -77,7 +75,7 @@ public class AOTagWidget extends TagWidget {
 		mf = messageForum;
 		
 		JSONRequest request = new JSONRequest();
-	    request.doFetchURL(AoAPI.TAGS + mf.getForum().getId() + "/?type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
+	    request.doFetchURL(AoAPI.TAGS + "?forumid=" + mf.getForum().getId() + "&type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
 	}
 	
 	 private class TagRequestor implements JSONRequester {
@@ -111,11 +109,9 @@ public class AOTagWidget extends TagWidget {
 			public void dataReceived(List<JSOModel> models) {
 				// pre-select the tags previously selected for this message
 				Tag t;
-				tagged = false;
 				
 				for (JSOModel model : models)
 			  	{
-			  		tagged = true;
 					t = new Tag(model);
 			  		
 			  		if (t.getType().equals(AoAPI.TAG_TYPE_CROP))

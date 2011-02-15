@@ -23,7 +23,6 @@ import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.MessageResponder;
 import org.otalo.ao.client.model.User;
-import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -93,7 +92,6 @@ public class AORoutingWidget extends RoutingWidget {
 		public void dataReceived(List<JSOModel> models) 
 		{
 			MessageResponder ms;
-			int idx = 0;
 			
 			for (JSOModel model : models)
 		  	{

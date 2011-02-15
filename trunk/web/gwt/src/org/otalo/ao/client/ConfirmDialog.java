@@ -30,7 +30,7 @@ public class ConfirmDialog extends DialogBox {
 
   public ConfirmDialog(String message) {
     // Use this opportunity to set the dialog's caption.
-    setText("About the AO admin console");
+    setText("Awaaz De Administration");
 
     // Create a VerticalPanel to contain the 'about' label and the 'OK' button.
     VerticalPanel outer = new VerticalPanel();

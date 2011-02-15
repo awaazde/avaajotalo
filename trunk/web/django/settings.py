@@ -106,3 +106,5 @@ STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
 SERIALIZATION_MODULES = {
     'json': 'wadofstuff.django.serializers.json'
 }
+
+IVR_LOGFILE = '/home/dsc/Documents/Log/AO/ao.log'

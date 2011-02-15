@@ -20,22 +20,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.Map.Entry;
 
-import org.apache.commons.digester.SetRootRule;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Message;
+import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
-import org.otalo.ao.client.model.Message.MessageStatus;
 
-import com.google.gwt.dev.util.msg.Message2ClassClass;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.http.client.URL;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -43,6 +40,8 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLTable;
 import com.google.gwt.user.client.ui.HasAlignment;
@@ -50,15 +49,8 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
-import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 /**
  * A composite for displaying the details of a voice message.
@@ -75,6 +67,8 @@ public class MessageDetail extends Composite {
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
 	private TagWidget tags;
 	private RoutingWidget routing;
+	private Anchor downloadLink, forwardLink;
+	private HandlerRegistration forwardHandler = null;
 
   public MessageDetail() {
   	outer = new HorizontalPanel();
@@ -194,16 +188,18 @@ public class MessageDetail extends Composite {
   	moveButtons.add(moveUpButton);
   	moveButtons.add(moveDownButton);
   	moveButtons.setSpacing(5);
+  	forwardLink = new Anchor("Forward >>");
+  	buttons.add(forwardLink);
+  	downloadLink = new Anchor("Download", AoAPI.DOWNLOAD);
+  	buttons.add(downloadLink);
   	buttons.add(sticky);
   	buttons.add(moveButtons);
   	buttons.add(saveButton);
   	controls.add(buttons);
   	
-  	
     outer.setStyleName("mail-Detail");
   	
-    initWidget(detailsForm);
-    
+    initWidget(detailsForm); 
     
   }
   
@@ -235,6 +231,7 @@ public class MessageDetail extends Composite {
   	// in case selection is done from msgList
   	reset();
   	
+  	messageForumId.setValue(messageForum.getId());
   	Forum f = messageForum.getForum();
   	setModerated(f.moderated());
   	setRouteable(f.routeable());
@@ -261,7 +258,7 @@ public class MessageDetail extends Composite {
   		setMovable(false); 
   		setSticky(false);
   	}
-  	messageForumId.setValue(messageForum.getId());
+  	
   	if ("null".equals(messageForum.getPosition()) || "".equals(messageForum.getPosition()))
   	{
   		sticky.setValue(false);
@@ -277,6 +274,23 @@ public class MessageDetail extends Composite {
   	// Load Message responders
   	routing.loadResponders(messageForum);
   	
+  	downloadLink.setHref(AoAPI.DOWNLOAD + messageForum.getId());
+  	if (forwardHandler != null) 
+  	{
+  		forwardHandler.removeHandler();
+  		forwardHandler = null;
+  	}
+  	
+  	if (messageForum.isResponse())
+  	{
+  		forwardLink.setVisible(false);
+  	}
+  	else
+  	{
+  		forwardLink.setVisible(true);
+  		forwardHandler = forwardLink.addClickHandler(new ForwardClickHandler(messageForum));
+  	}
+  	
     // Populate details pane with caller info.
   	// Load from the server in case the data was updated
   	// since the last load
@@ -285,6 +299,19 @@ public class MessageDetail extends Composite {
     
     request = new JSONRequest();
     request.doFetchURL(AoAPI.THREAD + messageForum.getId() + "/", new ThreadRequester(messageForum));
+  	
+  }
+  
+  private class ForwardClickHandler implements ClickHandler {
+  	private MessageForum mf;
+  	
+  	public ForwardClickHandler(MessageForum mf)
+  	{
+  		this.mf = mf;
+  	}
+		public void onClick(ClickEvent event) {
+			Messages.get().forwardThread(mf);
+		}
   	
   }
   

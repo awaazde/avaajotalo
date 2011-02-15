@@ -16,18 +16,17 @@
  */
 package org.otalo.ao.client;
 
-import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
-import org.otalo.ao.client.model.Message;
-import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
+import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.Prompt;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -52,7 +51,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, TopPanel.Images, Fora.Images, MessageList.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images {
   }
 
   /**
@@ -62,12 +61,13 @@ public class Messages implements EntryPoint, ResizeHandler {
     return singleton;
   }
 
-  private TopPanel topPanel = new TopPanel(images);
+  private TopPanel topPanel = new TopPanel();
   private VerticalPanel rightPanel = new VerticalPanel();
   private MessageList messageList;
   private MessageDetail messageDetail = new MessageDetail();
   private Fora fora = new Fora(images);
   private Shortcuts shortcuts = new Shortcuts(images, fora);
+  private BroadcastMessage broadcastIface;
 
   /**
    * Displays the specified item. 
@@ -84,14 +84,15 @@ public class Messages implements EntryPoint, ResizeHandler {
    * 
    * @param m
    */
-  public void displayMessages(MessageForum m)
+  public void displayMessages(MessageForum mf)
   {
   	// need to setup panels here 
   	// in case there are no messages
   	messageDetail.reset();
-  	fora.setFolder(m.getForum(), m.getStatus());
+  	fora.setFolder(mf.getForum(), mf.getStatus());
+  	displayBroadcastPanel(false);
   	
-  	messageList.getMessages(m);
+  	messageList.getMessages(mf);
   }
   
   /**
@@ -100,26 +101,74 @@ public class Messages implements EntryPoint, ResizeHandler {
    * @param f
    * @param status
    */
-  public void displayMessages(Forum f, MessageStatus status)
+  public void displayMessages(Forum f, MessageStatus status, int start)
   {
   	// need to setup panels here 
   	// in case there are no messages
   	messageDetail.reset();
   	fora.setFolder(f, status);
+  	displayBroadcastPanel(false);
   	
-  	messageList.getMessages(f, status);
+  	messageList.getMessages(f, status, start);
   }
   
-  public void displayResponses(Forum f)
+  public void displayResponses(MessageForum mf)
+  {
+  	// need to setup panels here 
+  	// in case there are no messages
+  	messageDetail.reset();
+  	fora.setFolderResponses(mf.getForum());
+  	
+  	messageList.getResponses(mf);
+  }
+  
+  public void displayResponses(Forum f, int start)
   {
   	// need to setup panels here 
   	// in case there are no messages
   	messageDetail.reset();
   	fora.setFolderResponses(f);
+  	displayBroadcastPanel(false);
   	
-  	messageList.getResponses(f);
+  	messageList.getResponses(f, start);
   }
   
+  public void displayBroadcastPanel(boolean display)
+  {
+  	broadcastIface.reset();
+  	messageList.setVisible(!display);
+		messageDetail.setVisible(!display);
+		broadcastIface.setVisible(display);
+  }
+  
+  public void displaySurveyInputPanel(boolean display)
+  {
+  	messageList.setVisible(display);
+  	messageDetail.setVisible(!display);
+		broadcastIface.setVisible(!display);
+  }
+  
+  public void displaySurveyInput(Prompt p, int start)
+  {
+  	displaySurveyInputPanel(true);
+  	messageList.displaySurveyInput(p, 0);
+  }
+  
+  public void broadcastSomething()
+  {
+  	broadcastIface.loadSurveys();
+  	displayBroadcastPanel(true);
+  }
+  
+  public void forwardThread(MessageForum thread)
+  {
+  	broadcastIface.forwardThread(thread);
+  }
+  
+  public Line getLine()
+  {
+  	return topPanel.getLine();
+  }
   /**
    * This method constructs the application user interface by instantiating
    * controls and hooking up event handler.
@@ -133,13 +182,18 @@ public class Messages implements EntryPoint, ResizeHandler {
     // 'singleton'.
     messageList = new MessageList(images);
     messageList.setWidth("100%");
+    
+    broadcastIface = new BroadcastMessage();
 
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
     rightPanel.add(messageDetail);
+    rightPanel.add(broadcastIface);
     rightPanel.setWidth("100%");
     messageDetail.setWidth("100%");
     shortcuts.setWidth("100%");
+    
+    displayBroadcastPanel(false);
 
     // Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
@@ -167,11 +221,12 @@ public class Messages implements EntryPoint, ResizeHandler {
     // Call the window resized handler to get the initial sizes setup. Doing
     // this in a deferred command causes it to occur after all widgets' sizes
     // have been computed by the browser.
-    DeferredCommand.addCommand(new Command() {
-      public void execute() {
-        onWindowResized(Window.getClientWidth(), Window.getClientHeight());
-      }
-    });
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+		public void execute() {
+			onWindowResized(Window.getClientWidth(), Window.getClientHeight());
+			
+		}
+	});
 
     onWindowResized(Window.getClientWidth(), Window.getClientHeight());
   }
