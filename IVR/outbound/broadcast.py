@@ -59,7 +59,7 @@ def subjects_by_numbers(numbers):
         s = Subject.objects.filter(number = number)
         if not bool(s):
             s = Subject(number=str(number))
-            print ("adding subject " + str(s))
+            #print ("adding subject " + str(s))
             s.save()
             subjects.append(s)
         else:
@@ -77,7 +77,7 @@ def subjects_by_tags(tags):
         s = Subject.objects.filter(number = user.number)
         if not bool(s):
             s = Subject(number=user.number)
-            print ("adding subject " + str(s))
+            #print ("adding subject " + str(s))
             s.save()
             subjects.append(s)
         else:
@@ -101,7 +101,7 @@ def subjects_by_log(logfile, line, since, lastn=0, callthresh=DEFAULT_CALL_THRES
         s = Subject.objects.filter(number = number)
         if not bool(s):
             s = Subject(number=str(number))
-            print ("adding subject " + str(s))
+            #print ("adding subject " + str(s))
             s.save()
             subjects.append(s)
         else:
@@ -169,7 +169,7 @@ def create_bcast_survey(line, filenames, surveyname):
     s = Survey.objects.filter(name=surveyname)
     if not bool(s):
         s = Survey(name=surveyname, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num, broadcast=True)
-        print ("adding announcement survey " + str(s))
+        #print ("adding announcement survey " + str(s))
         s.save()
     
         # welcome
@@ -305,7 +305,7 @@ def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT
                     call = Call.objects.filter(survey=survey, subject=subject, priority=1)
                     if not bool(call):
                         call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                        print ("adding call " + str(call))
+                        #print ("adding call " + str(call))
                         call.save()
                         count += 1
                         assigned_p1s.append(subject)
@@ -336,7 +336,7 @@ def backup_calls(survey, subjects, start_time, end_time):
                 call = Call.objects.filter(survey=survey, subject=subject, date=call_time, priority=2)
                 if not bool(call):
                     call = Call(survey=survey, subject=subject, date=call_time, priority=2)
-                    print ("adding call " + str(call))
+                    #print ("adding call " + str(call))
                     call.save()
                     count += 1
                     scheduled_calls.append(subject)
@@ -351,7 +351,7 @@ def backup_calls(survey, subjects, start_time, end_time):
         if call_time > end_time:
             break
     
-    print(str(count) + " new backup calls added.")   
+    #print(str(count) + " new backup calls added.")   
     
     return scheduled_calls
 
