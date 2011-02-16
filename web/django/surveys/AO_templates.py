@@ -74,7 +74,7 @@ def qna_template(line):
     else:
         num = line.number
     
-    name = line.name + '_QNA_' + broadcast.TEMPLATE_DESIGNATOR
+    name = line.name + '_QNA_MOTIVATION_' + broadcast.TEMPLATE_DESIGNATOR
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
@@ -83,7 +83,7 @@ def qna_template(line):
         s.save()
     
         # welcome
-        welcome = Prompt(file=language+"/welcome_bcast"+SOUND_EXT, order=1, bargein=True, survey=s)
+        welcome = Prompt(file=language+"/welcome_bcast"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
         welcome.save()
         welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
         welcome_opt.save()
@@ -99,7 +99,7 @@ def qna_template(line):
         qna_opt2.save()
         
         # motivation
-        motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=4, bargein=True, survey=s, delay=1000)
+        motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=4, bargein=True, survey=s, delay=0)
         motivation.save()
         motivation_opt = Option(number="", action=OPTION_NEXT, prompt=motivation)
         motivation_opt.save()
@@ -107,13 +107,13 @@ def qna_template(line):
         motivation_opt2.save()
         
         # record
-        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=False, survey=s, delay=1000, name='Response')
+        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=False, survey=s, name='Response', captureinput=True)
         record.save()
         record_opt = Option(number="", action=OPTION_RECORD, prompt=record)
         record_opt.save()
         
         # thanks
-        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, delay=5000, survey=s)
+        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
         thanks.save()
         thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
         thanks_opt.save()
