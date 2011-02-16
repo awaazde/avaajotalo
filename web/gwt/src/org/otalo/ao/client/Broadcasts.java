@@ -116,7 +116,7 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 			{
 				if (current != null)
 				{
-					w = new SurveyWidget(s, currentPrompts, images, this);
+					w = new SurveyWidget(current, currentPrompts, images, this);
 					
 					p.add(w.getWidget());
 					widgets.add(w);
