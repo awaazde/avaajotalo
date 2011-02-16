@@ -263,9 +263,9 @@ def thread(messageforum, template):
         
         for response in responses:
             if response.lft == 2:
-                responseintro = Prompt(file='firstresponse.wav', order=order, bargein=True, survey=bcast)
+                responseintro = Prompt(file=language+'/firstresponse.wav', order=order, bargein=True, survey=bcast)
             else:
-                responseintro = Prompt(file='nextresponse.wav', order=order, bargein=True, survey=bcast)
+                responseintro = Prompt(file=language+'/nextresponse.wav', order=order, bargein=True, survey=bcast)
             responseintro.save()
             responseintro_opt = Option(number="1", action=OPTION_NEXT, prompt=responseintro)
             responseintro_opt.save()
