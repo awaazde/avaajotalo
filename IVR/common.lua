@@ -700,7 +700,7 @@ function play_prompts (prompts)
    	  end
    	  
    	  -- Do this check right after the prompt plays in case of there are no more prompts
-	  if (complete_after_idx ~= nil and current_prompt_idx >= complete_after_idx) then
+	  if (complete_after_idx ~= nil and current_prompt_idx == complete_after_idx) then
    	  	set_survey_complete(callid);
    	  end
    	  
@@ -770,6 +770,17 @@ function play_prompts (prompts)
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
 	  	current_prompt_idx = current_prompt_idx + 1;
+		-- check to see if we are at the last msg in the list
+	 	if (current_prompt_idx > #prevprompts) then
+		    -- get next msg from the cursor
+		    current_prompt = prompts();
+		    if (current_prompt ~= nil) then
+		       table.insert(prevprompts, current_prompt);
+		    end
+		else
+		    -- get msg from the prev list
+		    current_prompt = prevprompts[current_prompt_idx];
+	    end
 	  end
 	  
 	  if (captureinput == 1) then
