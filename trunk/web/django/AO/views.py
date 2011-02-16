@@ -481,6 +481,8 @@ def bcast(request):
             numbers = numsRaw.split('\n')
         if ',' in numsRaw:
             numbers = numsRaw.split(',')
+        else:
+            numbers = [numsRaw]
         
         subjects = broadcast.subjects_by_numbers(numbers)  
     
