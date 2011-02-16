@@ -89,40 +89,6 @@ public class SurveyWidget implements ClickHandler{
 		}
     
 	}
-	
-	
-//	private void loadSurveys(List<Prompt> prompts)
-//	{
-//		Survey current=null, s;
-//		Tree surveyTree;
-//		HTML surveyTreeHTML, promptHTML;
-//		TreeItem surveyRoot=null, prompt;
-//		String pName;
-//		for (Prompt p : prompts)
-//		{
-//			s = p.getSurvey();
-//			
-//			// ASSUMPTION: Prompts come in ordered by associated survey
-//			if (current == null || !current.getId().equals(s.getId()))
-//			{
-//				current = s;
-//				surveyTree = new Tree(images);
-//				surveyTreeHTML = imageItemHTML(images.inbox(), s.getName());
-//				surveyRoot = new TreeItem(surveyTreeHTML);
-//				surveyTree.addItem(surveyRoot);
-//				surveyTrees.put(surveyTreeHTML, surveyTree);
-//				root.addItem(new TreeItem(surveyTree));
-//			}
-//
-//			pName = p.getName() != null ? p.getName() : "Prompt " + p.getOrder(); 
-//			promptHTML = imageItemHTML(images.responses(), pName);
-//			prompt = new TreeItem(promptHTML);
-//			promptMap.put(promptHTML, p);
-//			leaves.put(promptHTML, prompt);
-//			surveyRoot.addItem(prompt);
-//		}
-//	}
-//	
 
   /**
    * Generates HTML for a tree item with an attached icon.
@@ -155,34 +121,29 @@ public class SurveyWidget implements ClickHandler{
 		return w == rootHTML || promptMap.containsKey(w);
 	}
 	
-	public void selectFirst()
-	{
-		root.setState(true);		
-		TreeItem firstPrompt = root.getChild(0);
-		tree.setSelectedItem(firstPrompt);
-		root.setState(true);
-		
-		HTML leaf = null;
-		for (Entry<HTML, TreeItem> entry : leaves.entrySet()) {
-      if (entry.getValue().equals(firstPrompt)) {
-          leaf = entry.getKey();
-          break;
-      }
-		}
-		
-		if (leaf != null)
-		{
-			Prompt p = promptMap.get(leaf);
-			Messages.get().displaySurveyInput(p, 0);
-		}
-	}
-
 	public void onClick(ClickEvent event) {
 		Object sender = event.getSource();
 		
 		if (sender == rootHTML)
 		{
-			selectFirst();
+			root.setState(true);		
+			TreeItem firstPrompt = root.getChild(0);
+			tree.setSelectedItem(firstPrompt);
+			root.setState(true);
+			
+			HTML leaf = null;
+			for (Entry<HTML, TreeItem> entry : leaves.entrySet()) {
+	      if (entry.getValue().equals(firstPrompt)) {
+	          leaf = entry.getKey();
+	          break;
+	      }
+			}
+			
+			if (leaf != null)
+			{
+				Prompt p = promptMap.get(leaf);
+				Messages.get().displaySurveyInput(p, 0);
+			}
 		}
 		else if (promptMap.containsKey(sender))
 		{

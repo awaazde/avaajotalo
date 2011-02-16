@@ -150,12 +150,5 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 		}
 		
 	}
-	
-	public void init()
-	{
-		if (widgets.size() > 0)
-			widgets.get(0).selectFirst();
-		else
-			Messages.get().displaySurveyInputPanel();
-	}
+
 }
