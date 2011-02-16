@@ -42,17 +42,14 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
    * that tree's images should also be included in the same bundle.
    */
   public interface Images extends ClientBundle, Tree.Resources {
-  	ImageResource inbox();
-    
+  	ImageResource inbox();  
     ImageResource home();
-
-    ImageResource drafts();
-    
     ImageResource sent();
-    
     ImageResource treeLeaf();
-    
     ImageResource broadcast();
+    ImageResource approve_sm();
+    ImageResource reject_sm();
+    ImageResource responses();
   }
 
   private Images images;

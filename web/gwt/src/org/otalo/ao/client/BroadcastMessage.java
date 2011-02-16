@@ -21,6 +21,7 @@ import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratedStackPanel;
@@ -28,6 +29,7 @@ import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
@@ -41,6 +43,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
 public class BroadcastMessage extends Composite {
+	private Images images;
 	private FormPanel bcastForm;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
 	private VerticalPanel outer, who, what, when;
@@ -53,7 +56,14 @@ public class BroadcastMessage extends Composite {
 	private RadioButton numbers, usersByTag, usersByLog, file, sms, survey, now, date;
 	private FileUpload fileUpload;
 	
-	public BroadcastMessage() {
+	public interface Images extends Fora.Images {
+		ImageResource group();
+		ImageResource messagesgroup();
+		ImageResource calendar();
+	}
+	
+	public BroadcastMessage(Images images) {
+		this.images = images;
 		outer = new VerticalPanel();
 		outer.setSize("100%","100%");
 		bcastForm = new FormPanel();
@@ -319,9 +329,9 @@ public class BroadcastMessage extends Composite {
 		when.add(datePanel);
 		when.add(ftDurationPanel);
 		
-		stackPanel.add(who, "Recipients", false);
-		stackPanel.add(what, "Message", false);
-		stackPanel.add(when, "Schedule", false);
+		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
+		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Message"), true);
+		stackPanel.add(when, createHeaderHTML(images.calendar(), "Schedule"), true);
 		
 		controls = new HorizontalPanel();
 		
@@ -524,6 +534,17 @@ public class BroadcastMessage extends Composite {
 	{
 		sendButton.setEnabled(true);
 		cancelButton.setEnabled(true);
+	}
+	
+	private String createHeaderHTML(ImageResource resource,
+			String caption) {
+		AbstractImagePrototype imageProto = AbstractImagePrototype.create(resource);
+		String captionHTML = "<table class='caption' cellpadding='0' cellspacing='0'>"
+				+ "<tr><td class='lcaption'>"
+				+ imageProto.getHTML()
+				+ "</td><td class='rcaption'><b style='white-space:nowrap'>"
+				+ caption + "</b></td></tr></table>";
+		return captionHTML;
 	}
 	
 

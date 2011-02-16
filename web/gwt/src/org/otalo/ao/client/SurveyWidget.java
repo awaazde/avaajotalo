@@ -127,7 +127,7 @@ public class SurveyWidget implements ClickHandler{
 			}
 
 			pName = p.getName() != null ? p.getName() : "Prompt " + p.getOrder(); 
-			promptHTML = imageItemHTML(images.drafts(), pName);
+			promptHTML = imageItemHTML(images.responses(), pName);
 			prompt = new TreeItem(promptHTML);
 			promptMap.put(promptHTML, p);
 			leaves.put(promptHTML, prompt);

@@ -67,17 +67,17 @@ public class ForumWidget implements ClickHandler {
         inbox = new TreeItem(inboxHTML);
         root.addItem(inbox);
     
-    	approvedHTML = imageItemHTML(images.drafts(), "Approved");
+    	approvedHTML = imageItemHTML(images.approve_sm(), "Approved");
 	    approved = new TreeItem(approvedHTML);
 	    root.addItem(approved);
 
-	    rejectedHTML = imageItemHTML(images.drafts(), "Rejected");
+	    rejectedHTML = imageItemHTML(images.reject_sm(), "Rejected");
 	    rejected = new TreeItem(rejectedHTML);
 	    root.addItem(rejected);
     }
     else // there is only approved content
     {
-    	approvedHTML = imageItemHTML(images.drafts(), "Approved");
+    	approvedHTML = imageItemHTML(images.approve_sm(), "Approved");
 	    approved = new TreeItem(approvedHTML);
 	    root.addItem(approved);
     }
@@ -85,7 +85,7 @@ public class ForumWidget implements ClickHandler {
     // if responses can be made by either admin only or anyone
     if (forum.postingAllowed() | forum.responsesAllowed())
     {
-    	responsesHTML = imageItemHTML(images.drafts(), "Responses");
+    	responsesHTML = imageItemHTML(images.responses(), "Responses");
 	    responses = new TreeItem(responsesHTML);
 	    root.addItem(responses);
     }

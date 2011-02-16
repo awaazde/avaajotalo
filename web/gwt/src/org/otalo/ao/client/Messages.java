@@ -51,7 +51,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastMessage.Images {
   }
 
   /**
@@ -144,6 +144,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   public void displaySurveyInputPanel(boolean display)
   {
   	messageList.setVisible(display);
+  	messageList.reset();
   	messageDetail.setVisible(!display);
 		broadcastIface.setVisible(!display);
   }
@@ -183,7 +184,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
-    broadcastIface = new BroadcastMessage();
+    broadcastIface = new BroadcastMessage(images);
 
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
