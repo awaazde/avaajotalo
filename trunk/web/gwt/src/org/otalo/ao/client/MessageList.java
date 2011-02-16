@@ -307,9 +307,17 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       selectRow(0);
     }
   }
-  
+  public void reset()
+  {
+		messages.clear();
+		startIndex = 0;
+		count = 0;
+		styleRow(selectedRow, false);
+		update();
+  }
 	public void displaySurveyInput(Prompt p, int start)
 	{
+		styleRow(selectedRow, false);
 		JSONRequest request = new JSONRequest();
 		request.doFetchURL(AoAPI.PROMPT_RESPONSES + p.getId() + "/?start=" + String.valueOf(start), this);
 	}

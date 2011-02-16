@@ -36,7 +36,7 @@ public class Shortcuts extends Composite {
 	 * images needed in child widgets.
 	 */
 	public interface Images extends Fora.Images {
-		ImageResource messagesgroup();
+		ImageResource forum();
 	}
 
 	private int nextHeaderIndex = 0;
@@ -49,7 +49,7 @@ public class Shortcuts extends Composite {
 	 *            a bundle that provides the images for this widget
 	 */
 	public Shortcuts(Images images, Fora fora) {
-		add(fora, images.messagesgroup(), "Forums");
+		add(fora, images.forum(), "Forums");
 		initWidget(stackPanel);
 	}
 
