@@ -98,11 +98,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			widgets.add(w);
 		}
 		
-		init();
-	}
-	
-	public void init()
-	{
+		// Hackish Initialization of the forum panel
 		widgets.get(0).selectMain();
 	}
 	
@@ -121,8 +117,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			w.setFolderResponses(f);
 		}
 	}
-
-
+	
 	/**
 	 * This is for clicked tree items. Unselect all other ones
 	 * and collapse their trees

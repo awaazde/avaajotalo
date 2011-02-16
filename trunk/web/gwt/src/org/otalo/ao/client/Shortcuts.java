@@ -61,7 +61,6 @@ public class Shortcuts extends Composite {
 		
 		add(fora, images.forum(), "Forums");
 		add(bcasts, images.broadcast(), "Broadcasts");
-		//stackPanel.addHandler(this, ClickEvent.getType());
 		initWidget(stackPanel);
 	}
 
