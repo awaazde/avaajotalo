@@ -42,7 +42,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
-public class BroadcastMessage extends Composite {
+public class BroadcastInterface extends Composite {
 	private Images images;
 	private FormPanel bcastForm;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
@@ -62,7 +62,7 @@ public class BroadcastMessage extends Composite {
 		ImageResource calendar();
 	}
 	
-	public BroadcastMessage(Images images) {
+	public BroadcastInterface(Images images) {
 		this.images = images;
 		outer = new VerticalPanel();
 		outer.setSize("100%","100%");
@@ -352,7 +352,7 @@ public class BroadcastMessage extends Composite {
 		cancelButton.addClickHandler(new ClickHandler(){
 
 			public void onClick(ClickEvent event) {
-				Messages.get().displayBroadcastPanel(false);		
+				Messages.get().displaySurveyInputPanel();		
 			}
 			
 		});
@@ -453,7 +453,7 @@ public class BroadcastMessage extends Composite {
 						surveys.addItem(s.getName(), s.getId());
 			  	}
 				
-				Messages.get().displayBroadcastPanel(true);
+				Messages.get().displayBroadcastPanel();
 				setForwardingMode(true);
 				if (surveys.getItemCount() == 1)
 				{

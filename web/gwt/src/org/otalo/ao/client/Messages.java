@@ -51,7 +51,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastMessage.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images {
   }
 
   /**
@@ -66,8 +66,9 @@ public class Messages implements EntryPoint, ResizeHandler {
   private MessageList messageList;
   private MessageDetail messageDetail = new MessageDetail();
   private Fora fora = new Fora(images);
-  private Shortcuts shortcuts = new Shortcuts(images, fora);
-  private BroadcastMessage broadcastIface;
+  private Broadcasts bcasts;
+  private Shortcuts shortcuts;
+  private BroadcastInterface broadcastIface;
 
   /**
    * Displays the specified item. 
@@ -90,7 +91,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   	// in case there are no messages
   	messageDetail.reset();
   	fora.setFolder(mf.getForum(), mf.getStatus());
-  	displayBroadcastPanel(false);
+  	displayForumPanel();
   	
   	messageList.getMessages(mf);
   }
@@ -107,7 +108,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   	// in case there are no messages
   	messageDetail.reset();
   	fora.setFolder(f, status);
-  	displayBroadcastPanel(false);
+  	displayForumPanel();
   	
   	messageList.getMessages(f, status, start);
   }
@@ -128,37 +129,43 @@ public class Messages implements EntryPoint, ResizeHandler {
   	// in case there are no messages
   	messageDetail.reset();
   	fora.setFolderResponses(f);
-  	displayBroadcastPanel(false);
+  	displayForumPanel();
   	
   	messageList.getResponses(f, start);
   }
   
-  public void displayBroadcastPanel(boolean display)
+  public void displayBroadcastPanel()
   {
   	broadcastIface.reset();
-  	messageList.setVisible(!display);
-		messageDetail.setVisible(!display);
-		broadcastIface.setVisible(display);
+  	messageList.setVisible(false);
+		messageDetail.setVisible(false);
+		broadcastIface.setVisible(true);
   }
   
-  public void displaySurveyInputPanel(boolean display)
+  public void displaySurveyInputPanel()
   {
-  	messageList.setVisible(display);
-  	messageList.reset();
-  	messageDetail.setVisible(!display);
-		broadcastIface.setVisible(!display);
+  	messageList.setVisible(true);
+  	messageDetail.setVisible(false);
+		broadcastIface.setVisible(false);
+  }
+  
+  public void displayForumPanel()
+  {
+  	broadcastIface.setVisible(false);
+  	messageList.setVisible(true);
+		messageDetail.setVisible(true);
   }
   
   public void displaySurveyInput(Prompt p, int start)
   {
-  	displaySurveyInputPanel(true);
+  	displaySurveyInputPanel();
   	messageList.displaySurveyInput(p, 0);
   }
   
   public void broadcastSomething()
   {
   	broadcastIface.loadSurveys();
-  	displayBroadcastPanel(true);
+  	displayBroadcastPanel();
   }
   
   public void forwardThread(MessageForum thread)
@@ -184,7 +191,9 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
-    broadcastIface = new BroadcastMessage(images);
+    broadcastIface = new BroadcastInterface(images);
+    bcasts = new Broadcasts(images);
+    shortcuts = new Shortcuts(images, fora, bcasts);
 
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
@@ -194,7 +203,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageDetail.setWidth("100%");
     shortcuts.setWidth("100%");
     
-    displayBroadcastPanel(false);
+    displayForumPanel();
 
     // Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
