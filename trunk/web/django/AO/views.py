@@ -578,7 +578,7 @@ def surveyinput(request):
             numbers.append(line.outbound_number)  
         
     # get all surveys (and their prompts) which have recorded input
-    prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
+    prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, captureinput=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
     
     return send_response(prompts, relations=('survey',))
 

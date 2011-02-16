@@ -767,6 +767,9 @@ function play_prompts (prompts)
 	  elseif (action == OPTION_RECORD) then
 	    local maxlength = tonumber(option[2]);
 	  	input = recordsurveyinput(callid, promptid, maxlength);
+	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
+	  	-- if you need a goto, build it into the next prompt with a blank recording
+	  	current_prompt_idx = current_prompt_idx + 1;
 	  end
 	  
 	  if (captureinput == 1) then
