@@ -54,7 +54,6 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 
   private Images images;
   private VerticalPanel p;
-  private SurveyWidget surveys;
 
   /**
    * Constructs a new list of forum widgets with a bundle of images.
@@ -83,8 +82,6 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   	}
   	
   	loadFora(fora);
-  	surveys = new SurveyWidget(images, this);
-  	p.add(surveys.getWidget());
   	
   }
 
@@ -101,7 +98,11 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			widgets.add(w);
 		}
 		
-		// Hackish: for initialization
+		init();
+	}
+	
+	public void init()
+	{
 		widgets.get(0).selectMain();
 	}
 	
@@ -133,11 +134,6 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		{
 			if (!w.contains(source))
 				w.close();
-		}
-		
-		if (!surveys.contains(source))
-		{
-			surveys.close();
 		}
 		
 	}

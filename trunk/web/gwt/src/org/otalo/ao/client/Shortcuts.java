@@ -16,10 +16,17 @@
  */
 package org.otalo.ao.client;
 
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratedStackPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -38,24 +45,28 @@ public class Shortcuts extends Composite {
 	public interface Images extends Fora.Images {
 		ImageResource forum();
 	}
-
-	private int nextHeaderIndex = 0;
+	
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
-
+	private Fora fora;
+	private Broadcasts bcasts;
 	/**
 	 * Constructs a new shortcuts widget using the specified images.
 	 * 
 	 * @param images
 	 *            a bundle that provides the images for this widget
 	 */
-	public Shortcuts(Images images, Fora fora) {
+	public Shortcuts(Images images, Fora fora, Broadcasts bcasts) {
+		this.fora = fora;
+		this.bcasts = bcasts;
+		
 		add(fora, images.forum(), "Forums");
+		add(bcasts, images.broadcast(), "Broadcasts");
+		//stackPanel.addHandler(this, ClickEvent.getType());
 		initWidget(stackPanel);
 	}
 
-	@Override
 	protected void onLoad() {
-		// Show the messages group by default.
+		// Show the forums group by default.
 		stackPanel.showStack(0);
 	}
 
@@ -77,7 +88,6 @@ public class Shortcuts extends Composite {
 	 */
 	private String createHeaderHTML(ImageResource resource,
 			String caption) {
-		nextHeaderIndex++;
 		AbstractImagePrototype imageProto = AbstractImagePrototype.create(resource);
 		String captionHTML = "<table class='caption' cellpadding='0' cellspacing='0'>"
 				+ "<tr><td class='lcaption'>"
@@ -86,6 +96,5 @@ public class Shortcuts extends Composite {
 				+ caption + "</b></td></tr></table>";
 		return captionHTML;
 	}
-
 	
 }
