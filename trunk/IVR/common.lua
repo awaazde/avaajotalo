@@ -835,7 +835,6 @@ function recordsurveyinput (callid, promptid, lang, maxlength)
    
    sursd = sursd .. lang .. '/';
    repeat
-      read(aosd .. "pleaserecord.wav", 1000);
       local d = use();
 
       if (d == GLOBAL_MENU_MAINMENU) then
