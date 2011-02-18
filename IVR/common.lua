@@ -782,6 +782,8 @@ function play_prompts (prompts)
 		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
+	    freeswitch.consoleLog("info", script_name .. " : prompt idx is " .. tostring(current_prompt_idx) .. "\n");
+	    freeswitch.consoleLog("info", script_name .. " : currp is " .. tostring(current_prompt == nil) .. "\n");
 	  elseif (action == OPTION_RECORD) then
 	    local maxlength = tonumber(option[2]);
 	    local oncancel = tonumber(option[3]);
@@ -797,6 +799,7 @@ function play_prompts (prompts)
 	  	if (outcome == "3" and oncancel ~= nil) then
 	  		goto_idx = oncancel;
 	  	end
+	  	freeswitch.consoleLog("info", script_name .. " gotoidx is : " .. to .. "\n")
 		-- check to see if we are at the last msg in the list
 	 	if (goto_idx > #prevprompts) then
 		    for i=current_prompt_idx+1, goto_idx do
@@ -833,7 +836,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength)
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
    
-   sursd = sursd .. lang .. '/';
+   recordsd = sursd .. lang .. '/';
    repeat
       local d = use();
 
@@ -852,9 +855,9 @@ function recordsurveyinput (callid, promptid, lang, maxlength)
       
       local review_cnt = 0;
       while (d ~= "1" and d ~= "2" and d ~= "3") do
-		 read(sursd .. "hererecorded.wav", 1000);
+		 read(recordsd .. "hererecorded.wav", 1000);
 		 read(filename, 1000);
-		 read(sursd .. "notsatisfied.wav", 2000);
+		 read(recordsd .. "notsatisfied.wav", 2000);
 		 sleep(6000)
 		 d = use();
 		 review_cnt = check_abort(review_cnt, 6)
@@ -863,7 +866,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength)
      if (d ~= "1" and d ~= "2") then
 	 	 os.remove(filename);
 		 if (d == "3") then
-		    read(sursd .. "messagecancelled.wav", 500);
+		    read(recordsd .. "messagecancelled.wav", 500);
 		    return d;
 		 end
      end
