@@ -165,13 +165,13 @@ public class Messages implements EntryPoint, ResizeHandler {
   
   public void displaySurveyInput(Prompt p, int start)
   {
+  	displaySurveyInputPanel();
   	if (p == null)
   	{
   		bcasts.selectFirst();
   	}
   	else
   	{
-	  	displaySurveyInputPanel();
 	  	messageList.displaySurveyInput(p, 0);
   	}
   }
