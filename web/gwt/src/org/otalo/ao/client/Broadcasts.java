@@ -84,8 +84,6 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 				prompt = new Prompt(model);
 				prompts.add(prompt);
 	  }
-		
-		loadSurveys(prompts);
     
     Anchor broadcast = new Anchor("New Broadcast");
     broadcast.addClickHandler(new ClickHandler() {
@@ -128,9 +126,12 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 			currentPrompts.add(prompt);
 		}
 		
-		w = new SurveyWidget(current, currentPrompts, images, this);
-		p.add(w.getWidget());
-		widgets.add(w);
+		if (current != null)
+		{
+			w = new SurveyWidget(current, currentPrompts, images, this);
+			p.add(w.getWidget());
+			widgets.add(w);
+		}
 		
 	}
 	
