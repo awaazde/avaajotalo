@@ -535,8 +535,9 @@ def bcast(request):
     fromtime = timedelta(hours=int(params['fromtime']))
     tilltime = timedelta(hours=int(params['tilltime']))
     duration = int(params['duration'])
+    backups = params.__contains__("backups")
 
-    broadcast.broadcast_calls(survey, subjects, start_date, bcast_start_time=fromtime, bcast_end_time=tilltime, duration=duration)
+    broadcast.broadcast_calls(survey, subjects, start_date, bcast_start_time=fromtime, bcast_end_time=tilltime, duration=duration, backups=backups)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(params['messageforumid']),)))
@@ -580,7 +581,7 @@ def surveyinput(request):
             numbers.append(line.outbound_number)  
         
     # get all surveys (and their prompts) which have recorded input
-    prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, captureinput=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
+    prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
     
     return send_response(prompts, relations=('survey',))
 

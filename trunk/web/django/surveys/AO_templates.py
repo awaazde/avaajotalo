@@ -26,11 +26,13 @@ OPTION_NEXT = 1
 OPTION_PREV = 2
 OPTION_REPLAY = 3
 OPTION_GOTO = 4
-OPTION_RECORD = 5;
+OPTION_RECORD = 5
+OPTION_INPUT = 6
+OPTION_TRANSFER = 7
 
 SOUND_EXT = ".wav"
 
-def thread_template(line):
+def standard_template(line, contenttype):
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
     language = line.language
@@ -39,7 +41,7 @@ def thread_template(line):
     else:
         num = line.number
     
-    name = line.name + '_THREAD_' + broadcast.TEMPLATE_DESIGNATOR
+    name = contenttype[:3].upper() + '_' + broadcast.TEMPLATE_DESIGNATOR + ' (' + str(line.id) + ')'
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
@@ -48,24 +50,34 @@ def thread_template(line):
         s.save()
     
         # welcome
-        welcome = Prompt(file=language+"/welcome_thread"+SOUND_EXT, order=1, bargein=False, survey=s)
+        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
         welcome.save()
-        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
-        welcome_opt.save()
+        welcome_opt1 = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt1.save()
+        welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt2.save()
+        
+        # content
+        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
+        content.save()
+        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt.save()
+        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2.save()
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou_thread"+SOUND_EXT, order=3, bargein=True, delay=5000, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=4, bargein=True, delay=5000, survey=s)
         thanks.save()
-        thanks_opt1 = Option(number="9", action=OPTION_GOTO, action_param1=2, prompt=thanks)
+        thanks_opt1 = Option(number="", action=OPTION_NEXT, prompt=thanks)
         thanks_opt1.save()
-        thanks_opt2 = Option(number="", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt2 = Option(number="1", action=OPTION_NEXT, prompt=thanks)
         thanks_opt2.save()
         
         return s
     else:
-        return s[0]  
-
-def qna_template(line):
+        return s[0] 
+     
+def freecall_template(line, contenttype): 
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
     language = line.language
@@ -74,7 +86,7 @@ def qna_template(line):
     else:
         num = line.number
     
-    name = line.name + '_QNA_MOTIVATION_' + broadcast.TEMPLATE_DESIGNATOR
+    name = contenttype[:3] +'_CALL_' + broadcast.TEMPLATE_DESIGNATOR
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
@@ -90,13 +102,64 @@ def qna_template(line):
         welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
         welcome_opt2.save()
         
-        # qna
-        qna = Prompt(file=language+"/qna"+SOUND_EXT, order=2, bargein=True, survey=s)
-        qna.save()
-        qna_opt = Option(number="", action=OPTION_NEXT, prompt=qna)
-        qna_opt.save()
-        qna_opt2 = Option(number="1", action=OPTION_NEXT, prompt=qna)
-        qna_opt2.save()
+        # content
+        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
+        content.save()
+        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt.save()
+        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2.save()
+        
+        # motivation
+        motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=4, bargein=True, survey=s, delay=0)
+        motivation.save()
+        motivation_opt = Option(number="", action=OPTION_NEXT, prompt=motivation)
+        motivation_opt.save()
+        motivation_opt2 = Option(number="1", action=OPTION_NEXT, prompt=motivation)
+        motivation_opt2.save()
+        
+        # freecall
+        freecall = Prompt(file=language+"/freecall"+SOUND_EXT, order=5, bargein=False, survey=s )
+        freecall.save()
+        freecall_opt = Option(number="", action=OPTION_TRANSFER, prompt=freecall, action_param1=line.number)
+        freecall_opt.save()
+        
+        return s
+    else:
+        return s[0]
+    
+def record_template(line, contenttype):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
+    
+    name = contenttype[:3] +'_REC_' + broadcast.TEMPLATE_DESIGNATOR
+    
+    s = Survey.objects.filter(name=name)
+    if not bool(s):
+        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num, template=True)
+        print ("adding template " + str(s))
+        s.save()
+    
+        # welcome
+        welcome = Prompt(file=language+"/welcome_bcast"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
+        welcome.save()
+        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt.save()
+        welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt2.save()
+        
+        # content
+        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
+        content.save()
+        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt.save()
+        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2.save()
         
         # motivation
         motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=4, bargein=True, survey=s, delay=0)
@@ -107,9 +170,9 @@ def qna_template(line):
         motivation_opt2.save()
         
         # record
-        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=False, survey=s, name='Response', captureinput=True)
+        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=False, survey=s, name='Response' )
         record.save()
-        record_opt = Option(number="", action=OPTION_RECORD, prompt=record)
+        record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param2=7)
         record_opt.save()
         
         # thanks
@@ -120,12 +183,105 @@ def qna_template(line):
         
         return s
     else:
-        return s[0]  
+        return s[0]
+
+def rating_template(line, contenttype, scheme, scales):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
+    
+    name = contenttype[:3] + '_RATE_' + '_' + scheme + '_' + broadcast.TEMPLATE_DESIGNATOR
+    
+    s = Survey.objects.filter(name=name)
+    if not bool(s):
+        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num, template=True)
+        print ("adding template " + str(s))
+        s.save()
+    
+        # welcome
+        welcome = Prompt(file=language+"/welcome_bcast"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
+        welcome.save()
+        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt.save()
+        welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt2.save()
         
+        # content
+        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
+        content.save()
+        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt.save()
+        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2.save()
+        
+        # motivation
+        motivation = Prompt(file=language+"/ratemotivation"+SOUND_EXT, order=4, bargein=True, survey=s, delay=0)
+        motivation.save()
+        motivation_opt = Option(number="", action=OPTION_NEXT, prompt=motivation)
+        motivation_opt.save()
+        motivation_opt2 = Option(number="1", action=OPTION_NEXT, prompt=motivation)
+        motivation_opt2.save()
+
+        rate = Prompt(file=language+"/"+scheme+SOUND_EXT, order=5, bargein=True, delay=5000, survey=s, name='Rating')
+        rate.save()
+        idx = 1
+        for scale in scales:
+            scale_opt = Option(number=str(idx), action=OPTION_INPUT, prompt=rate)
+            scale_opt.save()
+            
+        # add a noinput uption
+        # exit without thanking
+        noinput = Option(number="", action=OPTION_GOTO, action_param1=7, prompt=rate)
+        noinput.save()
+        
+        
+        # thanks
+        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
+        thanks.save()
+        thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt.save()
+        
+        return s
+    else:
+        return s[0]
+
 def main():
     line = Line.objects.get(pk=1)
-    thread_template(line)
-    qna_template(line)
+    standard_template(line, 'qna')
+    standard_template(line, 'announcement')
+    standard_template(line, 'experience')
+    
+    freecall_template(line, 'qna')
+    freecall_template(line, 'announcement')
+    freecall_template(line, 'experience')
+    
+    record_template(line, 'qna')
+    record_template(line, 'announcement')
+    record_template(line, 'experience')
+    
+    scales = ["verygood", "good", "ok"]
+    rating_template(line, "qna", "verygood", scales)
+    rating_template(line, "announcement","verygood", scales)
+    rating_template(line, "experience", "verygood", scales)
+    
+    scales = ["ok", "good", "verygood"]
+    rating_template(line, "qna", "verygood_rev", scales)
+    rating_template(line, "announcement", "verygood_rev", scales)
+    rating_template(line, "experience", "verygood_rev", scales)
+    
+    scales = ["good", "ok", "bad"]
+    rating_template(line, "qna","goodbad", scales)
+    rating_template(line, "announcement", "goodbad", scales)
+    rating_template(line, "experience", "goodbad", scales)
+    
+    scales = ["bad", "ok", "good"]
+    rating_template(line, "qna", "badgood", scales)
+    rating_template(line, "announcement", "badgood", scales)
+    rating_template(line, "experience", "badgood", scales)
     
 main()
 

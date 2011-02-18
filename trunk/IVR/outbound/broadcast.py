@@ -29,6 +29,7 @@ OPTION_PREV = 2
 OPTION_REPLAY = 3
 OPTION_GOTO = 4
 OPTION_RECORD = 5
+OPTION_INPUT = 6
 
 DEFAULT_DURATION_DAYS = 2
 DEFAULT_START_TIME = timedelta(hours=7)
@@ -126,20 +127,6 @@ def single(file, line):
     
     return create_bcast_survey(line, [filename_abs], name)
 
-def messages(messages, line, name=None):
-    if messages:
-        filenames = []
-        for msg in messages:
-            filenames.append(settings.MEDIA_ROOT+ '/' + msg.message.content_file)
-        
-        forum = messages[0].forum
-        now = datetime.now()
-        today = datetime(year=now.year, month=now.month, day=now.day)
-        
-        if not name:
-            name = 'Msgs_' + forum.name + '_' + str(today)
-        return create_bcast_survey(line, filenames, name)
-
 def forum(forum, line, since=None):
     now = datetime.now()
     today = datetime(year=now.year, month=now.month, day=now.day)
@@ -174,7 +161,7 @@ def create_bcast_survey(line, filenames, surveyname):
         s.save()
     
         # welcome
-        welcome = Prompt(file=language+"/welcome_announce.mp3", order=1, bargein=False, survey=s)
+        welcome = Prompt(file=language+"/welcome.wav", order=1, bargein=False, survey=s)
         welcome.save()
         welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
         welcome_opt.save()
@@ -188,7 +175,7 @@ def create_bcast_survey(line, filenames, surveyname):
             order += 1
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou_announce.mp3", order=order, bargein=False, survey=s)
+        thanks = Prompt(file=language+"/thankyou.wav", order=order, bargein=False, survey=s)
         thanks.save()
         thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
         thanks_opt.save()
@@ -224,7 +211,8 @@ def thread(messageforum, template):
     responses = Message.objects.filter(thread=messageforum.message, lft__gt=1).order_by('lft')
     
     # create a clone from the template
-    newname = str(messageforum)[:128]
+    newname = template.name.replace(TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
+    newname = newname[:128]
     s = Survey.objects.filter(name=newname)
     if not bool(s):
         # avoid duplicating forums that point to the template
@@ -284,8 +272,8 @@ def thread(messageforum, template):
         bcast = s[0]
     
     return bcast
-  
-def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT_START_TIME, bcast_end_time=DEFAULT_END_TIME, duration=DEFAULT_DURATION_DAYS):
+
+def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT_START_TIME, bcast_end_time=DEFAULT_END_TIME, duration=DEFAULT_DURATION_DAYS, backups=False):
     count = 0
     # This is the only survey to send, so the
     # block is the entire duration period
@@ -319,7 +307,8 @@ def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT
         
         # end P1 assignments
         # with any remaining time left, assign P2's
-        backup_calls(survey, subjects, survey_day + bcast_start_time, survey_day + bcast_end_time)   
+        if backups:
+            backup_calls(survey, subjects, survey_day + bcast_start_time, survey_day + bcast_end_time)   
 
 # keep adding, as many times as possible,
 # backup phone calls in the given range
