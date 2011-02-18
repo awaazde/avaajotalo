@@ -4,11 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.Prompt;
 import org.otalo.ao.client.model.Survey;
 import org.otalo.ao.client.model.Tag;
 
@@ -30,6 +32,7 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
@@ -55,6 +58,7 @@ public class BroadcastInterface extends Composite {
 	private Hidden lineid, messageforumid;
 	private RadioButton numbers, usersByTag, usersByLog, file, sms, survey, now, date;
 	private FileUpload fileUpload;
+	private BaseModel backObj;
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -306,6 +310,9 @@ public class BroadcastInterface extends Composite {
 		fromTillPanel.add(tillLbl);
 		fromTillPanel.add(till);
 		
+		CheckBox backups = new CheckBox("Backup Calls");
+		backups.setName("backups");
+		
 		HorizontalPanel nowPanel = new HorizontalPanel();
 		nowPanel.setSpacing(10);
 		nowPanel.add(now);
@@ -318,12 +325,13 @@ public class BroadcastInterface extends Composite {
 		datePanel.add(bcastDate);
 		
 		HorizontalPanel ftDurationPanel = new HorizontalPanel();
-		ftDurationPanel.setWidth("40%");
+		ftDurationPanel.setWidth("45%");
 		ftDurationPanel.add(fromTillPanel);
 		ftDurationPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		ftDurationPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		ftDurationPanel.add(durationLbl);
 		ftDurationPanel.add(duration);
+		ftDurationPanel.add(backups);
 		
 		when.add(nowPanel);
 		when.add(datePanel);
@@ -350,9 +358,15 @@ public class BroadcastInterface extends Composite {
     });
 		cancelButton = new Button("Cancel");
 		cancelButton.addClickHandler(new ClickHandler(){
-
 			public void onClick(ClickEvent event) {
-				Messages.get().displaySurveyInputPanel();		
+				// consistent (simple) behavior is to re-load
+				// the first leaf in the shortcut we came from
+				if (MessageForum.isMessageForum(backObj))
+					Messages.get().displayMessages(new MessageForum(backObj));
+				else
+					// means we went to the bcast interface
+					// directly from the link, so reload the bcast panel
+					Messages.get().displaySurveyInput(null, 0);
 			}
 			
 		});
@@ -437,6 +451,7 @@ public class BroadcastInterface extends Composite {
 	 public void forwardThread(MessageForum mf)
 	 {
 		 messageforumid.setValue(mf.getId());
+		 backObj = mf;
 		 JSONRequest request = new JSONRequest();
 		 request.doFetchURL(AoAPI.FORWARD_THREAD + mf.getId(), new ForwardThreadRequestor());
 	 }
@@ -453,7 +468,7 @@ public class BroadcastInterface extends Composite {
 						surveys.addItem(s.getName(), s.getId());
 			  	}
 				
-				Messages.get().displayBroadcastPanel();
+				Messages.get().displayBroadcastPanel(backObj);
 				setForwardingMode(true);
 				if (surveys.getItemCount() == 1)
 				{
@@ -494,10 +509,10 @@ public class BroadcastInterface extends Composite {
 		}
 	 }
 	 
-	 public void reset()
+	 public void reset(BaseModel back)
 	 {
 		 bcastForm.reset();
-		 
+		 backObj = back;
 		 setForwardingMode(false);
 		 // Select 7am-7pm by default
 		 from.setItemSelected(6, true);
@@ -506,6 +521,7 @@ public class BroadcastInterface extends Composite {
 		 duration.setItemSelected(1,true);
 		 
 		 Date tomorrow = new Date();
+		 // It's deprecated but GWT has no better way
 		 tomorrow.setDate(tomorrow.getDate() + 1);
 		 bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(tomorrow));
 		 date.setValue(true);

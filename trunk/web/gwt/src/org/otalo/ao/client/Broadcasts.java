@@ -133,9 +133,15 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 		widgets.add(w);
 		
 	}
-
-
-
+	
+	public void selectFirst()
+	{
+		for (SurveyWidget w : widgets)
+		{
+				w.close();
+		}
+		widgets.get(0).selectFirst();
+	}
 	/**
 	 * This is for clicked tree items. Unselect all other ones
 	 * and collapse their trees

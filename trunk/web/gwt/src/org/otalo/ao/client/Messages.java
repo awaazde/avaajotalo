@@ -16,6 +16,7 @@
  */
 package org.otalo.ao.client;
 
+import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
@@ -25,9 +26,11 @@ import org.otalo.ao.client.model.Prompt;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -134,9 +137,9 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.getResponses(f, start);
   }
   
-  public void displayBroadcastPanel()
+  public void displayBroadcastPanel(BaseModel back)
   {
-  	broadcastIface.reset();
+  	broadcastIface.reset(back);
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
 		broadcastIface.setVisible(true);
@@ -147,6 +150,9 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.setVisible(true);
   	messageDetail.setVisible(false);
 		broadcastIface.setVisible(false);
+		// you can get rid of this once there
+		// is a clickevent attached to a stackpanel header
+		shortcuts.showStack(1);
   }
   
   public void displayForumPanel()
@@ -154,18 +160,26 @@ public class Messages implements EntryPoint, ResizeHandler {
   	broadcastIface.setVisible(false);
   	messageList.setVisible(true);
 		messageDetail.setVisible(true);
+		shortcuts.showStack(0);
   }
   
   public void displaySurveyInput(Prompt p, int start)
   {
-  	displaySurveyInputPanel();
-  	messageList.displaySurveyInput(p, 0);
+  	if (p == null)
+  	{
+  		bcasts.selectFirst();
+  	}
+  	else
+  	{
+	  	displaySurveyInputPanel();
+	  	messageList.displaySurveyInput(p, 0);
+  	}
   }
   
   public void broadcastSomething()
   {
   	broadcastIface.loadSurveys();
-  	displayBroadcastPanel();
+  	displayBroadcastPanel(null);
   }
   
   public void forwardThread(MessageForum thread)
@@ -208,9 +222,14 @@ public class Messages implements EntryPoint, ResizeHandler {
     // Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
     DockPanel outer = new DockPanel();
+    //DockLayoutPanel outer = new DockLayoutPanel(Unit.PCT);
+    
     outer.add(topPanel, DockPanel.NORTH);
+    //outer.addNorth(topPanel, 100);
     outer.add(shortcuts, DockPanel.WEST);
+    //outer.addWest(shortcuts, 100);
     outer.add(rightPanel, DockPanel.CENTER);
+    //outer.add(rightPanel);
     outer.setWidth("100%");
 
     outer.setSpacing(4);

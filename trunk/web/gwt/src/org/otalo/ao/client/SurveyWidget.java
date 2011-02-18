@@ -121,29 +121,34 @@ public class SurveyWidget implements ClickHandler{
 		return w == rootHTML || promptMap.containsKey(w);
 	}
 	
+	public void selectFirst()
+	{
+		root.setState(true);		
+		TreeItem firstPrompt = root.getChild(0);
+		tree.setSelectedItem(firstPrompt);
+		root.setState(true);
+		
+		HTML leaf = null;
+		for (Entry<HTML, TreeItem> entry : leaves.entrySet()) {
+      if (entry.getValue().equals(firstPrompt)) {
+          leaf = entry.getKey();
+          break;
+      }
+		}
+		
+		if (leaf != null)
+		{
+			Prompt p = promptMap.get(leaf);
+			Messages.get().displaySurveyInput(p, 0);
+		}
+	}
+	
 	public void onClick(ClickEvent event) {
 		Object sender = event.getSource();
 		
 		if (sender == rootHTML)
 		{
-			root.setState(true);		
-			TreeItem firstPrompt = root.getChild(0);
-			tree.setSelectedItem(firstPrompt);
-			root.setState(true);
-			
-			HTML leaf = null;
-			for (Entry<HTML, TreeItem> entry : leaves.entrySet()) {
-	      if (entry.getValue().equals(firstPrompt)) {
-	          leaf = entry.getKey();
-	          break;
-	      }
-			}
-			
-			if (leaf != null)
-			{
-				Prompt p = promptMap.get(leaf);
-				Messages.get().displaySurveyInput(p, 0);
-			}
+			selectFirst();
 		}
 		else if (promptMap.containsKey(sender))
 		{
