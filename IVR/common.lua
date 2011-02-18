@@ -785,7 +785,12 @@ function play_prompts (prompts)
 	  elseif (action == OPTION_RECORD) then
 	    local maxlength = tonumber(option[2]);
 	    local oncancel = tonumber(option[3]);
-	  	outcome = recordsurveyinput(callid, promptid, maxlength);
+	    -- kind of a hack, but I don't want to add this
+	    -- to the Survey model. Get the survey lang subdir
+	    -- by stripping the promptfile name. Assumes they are
+	    -- in the same directory
+	    local lang = promptfile:sub(1,promptfile:find('/')-1);
+	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
 	  	local goto_idx = current_prompt_idx + 1;
@@ -822,10 +827,13 @@ end
 -- recordsurveyinput
 -----------
 
-function recordsurveyinput (callid, promptid, maxlength)
+function recordsurveyinput (callid, promptid, lang, maxlength)
    local maxlength = maxlength or 180000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
+   local lang = lang or 'eng';
+   
+   sursd = sursd .. lang .. '/';
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
       local d = use();
