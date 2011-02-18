@@ -50,7 +50,7 @@ def standard_template(line, contenttype):
         s.save()
     
         # welcome
-        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
+        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=True, survey=s)
         welcome.save()
         welcome_opt1 = Option(number="", action=OPTION_NEXT, prompt=welcome)
         welcome_opt1.save()
@@ -120,7 +120,7 @@ def motivation_template(line, contenttype, motivation):
         motivation_opt2.save()
         
         # record
-        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=False, survey=s, name='Response' )
+        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=True, survey=s, name='Response' )
         record.save()
         record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param2=7)
         record_opt.save()

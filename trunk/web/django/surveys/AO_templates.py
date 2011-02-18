@@ -119,7 +119,7 @@ def freecall_template(line, contenttype):
         motivation_opt2.save()
         
         # freecall
-        freecall = Prompt(file=language+"/freecall"+SOUND_EXT, order=5, bargein=False, survey=s )
+        freecall = Prompt(file=language+"/freecall"+SOUND_EXT, order=5, bargein=True, survey=s )
         freecall.save()
         freecall_opt = Option(number="", action=OPTION_TRANSFER, prompt=freecall, action_param1=line.number)
         freecall_opt.save()
@@ -170,7 +170,7 @@ def record_template(line, contenttype):
         motivation_opt2.save()
         
         # record
-        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=False, survey=s, name='Response' )
+        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=True, survey=s, name='Response' )
         record.save()
         record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param2=7)
         record_opt.save()
