@@ -68,6 +68,11 @@ public class Shortcuts extends Composite {
 		// Show the forums group by default.
 		stackPanel.showStack(0);
 	}
+	
+	public void showStack(int idx)
+	{
+		stackPanel.showStack(idx);
+	}
 
 	private void add(Widget widget, ImageResource resource,
 			String caption) {
