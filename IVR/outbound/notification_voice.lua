@@ -30,7 +30,6 @@ logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
 script_name = "notification_voice.lua";
-aosd = basedir .. "/sounds/notifications/";
 -- script-specific sounds XXXX TO DO - where are the tag files
 tagsd = aosd .. "";
 notsd = aosd .. "";

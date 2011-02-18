@@ -97,7 +97,6 @@ class Prompt(models.Model):
     bargein = models.BooleanField()
     survey = models.ForeignKey(Survey)
     delay = models.IntegerField(default=2000)
-    captureinput = models.BooleanField(default=False)
     # In the future, when we want to display input results
     name = models.CharField(max_length=128, blank=True, null=True)
     

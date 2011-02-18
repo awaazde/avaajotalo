@@ -604,13 +604,14 @@ OPTION_PREV = 2;
 OPTION_REPLAY = 3;
 OPTION_GOTO = 4;
 OPTION_RECORD = 5;
+OPTION_INPUT = 6;
 
 -----------
 -- get_prompts
 -----------
 
 function get_prompts(surveyid)
-	local query = 	"SELECT id, file, bargein, delay, captureinput ";
+	local query = 	"SELECT id, file, bargein, delay ";
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
@@ -682,7 +683,6 @@ function play_prompts (prompts)
    	  promptfile = current_prompt[2];
    	  bargein = current_prompt[3];
    	  delay = current_prompt[4];
-   	  captureinput = current_prompt[5];
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
    	  if (bargein == 1) then
@@ -728,8 +728,26 @@ function play_prompts (prompts)
       if (session:ready() == false) then
 		hangup();
       end
-
-      if (action == OPTION_NEXT) then
+      
+      if (action == OPTION_INPUT) then
+	    query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
+   		query = query .. " VALUES ("..callid..","..promptid..",'"..input.."')";
+   		con:execute(query);
+   		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+   		
+   		current_prompt_idx = current_prompt_idx + 1;
+		-- check to see if we are at the last msg in the list
+	 	if (current_prompt_idx > #prevprompts) then
+		    -- get next msg from the cursor
+		    current_prompt = prompts();
+		    if (current_prompt ~= nil) then
+		       table.insert(prevprompts, current_prompt);
+		    end
+		else
+		    -- get msg from the prev list
+		    current_prompt = prevprompts[current_prompt_idx];
+	    end
+      elseif (action == OPTION_NEXT) then
 	    current_prompt_idx = current_prompt_idx + 1;
 		-- check to see if we are at the last msg in the list
 	 	if (current_prompt_idx > #prevprompts) then
@@ -766,29 +784,29 @@ function play_prompts (prompts)
 	    end
 	  elseif (action == OPTION_RECORD) then
 	    local maxlength = tonumber(option[2]);
-	  	input = recordsurveyinput(callid, promptid, maxlength);
+	    local oncancel = tonumber(option[3]);
+	  	outcome = recordsurveyinput(callid, promptid, maxlength);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
-	  	current_prompt_idx = current_prompt_idx + 1;
+	  	local goto_idx = current_prompt_idx + 1;
+	  	if (outcome == "3" and oncancel ~= nil) then
+	  		goto_idx = oncancel;
+	  	end
 		-- check to see if we are at the last msg in the list
-	 	if (current_prompt_idx > #prevprompts) then
-		    -- get next msg from the cursor
-		    current_prompt = prompts();
-		    if (current_prompt ~= nil) then
-		       table.insert(prevprompts, current_prompt);
-		    end
+	 	if (goto_idx > #prevprompts) then
+		    for i=current_prompt_idx+1, goto_idx do
+			    current_prompt = prompts();
+			    if (current_prompt ~= nil) then
+			       table.insert(prevprompts, current_prompt);
+			    end
+			end
+			current_prompt_idx = goto_idx;
 		else
 		    -- get msg from the prev list
+		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
 	  end
-	  
-	  if (captureinput == 1) then
-	  	query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
-   		query = query .. " VALUES ("..callid..","..promptid..",'"..input.."')";
-   		con:execute(query);
-   		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-	  end	
     
    end -- end while
    
@@ -808,15 +826,48 @@ function recordsurveyinput (callid, promptid, maxlength)
    local maxlength = maxlength or 180000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
+   repeat
+      read(aosd .. "pleaserecord.wav", 1000);
+      local d = use();
 
-   session:execute("playback", "tone_stream://%(500, 0, 620)");
-   freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
-   logfile:write(sessid, "\t",
-	    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
-	    os.time(), "\t", "Record", "\t", filename, "\n");
-   session:execute("record", filename .. " " .. maxlength .. " 100 5");
+      if (d == GLOBAL_MENU_MAINMENU) then
+	 return d;
+      end
+
+      session:execute("playback", "tone_stream://%(500, 0, 620)");
+      freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
+      logfile:write(sessid, "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
+		    os.time(), "\t", "Record", "\t", filename, "\n");
+      session:execute("record", filename .. " " .. maxlength .. " 100 5");
+      
+      d = use();
+      
+      local review_cnt = 0;
+      while (d ~= "1" and d ~= "2" and d ~= "3") do
+		 read(sursd .. "hererecorded.wav", 1000);
+		 read(filename, 1000);
+		 read(sursd .. "notsatisfied.wav", 2000);
+		 sleep(6000)
+		 d = use();
+		 review_cnt = check_abort(review_cnt, 6)
+      end
+      
+     if (d ~= "1" and d ~= "2") then
+	 	 os.remove(filename);
+		 if (d == "3") then
+		    read(sursd .. "messagecancelled.wav", 500);
+		    return d;
+		 end
+     end
+   until (d == "1");
    
-   return partfilename;
+   query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
+   query = query .. " VALUES ("..callid..","..promptid..",'"..partfilename.."')";
+   con:execute(query);
+   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+   
+   return d;
 end
 
 --[[ 
