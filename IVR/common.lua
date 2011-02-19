@@ -605,6 +605,7 @@ OPTION_REPLAY = 3;
 OPTION_GOTO = 4;
 OPTION_RECORD = 5;
 OPTION_INPUT = 6;
+OPTION_TRANSFER = 7;
 
 -----------
 -- get_prompts
@@ -810,6 +811,10 @@ function play_prompts (prompts)
 		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    	end
+	  elseif (action == OPTION_TRANSFER) then
+	  	local number = option[2];
+	  	session:setAutoHangup(false);
+        session:transfer(number, "XML", "default");
 	  end
     
    end -- end while
