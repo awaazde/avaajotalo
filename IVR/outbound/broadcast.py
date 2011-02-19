@@ -237,6 +237,10 @@ def thread(messageforum, template):
         ntoshift = 2 * responses.count()
         for prompt in toshift:
             prompt.order += ntoshift
+            for option in Option.objects.filter(prompt=prompt):
+                if option.action == OPTION_RECORD and option.action_param2:
+                    option.action_param2 = int(option.action_param2) + ntoshift
+                    option.save()
             prompt.save()
         
         #fill in the missing prompt with the given thread
