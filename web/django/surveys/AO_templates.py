@@ -174,6 +174,8 @@ def record_template(line, contenttype):
         record.save()
         record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param2=7)
         record_opt.save()
+        record_opt2 = Option(number="1", action=OPTION_RECORD, prompt=record, action_param2=7)
+        record_opt2.save()
         
         # thanks
         thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, survey=s)

@@ -84,6 +84,8 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 				prompt = new Prompt(model);
 				prompts.add(prompt);
 	  }
+		
+		loadSurveys(prompts);
     
     Anchor broadcast = new Anchor("New Broadcast");
     broadcast.addClickHandler(new ClickHandler() {
