@@ -123,6 +123,8 @@ def freecall_template(line, contenttype):
         freecall.save()
         freecall_opt = Option(number="", action=OPTION_TRANSFER, prompt=freecall, action_param1=line.number)
         freecall_opt.save()
+        freecall_opt2 = Option(number="1", action=OPTION_TRANSFER, prompt=freecall, action_param1=line.number)
+        freecall_opt2.save()
         
         return s
     else:
