@@ -767,7 +767,6 @@ function play_prompts (prompts)
 		 end
       elseif (action == OPTION_GOTO) then
 	  	local goto_idx = tonumber(option[2]);
-   		freeswitch.consoleLog("info", script_name .. " : goto idx is " .. tostring(goto_idx) .. "\n");
 		-- check to see if we are at the last msg in the list
 	 	if (goto_idx > #prevprompts) then
 		    for i=current_prompt_idx+1, goto_idx do
@@ -782,8 +781,6 @@ function play_prompts (prompts)
 		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
-	    freeswitch.consoleLog("info", script_name .. " : prompt idx is " .. tostring(current_prompt_idx) .. "\n");
-	    freeswitch.consoleLog("info", script_name .. " : currp is " .. tostring(current_prompt == nil) .. "\n");
 	  elseif (action == OPTION_RECORD) then
 	    local maxlength = tonumber(option[2]);
 	    local oncancel = tonumber(option[3]);
@@ -799,7 +796,6 @@ function play_prompts (prompts)
 	  	if (outcome == "3" and oncancel ~= nil) then
 	  		goto_idx = oncancel;
 	  	end
-	  	freeswitch.consoleLog("info", script_name .. " gotoidx is : " .. to .. "\n")
 		-- check to see if we are at the last msg in the list
 	 	if (goto_idx > #prevprompts) then
 		    for i=current_prompt_idx+1, goto_idx do
@@ -813,7 +809,7 @@ function play_prompts (prompts)
 		    -- get msg from the prev list
 		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
-	    end
+	    	end
 	  end
     
    end -- end while
