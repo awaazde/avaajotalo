@@ -114,9 +114,9 @@ session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 --session:setInputCallback("my_cb", "arg");
 
+-- wait a while before testing
+session:sleep(2000);
 if (session:ready() == true) then
-	-- sleep for a bit
-	session:sleep(1000);
 	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 	"\t", os.time(), "\t", "Start call", "\n");
 	
