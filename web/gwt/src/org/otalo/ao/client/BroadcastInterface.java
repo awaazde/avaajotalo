@@ -408,16 +408,16 @@ public class BroadcastInterface extends Composite {
 		}
 	}
 	
-	public void loadSurveys()
-	{
-		Line line = Messages.get().getLine();
-		JSONRequest request = new JSONRequest();
-		String params = "";
-		if (line != null)
-			params = "?lineid=" + line.getId();
-			
-		request.doFetchURL(AoAPI.SURVEY + params, new SurveyRequestor());
-	}
+//	public void loadSurveys()
+//	{
+//		Line line = Messages.get().getLine();
+//		JSONRequest request = new JSONRequest();
+//		String params = "";
+//		if (line != null)
+//			params = "?lineid=" + line.getId();
+//			
+//		request.doFetchURL(AoAPI.SURVEY + params, new SurveyRequestor());
+//	}
 	
 	 private class TagRequestor implements JSONRequester {
 		 
@@ -433,21 +433,21 @@ public class BroadcastInterface extends Composite {
 		}
 	 }
 	 
-	 private class SurveyRequestor implements JSONRequester {
-		 
-			public void dataReceived(List<JSOModel> models) {
-				Survey s;
-				surveys.clear();
-				surveys.addItem("", "-1");
-				
-				for (JSOModel model : models)
-			  	{
-						s = new Survey(model);
-						surveys.addItem(s.getName(), s.getId());
-			  	}
-
-			}
-	 }
+//	 private class SurveyRequestor implements JSONRequester {
+//		 
+//			public void dataReceived(List<JSOModel> models) {
+//				Survey s;
+//				surveys.clear();
+//				surveys.addItem("", "-1");
+//				
+//				for (JSOModel model : models)
+//			  	{
+//						s = new Survey(model);
+//						surveys.addItem(s.getName(), s.getId());
+//			  	}
+//
+//			}
+//	 }
 	 
 	 public void forwardThread(MessageForum mf)
 	 {

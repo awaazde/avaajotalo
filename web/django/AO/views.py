@@ -440,18 +440,25 @@ def messageresponder(request, message_forum_id):
 
 def username(request):
     auth_user = request.user
-
-    user = get_list_or_404(User, admin__auth_user=auth_user)
+    if not auth_user.is_superuser:
+        user = get_list_or_404(User, admin__auth_user=auth_user)
+    else:
+        user = []
+    
     return send_response(user)
 
 def line(request):
     auth_user = request.user
-
-    # get the first line based on the first forum that this
-    # admin is associated with
-    admin = Admin.objects.filter(auth_user=auth_user)[0]
-    forum = admin.forum
-    line = forum.line_set.all()[:1]
+    
+    if not auth_user.is_superuser:
+        # get the first line based on the first forum that this
+        # admin is associated with
+        admin = Admin.objects.filter(auth_user=auth_user)[0]
+        forum = admin.forum
+        line = forum.line_set.all()[:1]
+    else:
+        line = []
+        
     return send_response(line)
 
 '''
@@ -466,7 +473,7 @@ def survey(request):
     if params.__contains__('lineid'):
         line_id = int(params['lineid'])
         line = get_object_or_404(Line, pk=line_id)
-        surveys = Survey.objects.filter(number__in=[line.number,line.outbound_number]).distinct()
+        surveys = Survey.objects.filter(number__in=[line.number,line.outbound_number], broadcast=True).distinct().order_by('-id')
        
     return send_response(surveys)
 
@@ -570,27 +577,13 @@ def forwardthread(request, message_forum_id):
     
     return send_response(templates)
 
-def surveyinput(request):
-    params = request.GET
+def surveyinput(request, survey_id):
+    survey = get_object_or_404(Survey, pk=survey_id)
+    # update the status
+    survey.getstatus()
     
-    if params.__contains__('lineid'):
-        lines = Line.objects.filter(pk=params['lineid'])
-    else:
-        lines = Line.objects.all()
-    
-    numbers = []
-    for line in lines:
-        if line.number not in numbers:
-            numbers.append(line.number)
-        if line.outbound_number not in numbers:
-            numbers.append(line.outbound_number)  
-        
-    # get all surveys (and their prompts) which have recorded input
-    prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
-    
-    #update the statuses of all surveys
-    for prompt in prompts:
-        prompt.survey.getstatus()
+    # get all prompts in reverse order so that the last ones will be inserted first into the widget
+    prompts = Prompt.objects.filter(survey=survey, option__action=broadcast.OPTION_RECORD).distinct().order_by('-order')
     
     return send_response(prompts, relations=('survey',))
 

@@ -51,8 +51,9 @@ import com.google.gwt.user.client.ui.Widget;
  * @author dsc
  *
  */
-public class SurveyWidget implements ClickHandler{
+public class SurveyWidget implements ClickHandler, JSONRequester {
 	private Survey survey;
+	private Images images;
 	private Tree tree;
 	private TreeItem root;
 	private HTML rootHTML, detailsHTML, cancelHTML;
@@ -62,9 +63,10 @@ public class SurveyWidget implements ClickHandler{
 	private AreYouSureDialog confirm;
 	private String surveyDetails = "";
 	
-	public SurveyWidget(Survey s, List<Prompt> prompts, Images images, Composite parent)
+	public SurveyWidget(Survey s, Images images, Composite parent)
 	{
 		this.survey = s;
+		this.images = images;
 		this.parent = parent;
 		
 		tree = new Tree(images);
@@ -98,20 +100,10 @@ public class SurveyWidget implements ClickHandler{
 			}
 		});
     
-		HTML promptHTML;
-		TreeItem prompt;
-		String pName;
-    for (Prompt p : prompts)
-		{
-			pName = p.getName() != null ? p.getName() : "Prompt " + p.getOrder(); 
-			promptHTML = imageItemHTML(images.responses(), pName);
-			prompt = new TreeItem(promptHTML);
-			promptMap.put(promptHTML, p);
-			leaves.put(promptHTML, prompt);
-			root.addItem(prompt);
-		}
-    
     JSONRequest request = new JSONRequest();
+		request.doFetchURL(AoAPI.SURVEY_INPUT + survey.getId() + "/", this);
+    
+    request = new JSONRequest();
 		request.doFetchURL(AoAPI.SURVEY_DETAILS + survey.getId() + "/", new SurveyDetailsRequester() );
     
     detailsHTML = imageItemHTML(images.drafts(), "Details");
@@ -158,13 +150,22 @@ public class SurveyWidget implements ClickHandler{
     
 	}
 	
-	private class CancelSurveyRequester implements JSONRequester {
-		public void dataReceived(List<JSOModel> models) {
-			ConfirmDialog saved = new ConfirmDialog("Survey Cancelled!");
-			saved.show();
-			saved.center();
-			
-			Messages.get().loadBroadcasts();
+	public void dataReceived(List<JSOModel> models) {
+		HTML promptHTML;
+		TreeItem prompt;
+		String pName;
+		Prompt p;
+		
+    for (JSOModel model : models)
+		{
+			p = new Prompt(model);
+    	pName = p.getName() != null ? p.getName() : "Prompt " + p.getOrder(); 
+			promptHTML = imageItemHTML(images.responses(), pName);
+			prompt = new TreeItem(promptHTML);
+			promptMap.put(promptHTML, p);
+			leaves.put(promptHTML, prompt);
+			//root.addItem(prompt);
+			root.insertItem(0, prompt);
 		}
 		
 	}
@@ -177,6 +178,17 @@ public class SurveyWidget implements ClickHandler{
 			
 			surveyDetails = "<b>Start:</b> " + date + "<br><br>";
 			surveyDetails += "<b>Numbers:</b> " + numbers;
+		}
+		
+	}
+	
+	private class CancelSurveyRequester implements JSONRequester {
+		public void dataReceived(List<JSOModel> models) {
+			ConfirmDialog saved = new ConfirmDialog("Survey Cancelled!");
+			saved.show();
+			saved.center();
+			
+			Messages.get().loadBroadcasts();
 		}
 		
 	}
@@ -250,5 +262,7 @@ public class SurveyWidget implements ClickHandler{
 			Messages.get().displaySurveyInput(p, 0);
 		}
 	}
+
+	
 	
 }

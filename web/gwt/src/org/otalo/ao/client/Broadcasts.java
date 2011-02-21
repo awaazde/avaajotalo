@@ -39,6 +39,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A panel of fora, each presented as a tree.
@@ -78,24 +79,28 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   	// Get surveys
 	  JSONRequest request = new JSONRequest();
 	  String lineId = Messages.get().getLine() != null ? "?lineid=" + Messages.get().getLine().getId() : ""; 
-		request.doFetchURL(AoAPI.SURVEY_INPUT + lineId, this);
+		request.doFetchURL(AoAPI.SURVEY + lineId, this);
   }
 
 	public void dataReceived(List<JSOModel> models) {
-		Prompt prompt;
-		List<Prompt> prompts = new ArrayList<Prompt>();
+		Survey s;
+		SurveyWidget w;
+		List<Survey> surveys = new ArrayList<Survey>();
 		
 		p.clear();
-		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_DEFAULT);
-		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
+//		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_DEFAULT);
+//		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		
 		for (JSOModel model : models)
 	  {
-				prompt = new Prompt(model);
-				prompts.add(prompt);
+				s = new Survey(model);
+				surveys.add(s);
+				w = new SurveyWidget(s, images, this);
+				
+				p.add(w.getWidget());
+				widgets.add(w);
 	  }
 		
-		loadSurveys(prompts);
     
 //    Anchor broadcast = new Anchor("New Broadcast");
 //    broadcast.addClickHandler(new ClickHandler() {
@@ -104,46 +109,9 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 //			}
 //		});
     
-    p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    p.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-    //p.add(broadcast);
-		
-	}
-	
-
-
-	private void loadSurveys(List<Prompt> prompts)
-	{
-		Survey current=null, s;
-		List<Prompt> currentPrompts = new ArrayList<Prompt>();
-		SurveyWidget w;
-		for (Prompt prompt : prompts)
-		{
-			s = prompt.getSurvey();
-			
-			// ASSUMPTION: Prompts come in ordered by associated survey
-			if (current == null || !current.getId().equals(s.getId()))
-			{
-				if (current != null)
-				{
-					w = new SurveyWidget(current, currentPrompts, images, this);
-					
-					p.add(w.getWidget());
-					widgets.add(w);
-				}
-				current = s;
-				currentPrompts = new ArrayList<Prompt>();
-			}
-			
-			currentPrompts.add(prompt);
-		}
-		
-		if (current != null)
-		{
-			w = new SurveyWidget(current, currentPrompts, images, this);
-			p.add(w.getWidget());
-			widgets.add(w);
-		}
+//    p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+//    p.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+//    p.add(broadcast);
 		
 	}
 	
