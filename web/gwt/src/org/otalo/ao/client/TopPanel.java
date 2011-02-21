@@ -111,6 +111,8 @@ public class TopPanel extends Composite implements ClickHandler {
 				    
 				}
 			}
+			// do all the stuff that depends on line being loaded
+			Messages.get().loadBroadcasts();
 
 		}
 	 }

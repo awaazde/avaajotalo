@@ -112,7 +112,7 @@ public class SurveyWidget implements ClickHandler{
 		}
     
     JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.SURVEY_DETAILS + survey.getId(), new SurveyDetailsRequester() );
+		request.doFetchURL(AoAPI.SURVEY_DETAILS + survey.getId() + "/", new SurveyDetailsRequester() );
     
     detailsHTML = imageItemHTML(images.drafts(), "Details");
     detailsHTML.addClickHandler(new ClickHandler() {
@@ -142,7 +142,7 @@ public class SurveyWidget implements ClickHandler{
 							if (confirm.isConfirmed())
 							{
 								JSONRequest request = new JSONRequest();
-								request.doFetchURL(AoAPI.CANCEL_SURVEY + survey.getId(), new CancelSurveyRequester() );
+								request.doFetchURL(AoAPI.CANCEL_SURVEY + survey.getId() + "/", new CancelSurveyRequester() );
 							}
 							
 						}
@@ -164,7 +164,7 @@ public class SurveyWidget implements ClickHandler{
 			saved.show();
 			saved.center();
 			
-			Messages.get().reloadBroadcasts();
+			Messages.get().loadBroadcasts();
 		}
 		
 	}

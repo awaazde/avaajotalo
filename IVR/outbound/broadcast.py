@@ -55,6 +55,7 @@ def subjects_by_numbers(numbers):
     
     for number in numbers:
         number = number.strip()
+        number = number[-10:]
         if number == '':
             continue
         u = User.objects.filter(number=number)

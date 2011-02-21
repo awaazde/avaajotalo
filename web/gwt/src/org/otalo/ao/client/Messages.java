@@ -64,7 +64,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     return singleton;
   }
 
-  private TopPanel topPanel = new TopPanel();
+  private TopPanel topPanel;
   private VerticalPanel rightPanel = new VerticalPanel();
   private MessageList messageList;
   private MessageDetail messageDetail = new MessageDetail();
@@ -145,9 +145,9 @@ public class Messages implements EntryPoint, ResizeHandler {
 		broadcastIface.setVisible(true);
   }
   
-  public void reloadBroadcasts()
+  public void loadBroadcasts()
   {
-  	bcasts.reload();
+  	bcasts.load();
   }
   
   public void displaySurveyInputPanel()
@@ -202,7 +202,8 @@ public class Messages implements EntryPoint, ResizeHandler {
    */
   public void onModuleLoad() {
     singleton = this;
-
+    
+    topPanel = new TopPanel();
     topPanel.setWidth("100%");
 
     // MailList uses Mail.get() in its constructor, so initialize it after
