@@ -21,6 +21,7 @@ sys.path.append('/home/dsc/Development')
 sys.path.append('/home/dsc/Development/otalo')
 sys.path.append('/usr/local/freeswitch/scripts/AO')
 sys.path.append('/usr/local/freeswitch/scripts/AO/outbound')
+sys.path.append('/usr/bin/ad_digest')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'otalo.settings'
 
