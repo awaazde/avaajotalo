@@ -879,44 +879,44 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread)
 	   forumid = result[1];
 	   rgt = result[2];
 
-	-- get userid
-	query = "SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid;
-   	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-	cur = con:execute(query);
-	uid = {};
-	result = cur:fetch(uid);
-	cur:close();
-	local userid = '';
-	if (result ~= nil) then
-		userid = tostring(uid[1]);
-	else
-	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
-	   con:execute(query);
-	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-	   cur = con:execute("SELECT LAST_INSERT_ID()");
-	   userid = tostring(cur:fetch());
-	   cur:close();
-	end  
-       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
-       con:execute(query);
-       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
-       con:execute(query);
-       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-       
-       query = "INSERT INTO AO_message (user_id, content_file, date, thread_id, lft, rgt)";
-	   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
-	   con:execute(query);
-	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-	   id = {};
-	   cur = con:execute("SELECT LAST_INSERT_ID()");
-	   cur:fetch(id);
-	   cur:close();
-	   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
-	   
-	   query = "INSERT INTO AO_message_forum (message_id, forum_id, status) ";
-	   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
-	   con:execute(query);
+		-- get userid
+		query = "SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid;
+	   	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+		cur = con:execute(query);
+		uid = {};
+		result = cur:fetch(uid);
+		cur:close();
+		local userid = '';
+		if (result ~= nil) then
+			userid = tostring(uid[1]);
+		else
+		   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
+		   con:execute(query);
+		   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+		   cur = con:execute("SELECT LAST_INSERT_ID()");
+		   userid = tostring(cur:fetch());
+		   cur:close();
+		end  
+	       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+	       con:execute(query);
+	       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+	       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+	       con:execute(query);
+	       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+	       
+	       query = "INSERT INTO AO_message (user_id, content_file, date, thread_id, lft, rgt)";
+		   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
+		   con:execute(query);
+		   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+		   id = {};
+		   cur = con:execute("SELECT LAST_INSERT_ID()");
+		   cur:fetch(id);
+		   cur:close();
+		   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
+		   
+		   query = "INSERT INTO AO_message_forum (message_id, forum_id, status) ";
+		   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
+		   con:execute(query);
    end	
    
    return d;
