@@ -67,7 +67,7 @@ public class MessageDetail extends Composite {
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
 	private TagWidget tags;
 	private RoutingWidget routing;
-	private Anchor downloadLink, forwardLink;
+	private Anchor downloadLink, broadcastLink;
 	private HandlerRegistration forwardHandler = null;
 
   public MessageDetail() {
@@ -177,7 +177,7 @@ public class MessageDetail extends Composite {
   	
   	VerticalPanel buttons = new VerticalPanel();
   	buttons.setSize("100%", "100%");
-  	buttons.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+  	buttons.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
   	buttons.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
   	
   	moveButtons = new VerticalPanel();
@@ -188,10 +188,13 @@ public class MessageDetail extends Composite {
   	moveButtons.add(moveUpButton);
   	moveButtons.add(moveDownButton);
   	moveButtons.setSpacing(5);
-  	forwardLink = new Anchor("Forward >>");
-  	buttons.add(forwardLink);
+  	VerticalPanel linksPanel = new VerticalPanel();
+  	broadcastLink = new Anchor("Broadcast");
+  	linksPanel.add(broadcastLink);
   	downloadLink = new Anchor("Download", AoAPI.DOWNLOAD);
-  	buttons.add(downloadLink);
+  	linksPanel.add(downloadLink);
+  	buttons.add(linksPanel);
+  	buttons.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
   	buttons.add(sticky);
   	buttons.add(moveButtons);
   	buttons.add(saveButton);
@@ -283,12 +286,12 @@ public class MessageDetail extends Composite {
   	
   	if (messageForum.isResponse())
   	{
-  		forwardLink.setVisible(false);
+  		broadcastLink.setVisible(false);
   	}
   	else
   	{
-  		forwardLink.setVisible(true);
-  		forwardHandler = forwardLink.addClickHandler(new ForwardClickHandler(messageForum));
+  		broadcastLink.setVisible(true);
+  		forwardHandler = broadcastLink.addClickHandler(new ForwardClickHandler(messageForum));
   	}
   	
     // Populate details pane with caller info.

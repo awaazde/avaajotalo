@@ -145,6 +145,11 @@ public class Messages implements EntryPoint, ResizeHandler {
 		broadcastIface.setVisible(true);
   }
   
+  public void reloadBroadcasts()
+  {
+  	bcasts.reload();
+  }
+  
   public void displaySurveyInputPanel()
   {
   	messageList.setVisible(true);
@@ -172,15 +177,15 @@ public class Messages implements EntryPoint, ResizeHandler {
   	}
   	else
   	{
-	  	messageList.displaySurveyInput(p, 0);
+	  	messageList.displaySurveyInput(p, start);
   	}
   }
   
-  public void broadcastSomething()
-  {
-  	broadcastIface.loadSurveys();
-  	displayBroadcastPanel(null);
-  }
+//  public void broadcastSomething()
+//  {
+//  	broadcastIface.loadSurveys();
+//  	displayBroadcastPanel(null);
+//  }
   
   public void forwardThread(MessageForum thread)
   {

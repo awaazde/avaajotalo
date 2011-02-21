@@ -54,6 +54,8 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   	ImageResource inbox();  
     ImageResource sent();
     ImageResource responses();
+    ImageResource reject_sm();
+    ImageResource drafts();
   }
 
   private Images images;
@@ -74,10 +76,22 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 	  
 	  initWidget(p);
   }
+  
+  public void reload()
+  {
+  	// Get surveys
+	  JSONRequest request = new JSONRequest();
+	  String lineId = Messages.get().getLine() != null ? "?lineid=" + Messages.get().getLine().getId() : ""; 
+		request.doFetchURL(AoAPI.SURVEY_INPUT + lineId, this);
+  }
 
 	public void dataReceived(List<JSOModel> models) {
 		Prompt prompt;
 		List<Prompt> prompts = new ArrayList<Prompt>();
+		
+		p.clear();
+		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_DEFAULT);
+		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		
 		for (JSOModel model : models)
 	  {
@@ -87,16 +101,16 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 		
 		loadSurveys(prompts);
     
-    Anchor broadcast = new Anchor("New Broadcast");
-    broadcast.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				Messages.get().broadcastSomething();
-			}
-		});
+//    Anchor broadcast = new Anchor("New Broadcast");
+//    broadcast.addClickHandler(new ClickHandler() {
+//			public void onClick(ClickEvent event) {
+//				Messages.get().broadcastSomething();
+//			}
+//		});
     
     p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     p.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-    p.add(broadcast);
+    //p.add(broadcast);
 		
 	}
 	

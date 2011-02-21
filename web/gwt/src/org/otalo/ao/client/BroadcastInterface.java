@@ -46,7 +46,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
 public class BroadcastInterface extends Composite {
-	private Images images;
 	private FormPanel bcastForm;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
 	private VerticalPanel outer, who, what, when;
@@ -57,7 +56,7 @@ public class BroadcastInterface extends Composite {
 	private ListBox tags, lastNCallers, surveys, from, till, duration;
 	private Hidden lineid, messageforumid;
 	private RadioButton numbers, usersByTag, usersByLog, file, sms, survey, now, date;
-	private FileUpload fileUpload;
+	//private FileUpload fileUpload;
 	private BaseModel backObj;
 	
 	public interface Images extends Fora.Images {
@@ -67,7 +66,6 @@ public class BroadcastInterface extends Composite {
 	}
 	
 	public BroadcastInterface(Images images) {
-		this.images = images;
 		outer = new VerticalPanel();
 		outer.setSize("100%","100%");
 		bcastForm = new FormPanel();
@@ -184,22 +182,24 @@ public class BroadcastInterface extends Composite {
 		
 		VerticalPanel whatPanel = new VerticalPanel();
 		whatPanel.setSpacing(10);
-		file = new RadioButton("what","File:");
-		file.setFormValue("file");
-		sms = new RadioButton("what","SMS:");
-		sms.setFormValue("sms");
-		survey = new RadioButton("what","Survey:");
+//		file = new RadioButton("what","File:");
+//		file.setFormValue("file");
+//		sms = new RadioButton("what","SMS:");
+//		sms.setFormValue("sms");
+		survey = new RadioButton("what","Template:");
 		survey.setFormValue("survey");
+		CheckBox response = new CheckBox("Allow response");
+		response.setName("response");
 		
-		fileUpload = new FileUpload();
-  	fileUpload.setName("bcastfile");
-  	fileUpload.addChangeHandler(new ChangeHandler() {
-			public void onChange(ChangeEvent event) {
-				file.setValue(true);
-				sms.setValue(false);
-				survey.setValue(false);
-			}
-		});
+//		fileUpload = new FileUpload();
+//  	fileUpload.setName("bcastfile");
+//  	fileUpload.addChangeHandler(new ChangeHandler() {
+//			public void onChange(ChangeEvent event) {
+//				file.setValue(true);
+//				sms.setValue(false);
+//				survey.setValue(false);
+//			}
+//		});
   	TextArea smsArea = new TextArea();
   	smsArea.setName("sms");
   	smsArea.setSize("350px", "100px");
@@ -220,28 +220,30 @@ public class BroadcastInterface extends Composite {
 				survey.setValue(true);
 			}
 		});
-  	HorizontalPanel filePanel = new HorizontalPanel();
-  	filePanel.setSpacing(10);
-  	filePanel.add(file);
-  	filePanel.add(fileUpload);
+//  	HorizontalPanel filePanel = new HorizontalPanel();
+//  	filePanel.setSpacing(10);
+//  	filePanel.add(file);
+//  	filePanel.add(fileUpload);
   	
-  	HorizontalPanel smsPanel = new HorizontalPanel();
-  	smsPanel.setSpacing(10);
-  	smsPanel.add(sms);
-  	smsPanel.add(smsArea);
-  	// FOR NOW :-)
-  	sms.setEnabled(false);
-  	smsArea.setText("Coming soon!");
-  	smsArea.setEnabled(false);
+//  	HorizontalPanel smsPanel = new HorizontalPanel();
+//  	smsPanel.setSpacing(10);
+//  	smsPanel.add(sms);
+//  	smsPanel.add(smsArea);
+//  	// FOR NOW :-)
+//  	sms.setEnabled(false);
+//  	smsArea.setText("Coming soon!");
+//  	smsArea.setEnabled(false);
   	
   	HorizontalPanel surveyPanel = new HorizontalPanel();
   	surveyPanel.setSpacing(10);
   	surveyPanel.add(survey);
   	surveyPanel.add(surveys);
+  	surveyPanel.add(response);
   	
-  	what.add(filePanel);
-  	what.add(smsPanel);
+  	//what.add(filePanel);
   	what.add(surveyPanel);
+  	//what.add(smsPanel);
+  	
   	
   	HorizontalPanel whenPanel = new HorizontalPanel();
   	whenPanel.setSpacing(10);
@@ -487,8 +489,16 @@ public class BroadcastInterface extends Composite {
 				sent.center();
 				
 				sendComplete();
+				Messages.get().reloadBroadcasts();
 				
 				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
+				/*
+				 * Why not check for Prompt (bcast interface) here?
+				 * Because in the bcast panel there may or may not be a prompt
+				 * selected, so you don't know what to reload (we are not sending
+				 * The selected prompt (if any) to the server on bcast post
+				 * from New Broadcast link
+				 */
 				if (Forum.isForum(model))
 				{
 					// get the first forum for this moderator
@@ -531,8 +541,8 @@ public class BroadcastInterface extends Composite {
 	 
   private void setForwardingMode(boolean fwdMode)
   {
-	 file.setEnabled(!fwdMode);
-	 fileUpload.setEnabled(!fwdMode);
+//	 file.setEnabled(!fwdMode);
+//	 fileUpload.setEnabled(!fwdMode);
 	 survey.setValue(fwdMode);
 	 // set these to true/0 no matter what and
 	 // let the special case disable if needed

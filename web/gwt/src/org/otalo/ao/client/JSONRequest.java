@@ -63,6 +63,8 @@ public final class JSONRequest {
 		public static final String FORWARD_THREAD = "fwdthread/";
 		public static final String SURVEY_INPUT = "surveyinput/";
 		public static final String PROMPT_RESPONSES = "promptresponses/";
+		public static final String CANCEL_SURVEY = "cancelsurvey/";
+		public static final String SURVEY_DETAILS = "surveydetails/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";

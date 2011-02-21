@@ -625,7 +625,7 @@ end
 -----------
 
 function get_options (promptid)
-   local query = " SELECT opt.number, opt.action, opt.action_param1, opt.action_param2 ";
+   local query = " SELECT opt.number, opt.action, opt.action_param1, opt.action_param2, opt.action_param3 ";
    query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
    query = query .. " WHERE prompt.id = " .. promptid;
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
@@ -785,12 +785,13 @@ function play_prompts (prompts)
 	  elseif (action == OPTION_RECORD) then
 	    local maxlength = tonumber(option[2]);
 	    local oncancel = tonumber(option[3]);
+	    local mfid = tonumber(option[4]);
 	    -- kind of a hack, but I don't want to add this
 	    -- to the Survey model. Get the survey lang subdir
 	    -- by stripping the promptfile name. Assumes they are
-	    -- in the same directory
+	    -- in the home sounds directory of the lang bundle of the same name
 	    local lang = promptfile:sub(1,promptfile:find('/')-1);
-	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength);
+	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
 	  	local goto_idx = current_prompt_idx + 1;
@@ -831,13 +832,13 @@ end
 -- recordsurveyinput
 -----------
 
-function recordsurveyinput (callid, promptid, lang, maxlength)
+function recordsurveyinput (callid, promptid, lang, maxlength, mfid)
    local maxlength = maxlength or 180000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
    
-   recordsd = sursd .. lang .. '/';
+   recordsd = aosd .. lang .. '/';
    repeat
       local d = use();
 
@@ -873,10 +874,44 @@ function recordsurveyinput (callid, promptid, lang, maxlength)
      end
    until (d == "1");
    
-   query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
+   local query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
    query = query .. " VALUES ("..callid..","..promptid..",'"..partfilename.."')";
    con:execute(query);
-   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+   
+   -- check if this sh be attached as a response to an existing msg
+   if (mfid ~= nil) then
+   	   -- get rgt, forumid
+   	   query = "SELECT mf.forum_id, m.rgt FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
+	   cur = con:execute(query);
+	   local result = {};
+	   result = cur:fetch(result);
+	   cur:close();
+	   
+	   forumid = result[1];
+	   rgt = result[2];
+	   
+       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. mfid .. " OR id = " .. mfid .. ")";
+       con:execute(query);
+       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. mfid .. " OR id = " .. mfid .. ")";
+       con:execute(query);
+       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+       
+       query = "INSERT INTO AO_message (user_id, content_file, date, thread_id, lft, rgt)";
+	   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
+	   con:execute(query);
+	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+	   id = {};
+	   cur = con:execute("SELECT LAST_INSERT_ID()");
+	   cur:fetch(id);
+	   cur:close();
+	   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
+	   
+	   query = "INSERT INTO AO_message_forum (message_id, forum_id, status) ";
+	   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
+	   con:execute(query);
+   end	
    
    return d;
 end

@@ -32,6 +32,8 @@ OPTION_RECORD = 5
 OPTION_INPUT = 6
 OPTION_TRANSFER = 7;
 
+SOUND_EXT = ".wav"
+
 DEFAULT_DURATION_DAYS = 2
 DEFAULT_START_TIME = timedelta(hours=7)
 DEFAULT_END_TIME = timedelta(hours=19)
@@ -162,7 +164,7 @@ def create_bcast_survey(line, filenames, surveyname):
         s.save()
     
         # welcome
-        welcome = Prompt(file=language+"/welcome.wav", order=1, bargein=False, survey=s)
+        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
         welcome.save()
         welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
         welcome_opt.save()
@@ -176,7 +178,7 @@ def create_bcast_survey(line, filenames, surveyname):
             order += 1
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou.wav", order=order, bargein=False, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=order, bargein=False, survey=s)
         thanks.save()
         thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
         thanks_opt.save()
@@ -187,7 +189,7 @@ def create_bcast_survey(line, filenames, surveyname):
 
 # Assumes the messageforum is a top-level message
 # and you want to bcast the whole thread (flattened)
-def thread(messageforum, template):
+def thread(messageforum, template, responseprompt):
     line = messageforum.forum.line_set.all()[0]
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
@@ -197,7 +199,7 @@ def thread(messageforum, template):
     else:
         num = line.number
     
-    # find the whole in the survery_template
+    # find the hole in the survery_template
     # job interview questions come in handy after all
     prompts = Prompt.objects.filter(survey=template).order_by('order')
     summation = 0
@@ -214,67 +216,75 @@ def thread(messageforum, template):
     # create a clone from the template
     newname = template.name.replace(TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
     newname = newname[:128]
-    s = Survey.objects.filter(name=newname)
-    if not bool(s):
-        # avoid duplicating forums that point to the template
-        forums = Forum.objects.filter(bcast_template=template)
-        for forum in forums:
-            forum.bcast_template = None
-            forum.save()
-        oldtemp = template
-        bcast = template.deepcopy(newname=newname)
-        for forum in forums:
-            forum.bcast_template = oldtemp
-            forum.save()
-            
-        bcast.template = False
-        bcast.broadcast = True
-        bcast.save()
+    # avoid duplicating forums that point to the template
+    forums = Forum.objects.filter(bcast_template=template)
+    for forum in forums:
+        forum.bcast_template = None
+        forum.save()
+    oldtemp = template
+    bcast = template.deepcopy(newname=newname)
+    for forum in forums:
+        forum.bcast_template = oldtemp
+        forum.save()
         
-        # shift the old prompts before we add new ones to override the order
-        toshift = Prompt.objects.filter(survey=bcast, order__gt=thread_start)
-        # the gap left already keeps one index open
-        # so only need to make room for any responses
-        ntoshift = 2 * responses.count()
-        for prompt in toshift:
-            prompt.order += ntoshift
-            for option in Option.objects.filter(prompt=prompt):
-                if option.action == OPTION_RECORD and option.action_param2:
-                    option.action_param2 = int(option.action_param2) + ntoshift
-                    option.save()
-            prompt.save()
-        
-        #fill in the missing prompt with the given thread
-        order = thread_start
-        origpost = Prompt(file=settings.MEDIA_ROOT + '/' + messageforum.message.content_file, order=order, bargein=True, survey=bcast)
-        origpost.save()
-        origpost_opt = Option(number="1", action=OPTION_NEXT, prompt=origpost)
-        origpost_opt.save()
-        origpost_opt2 = Option(number="", action=OPTION_NEXT, prompt=origpost)
-        origpost_opt2.save()
+    bcast.template = False
+    bcast.broadcast = True
+    bcast.save()
+    
+    # shift the old prompts before we add new ones to override the order
+    toshift = Prompt.objects.filter(survey=bcast, order__gt=thread_start)
+    # the gap left already keeps one index open
+    # so only need to make room for any responses
+    ntoshift = 2 * responses.count()
+    if responseprompt:
+        # one more space for record message prompt
+        ntoshift += 1
+    for prompt in toshift:
+        prompt.order += ntoshift
+        for option in Option.objects.filter(prompt=prompt):
+            if option.action == OPTION_RECORD and option.action_param2:
+                option.action_param2 = int(option.action_param2) + ntoshift
+                option.save()
+        prompt.save()
+    
+    #fill in the missing prompt with the given thread
+    order = thread_start
+    origpost = Prompt(file=settings.MEDIA_ROOT + '/' + messageforum.message.content_file, order=order, bargein=True, survey=bcast)
+    origpost.save()
+    origpost_opt = Option(number="1", action=OPTION_NEXT, prompt=origpost)
+    origpost_opt.save()
+    origpost_opt2 = Option(number="", action=OPTION_NEXT, prompt=origpost)
+    origpost_opt2.save()
+    order += 1
+    
+    for response in responses:
+        if response.lft == 2:
+            responseintro = Prompt(file=language+'/firstresponse'+SOUND_EXT, order=order, bargein=True, survey=bcast)
+        else:
+            responseintro = Prompt(file=language+'/nextresponse'+SOUND_EXT, order=order, bargein=True, survey=bcast)
+        responseintro.save()
+        responseintro_opt = Option(number="1", action=OPTION_NEXT, prompt=responseintro)
+        responseintro_opt.save()
+        responseintro_opt2 = Option(number="", action=OPTION_NEXT, prompt=responseintro)
+        responseintro_opt2.save()
         order += 1
         
-        for response in responses:
-            if response.lft == 2:
-                responseintro = Prompt(file=language+'/firstresponse.wav', order=order, bargein=True, survey=bcast)
-            else:
-                responseintro = Prompt(file=language+'/nextresponse.wav', order=order, bargein=True, survey=bcast)
-            responseintro.save()
-            responseintro_opt = Option(number="1", action=OPTION_NEXT, prompt=responseintro)
-            responseintro_opt.save()
-            responseintro_opt2 = Option(number="", action=OPTION_NEXT, prompt=responseintro)
-            responseintro_opt2.save()
-            order += 1
-            
-            responsecontent = Prompt(file=settings.MEDIA_ROOT + '/' + response.content_file, order=order, bargein=True, survey=bcast)
-            responsecontent.save()
-            responsecontent_opt = Option(number="1", action=OPTION_NEXT, prompt=responsecontent)
-            responsecontent_opt.save()
-            responsecontent_opt2 = Option(number="", action=OPTION_NEXT, prompt=responsecontent)
-            responsecontent_opt2.save()
-            order += 1
-    else:
-        bcast = s[0]
+        responsecontent = Prompt(file=settings.MEDIA_ROOT + '/' + response.content_file, order=order, bargein=True, survey=bcast)
+        responsecontent.save()
+        responsecontent_opt = Option(number="1", action=OPTION_NEXT, prompt=responsecontent)
+        responsecontent_opt.save()
+        responsecontent_opt2 = Option(number="", action=OPTION_NEXT, prompt=responsecontent)
+        responsecontent_opt2.save()
+        order += 1
+    
+    if responseprompt:
+         # record
+        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=order, bargein=True, survey=bcast, name='Response' )
+        record.save()
+        record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param3=messageforum.id)
+        record_opt.save()
+        record_opt2 = Option(number="1", action=OPTION_RECORD, prompt=record, action_param3=messageforum.id)
+        record_opt2.save()
     
     return bcast
 

@@ -16,7 +16,16 @@
 package org.otalo.ao.client.model;
 
 
+
 public class Survey extends BaseModel {
+	
+	/* Order matters. The constants are mirrored in 
+	 * server side code. The ordinal value of the first declared
+	 * is 0 and then increases from there.
+	 */
+	public enum SurveyStatus {
+		ACTIVE, EXPIRED, CANCELLED
+	}
 	
 	public Survey(JSOModel data) {
 		super(data);
@@ -25,6 +34,27 @@ public class Survey extends BaseModel {
 	public String getName()
 	{
 		return getField("name");
+	}
+	
+	public SurveyStatus getStatus()
+	{
+		int statusCode = Integer.valueOf(getField("status"));
+		
+		if (statusCode == SurveyStatus.ACTIVE.ordinal())
+		{
+			return SurveyStatus.ACTIVE;
+		}
+		else if (statusCode == SurveyStatus.EXPIRED.ordinal())
+		{
+			return SurveyStatus.EXPIRED;
+		}
+		else if (statusCode == SurveyStatus.CANCELLED.ordinal())
+		{
+			return SurveyStatus.CANCELLED;
+		}
+		
+		// This should never happen
+		return null;
 	}
 	
 //	public List<Prompt> getPrompts()
