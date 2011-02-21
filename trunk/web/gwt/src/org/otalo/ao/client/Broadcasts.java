@@ -69,15 +69,11 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   public Broadcasts(Images images) {
 	  this.images = images;
 	  p = new VerticalPanel();
-		// Get surveys
-	  JSONRequest request = new JSONRequest();
-	  String lineId = Messages.get().getLine() != null ? "?lineid=" + Messages.get().getLine().getId() : ""; 
-		request.doFetchURL(AoAPI.SURVEY_INPUT + lineId, this);
-	  
+  
 	  initWidget(p);
   }
   
-  public void reload()
+  public void load()
   {
   	// Get surveys
 	  JSONRequest request = new JSONRequest();

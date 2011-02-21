@@ -387,7 +387,6 @@ public class BroadcastInterface extends Composite {
 		outer.add(messageforumid);
 		
 		initWidget(bcastForm);
-  	loadTags();
 	}
 	
 	public void loadTags()
@@ -455,7 +454,9 @@ public class BroadcastInterface extends Composite {
 		 messageforumid.setValue(mf.getId());
 		 backObj = mf;
 		 JSONRequest request = new JSONRequest();
-		 request.doFetchURL(AoAPI.FORWARD_THREAD + mf.getId(), new ForwardThreadRequestor());
+		 request.doFetchURL(AoAPI.FORWARD_THREAD + mf.getId() + "/", new ForwardThreadRequestor());
+		 
+		 loadTags();
 	 }
 	 
 	 private class ForwardThreadRequestor implements JSONRequester {
@@ -489,7 +490,7 @@ public class BroadcastInterface extends Composite {
 				sent.center();
 				
 				sendComplete();
-				Messages.get().reloadBroadcasts();
+				Messages.get().loadBroadcasts();
 				
 				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
 				/*

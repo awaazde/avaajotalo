@@ -277,7 +277,7 @@ public class MessageDetail extends Composite {
   	// Load Message responders
   	routing.loadResponders(messageForum);
   	
-  	downloadLink.setHref(AoAPI.DOWNLOAD + messageForum.getId());
+  	downloadLink.setHref(AoAPI.DOWNLOAD + messageForum.getId() + "/");
   	if (forwardHandler != null) 
   	{
   		forwardHandler.removeHandler();
