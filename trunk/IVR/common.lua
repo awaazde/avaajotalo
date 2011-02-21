@@ -621,23 +621,11 @@ function get_prompts(surveyid)
 end
 
 -----------
--- get_options
------------
-
-function get_options (promptid)
-   local query = " SELECT opt.number, opt.action, opt.action_param1, opt.action_param2, opt.action_param3 ";
-   query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
-   query = query .. " WHERE prompt.id = " .. promptid;
-   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-   return rows(query);
-end
-
------------
 -- get_option
 -----------
 
 function get_option (promptid, number)
-   local query = " SELECT opt.action, opt.action_param1, opt.action_param2 ";
+   local query = " SELECT opt.action, opt.action_param1, opt.action_param2, opt.action_param3 ";
    query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
    query = query .. " WHERE prompt.id = " .. promptid;
    query = query .. " AND opt.prompt_id = prompt.id ";
@@ -832,7 +820,7 @@ end
 -- recordsurveyinput
 -----------
 
-function recordsurveyinput (callid, promptid, lang, maxlength, mfid)
+function recordsurveyinput (callid, promptid, lang, maxlength, thread)
    local maxlength = maxlength or 180000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
@@ -880,21 +868,39 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid)
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
    
    -- check if this sh be attached as a response to an existing msg
-   if (mfid ~= nil) then
+   if (thread ~= nil) then
    	   -- get rgt, forumid
-   	   query = "SELECT mf.forum_id, m.rgt FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
-	   cur = con:execute(query);
+   	   query = "SELECT mf.forum_id, m.rgt FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. thread;
+	   local cur = con:execute(query);
 	   local result = {};
 	   result = cur:fetch(result);
 	   cur:close();
 	   
 	   forumid = result[1];
 	   rgt = result[2];
-	   
-       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. mfid .. " OR id = " .. mfid .. ")";
+
+	-- get userid
+	query = "SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid;
+   	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+	cur = con:execute(query);
+	uid = {};
+	result = cur:fetch(uid);
+	cur:close();
+	local userid = '';
+	if (result ~= nil) then
+		userid = tostring(uid[1]);
+	else
+	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
+	   con:execute(query);
+	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+	   cur = con:execute("SELECT LAST_INSERT_ID()");
+	   userid = tostring(cur:fetch());
+	   cur:close();
+	end  
+       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
        con:execute(query);
        freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. mfid .. " OR id = " .. mfid .. ")";
+       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
        con:execute(query);
        freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
        
