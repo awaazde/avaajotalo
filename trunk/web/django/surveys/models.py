@@ -17,6 +17,7 @@
 from django.db import models
 from django.db.models.query import CollectedObjects
 from django.db.models.fields.related import ForeignKey
+from datetime import datetime
 
 class Subject(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -37,6 +38,20 @@ class Survey(models.Model):
     number = models.CharField(max_length=24, blank=True, null=True)
     broadcast = models.BooleanField(default=False)
     template = models.BooleanField(default=False)
+    
+    STATUS_ACTIVE = 0
+    STATUS_EXPIRED = 1
+    STATUS_CANCELLED = 2
+    status = models.IntegerField(default = 0);
+    
+    def getstatus(self):
+        now = datetime.now()
+        pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()
+        if pendingcallcnt == 0 and not self.status == Survey.STATUS_CANCELLED:
+            self.status = Survey.STATUS_EXPIRED
+            self.save()
+        
+        return self.status
     
     def __unicode__(self):
         if self.name:
@@ -102,7 +117,7 @@ class Prompt(models.Model):
     
     def __unicode__(self):
         if self.name and self.name != '':
-            return self.name
+            return self.name + '-' + str(self.order)
         else:
             return self.file + '-' + unicode(self.survey) + '-' + str(self.order)
     
@@ -113,6 +128,7 @@ class Option(models.Model):
     action = models.IntegerField()
     action_param1 = models.CharField(max_length=128, blank=True, null=True)
     action_param2 = models.CharField(max_length=128, blank=True, null=True)
+    action_param3 = models.CharField(max_length=128, blank=True, null=True)
     prompt = models.ForeignKey(Prompt)
     
 class Input(models.Model):

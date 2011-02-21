@@ -44,6 +44,8 @@ urlpatterns = patterns('',
     (r'^fwdthread/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.forwardthread'),
     (r'^surveyinput/$', 'otalo.AO.views.surveyinput'),
     (r'^promptresponses/(?P<prompt_id>\d+)/$', 'otalo.AO.views.promptresponses'),
+    (r'^cancelsurvey/(?P<survey_id>\d+)/$', 'otalo.AO.views.cancelsurvey'),
+    (r'^surveydetails/(?P<survey_id>\d+)/$', 'otalo.AO.views.surveydetails'),
 )
 
 if settings.DEVELOPMENT:

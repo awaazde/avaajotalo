@@ -19,7 +19,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
 from otalo.AO.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
-from otalo.surveys.models import Survey, Prompt, Input
+from otalo.surveys.models import Survey, Prompt, Input, Call
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Count
@@ -521,7 +521,9 @@ def bcast(request):
         if survey.template:
             message_forum_id = int(params['messageforumid'])
             mf = get_object_or_404(Message_forum, pk=message_forum_id) 
-            survey = broadcast.thread(mf, survey) 
+            responseprompt = params.__contains__('response')
+            survey = broadcast.thread(mf, survey, responseprompt)
+        
         
     # Get schedule
     when = params['when']
@@ -585,6 +587,31 @@ def surveyinput(request):
     
     return send_response(prompts, relations=('survey',))
 
+def cancelsurvey(request, survey_id):
+    survey = get_object_or_404(Survey, pk=survey_id)
+    survey.status = Survey.STATUS_CANCELLED
+    survey.save()
+    now = datetime.now()
+    Call.objects.filter(survey=survey, date__gt=now).delete()
+        
+    return send_response([survey])
+
+def surveydetails(request, survey_id):
+    survey = get_object_or_404(Survey, pk=survey_id)
+    calls = Call.objects.filter(survey=survey).order_by('date')
+    
+    firstCallDate = calls.aggregate(Min('date'))
+    firstCallDate = firstCallDate.values()[0]
+    
+    numpairs = calls.values('subject__number')
+    numbers = [pair.values()[0] for pair in numpairs]
+    numbers = ','.join(numbers)
+    
+    response = HttpResponse('[{"model":"SURVEY_METADATA", "date":"'+str(firstCallDate)+'","numbers":"'+numbers+'"}]')
+    response['Pragma'] = "no cache"
+    response['Cache-Control'] = "no-cache, must-revalidate"
+    return response
+      
 def promptresponses(request, prompt_id):
     params = request.GET
     
