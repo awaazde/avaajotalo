@@ -588,6 +588,10 @@ def surveyinput(request):
     # get all surveys (and their prompts) which have recorded input
     prompts = Prompt.objects.filter(survey__number__in=numbers, survey__broadcast=True, option__action=broadcast.OPTION_RECORD).distinct().order_by('-survey__id', 'order')
     
+    #update the statuses of all surveys
+    for prompt in prompts:
+        prompt.survey.getstatus()
+    
     return send_response(prompts, relations=('survey',))
 
 def cancelsurvey(request, survey_id):
