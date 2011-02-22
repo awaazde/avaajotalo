@@ -133,9 +133,6 @@ public class BroadcastInterface extends Composite {
 				Date d = event.getValue();
 				sinceField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
 				since.setVisible(false);
-				numbers.setValue(false);
-				usersByTag.setValue(false);
-				usersByLog.setValue(true);
 				
 			}
 		});
@@ -143,10 +140,7 @@ public class BroadcastInterface extends Composite {
 		sinceField.addFocusHandler(new FocusHandler() {
 			
 			public void onFocus(FocusEvent event) {
-				since.setVisible(true);
-				numbers.setValue(false);
-				usersByTag.setValue(false);
-				usersByLog.setValue(true);			
+				since.setVisible(true);		
 			}
 		});
 		
