@@ -39,6 +39,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
@@ -175,9 +176,23 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 			JSOModel model = models.get(0);
 			String date = model.get("date");
 			String numbers = model.get("numbers");
+			String wrappedNums = "";
 			
 			surveyDetails = "<b>Start:</b> " + date + "<br><br>";
-			surveyDetails += "<b>Numbers:</b> " + numbers;
+			String[] numsarr = numbers.split(",");
+			int wrapCnt = 0;
+			for (String num : numsarr)
+			{
+				wrappedNums += num + ",";
+				if (wrapCnt == 4)
+				{
+					wrappedNums += "<br>";
+					wrapCnt = 0;
+				}
+				else
+					wrapCnt++;
+			}
+			surveyDetails += "<b>Numbers:</b> " + wrappedNums;
 		}
 		
 	}

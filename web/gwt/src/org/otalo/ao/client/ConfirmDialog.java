@@ -21,6 +21,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -39,6 +40,7 @@ public class ConfirmDialog extends DialogBox {
 
     HTML text = new HTML(message);
     text.setStyleName("mail-AboutText");
+    text.setWidth("100%");
     outer.add(text);
 
     // Create the 'OK' button, along with a handler that hides the dialog

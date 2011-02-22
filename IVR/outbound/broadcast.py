@@ -16,6 +16,7 @@
 import sys, os
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.db.models import Q
 from otalo.AO.models import Forum, Line, Message_forum, Message, User, Tag
 from otalo.AO.views import MESSAGE_STATUS_APPROVED
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option
@@ -73,10 +74,10 @@ def subjects_by_numbers(numbers):
 
     return subjects
 
-def subjects_by_tags(tags):
+def subjects_by_tags(tags, line):
     subjects = []
     
-    users = User.objects.filter(message__message_forum__tags__in=tags).distinct()
+    users = User.objects.filter(Q(message__message_forum__tags__in=tags, message__message_forum__forum__line=line) | Q(tags__in=tags)).distinct()
     for user in users:
         if user.allowed == 'n':
             continue

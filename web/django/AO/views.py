@@ -36,7 +36,7 @@ MESSAGE_STATUS_REJECTED = 2
 MAX_RESPONDERS = 5
 MIN_RESPONDERS = 2
 MAX_QUESTIONS_PER_RESPONDER = 10
-# should match answer.lua
+# should match common.lua
 LISTEN_THRESH = 5
 # This variable should be consistent with MessageList.java
 VISIBLE_MESSAGE_COUNT = 10
@@ -469,20 +469,27 @@ import broadcast
 def survey(request):
     params = request.GET
     
-    surveys = Survey.objects.filter(broadcast=True)
+    surveys = Survey.objects.filter(broadcast=True).order_by('-id')
     if params.__contains__('lineid'):
         line_id = int(params['lineid'])
         line = get_object_or_404(Line, pk=line_id)
-        surveys = Survey.objects.filter(number__in=[line.number,line.outbound_number], broadcast=True).distinct().order_by('-id')
+        surveys = surveys.filter(number__in=[line.number,line.outbound_number])
        
     return send_response(surveys)
 
 def bcast(request):
     params = request.POST
-        
+    if params['lineid']:
+        line_id = int(params['lineid'])
+        line = get_object_or_404(Line, pk=line_id)
+    if params['messageforumid']:
+        message_forum_id = int(params['messageforumid'])
+        mf = get_object_or_404(Message_forum, pk=message_forum_id)
+        line = mf.forum.line_set.all()[0]
+    
+    subjects = []
     # Get subjects
-    who = params['who']
-    if who == 'numbers':
+    if params.__contains__('bynumbers'):
         numsRaw = params['numbersarea']
         if '\n' in numsRaw:
             numbers = numsRaw.split('\n')
@@ -491,14 +498,14 @@ def bcast(request):
         else:
             numbers = [numsRaw]
         
-        subjects = broadcast.subjects_by_numbers(numbers)  
+        subjects += broadcast.subjects_by_numbers(numbers)  
     
-    elif who == 'tag':
+    if params.__contains__('bytag'):
         tagids = params.getlist('tag')
         tags = Tag.objects.filter(pk__in=tagids)
-        subjects = broadcast.subjects_by_tags(tags)
+        subjects += broadcast.subjects_by_tags(tags, line)
     
-    elif who == 'log':
+    if params.__contains__('bylog'):
         lastncallers = params['lastncallers']
         since = params['since']
         
@@ -507,16 +514,15 @@ def bcast(request):
         else:
             lastncallers = int(lastncallers)
         since = datetime.strptime(since, '%b-%d-%Y')
-        
-        line_id = int(params['lineid'])
-        line = get_object_or_404(Line, pk=line_id)         
-        subjects = broadcast.subjects_by_log(settings.IVR_LOGFILE, line, since, lastncallers)
-
+               
+        subjects += broadcast.subjects_by_log(settings.IVR_LOGFILE, line, since, lastncallers)
+    
+    # remove dups
+    subjects = list(set(subjects))
+    
     # Get message
     what = params['what']
     if what == 'file':
-        line_id = int(params['lineid'])
-        line = get_object_or_404(Line, pk=line_id) 
         bcastfile = request.FILES['bcastfile']
         survey = broadcast.single(bcastfile, line)
     
@@ -526,8 +532,6 @@ def bcast(request):
         surveyid = params['survey']
         survey = get_object_or_404(Survey, pk=surveyid)
         if survey.template:
-            message_forum_id = int(params['messageforumid'])
-            mf = get_object_or_404(Message_forum, pk=message_forum_id) 
             responseprompt = params.__contains__('response')
             survey = broadcast.thread(mf, survey, responseprompt)
         
@@ -662,7 +666,7 @@ def add_child(child, parent):
     child.rgt = child.lft + 1
 
     # update all nodes to the right of the child
-    msgs = Message.objects.filter(rgt__gte=child.lft).exclude(pk=child.id)
+    msgs = Message.objects.filter(thread=child.thread, rgt__gte=child.lft).exclude(pk=child.id)
 
     for m in msgs:
         m.rgt += 2
