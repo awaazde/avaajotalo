@@ -535,9 +535,6 @@ def bcast(request):
             responseprompt = params.__contains__('response')
             survey = broadcast.thread(mf, survey, responseprompt)
         
-    
-    fromtime = timedelta(hours=int(params['fromtime']))
-    tilltime = timedelta(hours=int(params['tilltime']))
      
     # Get schedule
     when = params['when']
@@ -547,9 +544,11 @@ def bcast(request):
         nextten = now.minute - (now.minute % 10) + 10
         fromtime = timedelta(hours=now.hour, minutes = nextten)
     elif when == 'date':
+        fromtime = timedelta(hours=int(params['fromtime']))
         bcastdate = params['bcastdate']
         start_date = datetime.strptime(bcastdate, '%b-%d-%Y')
-    
+        
+    tilltime = timedelta(hours=int(params['tilltime']))
     duration = int(params['duration'])
     backups = params.__contains__("backups")
 

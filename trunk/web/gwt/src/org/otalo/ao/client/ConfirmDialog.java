@@ -40,7 +40,6 @@ public class ConfirmDialog extends DialogBox {
 
     HTML text = new HTML(message);
     text.setStyleName("mail-AboutText");
-    text.setWidth("100%");
     outer.add(text);
 
     // Create the 'OK' button, along with a handler that hides the dialog

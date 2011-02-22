@@ -243,18 +243,30 @@ public class BroadcastInterface extends Composite {
   	HorizontalPanel whenPanel = new HorizontalPanel();
   	whenPanel.setSpacing(10);
   	Label note = new Label("NOTE: Calls are scheduled from the start time of the starting date in 10-minute intervals, 10 recipients at a time.");
-  	note.setWidth("30%");
+  	note.setWidth("100%");
   	now = new RadioButton("when","Start now");
   	now.setFormValue("now");
-  	now.addFocusHandler(new FocusHandler() {
-			public void onFocus(FocusEvent event) {
-				file.setValue(false);
-				sms.setValue(false);
-				survey.setValue(true);
+  	now.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				from.setEnabled(false);
+				from.insertItem("NOW", "-1", 0);
+				from.setSelectedIndex(0);
 			}
 		});
 		date = new RadioButton("when","Date:");
 		date.setFormValue("date");
+		date.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				from.setEnabled(true);
+				from.clear();
+				for(int i=0; i < 24; i++)
+				{
+					String time = String.valueOf(i) + ":00";
+					from.addItem(time, String.valueOf(i));
+				}
+				from.setSelectedIndex(7);
+			}
+		});
 		
 		bcastDateField = new TextBox();
 		bcastDateField.setName("bcastdate");
@@ -286,7 +298,7 @@ public class BroadcastInterface extends Composite {
 		Label tillLbl = new Label("till");
 		till = new ListBox();
 		till.setName("tilltime");
-		for(int i=1; i < 24; i++)
+		for(int i=0; i < 24; i++)
 		{
 			String time = String.valueOf(i) + ":00";
 			from.addItem(time, String.valueOf(i));
@@ -322,7 +334,7 @@ public class BroadcastInterface extends Composite {
 		datePanel.add(bcastDate);
 		
 		HorizontalPanel ftDurationPanel = new HorizontalPanel();
-		ftDurationPanel.setWidth("45%");
+		ftDurationPanel.setWidth("55%");
 		ftDurationPanel.add(fromTillPanel);
 		ftDurationPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		ftDurationPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -330,6 +342,7 @@ public class BroadcastInterface extends Composite {
 		ftDurationPanel.add(duration);
 		ftDurationPanel.add(backups);
 		
+		when.add(note);
 		when.add(nowPanel);
 		when.add(datePanel);
 		when.add(ftDurationPanel);
@@ -521,8 +534,15 @@ public class BroadcastInterface extends Composite {
 		 backObj = back;
 		 setForwardingMode(false);
 		 // Select 7am-7pm by default
-		 from.setItemSelected(6, true);
-		 till.setItemSelected(18, true);
+		 from.setEnabled(true);
+		 from.clear();
+		 for(int i=0; i < 24; i++)
+			{
+				String time = String.valueOf(i) + ":00";
+				from.addItem(time, String.valueOf(i));
+			}
+		 from.setItemSelected(7, true);
+		 till.setItemSelected(19, true);
 		 lastNCallers.setItemSelected(3, true);
 		 duration.setItemSelected(1,true);
 		 
