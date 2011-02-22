@@ -55,7 +55,8 @@ public class BroadcastInterface extends Composite {
 	private DatePicker since, bcastDate;
 	private ListBox tags, lastNCallers, surveys, from, till, duration;
 	private Hidden lineid, messageforumid;
-	private RadioButton numbers, usersByTag, usersByLog, file, sms, survey, now, date;
+	private CheckBox numbers, usersByTag, usersByLog;
+	private RadioButton file, sms, survey, now, date;
 	//private FileUpload fileUpload;
 	private BaseModel backObj;
 	
@@ -85,12 +86,12 @@ public class BroadcastInterface extends Composite {
 		
 		VerticalPanel whoPanel = new VerticalPanel();
 		whoPanel.setSize("100%", "100%");
-		numbers = new RadioButton("who","Numbers:");
-		numbers.setFormValue("numbers");
-		usersByTag = new RadioButton("who","Users by Tag:");
-		usersByTag.setFormValue("tag");
-		usersByLog = new RadioButton("who","Last");
-		usersByLog.setFormValue("log");
+		numbers = new CheckBox("Numbers:");
+		numbers.setName("bynumbers");
+		usersByTag = new CheckBox("Users by Tag:");
+		usersByTag.setName("bytag");
+		usersByLog = new CheckBox("Last");
+		usersByLog.setName("bylog");
 		
 		TextArea numbersArea = new TextArea();
 		numbersArea.setName("numbersarea");
@@ -98,8 +99,6 @@ public class BroadcastInterface extends Composite {
 		numbersArea.addFocusHandler(new FocusHandler() {
 			public void onFocus(FocusEvent event) {
 				numbers.setValue(true);
-				usersByTag.setValue(false);
-				usersByLog.setValue(false);
 			}
 		});
 		tags = new ListBox(true);
@@ -107,9 +106,7 @@ public class BroadcastInterface extends Composite {
 		tags.setVisibleItemCount(5);
 		tags.addFocusHandler(new FocusHandler() {
 			public void onFocus(FocusEvent event) {
-				numbers.setValue(false);
 				usersByTag.setValue(true);
-				usersByLog.setValue(false);
 			}
 		});
 		lastNCallers = new ListBox();
@@ -117,8 +114,6 @@ public class BroadcastInterface extends Composite {
 		lastNCallers.setName("lastncallers");
 		lastNCallers.addFocusHandler(new FocusHandler() {
 			public void onFocus(FocusEvent event) {
-				numbers.setValue(false);
-				usersByTag.setValue(false);
 				usersByLog.setValue(true);
 			}
 		});
