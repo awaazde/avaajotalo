@@ -50,7 +50,7 @@ public class AreYouSureDialog extends DialogBox {
     
     // Create the 'OK' button, along with a handler that hides the dialog
     // when the button is clicked.
-    buttons.add(new Button("Cancel", new ClickHandler() {
+    buttons.add(new Button("No", new ClickHandler() {
       public void onClick(ClickEvent event) {
         confirm = false;
       	hide();
