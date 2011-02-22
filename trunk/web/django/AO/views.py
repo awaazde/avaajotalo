@@ -486,7 +486,7 @@ def bcast(request):
         numsRaw = params['numbersarea']
         if '\n' in numsRaw:
             numbers = numsRaw.split('\n')
-        if ',' in numsRaw:
+        elif ',' in numsRaw:
             numbers = numsRaw.split(',')
         else:
             numbers = [numsRaw]
@@ -598,12 +598,12 @@ def cancelsurvey(request, survey_id):
 
 def surveydetails(request, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id)
-    calls = Call.objects.filter(survey=survey).order_by('date')
+    calls = Call.objects.filter(survey=survey)
     
     firstCallDate = calls.aggregate(Min('date'))
     firstCallDate = firstCallDate.values()[0]
     
-    numpairs = calls.values('subject__number')
+    numpairs = calls.values('subject__number').distinct()
     numbers = [pair.values()[0] for pair in numpairs]
     numbers = ','.join(numbers)
     
