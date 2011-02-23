@@ -174,6 +174,7 @@ public class BroadcastInterface extends Composite {
 		Label templates = new Label("Template: ");
 		CheckBox response = new CheckBox("Allow response");
 		response.setName("response");
+		response.setEnabled(false);
 		
   	surveys = new ListBox();
   	surveys.setName("survey");
@@ -294,7 +295,7 @@ public class BroadcastInterface extends Composite {
 		when.add(ftDurationPanel);
 		
 		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
-		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Message"), true);
+		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Template"), true);
 		stackPanel.add(when, createHeaderHTML(images.calendar(), "Schedule"), true);
 		
 		controls = new HorizontalPanel();
