@@ -328,15 +328,13 @@ function get_responder_messages (userid)
    query = query .. " AND forum.id = message_forum.forum_id ";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
    query = query .. " AND message_responder.user_id = " .. userid;
-   -- Next part says to only select a msg if 
-   -- no other registered responder has responded
-   -- UPDATE: Don't do this here... managing redundant responses
-   -- sh be the job of the human moderator
-   --query = query .. " AND NOT EXISTS (SELECT 1 ";
-   --query = query .. "			  FROM AO_message msg, AO_message_forum mf ";
-   --query = query .. "			  WHERE msg.id = mf.message_id ";
-   --query = query .. "			  AND msg.thread_id = message.id ";
-   --query = query .. "			  AND msg.user_id IN (SELECT user_id from AO_forum_responders where forum_id = mf.forum_id) ) ";
+   -- Next part says to only select a msgs you haven't
+   -- already responded to
+   query = query .. " AND NOT EXISTS (SELECT 1 ";
+   query = query .. "			  FROM AO_message msg, AO_message_forum mf ";
+   query = query .. "			  WHERE msg.id = mf.message_id ";
+   query = query .. "			  AND msg.thread_id = message.id ";
+   query = query .. "			  AND msg.user_id = " .. userid ..") ";
    query = query .. " AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";
    query = query .. " AND (message_responder.reserved_by_id IS NULL OR ";
@@ -506,7 +504,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	    	update_listens(prevmsgs, userid);
 	       return d;
 	    else
-	       d = GLOBAL_MENU_RESPOND;
+	       d = GLOBAL_MENU_SKIP_FWD;
 	    end
       elseif (d == GLOBAL_MENU_SKIP_BACK) then
 		 if (current_msg_idx > 1) then
