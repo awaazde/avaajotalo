@@ -472,6 +472,8 @@ function play_responder_messages (userid, msgs, adminforums)
       if (d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
+	  elseif (d == GLOBAL_MENU_REPLAY) then
+	     -- do nothing
       elseif (current_msg_idx == 1) then
       	 -- do this before prev check b/c 
 		 -- its helpful to know when u are at the first message
