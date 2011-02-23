@@ -498,6 +498,8 @@ function playmessages (msgs, listenreplies)
 		 read(aosd .. "backtomessage.wav", 1000);
 		 -- do this first b/c its helpful to know when u are at the
 		 -- first message
+	  elseif (d == GLOBAL_MENU_REPLAY) then
+	     -- do nothing
       elseif (current_msg_idx == 1) then
 	 	read(aosd .. "firstmessage.wav", 1000);
       elseif (d == GLOBAL_MENU_SKIP_BACK) then  
@@ -540,6 +542,8 @@ function playmessages (msgs, listenreplies)
 		 read(aosd .. "instructions_full.wav", 500);
 		 
 		 d = use();
+	 elseif (d == GLOBAL_MENU_REPLAY) then
+	     -- do nothing
 	 	
       elseif (d ~= GLOBAL_MENU_MAINMENU) then
 		 current_msg_idx = current_msg_idx + 1;
