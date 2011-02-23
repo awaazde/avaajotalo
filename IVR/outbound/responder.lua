@@ -219,13 +219,12 @@ if (msg ~= nil) then
 	session:setHangupHook("hangup");
 	session:setInputCallback("my_cb", "arg");
 
+	-- sleep for some secs
+	session:sleep(2000);
 	if (session:ready() == true) then
 
 		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
 		"\t", os.time(), "\t", "Start call", "\n");
-		
-		-- sleep for some secs
-		session:sleep(2000);
 		
 		local mainmenu_cnt = 0;
 		while (1) do
