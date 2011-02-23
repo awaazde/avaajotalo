@@ -112,9 +112,9 @@ function my_cb(s, type, obj, arg)
       -- This is tricky.  Note we are checking if the playback is
       -- *already* paused, not whether the user pressed Pause.
       if (digits == GLOBAL_MENU_PAUSE) then
-	 digits = obj['digit'];
-	 session:execute("playback", "tone_stream://%(500, 0, 620)");
-	 return "pause";
+	 	 digits = "";
+		 session:execute("playback", "tone_stream://%(500, 0, 620)");
+		 return "pause";
       end
       
       if (obj['digit'] == GLOBAL_MENU_NEXT or obj['digit'] == "#") then
@@ -128,16 +128,10 @@ function my_cb(s, type, obj, arg)
       end
       
       if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
-	 read(aosd .. "okinstructions.wav", 500);
-	 read(aosd .. "instructions_full.wav", 500);
-	 if (digits ~= GLOBAL_MENU_MAINMENU) then
-	    use();
-	    read(aosd .. "backtomessage.wav", 1000);
-	 end
-	 if (digits == GLOBAL_MENU_MAINMENU) then
-	    return "break";
-	 end
-	 return;
+	 	 read(aosd .. "okinstructions.wav", 500);
+		 read(anssd .. "instructions_full.wav", 500);
+		 digits = use();
+		 return "break";
       end
       
       if (obj['digit'] == GLOBAL_MENU_SKIP_BACK) then
@@ -147,8 +141,8 @@ function my_cb(s, type, obj, arg)
       end
 
       if (obj['digit'] == GLOBAL_MENU_PAUSE) then
-	 if (digits ~= GLOBAL_MENU_PAUSE) then
-	    read(aosd .. "paused.wav", 500);
+	 	read(aosd .. "paused.wav", 500);
+	    digits = use();
 	    if (digits == GLOBAL_MENU_MAINMENU) then
 	       return "break";
 	    end
@@ -156,9 +150,9 @@ function my_cb(s, type, obj, arg)
 	       digits = GLOBAL_MENU_PAUSE;
 	       return "pause";
 	    else
+	       digits = "";
 	       session:execute("playback", "tone_stream://%(500, 0, 620)");
 	    end
-	 end
       end
 
       if (obj['digit'] == GLOBAL_MENU_SKIP_FWD) then
