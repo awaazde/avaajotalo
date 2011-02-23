@@ -107,9 +107,6 @@ function my_cb(s, type, obj, arg)
       if (obj['digit'] == GLOBAL_MENU_PAUSE) then
 	    read(aosd .. "paused.wav", 500);
 	    digits = use();
-	    if (digits == GLOBAL_MENU_MAINMENU) then
-	       return "break";
-	    end
 	    if (digits == "") then
 	       digits = GLOBAL_MENU_PAUSE;
 	       return "pause";
