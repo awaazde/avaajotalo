@@ -165,7 +165,8 @@ function my_cb(s, type, obj, arg)
       end
 
       if (obj['digit'] == GLOBAL_MENU_REPLAY) then
-	 return "seek:0";
+     	digits = GLOBAL_MENU_REPLAY;
+     	return "break";
       end
               
       if (obj['digit'] == GLOBAL_MENU_SEEK_FWD) then
