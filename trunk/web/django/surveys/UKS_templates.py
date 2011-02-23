@@ -87,7 +87,7 @@ def motivation_template(line, contenttype, motivation):
     else:
         num = line.number
     
-    name = contenttype[:3] +'_MOTIV_' + motivation + '_' + broadcast.TEMPLATE_DESIGNATOR
+    name = contenttype[:3] +'_MOTIV_' + motivation.upper() + '_' + broadcast.TEMPLATE_DESIGNATOR
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
