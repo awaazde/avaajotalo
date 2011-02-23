@@ -521,9 +521,9 @@ function play_responder_messages (userid, msgs, adminforums)
 		    current_msg = prevmsgs[current_msg_idx];
 		 end
 	  elseif (d == GLOBAL_MENU_ASK_LATER) then
-	  	read(anssd .. "asklater.wav", 500);
 	  	local msgforumid = current_msg[6];
 	  	ask_later(userid, msgforumid);
+	  	read(anssd .. "asklater.wav", 500);
 	  elseif (d == GLOBAL_MENU_PASS) then
 	  	read(anssd .. "passquestion.wav", 500);
 	  	local msgforumid = current_msg[6];
