@@ -645,6 +645,8 @@ def add_child(child, parent):
 
     child.lft = parent.rgt
     child.rgt = child.lft + 1
+    parent.rgt += 2
+    parent.save()
 
     # update all nodes to the right of the child
     msgs = Message.objects.filter(thread=child.thread, rgt__gte=child.lft).exclude(pk=child.id)
