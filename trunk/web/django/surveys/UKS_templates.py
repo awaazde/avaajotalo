@@ -143,6 +143,10 @@ def main():
     standard_template(line, 'announcement')
     standard_template(line, 'experience')
     
+    motivation_template(line, 'qna', 'none')
+    motivation_template(line, 'announcement', 'none')
+    motivation_template(line, 'experience', 'none')
+    
     motivation_template(line, 'qna', 'self')
     motivation_template(line, 'announcement', 'self')
     motivation_template(line, 'experience', 'self')
