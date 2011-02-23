@@ -338,8 +338,9 @@ function get_responder_messages (userid)
    query = query .. "			  AND msg.user_id = " .. userid ..") ";
    query = query .. " AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";
-   query = query .. " AND (message_responder.reserved_by_id IS NULL OR ";
-   query = query .. "      (message_responder.reserved_by_id = " .. userid .. " AND message_responder.reserved_until > now())) ";
+   query = query .. " AND (message_responder.reserved_by_id IS NULL ";
+   query = query .. "      OR (message_responder.reserved_until > now() AND message_responder.reserved_by_id = " .. userid .. " ) ";
+   query = query .. " 	   OR message_responder.reserved_until < now() ) ";
    query = query .. " ORDER BY message.date DESC";
    return rows(query);
 end
