@@ -524,10 +524,12 @@ function play_responder_messages (userid, msgs, adminforums)
 	  	local msgforumid = current_msg[6];
 	  	ask_later(userid, msgforumid);
 	  	read(anssd .. "asklater.wav", 500);
+	  	d = GLOBAL_MENU_NEXT;
 	  elseif (d == GLOBAL_MENU_PASS) then
-	  	read(anssd .. "passquestion.wav", 500);
 	  	local msgforumid = current_msg[6];
 	  	pass_question(userid, msgforumid);
+	  	read(anssd .. "passquestion.wav", 500);
+	  	d = GLOBAL_MENU_NEXT;
 	  elseif (d == GLOBAL_MENU_REFER) then
 
 	  	read_phone_num(anssd .. "referquestion.wav", 3000);
