@@ -297,6 +297,7 @@ GLOBAL_MENU_PASS = "8";
 GLOBAL_MENU_REFER = "9";
 GLOBAL_MENU_CANCEL_REFERRAL = "*";
 
+-- The ground truths; sh be consistent with views.py
 RESERVE_PERIOD = "2"
 LISTENS_THRESH = "5"
 
@@ -434,8 +435,8 @@ function play_responder_message (msg)
   -- remind about the options, and
   -- give some time for users to compose themselves and
   -- potentially respond
-  if (d == "") then
-  	read(anssd .. "instructions_short.wav", 6000)
+  if (d == "" or d == GLOBAL_MENU_NEXT) then
+  	read(anssd .. "instructions_short.wav", 5000)
   else
   	return d;
   end
@@ -468,7 +469,7 @@ function play_responder_messages (userid, msgs, adminforums)
    local d = "";
    
    while (current_msg ~= nil) do
-      if (d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_REFER or d == GLOBAL_MENU_REPLAY or d == GLOBAL_MENU_INSTRUCTIONS) then
+      if (d == GLOBAL_MENU_REPLAY or d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
       elseif (current_msg_idx == 1) then
@@ -490,6 +491,12 @@ function play_responder_messages (userid, msgs, adminforums)
 	 	d = play_responder_message(current_msg);
       end
       
+      if (d == GLOBAL_MENU_INSTRUCTIONS) then
+	  	 read(aosd .. "okinstructions.wav", 500);
+		 read(anssd .. "instructions_full.wav", 500);
+		 
+		 d = use();
+	  end
       
       if (d == GLOBAL_MENU_RESPOND) then
 	    read(aosd .. "okrecordresponse.wav", 500);
@@ -504,7 +511,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	    	update_listens(prevmsgs, userid);
 	       return d;
 	    else
-	       d = GLOBAL_MENU_SKIP_FWD;
+	       d = GLOBAL_MENU_NEXT;
 	    end
       elseif (d == GLOBAL_MENU_SKIP_BACK) then
 		 if (current_msg_idx > 1) then
@@ -542,21 +549,13 @@ function play_responder_messages (userid, msgs, adminforums)
 	  		refer_question(d, msgforumid);
 	  	end
 	  	
-	  	-- go back to message
-	  	d = GLOBAL_MENU_REFER
+	  	-- go to next msg
+	  	d = GLOBAL_MENU_NEXT;
       elseif (d == GLOBAL_MENU_REPLAY) then
 		-- do nothing
-      elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
-	  	 read(aosd .. "okinstructions.wav", 500);
-		 read(anssd .. "instructions_full.wav", 500);
-		 
-		 d = use();
-		 -- ignore anything except main menu 
-		if (d ~= GLOBAL_MENU_MAINMENU) then
-		    -- go back to original message
-		    d = GLOBAL_MENU_INSTRUCTIONS;
-		 end
-      elseif (d ~= GLOBAL_MENU_MAINMENU) then
+	  end
+	  
+      if (d == GLOBAL_MENU_NEXT) then
 	  	current_msg_idx = current_msg_idx + 1;
 		-- check to see if we are at the last msg in the list
 	 	if (current_msg_idx > #prevmsgs) then
