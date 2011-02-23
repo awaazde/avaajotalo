@@ -469,7 +469,7 @@ function play_responder_messages (userid, msgs, adminforums)
    local d = "";
    
    while (current_msg ~= nil) do
-      if (d == GLOBAL_MENU_REPLAY or d == GLOBAL_MENU_INSTRUCTIONS) then
+      if (d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
       elseif (current_msg_idx == 1) then
