@@ -406,17 +406,11 @@ def updatestatus(request, action):
     
     return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
 
-def tags(request):
+def tags(request, forum_id):
     params = request.GET
     
-    if params.__contains__('forumid'):
-        forum_id = int(params['forumid'])
-        tags = Tag.objects.filter(forum=forum_id).distinct()
-    elif params.__contains__('lineid'):
-        line_id = int(params['lineid'])
-        tags = Tag.objects.filter(forum__line=line_id).distinct()
-    else:
-        tags = Tag.objects.all()
+    forum = get_object_or_404(Forum, pk=forum_id)
+    tags = Tag.objects.filter(forum=forum).distinct()
     
     if params.__contains__('type'):
         types = params['type'].split()
@@ -479,13 +473,9 @@ def survey(request):
 
 def bcast(request):
     params = request.POST
-    if params['lineid']:
-        line_id = int(params['lineid'])
-        line = get_object_or_404(Line, pk=line_id)
-    if params['messageforumid']:
-        message_forum_id = int(params['messageforumid'])
-        mf = get_object_or_404(Message_forum, pk=message_forum_id)
-        line = mf.forum.line_set.all()[0]
+    message_forum_id = int(params['messageforumid'])
+    mf = get_object_or_404(Message_forum, pk=message_forum_id)
+    line = mf.forum.line_set.all()[0]
     
     subjects = []
     # Get subjects
@@ -520,20 +510,12 @@ def bcast(request):
     # remove dups
     subjects = list(set(subjects))
     
-    # Get message
-    what = params['what']
-    if what == 'file':
-        bcastfile = request.FILES['bcastfile']
-        survey = broadcast.single(bcastfile, line)
-    
-    #elif params.__contains__('sms'):
-        #TODO
-    elif what == 'survey':
-        surveyid = params['survey']
-        survey = get_object_or_404(Survey, pk=surveyid)
-        if survey.template:
-            responseprompt = params.__contains__('response')
-            survey = broadcast.thread(mf, survey, responseprompt)
+    # Get template
+    surveyid = params['survey']
+    survey = get_object_or_404(Survey, pk=surveyid)
+    if survey.template:
+        responseprompt = params.__contains__('response')
+        survey = broadcast.thread(mf, survey, responseprompt)
         
      
     # Get schedule

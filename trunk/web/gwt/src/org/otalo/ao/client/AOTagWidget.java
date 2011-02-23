@@ -75,7 +75,7 @@ public class AOTagWidget extends TagWidget {
 		mf = messageForum;
 		
 		JSONRequest request = new JSONRequest();
-	    request.doFetchURL(AoAPI.TAGS + "?forumid=" + mf.getForum().getId() + "&type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
+	    request.doFetchURL(AoAPI.TAGS + mf.getForum().getId() + "/?type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC, new TagRequestor());
 	}
 	
 	 private class TagRequestor implements JSONRequester {

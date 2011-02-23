@@ -137,9 +137,9 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.getResponses(f, start);
   }
   
-  public void displayBroadcastPanel(BaseModel back)
+  public void displayBroadcastPanel(MessageForum thread)
   {
-  	broadcastIface.reset(back);
+  	broadcastIface.reset(thread);
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
 		broadcastIface.setVisible(true);
@@ -189,7 +189,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   
   public void forwardThread(MessageForum thread)
   {
-  	broadcastIface.forwardThread(thread);
+  	broadcastIface.broadcastThread(thread);
   }
   
   public Line getLine()

@@ -88,8 +88,6 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 		List<Survey> surveys = new ArrayList<Survey>();
 		
 		p.clear();
-//		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_DEFAULT);
-//		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		
 		for (JSOModel model : models)
 	  {
@@ -100,18 +98,6 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 				p.add(w.getWidget());
 				widgets.add(w);
 	  }
-		
-    
-//    Anchor broadcast = new Anchor("New Broadcast");
-//    broadcast.addClickHandler(new ClickHandler() {
-//			public void onClick(ClickEvent event) {
-//				Messages.get().broadcastSomething();
-//			}
-//		});
-    
-//    p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-//    p.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-//    p.add(broadcast);
 		
 	}
 	

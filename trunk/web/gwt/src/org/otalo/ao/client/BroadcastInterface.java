@@ -54,11 +54,11 @@ public class BroadcastInterface extends Composite {
 	private TextBox sinceField, bcastDateField;
 	private DatePicker since, bcastDate;
 	private ListBox tags, lastNCallers, surveys, from, till, duration;
-	private Hidden lineid, messageforumid;
+	private Hidden messageforumid;
 	private CheckBox numbers, usersByTag, usersByLog;
-	private RadioButton file, sms, survey, now, date;
+	private RadioButton now, date;
 	//private FileUpload fileUpload;
-	private BaseModel backObj;
+	private MessageForum thread;
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -171,68 +171,20 @@ public class BroadcastInterface extends Composite {
 		
 		VerticalPanel whatPanel = new VerticalPanel();
 		whatPanel.setSpacing(10);
-//		file = new RadioButton("what","File:");
-//		file.setFormValue("file");
-//		sms = new RadioButton("what","SMS:");
-//		sms.setFormValue("sms");
-		survey = new RadioButton("what","Template:");
-		survey.setFormValue("survey");
+		Label templates = new Label("Template: ");
 		CheckBox response = new CheckBox("Allow response");
 		response.setName("response");
 		
-//		fileUpload = new FileUpload();
-//  	fileUpload.setName("bcastfile");
-//  	fileUpload.addChangeHandler(new ChangeHandler() {
-//			public void onChange(ChangeEvent event) {
-//				file.setValue(true);
-//				sms.setValue(false);
-//				survey.setValue(false);
-//			}
-//		});
-  	TextArea smsArea = new TextArea();
-  	smsArea.setName("sms");
-  	smsArea.setSize("350px", "100px");
-  	smsArea.addFocusHandler(new FocusHandler() {
-			public void onFocus(FocusEvent event) {
-				file.setValue(false);
-				sms.setValue(true);
-				survey.setValue(false);
-			}
-		});
   	surveys = new ListBox();
-  	surveys.addItem("", "-1");
   	surveys.setName("survey");
-  	surveys.addFocusHandler(new FocusHandler() {
-			public void onFocus(FocusEvent event) {
-				file.setValue(false);
-				sms.setValue(false);
-				survey.setValue(true);
-			}
-		});
-//  	HorizontalPanel filePanel = new HorizontalPanel();
-//  	filePanel.setSpacing(10);
-//  	filePanel.add(file);
-//  	filePanel.add(fileUpload);
-  	
-//  	HorizontalPanel smsPanel = new HorizontalPanel();
-//  	smsPanel.setSpacing(10);
-//  	smsPanel.add(sms);
-//  	smsPanel.add(smsArea);
-//  	// FOR NOW :-)
-//  	sms.setEnabled(false);
-//  	smsArea.setText("Coming soon!");
-//  	smsArea.setEnabled(false);
   	
   	HorizontalPanel surveyPanel = new HorizontalPanel();
   	surveyPanel.setSpacing(10);
-  	surveyPanel.add(survey);
+  	surveyPanel.add(templates);
   	surveyPanel.add(surveys);
   	surveyPanel.add(response);
   	
-  	//what.add(filePanel);
   	what.add(surveyPanel);
-  	//what.add(smsPanel);
-  	
   	
   	HorizontalPanel whenPanel = new HorizontalPanel();
   	whenPanel.setSpacing(10);
@@ -350,11 +302,6 @@ public class BroadcastInterface extends Composite {
 		sendButton = new Button("Send", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	setClickedButton();
-      	Line line = Messages.get().getLine();
-    		if (line != null) lineid.setValue(line.getId());
-    		// just in case for fwded messages to get
-    		// the params posted
-    		survey.setEnabled(true);
     		surveys.setEnabled(true);
       	bcastForm.setAction(JSONRequest.BASE_URL + AoAPI.BCAST_MESSAGE);
         bcastForm.submit();
@@ -363,14 +310,7 @@ public class BroadcastInterface extends Composite {
 		cancelButton = new Button("Cancel");
 		cancelButton.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-				// consistent (simple) behavior is to re-load
-				// the first leaf in the shortcut we came from
-				if (MessageForum.isMessageForum(backObj))
-					Messages.get().displayMessages(new MessageForum(backObj));
-				else
-					// means we went to the bcast interface
-					// directly from the link, so reload the bcast panel
-					Messages.get().displaySurveyInput(null, 0);
+				Messages.get().displayMessages(thread);
 			}
 			
 		});
@@ -383,8 +323,6 @@ public class BroadcastInterface extends Composite {
 		outer.add(stackPanel);
 		outer.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		outer.add(controls);
-		lineid = new Hidden("lineid");
-		outer.add(lineid);
 		messageforumid = new Hidden("messageforumid");
 		outer.add(messageforumid);
 		
@@ -400,26 +338,10 @@ public class BroadcastInterface extends Composite {
 	  // (sh be at least 2 items counting blank space)
 		if (tags.getItemCount() < 2)
 		{
-			Line line = Messages.get().getLine();
-			JSONRequest request = new JSONRequest();
-			String params = "";
-			if (line != null)
-				params = "?lineid=" + line.getId();
-				
-			request.doFetchURL(AoAPI.TAGS + params, new TagRequestor());
+			JSONRequest request = new JSONRequest();			
+			request.doFetchURL(AoAPI.TAGS + thread.getForum().getId() + "/", new TagRequestor());
 		}
 	}
-	
-//	public void loadSurveys()
-//	{
-//		Line line = Messages.get().getLine();
-//		JSONRequest request = new JSONRequest();
-//		String params = "";
-//		if (line != null)
-//			params = "?lineid=" + line.getId();
-//			
-//		request.doFetchURL(AoAPI.SURVEY + params, new SurveyRequestor());
-//	}
 	
 	 private class TagRequestor implements JSONRequester {
 		 
@@ -435,33 +357,17 @@ public class BroadcastInterface extends Composite {
 		}
 	 }
 	 
-//	 private class SurveyRequestor implements JSONRequester {
-//		 
-//			public void dataReceived(List<JSOModel> models) {
-//				Survey s;
-//				surveys.clear();
-//				surveys.addItem("", "-1");
-//				
-//				for (JSOModel model : models)
-//			  	{
-//						s = new Survey(model);
-//						surveys.addItem(s.getName(), s.getId());
-//			  	}
-//
-//			}
-//	 }
-	 
-	 public void forwardThread(MessageForum mf)
+	 public void broadcastThread(MessageForum thread)
 	 {
-		 messageforumid.setValue(mf.getId());
-		 backObj = mf;
+		 messageforumid.setValue(thread.getId());
+		 this.thread = thread;
 		 JSONRequest request = new JSONRequest();
-		 request.doFetchURL(AoAPI.FORWARD_THREAD + mf.getId() + "/", new ForwardThreadRequestor());
+		 request.doFetchURL(AoAPI.FORWARD_THREAD + thread.getId() + "/", new BroadcastThreadRequestor());
 		 
 		 loadTags();
 	 }
 	 
-	 private class ForwardThreadRequestor implements JSONRequester {
+	 private class BroadcastThreadRequestor implements JSONRequester {
 		 
 			public void dataReceived(List<JSOModel> models) {
 				Survey s;
@@ -473,12 +379,10 @@ public class BroadcastInterface extends Composite {
 						surveys.addItem(s.getName(), s.getId());
 			  	}
 				
-				Messages.get().displayBroadcastPanel(backObj);
-				setForwardingMode(true);
+				Messages.get().displayBroadcastPanel(thread);
 				if (surveys.getItemCount() == 1)
 				{
 					surveys.setEnabled(false);
-					survey.setEnabled(false);
 				}
 				
 			}
@@ -522,11 +426,10 @@ public class BroadcastInterface extends Composite {
 		}
 	 }
 	 
-	 public void reset(BaseModel back)
+	 public void reset(MessageForum mf)
 	 {
 		 bcastForm.reset();
-		 backObj = back;
-		 setForwardingMode(false);
+		 thread = mf;
 		 // Select 7am-7pm by default
 		 from.setEnabled(true);
 		 from.clear();
@@ -548,17 +451,6 @@ public class BroadcastInterface extends Composite {
 		 
 		 stackPanel.showStack(0);
 	 }
-	 
-  private void setForwardingMode(boolean fwdMode)
-  {
-//	 file.setEnabled(!fwdMode);
-//	 fileUpload.setEnabled(!fwdMode);
-	 survey.setValue(fwdMode);
-	 // set these to true/0 no matter what and
-	 // let the special case disable if needed
-	 surveys.setEnabled(true);
-	 survey.setEnabled(true);
-  }
 
 	private void setClickedButton()
 	{
