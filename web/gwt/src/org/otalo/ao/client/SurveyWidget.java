@@ -184,7 +184,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 			for (String num : numsarr)
 			{
 				wrappedNums += num + ",";
-				if (wrapCnt == 4)
+				if (wrapCnt == 3)
 				{
 					wrappedNums += "<br>";
 					wrapCnt = 0;
