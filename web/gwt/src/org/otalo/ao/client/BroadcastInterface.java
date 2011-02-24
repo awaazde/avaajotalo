@@ -141,6 +141,7 @@ public class BroadcastInterface extends Composite {
 			
 			public void onFocus(FocusEvent event) {
 				since.setVisible(true);		
+				usersByLog.setValue(true);
 			}
 		});
 		
@@ -174,7 +175,6 @@ public class BroadcastInterface extends Composite {
 		Label templates = new Label("Template: ");
 		CheckBox response = new CheckBox("Allow response");
 		response.setName("response");
-		response.setEnabled(false);
 		
   	surveys = new ListBox();
   	surveys.setName("survey");
@@ -430,6 +430,11 @@ public class BroadcastInterface extends Composite {
 	 public void reset(MessageForum mf)
 	 {
 		 bcastForm.reset();
+		 // need to be explicit since these
+		 // are activated indirectly (kinda weird)
+		 numbers.setValue(false);
+		 usersByTag.setValue(false);
+		 usersByLog.setValue(false);
 		 thread = mf;
 		 // Select 7am-7pm by default
 		 from.setEnabled(true);
