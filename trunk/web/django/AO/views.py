@@ -503,7 +503,12 @@ def bcast(request):
             lastncallers = 0
         else:
             lastncallers = int(lastncallers)
-        since = datetime.strptime(since, '%b-%d-%Y')
+        
+        if since:
+            since = datetime.strptime(since, '%b-%d-%Y')
+        else:
+            # in case no date is selected, get no subjects
+            since = datetime.now()
                
         subjects += broadcast.subjects_by_log(settings.IVR_LOGFILE, line, since, lastncallers)
     
