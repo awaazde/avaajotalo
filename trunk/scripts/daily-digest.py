@@ -164,7 +164,7 @@ def main():
 	print("<div><h4>Today's Announcements</h4></div>")
 	print("<table>")
 	print("<tr>")
-	print("<td width='400px'><u>Announcement</u></td><td width='150px'><u>Recipients</u></td><td width='100px'><u>Completed</u></td>")
+	print("<td width='500px'><u>Announcement</u></td><td width='150px'><u>Recipients</u></td><td width='100px'><u>Completed</u></td>")
 	print("</tr>")
 	
 	# Announcements
