@@ -150,7 +150,7 @@ def main():
 	
 	# Answer Calls
 	answercalls = Call.objects.filter(survey__name__contains=ANSWER_CALL_DESIGNATOR, date__gte=today, date__lt=today+oneday)
-	n_recipients = answercalls.filter(priority=1).count()
+	n_recipients = answercalls.values('subject').distinct().count()
 	n_completed = answercalls.filter(complete=True).count()
 	
 	print("<br/><div>")
