@@ -5,6 +5,7 @@ import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.AO.models import Message, Message_forum, Line, User, Message_responder
 from otalo.surveys.models import Survey, Call, Subject
 from otalo.AO.views import LISTEN_THRESH
+from alerts import ANSWER_CALL_DESIGNATOR
 
 def main():
 	if len(sys.argv) < 2:
@@ -147,14 +148,26 @@ def main():
 	
 	print("</table>")
 	
+	# Answer Calls
+	answercalls = Call.objects.filter(survey__name__contains=ANSWER_CALL_DESIGNATOR, date__gte=today, date__lt=today+oneday)
+	n_recipients = answercalls.filter(priority=1).count()
+	n_completed = answercalls.filter(complete=True).count()
+	
+	print("<br/><div>")
+	print("<b>Answer calls sent:</b> ")
+	print(n_recipients)
+	print("<br/>")
+	print("<b>Answer calls completed:</b> ")
+	print(n_completed)
+	print("</div>")
+	
 	print("<div><h4>Today's Announcements</h4></div>")
 	print("<table>")
 	print("<tr>")
-	print("<td width='100px'><u>Announcement</u></td><td width='100px'><u>Recipients</u></td><td width='100px'><u>Completed</u></td>")
+	print("<td width='400px'><u>Announcement</u></td><td width='150px'><u>Recipients</u></td><td width='100px'><u>Completed</u></td>")
 	print("</tr>")
 	
-	# Get active announcements
-	
+	# Announcements
 	actives = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=today, call__date__lt=today+oneday).order_by('-id').distinct()
 	
 	# For each survey, get the number of subjects that are set to get a call today
