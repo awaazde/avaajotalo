@@ -449,10 +449,14 @@ public class BroadcastInterface extends Composite {
 		 lastNCallers.setItemSelected(3, true);
 		 duration.setItemSelected(1,true);
 		 
-		 Date tomorrow = new Date();
-		 // It's deprecated but GWT has no better way
-		 tomorrow.setDate(tomorrow.getDate() + 1);
-		 bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(tomorrow));
+		 Date today = new Date();
+		 since.setValue(today);
+		 since.setVisible(false);
+		 today.setDate(today.getDate() + 1);
+		 bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(today));
+		 bcastDate.setValue(today);
+		 bcastDate.setVisible(false);
+
 		 date.setValue(true);
 		 
 		 stackPanel.showStack(0);
