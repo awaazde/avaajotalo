@@ -16,7 +16,7 @@ def main():
 	now = datetime.now()
 	# reset to beginning of day
 	today = datetime(year=now.year, month=now.month, day=now.day)
-	#today = datetime(year=2010, month=1, day=15);
+	#today = datetime(year=2011, month=2, day=2)
 	oneday = timedelta(days=1)
 	line = Line.objects.get(pk=int(lineid))
 	
@@ -155,7 +155,7 @@ def main():
 	
 	# Get active announcements
 	
-	actives = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=today, call__date__lt=today+oneday).distinct()
+	actives = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=today, call__date__lt=today+oneday).order_by('-id').distinct()
 	
 	# For each survey, get the number of subjects that are set to get a call today
 	for survey in actives:
@@ -184,7 +184,7 @@ def main():
 		
 		print("<tr>")
 		print("<td>"+survey.name+"</td>")
-		print("<td>"+str(n_subjects)+" (" + calls_attempted +" calls)</td>")
+		print("<td>"+str(n_subjects)+" (" + str(calls_attempted) +" calls)</td>")
 		print("<td>"+str(calls_completed)+"</td>")
 		print("</tr>")
           	
