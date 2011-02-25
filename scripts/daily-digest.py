@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.db.models import Count
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.AO.models import Message, Message_forum, Line, User, Message_responder
+from otalo.surveys.models import Survey, Call, Subject
 from otalo.AO.views import LISTEN_THRESH
 
 def main():
@@ -144,6 +145,50 @@ def main():
 		print("<td>"+str(counts[1])+"</td>")
 		print("</tr>")
 	
+	print("</table>")
+	
+	print("<div><h4>Today's Announcements</h4></div>")
+	print("<table>")
+	print("<tr>")
+	print("<td width='100px'><u>Announcement</u></td><td width='100px'><u>Recipients</u></td><td width='100px'><u>Completed</u></td>")
+	print("</tr>")
+	
+	# Get active announcements
+	
+	actives = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=today, call__date__lt=today+oneday).distinct()
+	
+	# For each survey, get the number of subjects that are set to get a call today
+	for survey in actives:
+		subjects = Subject.objects.filter(call__survey=survey).distinct()
+		n_subjects = 0
+		calls_attempted = 0
+		calls_completed = 0
+		for subject in subjects:			
+			calls = Call.objects.filter(subject=subject, survey=survey, date__gte=today, date__lt=today+oneday)
+			if bool(calls):
+				n_subjects += 1
+			# check if this survey has been completed for this subj
+			# ASSUMES that the same survey does not have multiple P1s
+			# WHY? Because if we account for this then the ordering of P1s wrt P2s
+			# matters. The consequence is that if a survey is reused, then these
+			# numbers will underestimate the actual since it will not consider future P1s
+			completed_call = calls.filter(complete=True)
+			tilldate = today + oneday
+			if bool(completed_call):
+				calls_completed += 1
+				completed_call = completed_call[0]
+				tilldate = completed_call.date				
+				calls_attempted += calls.filter(date__lte=tilldate).count()
+			else:
+				calls_attempted += calls.count()
+		
+		print("<tr>")
+		print("<td>"+survey.name+"</td>")
+		print("<td>"+str(n_subjects)+" (" + calls_attempted +" calls)</td>")
+		print("<td>"+str(calls_completed)+"</td>")
+		print("</tr>")
+          	
+                	
 	print("</table>")
 	
 	print("</html>")
