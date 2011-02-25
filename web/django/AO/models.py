@@ -128,6 +128,10 @@ class Message_forum(models.Model):
     position = models.IntegerField(blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, null=True)
     
+    STATUS_PENDING = 0
+    STATUS_APPROVED = 1
+    STATUS_REJECTED = 2
+    
     def __unicode__(self):
         return unicode(self.message) + '_' + unicode(self.forum) + '_(' + str(self.id) + ')'
     
