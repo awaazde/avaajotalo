@@ -721,28 +721,27 @@ if (callback_allowed == 1) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	session:execute("pre_answer");
-	session:sleep(8000);
 
-	if (session:ready() == true) then
-		-- Caller wants to be but straight through;
-		-- answer the call		
-		session:answer();
-	else
-		-- Missed call; 
-		-- call the user back
-		session:hangup();
-		local vars = '{';
-		vars = vars .. 'ignore_early_media=true';
-		vars = vars .. ',caller_id_number='..phonenum;
-		vars = vars .. ',origination_caller_id_number='..line_num;
-		vars = vars .. '}'
-		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
-		
-		-- wait a while before testing
-		session:sleep(2000);
-		if (session:ready() == false) then
-			hangup();
-		end
+	api = freeswitch.API();
+	local uuid = session:getVariable('uuid');
+	while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
+		-- spin till caller hangs up
+	end
+	
+	-- Missed call; 
+	-- call the user back
+	session:hangup();
+	local vars = '{';
+	vars = vars .. 'ignore_early_media=true';
+	vars = vars .. ',caller_id_number='..phonenum;
+	vars = vars .. ',origination_caller_id_number='..line_num;
+	vars = vars .. '}'
+	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
+	
+	-- wait a while before testing
+	session:sleep(2000);
+	if (session:ready() == false) then
+		hangup();
 	end
 else
 	-- No callback allowed; just answer the call
