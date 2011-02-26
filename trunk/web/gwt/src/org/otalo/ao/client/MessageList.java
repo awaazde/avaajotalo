@@ -288,6 +288,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 	      table.setWidget(i+1, 3, downloadLink);
 	      table.setHTML(i+1, 4, "&nbsp");
       }
+      table.setHTML(i+1, 2,"");
     }
 
     // Clear any remaining slots.
