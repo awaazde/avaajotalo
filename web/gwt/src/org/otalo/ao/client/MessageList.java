@@ -73,6 +73,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   private Forum forum;
   private Hidden messageForumId;
   private Images images;
+  // to load the player asap
+  private SoundWidget soundWidget = new SoundWidget();
   
   /**
    * Specifies the images that will be bundled for this Composite and specify
@@ -190,8 +192,10 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
         {
         	content = (new SurveyInput(message)).getInput();
         }
-        SoundWidget sound = new SoundWidget(content);
-        table.setHTML(row + 1, 2, sound.getWidget().getHTML());
+        
+        soundWidget.setFilename(content);
+        table.setHTML(row + 1, 2, soundWidget.getWidget().getHTML());
+       
       } else {
         table.getRowFormatter().removeStyleName(row + 1, "mail-SelectedRow");
         table.clearCell(row + 1, 2);
