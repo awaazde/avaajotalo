@@ -73,8 +73,6 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
   private Forum forum;
   private Hidden messageForumId;
   private Images images;
-  // to load the player asap
-  private SoundWidget soundWidget = new SoundWidget();
   
   /**
    * Specifies the images that will be bundled for this Composite and specify
@@ -124,7 +122,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 	  Cell cell = table.getCellForEvent(event);
 	  if (cell != null) {
 	    int row = cell.getRowIndex();
-	    if (row > 0) {
+	    int col = cell.getCellIndex();
+	    if (row > 0 && (table.getHTML(row, col).equals("") || col != 2)) {
 	      selectRow(row - 1);
 	    }
 	  }
@@ -192,10 +191,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
         {
         	content = (new SurveyInput(message)).getInput();
         }
-        
-        soundWidget.setFilename(content);
-        table.setHTML(row + 1, 2, soundWidget.getWidget().getHTML());
-       
+        SoundWidget sound = new SoundWidget(content);
+        table.setHTML(row + 1, 2, sound.getWidget().getHTML());
       } else {
         table.getRowFormatter().removeStyleName(row + 1, "mail-SelectedRow");
         table.clearCell(row + 1, 2);
@@ -244,7 +241,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 	      User user = mf.getAuthor();
 	      String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
 	      table.setText(i + 1, 1, callerText);
-	      
+
 	      if (forum != null && forum.moderated())
 	      {
 	    	  AbstractImagePrototype approveHTML = AbstractImagePrototype.create(images.approve());
