@@ -720,7 +720,6 @@ end
 if (callback_allowed == 1) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
-	session:execute("pre_answer");
 
 	api = freeswitch.API();
 	local uuid = session:getVariable('uuid');
@@ -728,6 +727,7 @@ if (callback_allowed == 1) then
 		-- spin till caller hangs up
 	end
 	
+	freeswitch.consoleLog("info", script_name .. " : abount to do missedc \n");
 	-- Missed call; 
 	-- call the user back
 	session:hangup();
