@@ -359,6 +359,8 @@ function mainmenu ()
       use();
    	  local rmsgs = get_responder_messages(userid);
       play_responder_messages(userid, rmsgs, adminforums);
+   elseif (d == GLOBAL_JUMP_MESSAGE) then
+          jumptomessage() ;
    elseif (d ~= nil) then
       freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
       sleep(500);
@@ -702,7 +704,51 @@ function playforum (forumid)
    playmessages(getmessages(forumid, tagid), 'y');
    return;
 end
+-----------
+-- get_msgid
+-----------
 
+function get_msgid(file, delay)
+
+   if (digits == "") then
+      logfile:write(sessid, "\t",
+		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		    os.time(), "\t", "Prompt", "\t", file, "\n");
+      digits = session:read(5, 5, file, delay, "#");
+      if (digits ~= "") then
+	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
+      end
+   end
+end
+
+-----------
+-- jumptomessage 
+-----------
+function jumptomessage()
+   local d = "-1";
+   repeat
+      read(aosd .. "code.wav", 2000);   -- Expecting 1 digit forum ID or press Zero to return mainmenu
+      d = use();
+   until (d ~= "");
+   if (d == GLOBAL_MENU_MAINMENU) then
+      return;
+   else
+   id_forum = tonumber(d);
+   get_msgid("", 2000)  -- Expecting 5 Digit Msg ID
+   d = use();
+   if (d ~= "") then
+      id_msg = tonumber(d);
+      id_msg = id_msg % 100000;
+      local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
+      query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+      query = query .. " WHERE forum.id = " .. tostring(id_forum) .. " AND message_forum.forum_id = " .. tostring(id_forum) ;
+      query = query .. " AND message.id = " .. tostring(id_msg) .. " AND message_forum.message_id = "	.. tostring(id_msg);
+      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+      playmessage(row(query),'y');
+   end
+   end
+      
+end 
 
 -----------
 -- MAIN 

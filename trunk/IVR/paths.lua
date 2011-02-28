@@ -27,6 +27,7 @@ FILTER_CODE_ALL_FIRST = 1;
 FILTER_CODE_NO_ALL = 2;
 FILTER_CODE_ALL_LAST = 3;
 
+GLOBAL_JUMP_MESSAGE=9;
 
 GLOBAL_MENU_MAINMENU = "0";
 GLOBAL_MENU_NEXT = "1";
@@ -44,6 +45,7 @@ bsd = basedir .. "/sounds/en/us/callie/";
 
 sd = "/home/dsc/media/";
 logfilename = "/home/dsc/Documents/Log/AO/ao.log";
+
 --[[
 aosd = basedir .. "/scripts/AO/sounds/eng/";
 sd = basedir .. "/storage/otalo/";
