@@ -6,6 +6,7 @@ from django.db.models import Max
 
 def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, date_filter=0, quiet=False, legacy_log=False):
 	calls = {}
+	nums = []
 	current_week_start = 0
 	total = 0
 	
@@ -46,6 +47,9 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, dat
 
 			if delta.days > 6:
 				current_week_start = current_date
+			
+			if phone_num not in nums:
+				nums.append(phone_num)
 
 			if line.lower().find(log.lower()) != -1:
 				if current_week_start in calls:
@@ -74,6 +78,7 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, dat
 			print(otalo_utils.date_str(date) +": "+str(calls[date]))
 
 		print("total is " + str(total))
+		print ("number of unique callers is " + str(len(nums)))
 	
 	return calls
 		
@@ -517,27 +522,37 @@ def get_log_as_percent(filename, log, phone_num_filter=0):
 	for date in dates:
 		print(date.strftime('%Y-%m-%d') +": "+str(calls[date]))
 		
-def get_num_qna(line, quiet=False):
+def get_num_qna(line, responder_ids=[], quiet=False):
 	qna = {}
-	start_date = datetime(year=2010,month=1,day=1)
+	start_date = datetime(year=2010,month=7,day=1)
 	oneweek = timedelta(days=7)
 	end_date = Message.objects.filter(message_forum__forum__line=line).aggregate(Max('date'))
 	end_date = end_date[end_date.keys()[0]]
 	
 	while(start_date < end_date):   
-		qcount = Message.objects.filter(message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft=1).count()
-		acount = Message.objects.filter(message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft__gt=1).count()
-		qna[start_date] = [qcount, acount]
+		qcount = Message.objects.filter(message_forum__status=1,message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft=1).count()
+		acount = Message.objects.filter(message_forum__status=1, message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft__gt=1).count()
+		if responder_ids:
+			rcount = Message.objects.filter(message_forum__status=1,message_forum__forum__line=line, date__gte=start_date, date__lt=start_date+oneweek, lft__gt=1).exclude(user__in=responder_ids).count()
+			qna[start_date] = [qcount, acount, rcount]
+		else:
+			qna[start_date] = [qcount, acount]
 		
 		start_date += oneweek
 	
 	if not quiet:	
 		print("Number of questions and responses, by week:")
-		print("\t\tquestions\tresponses")
+		if responder_ids:
+			print("\t\tquestions\ttotal responses\tresponders only")
+		else:
+			print("\t\tquestions\tresponses")
 		dates = qna.keys()
 		dates.sort()
 		for date in dates:
-			print(otalo_utils.date_str(date) +" \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]))
+			if responder_ids:
+				print(otalo_utils.date_str(date) +" \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]) + "\t\t" + str(qna[date][2]))
+			else:
+				print(otalo_utils.date_str(date) +" \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]))
 	
 	return qna
 	
@@ -550,8 +565,8 @@ def main():
 		if len(sys.argv) == 3:
 			lineid = sys.argv[2]
 			line = Line.objects.get(pk=lineid)
-		
-		#get_calls(f, legacy_log=True)
+			
+		get_calls(f, line.number)
 		#get_calls_by_feature(f, line.number, legacy_log=True)
 		#get_features_within_call(f)
 		#get_listens_within_call(f)
@@ -560,6 +575,7 @@ def main():
 		#get_listens_within_call(f)
 		#get_log_as_percent(f, log="match")
 		#get_num_questions(f)
-		get_num_qna(line)
+		#responder_ids = [2,3,4,5,6,48,54,125,126]
+		#get_num_qna(line, responder_ids)
 			
 #main()

@@ -16,19 +16,8 @@
 import sys
 from datetime import datetime, timedelta
 from otalo.AO.models import Line
-from otalo.surveys.models import Survey, Subject, Call, Prompt, Option
+from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
-import broadcast
-
-# These should be consistent with the constants
-# in survey.lua
-OPTION_NEXT = 1
-OPTION_PREV = 2
-OPTION_REPLAY = 3
-OPTION_GOTO = 4
-OPTION_RECORD = 5
-OPTION_INPUT = 6
-OPTION_TRANSFER = 7
 
 SOUND_EXT = ".wav"
 
@@ -41,7 +30,7 @@ def standard_template(line, contenttype):
     else:
         num = line.number
     
-    name = contenttype[:3].upper() + '_' + broadcast.TEMPLATE_DESIGNATOR + ' (' + str(line.id) + ')'
+    name = contenttype[:3].upper() + '_' + Survey.TEMPLATE_DESIGNATOR + ' (' + str(line.id) + ')'
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
@@ -52,25 +41,25 @@ def standard_template(line, contenttype):
         # welcome
         welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=True, survey=s)
         welcome.save()
-        welcome_opt1 = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
         welcome_opt1.save()
-        welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
         welcome_opt2.save()
         
         # content
         content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
         content.save()
-        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt = Option(number="", action=Option.NEXT, prompt=content)
         content_opt.save()
-        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
         
         # thanks
         thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=4, bargein=True, delay=5000, survey=s)
         thanks.save()
-        thanks_opt1 = Option(number="", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt1.save()
-        thanks_opt2 = Option(number="1", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt2 = Option(number="1", action=Option.NEXT, prompt=thanks)
         thanks_opt2.save()
         
         return s
@@ -87,7 +76,7 @@ def motivation_template(line, contenttype, motivation):
     else:
         num = line.number
     
-    name = contenttype[:3] +'_MOTIV_' + motivation.upper() + '_' + broadcast.TEMPLATE_DESIGNATOR
+    name = contenttype[:3].upper() +'_MOTIV_' + motivation.upper() + '_' + Survey.TEMPLATE_DESIGNATOR
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
@@ -98,39 +87,43 @@ def motivation_template(line, contenttype, motivation):
         # welcome
         welcome = Prompt(file=language+"/welcome_bcast"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
         welcome.save()
-        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
         welcome_opt.save()
-        welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
         welcome_opt2.save()
         
         # content
         content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
         content.save()
-        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt = Option(number="", action=Option.NEXT, prompt=content)
         content_opt.save()
-        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
         
         # motivation
         motivation = Prompt(file=language+"/recordmotivation"+motivation+SOUND_EXT, order=4, bargein=True, survey=s, delay=0)
         motivation.save()
-        motivation_opt = Option(number="", action=OPTION_NEXT, prompt=motivation)
+        motivation_opt = Option(number="", action=Option.NEXT, prompt=motivation)
         motivation_opt.save()
-        motivation_opt2 = Option(number="1", action=OPTION_NEXT, prompt=motivation)
+        motivation_opt2 = Option(number="1", action=Option.NEXT, prompt=motivation)
         motivation_opt2.save()
         
         # record
         record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=True, survey=s, name='Response' )
         record.save()
-        record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param2=7)
+        record_opt = Option(number="", action=Option.RECORD, prompt=record)
         record_opt.save()
-        record_opt2 = Option(number="1", action=OPTION_RECORD, prompt=record, action_param2=7)
+        param = Param(option=record_opt, name=Param.ONCANCEL, value=7)
+        param.save()
+        record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
         record_opt2.save()
+        param2 = Param(option=record_opt2, name=Param.ONCANCEL, value=7)
+        param2.save()
         
         # thanks
         thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
         thanks.save()
-        thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt.save()
         
         return s
@@ -139,6 +132,7 @@ def motivation_template(line, contenttype, motivation):
 
 def main():
     line = Line.objects.get(pk=2)
+    Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
     standard_template(line, 'qna')
     standard_template(line, 'announcement')
     standard_template(line, 'experience')

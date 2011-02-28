@@ -1,7 +1,7 @@
 import otalo_utils
 import sys
 from datetime import datetime
-from otalo.AO.models import User, Message
+from otalo.AO.models import Line, User, Message
 
 def get_calls_by_number(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False):
 	calls = {}
@@ -246,6 +246,64 @@ def get_messages_by_number(numbers, date_start=False, date_end=False, quiet=Fals
 		print('total is ' + str(total))
 
 	return messages
+
+def get_numbers_by_date(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False):
+	calls = {}
+	phone_nums = ''
+	
+	f = open(filename)
+
+	while(True):
+		line = f.readline()
+		if not line:
+			break
+		try:
+
+		#################################################
+		## Use the calls here to determine what pieces
+		## of data must exist for the line to be valid.
+		## All of those below should probably always be.
+
+			phone_num = otalo_utils.get_phone_num(line)
+			current_date = otalo_utils.get_date(line, legacy_log)
+			dest = otalo_utils.get_destination(line, legacy_log)		
+		##
+		################################################
+			if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
+					
+			if destnum and destnum.find(dest) == -1:
+				#print("dest num not = " + destnum)
+				continue
+				
+			if line.find(log) != -1:
+				if phone_num not in calls.keys():
+					calls[phone_num] = current_date
+					phone_nums += phone_num + ','
+
+		except ValueError as err:
+			#print("ValueError: " + str(err.args))
+			continue
+		except IndexError:
+			continue
+		except otalo_utils.PhoneNumException:
+			continue
+
+	if not quiet:
+		print("Phone numbers by date")
+		calls_sorted = sorted(calls.iteritems(), key=lambda(k,v): (v,k))
+		calls_sorted.reverse()
+		total = 0
+		for num, date in calls_sorted:
+			print(num +": "+otalo_utils.date_str(date))
+			
+		print('numbers are ' + phone_nums)
+	return calls
 	
 def main():
 	if not len(sys.argv) > 1:
@@ -254,14 +312,17 @@ def main():
 		f = sys.argv[1]
 		line = False
 		if len(sys.argv) == 3:
-			line = sys.argv[2]
+			lineid = sys.argv[2]
+			line = Line.objects.get(pk=lineid)
+			print('num is ' + line.number)
 		if len(sys.argv) == 4:
 			demographics_file = sys.argv[3]
 		
-		#get_calls_by_number(f,destnum='7930142000')
+		#get_calls_by_number(f,line.number)
 		#get_guj_nums_only(f, legacy_log=True)
 		#get_calls_by_feature(f)
 		#get_calls_by_geography(f, demographics_file)
-		get_messages_by_number(['9586550654'])
+		#get_messages_by_number(['9586550654'])
+		get_numbers_by_date(f, line.number)
 			
 #main()

@@ -193,6 +193,13 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
   text-align: left;
 }
 
+.dialog-NumsText {
+  width: 30em;
+  font-size: 80%;
+  padding: 10px;
+  text-align: left;
+}
+
 .mail-Contacts td, .mail-Tasks td {
   padding: 4px 0 0 0;
 }

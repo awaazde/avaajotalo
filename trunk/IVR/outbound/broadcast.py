@@ -19,19 +19,8 @@ from django.conf import settings
 from django.db.models import Q
 from otalo.AO.models import Forum, Line, Message_forum, Message, User, Tag
 from otalo.AO.views import MESSAGE_STATUS_APPROVED
-from otalo.surveys.models import Survey, Subject, Call, Prompt, Option
+from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
-
-TEMPLATE_DESIGNATOR = 'TEMPLATE'
-# These should be consistent with the constants
-# in survey.lua
-OPTION_NEXT = 1
-OPTION_PREV = 2
-OPTION_REPLAY = 3
-OPTION_GOTO = 4
-OPTION_RECORD = 5
-OPTION_INPUT = 6
-OPTION_TRANSFER = 7;
 
 SOUND_EXT = ".wav"
 
@@ -93,7 +82,7 @@ def subjects_by_tags(tags, line):
     return subjects
 
 def subjects_by_log(logfile, line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
-    calls = stats_by_phone_num.get_calls_by_number(filename=logfile, destnum=str(line.number), date_start=since, quiet=True)
+    calls = stats_by_phone_num.get_numbers_by_date(filename=logfile, destnum=str(line.number), date_start=since, quiet=True)
     numbers = calls.keys()
     subjects = []
     
@@ -168,21 +157,21 @@ def create_bcast_survey(line, filenames, surveyname):
         # welcome
         welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
         welcome.save()
-        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
         welcome_opt.save()
         
         order=2
         for fname in filenames:
             msg = Prompt(file=fname, order=order, bargein=False, survey=s)
             msg.save()
-            msg_opt = Option(number="", action=OPTION_NEXT, prompt=msg)
+            msg_opt = Option(number="", action=Option.NEXT, prompt=msg)
             msg_opt.save()
             order += 1
         
         # thanks
         thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=order, bargein=False, survey=s)
         thanks.save()
-        thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt.save()
         
         return s
@@ -213,10 +202,10 @@ def thread(messageforum, template, responseprompt):
     thread_start = summation + i + 2 - order_tot
     if (thread_start == 0):
         thread_start = i+1
-    responses = Message.objects.filter(thread=messageforum.message, lft__gt=1).order_by('lft')
+    responses = Message_forum.objects.filter(status = Message_forum.STATUS_APPROVED, message__thread=messageforum.message, message__lft__gt=1).order_by('message__lft')
     
     # create a clone from the template
-    newname = template.name.replace(TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
+    newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
     newname = newname[:128]
     # avoid duplicating forums that point to the template
     forums = Forum.objects.filter(bcast_template=template)
@@ -244,38 +233,39 @@ def thread(messageforum, template, responseprompt):
     for prompt in toshift:
         prompt.order += ntoshift
         for option in Option.objects.filter(prompt=prompt):
-            if option.action == OPTION_RECORD and option.action_param2:
-                option.action_param2 = int(option.action_param2) + ntoshift
-                option.save()
+            if option.action == Option.RECORD:
+                oncancel = Param.objects.get(option=option, name=Param.ONCANCEL)
+                oncancel.value = int(option.action_param2) + ntoshift
+                oncancel.save()
         prompt.save()
     
     #fill in the missing prompt with the given thread
     order = thread_start
     origpost = Prompt(file=settings.MEDIA_ROOT + '/' + messageforum.message.content_file, order=order, bargein=True, survey=bcast)
     origpost.save()
-    origpost_opt = Option(number="1", action=OPTION_NEXT, prompt=origpost)
+    origpost_opt = Option(number="1", action=Option.NEXT, prompt=origpost)
     origpost_opt.save()
-    origpost_opt2 = Option(number="", action=OPTION_NEXT, prompt=origpost)
+    origpost_opt2 = Option(number="", action=Option.NEXT, prompt=origpost)
     origpost_opt2.save()
     order += 1
     
     for response in responses:
-        if response.lft == 2:
+        if response.message.lft == 2:
             responseintro = Prompt(file=language+'/firstresponse'+SOUND_EXT, order=order, bargein=True, survey=bcast)
         else:
             responseintro = Prompt(file=language+'/nextresponse'+SOUND_EXT, order=order, bargein=True, survey=bcast)
         responseintro.save()
-        responseintro_opt = Option(number="1", action=OPTION_NEXT, prompt=responseintro)
+        responseintro_opt = Option(number="1", action=Option.NEXT, prompt=responseintro)
         responseintro_opt.save()
-        responseintro_opt2 = Option(number="", action=OPTION_NEXT, prompt=responseintro)
+        responseintro_opt2 = Option(number="", action=Option.NEXT, prompt=responseintro)
         responseintro_opt2.save()
         order += 1
         
-        responsecontent = Prompt(file=settings.MEDIA_ROOT + '/' + response.content_file, order=order, bargein=True, survey=bcast)
+        responsecontent = Prompt(file=settings.MEDIA_ROOT + '/' + response.message.content_file, order=order, bargein=True, survey=bcast)
         responsecontent.save()
-        responsecontent_opt = Option(number="1", action=OPTION_NEXT, prompt=responsecontent)
+        responsecontent_opt = Option(number="1", action=Option.NEXT, prompt=responsecontent)
         responsecontent_opt.save()
-        responsecontent_opt2 = Option(number="", action=OPTION_NEXT, prompt=responsecontent)
+        responsecontent_opt2 = Option(number="", action=Option.NEXT, prompt=responsecontent)
         responsecontent_opt2.save()
         order += 1
     
@@ -283,10 +273,14 @@ def thread(messageforum, template, responseprompt):
          # record
         record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=order, bargein=True, survey=bcast, name='Response' )
         record.save()
-        record_opt = Option(number="", action=OPTION_RECORD, prompt=record, action_param3=messageforum.id)
+        record_opt = Option(number="", action=Option.RECORD, prompt=record)
         record_opt.save()
-        record_opt2 = Option(number="1", action=OPTION_RECORD, prompt=record, action_param3=messageforum.id)
+        param = Param(option=record_opt, name=Param.MFID, value=messageforum.id)
+        param.save()
+        record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
         record_opt2.save()
+        param2 = Param(option=record_opt2, name=Param.MFID, value=messageforum.id)
+        param2.save()
     
     return bcast
 

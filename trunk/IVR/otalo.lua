@@ -34,7 +34,7 @@ adminforums = {};
 
 -- set the language, check if line is restricted
 line_num = session:getVariable("destination_number");
-query = "SELECT language, open, dialstring_prefix, dialstring_suffix, callback FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
+query = "SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
 cur = con:execute(query);
 line_info = {};
 result = cur:fetch(line_info);
@@ -52,6 +52,7 @@ local open = line_info[2];
 local DIALSTRING_PREFIX = line_info[3];
 local DIALSTRING_SUFFIX = line_info[4];
 local callback_allowed = line_info[5];
+local personal_inbox = line_info[6];
 
 phonenum = session:getVariable("caller_id_number");
 phonenum = phonenum:sub(-10);
@@ -180,7 +181,7 @@ end
 -----------
 
 function getmessages (forumid, tagid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. " WHERE forum.id = " .. forumid .. " AND message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
@@ -201,7 +202,7 @@ end
 -----------
 
 function getreplies (thread)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id";
@@ -219,7 +220,7 @@ end
 -----------
 
 function getusermessages ()
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
    query = query .. " AND message_forum.forum_id = forum.id";
@@ -234,7 +235,7 @@ end
 -----------
 
 function getpendingmessages (lineid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum, AO_line_forums line_forum ";
    query = query .. "WHERE message.id = message_forum.message_id";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING .. " AND message_forum.forum_id = forum.id AND line_forum.forum_id = forum.id AND line_forum.line_id = " .. lineid;
@@ -314,11 +315,13 @@ function mainmenu ()
       read(aosd .. "digits/" .. i .. ".wav", 500);
    end
    local numforums = i;
- 
-   i = i + 1;
-   local chkrepliesidx = i;
-   read(aosd .. "checkmyreplies.wav", 0);
-   read(aosd .. "digits/" .. chkrepliesidx .. ".wav", 1000);
+   
+   if (personal_inbox == 1) then
+	   i = i + 1;
+	   local chkrepliesidx = i;
+	   read(aosd .. "checkmyreplies.wav", 0);
+	   read(aosd .. "digits/" .. chkrepliesidx .. ".wav", 1000);
+   end
 
    local chkpendingidx = -1;
    if (adminmode) then
@@ -521,8 +524,9 @@ function playmessages (msgs, listenreplies)
 		    if (thread == nil) then
 		       thread = current_msg[1];
 		    end
-		    forumid = current_msg[6];
-		    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[4], adminmode);
+		    local forumid = current_msg[6];
+		    local confirm = current_msg[10];
+		    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[4], adminmode, confirm);
 		    if (d == GLOBAL_MENU_MAINMENU) then
 		       return d;
 		    else
@@ -769,11 +773,12 @@ if (callback_allowed == 1) then
 
 	api = freeswitch.API();
 	local uuid = session:getVariable('uuid');
-	while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
-		-- spin till caller hangs up
-	end
+	local mc_cnt = 0;
+    while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
+	 	sleep(3000);
+	 	mc_cnt = check_abort(mc_cnt, 11)
+  	end
 	
-	freeswitch.consoleLog("info", script_name .. " : abount to do missedc \n");
 	-- Missed call; 
 	-- call the user back
 	session:hangup();
@@ -785,7 +790,7 @@ if (callback_allowed == 1) then
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
 	
 	-- wait a while before testing
-	session:sleep(2000);
+	sleep(2000);
 	if (session:ready() == false) then
 		hangup();
 	end
