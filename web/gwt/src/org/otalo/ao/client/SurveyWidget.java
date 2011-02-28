@@ -31,18 +31,22 @@ import org.otalo.ao.client.model.Survey.SurveyStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -62,7 +66,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	private HashMap<HTML,Prompt> promptMap = new HashMap<HTML, Prompt>();
 	private HashMap<HTML,TreeItem> leaves = new HashMap<HTML, TreeItem>();
 	private AreYouSureDialog confirm;
-	private String surveyDetails = "";
+	private JSOModel detailsModel;
 	
 	public SurveyWidget(Survey s, Images images, Composite parent)
 	{
@@ -111,7 +115,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
     detailsHTML.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				ConfirmDialog details = new ConfirmDialog(surveyDetails);
+				DetailsDialog details = new DetailsDialog(detailsModel);
 				details.show();
 				details.center();
 				
@@ -173,26 +177,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	
 	private class SurveyDetailsRequester implements JSONRequester {
 		public void dataReceived(List<JSOModel> models) {
-			JSOModel model = models.get(0);
-			String date = model.get("date");
-			String numbers = model.get("numbers");
-			String wrappedNums = "";
-			
-			surveyDetails = "<b>Start:</b> " + date + "<br><br>";
-			String[] numsarr = numbers.split(",");
-			int wrapCnt = 0;
-			for (String num : numsarr)
-			{
-				wrappedNums += num + ",";
-				if (wrapCnt == 3)
-				{
-					wrappedNums += "<br>";
-					wrapCnt = 0;
-				}
-				else
-					wrapCnt++;
-			}
-			surveyDetails += "<b>Numbers:</b> " + wrappedNums;
+			detailsModel = models.get(0);
 		}
 		
 	}
@@ -278,6 +263,62 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 		}
 	}
 
+	private class DetailsDialog extends DialogBox {
+
+	  public DetailsDialog(JSOModel details) {
+	  	//setWidth("500px");
+	    // Use this opportunity to set the dialog's caption.
+	    setText("Awaaz De Administration");
+
+	    // Create a VerticalPanel to contain the 'about' label and the 'OK' button.
+	    VerticalPanel outer = new VerticalPanel();
+	    outer.setWidth("100%");
+	    outer.setSpacing(10);
+
+	    // Create the 'about' text and set a style name so we can style it with CSS.
+	    String startdate = details.get("startdate");
+	    String enddate = details.get("enddate");
+			String numbers = details.get("numbers");
+			
+			String surveyDetails = "<b>Start: </b> " + startdate + "<br><br>";
+			surveyDetails += "<b>End: </b> " + enddate + "<br><br>";
+			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(numbers.split(", ").length) + "<br><br>";
+			
+			surveyDetails += "<b>Numbers:</b>";
+	    HTML sdHTML = new HTML(surveyDetails);
+			sdHTML.setStyleName("mail-AboutText");
+	    outer.add(sdHTML);
+	    
+	    Label numsLbl = new Label(numbers, true);
+	    numsLbl.setWordWrap(true);
+	    numsLbl.setStyleName("dialog-NumsText");
+	    outer.add(numsLbl);
+
+	    // Create the 'OK' button, along with a handler that hides the dialog
+	    // when the button is clicked.
+	    outer.add(new Button("Close", new ClickHandler() {
+	      public void onClick(ClickEvent event) {
+	        hide();
+	      }
+	    }));
+
+	    setWidget(outer);
+	  }
+
+	  @Override
+	  public boolean onKeyDownPreview(char key, int modifiers) {
+	    // Use the popup's key preview hooks to close the dialog when either
+	    // enter or escape is pressed.
+	    switch (key) {
+	      case KeyCodes.KEY_ENTER:
+	      case KeyCodes.KEY_ESCAPE:
+	        hide();
+	        break;
+	    }
+
+	    return true;
+	  }
+	}
 	
 	
 }

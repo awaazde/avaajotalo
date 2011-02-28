@@ -18,16 +18,38 @@
 --]]
 
 -- GLOBALS
+-- Should be consistent with Message_forum model's constants
 MESSAGE_STATUS_PENDING = 0;
 MESSAGE_STATUS_APPROVED = 1;
 MESSAGE_STATUS_REJECTED = 2;
 
+-- Should be consistent with Forum model's constants
 FILTER_CODE_ALL_ONLY = 0;
 FILTER_CODE_ALL_FIRST = 1;
 FILTER_CODE_NO_ALL = 2;
 FILTER_CODE_ALL_LAST = 3;
 
-GLOBAL_JUMP_MESSAGE=9;
+
+-- Sh be consistent with Survey model constants
+TEMPLATE_DESIGNATOR = "TEMPLATE";
+OUTBOUND_DESIGNATOR = "CALL_TO_OUTBOUND_NO";
+
+--  Should be consistent with Option model
+OPTION_NEXT = 1;
+OPTION_PREV = 2;
+OPTION_REPLAY = 3;
+OPTION_GOTO = 4;
+OPTION_RECORD = 5;
+OPTION_INPUT = 6;
+OPTION_TRANSFER = 7;
+
+-- Should be consistent with Param model
+OPARAM_IDX = 'idx'   
+OPARAM_MAXLENGTH = 'maxlength'
+OPARAM_ONCANCEL = 'oncancel'
+OPARAM_MFID = 'mfid'
+OPARAM_CONFIRM_REC = 'confirm'
+OPARAM_NUM = 'num'
 
 GLOBAL_MENU_MAINMENU = "0";
 GLOBAL_MENU_NEXT = "1";
@@ -39,7 +61,7 @@ GLOBAL_MENU_SKIP_FWD = "6";
 GLOBAL_MENU_SEEK_BACK = "7";
 GLOBAL_MENU_REPLAY = "8";
 GLOBAL_MENU_SEEK_FWD = "9";
-
+GLOBAL_JUMP_MESSAGE=9;
 basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 

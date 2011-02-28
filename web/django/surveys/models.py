@@ -37,7 +37,11 @@ class Survey(models.Model):
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     number = models.CharField(max_length=24, blank=True, null=True)
     broadcast = models.BooleanField(default=False)
+    
+    TEMPLATE_DESIGNATOR = 'TEMPLATE'
     template = models.BooleanField(default=False)
+    
+    OUTBOUND_DESIGNATOR = 'CALL_TO_OUTBOUND_NO'
     
     STATUS_ACTIVE = 0
     STATUS_EXPIRED = 1
@@ -124,12 +128,33 @@ class Prompt(models.Model):
 class Option(models.Model):
     # use string to represent no input value
     number = models.CharField(max_length=2)
-    # corresponds to the constants in survey.lua
+    
+    # Actions
+    NEXT = 1
+    PREV = 2
+    REPLAY = 3
+    GOTO = 4
+    RECORD = 5
+    INPUT = 6
+    TRANSFER = 7;
     action = models.IntegerField()
-    action_param1 = models.CharField(max_length=128, blank=True, null=True)
-    action_param2 = models.CharField(max_length=128, blank=True, null=True)
-    action_param3 = models.CharField(max_length=128, blank=True, null=True)
     prompt = models.ForeignKey(Prompt)
+    
+class Param(models.Model):
+    option = models.ForeignKey(Option)
+    
+    # For GOTO
+    IDX = 'idx'   
+    # For RECORD
+    MAXLENGTH = 'maxlength'
+    ONCANCEL = 'oncancel'
+    MFID = 'mfid'
+    CONFIRM_REC = 'confirm'
+    # Foe TRANSFER
+    NUM = 'num'
+    name = models.CharField(max_length=24)
+    
+    value = models.CharField(max_length=128)
     
 class Input(models.Model):
     # could be null if it's an incoming survey

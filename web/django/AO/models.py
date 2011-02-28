@@ -36,6 +36,8 @@ class Line(models.Model):
     # for dialing out
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
+    # for personal inbox in the main menu
+    personalinbox = models.BooleanField(default=True)
     name_file = models.CharField(max_length=24, blank=True, null=True)
     logo_file = models.CharField(max_length=24, blank=True, null=True)
     forums = models.ManyToManyField('Forum', blank=True, null=True)
@@ -87,6 +89,10 @@ class Forum(models.Model):
     routeable = models.CharField(max_length=1)
     #===========================================================
     # The coded value specified for the object must be consistent with paths.lua
+    FILTER_CODE_ALL_ONLY = 0
+    FILTER_CODE_ALL_FIRST = 1
+    FILTER_CODE_NO_ALL = 2
+    FILTER_CODE_ALL_LAST = 3
     filter_code = models.IntegerField(default=0)
      ########################################################################################
     # why? so that experts can be associated with not only a topic
@@ -101,6 +107,7 @@ class Forum(models.Model):
     maxlength = models.IntegerField()
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
     bcast_template = models.ForeignKey(Survey, blank=True, null=True)
+    confirm_recordings = models.BooleanField(default=True)
 
     def __unicode__(self):
         return self.name
@@ -124,13 +131,15 @@ class Forum_tag(models.Model):
 class Message_forum(models.Model):
     message = models.ForeignKey(Message)
     forum = models.ForeignKey(Forum)
-    status = models.IntegerField()
-    position = models.IntegerField(blank=True, null=True)
-    tags = models.ManyToManyField(Tag, blank=True, null=True)
     
+    # Code in order of how they are declared in Message.java
     STATUS_PENDING = 0
     STATUS_APPROVED = 1
     STATUS_REJECTED = 2
+    status = models.IntegerField()
+    
+    position = models.IntegerField(blank=True, null=True)
+    tags = models.ManyToManyField(Tag, blank=True, null=True)
     
     def __unicode__(self):
         return unicode(self.message) + '_' + unicode(self.forum) + '_(' + str(self.id) + ')'

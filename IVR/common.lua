@@ -177,7 +177,7 @@ end
 -- recordmessage
 -----------
 
-function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, okrecordedprompt)
+function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, confirm, okrecordedprompt)
    local forumid = forumid or nil;
    local thread = thread or nil;
    local moderated = moderated or nil;
@@ -209,25 +209,29 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, o
 		 return d;
       end
       
-      local review_cnt = 0;
-      while (d ~= GLOBAL_MENU_MAINMENU and d ~= "1" and d ~= "2" and d ~= "3") do
-		 read(aosd .. "hererecorded.wav", 1000);
-		 read(filename, 1000);
-		 read(aosd .. "notsatisfied.wav", 2000);
-		 sleep(6000)
-		 d = use();
-		 review_cnt = check_abort(review_cnt, 6)
-      end
-      
-     if (d ~= "1" and d ~= "2") then
-	 	 os.remove(filename);
-		 if (d == GLOBAL_MENU_MAINMENU) then
-		    return d;
-		 elseif (d == "3") then
-		    read(aosd .. "messagecancelled.wav", 500);
-		    return use();
-		 end
-     end
+      if (confirm == 1) then
+	      local review_cnt = 0;
+	      while (d ~= GLOBAL_MENU_MAINMENU and d ~= "1" and d ~= "2" and d ~= "3") do
+			 read(aosd .. "hererecorded.wav", 1000);
+			 read(filename, 1000);
+			 read(aosd .. "notsatisfied.wav", 2000);
+			 sleep(6000)
+			 d = use();
+			 review_cnt = check_abort(review_cnt, 6)
+	      end
+	      
+	     if (d ~= "1" and d ~= "2") then
+		 	 os.remove(filename);
+			 if (d == GLOBAL_MENU_MAINMENU) then
+			    return d;
+			 elseif (d == "3") then
+			    read(aosd .. "messagecancelled.wav", 500);
+			    return use();
+			 end
+	     end
+	  else
+	  	 d = 1;
+	  end
    until (d == "1");
    
    query1 = "INSERT INTO AO_message (user_id, content_file, date";
@@ -509,7 +513,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	    local moderated = current_msg[7];
 	    local adminmode = is_admin(forumid, adminforums);
 	    local okrecordedprompt = anssd .. "okrecorded.wav";
-	    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, okrecordedprompt);
+	    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, 1, okrecordedprompt);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	    	update_listens(prevmsgs, userid);
 	       return d;
@@ -601,15 +605,6 @@ end
 ********* BEGIN COMMON SURVEY FUNCTIONS
 **********************************************************
 --]]
--- This is the ground truth set of constants. Scripts that
--- work with survyes should sync with this
-OPTION_NEXT = 1;
-OPTION_PREV = 2;
-OPTION_REPLAY = 3;
-OPTION_GOTO = 4;
-OPTION_RECORD = 5;
-OPTION_INPUT = 6;
-OPTION_TRANSFER = 7;
 
 -----------
 -- get_prompts
@@ -629,13 +624,32 @@ end
 -----------
 
 function get_option (promptid, number)
-   local query = " SELECT opt.action, opt.action_param1, opt.action_param2, opt.action_param3 ";
+   local query = " SELECT opti.id, opt.action";
    query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
    query = query .. " WHERE prompt.id = " .. promptid;
    query = query .. " AND opt.prompt_id = prompt.id ";
    query = query .. " AND opt.number = '" .. number .. "' ";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-   return row(query);
+   return rows(query)
+end
+
+-----------
+-- get_params
+-----------
+
+function get_params (optionid)
+   local query = " SELECT param.name, param.value ";
+   query = query .. " FROM surveys_option opt, surveys_param param ";
+   query = query .. " WHERE opt.id = " .. optionid;
+   query = query .. " AND param.option_id = opt.id ";
+   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+   local params = rows(query);
+   local paramtbl = {};
+   local current_param = params();
+   while (current_param ~= nil) do
+   		paramtbl[current_param[1]] = current_param[2];
+   end
+   return paramtbl;
 end
 
 -----------
@@ -665,6 +679,7 @@ function play_prompts (prompts)
    local d = "";
    local input = "";
    local replay_cnt = 0;
+   local optionid = "";
    
    -- a complete_after 0 means it's complete if they've picked up the call
    if (complete_after_idx ~= nil and complete_after_idx == 0) then
@@ -708,7 +723,8 @@ function play_prompts (prompts)
 		-- an explicit option for no input, though this is probably better practice.
    	  	action = OPTION_REPLAY;
    	  else
-   	  	action = option[1];
+   	  	optionid = option[1];
+   	  	action = option[2];
    	  end
       
       freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
@@ -759,7 +775,7 @@ function play_prompts (prompts)
 		    current_prompt = prevprompts[current_prompt_idx];
 		 end
       elseif (action == OPTION_GOTO) then
-	  	local goto_idx = tonumber(option[2]);
+	  	local goto_idx = tonumber(get_params(optionid)[OPARAM_IDX]);
 		-- check to see if we are at the last msg in the list
 	 	if (goto_idx > #prevprompts) then
 		    for i=current_prompt_idx+1, goto_idx do
@@ -775,15 +791,17 @@ function play_prompts (prompts)
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
 	  elseif (action == OPTION_RECORD) then
-	    local maxlength = tonumber(option[2]);
-	    local oncancel = tonumber(option[3]);
-	    local mfid = tonumber(option[4]);
+	  	local params = get_params(optionid);
+	    local maxlength = tonumber(params[OPARAM_MAXLENGTH]);
+	    local oncancel = tonumber(params[OPARAM_ONCANCEL]);
+	    local mfid = tonumber(params[OPARAM_MFID]);
+	    local confirm = tonumber(params[OPARAM_CONFIRM_REC]);
 	    -- kind of a hack, but I don't want to add this
 	    -- to the Survey model. Get the survey lang subdir
 	    -- by stripping the promptfile name. Assumes they are
 	    -- in the home sounds directory of the lang bundle of the same name
 	    local lang = promptfile:sub(1,promptfile:find('/')-1);
-	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid);
+	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid, confirm);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
 	  	local goto_idx = current_prompt_idx + 1;
@@ -805,7 +823,7 @@ function play_prompts (prompts)
 		    current_prompt = prevprompts[current_prompt_idx];
 	    	end
 	  elseif (action == OPTION_TRANSFER) then
-	  	local number = option[2];
+	  	local number = getparams(optionid)[OPARAM_NUM];
 	  	session:setAutoHangup(false);
         session:transfer(number, "XML", "default");
 	  end
@@ -824,11 +842,12 @@ end
 -- recordsurveyinput
 -----------
 
-function recordsurveyinput (callid, promptid, lang, maxlength, thread)
+function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
    local maxlength = maxlength or 180000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
+   local conirm = confirm or 1;
    
    recordsd = aosd .. lang .. '/';
    repeat
@@ -847,23 +866,27 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread)
       
       d = use();
       
-      local review_cnt = 0;
-      while (d ~= "1" and d ~= "2" and d ~= "3") do
-		 read(recordsd .. "hererecorded.wav", 1000);
-		 read(filename, 1000);
-		 read(recordsd .. "notsatisfied.wav", 2000);
-		 sleep(6000)
-		 d = use();
-		 review_cnt = check_abort(review_cnt, 6)
-      end
-      
-     if (d ~= "1" and d ~= "2") then
-	 	 os.remove(filename);
-		 if (d == "3") then
-		    read(recordsd .. "messagecancelled.wav", 500);
-		    return d;
-		 end
-     end
+      if (confirm == 1) then
+	      local review_cnt = 0;
+	      while (d ~= "1" and d ~= "2" and d ~= "3") do
+			 read(recordsd .. "hererecorded.wav", 1000);
+			 read(filename, 1000);
+			 read(recordsd .. "notsatisfied.wav", 2000);
+			 sleep(6000)
+			 d = use();
+			 review_cnt = check_abort(review_cnt, 6)
+	      end
+	      
+	     if (d ~= "1" and d ~= "2") then
+		 	 os.remove(filename);
+			 if (d == "3") then
+			    read(recordsd .. "messagecancelled.wav", 500);
+			    return d;
+			 end
+	     end
+      else
+	  	d = "1";
+	  end 
    until (d == "1");
    
    local query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";

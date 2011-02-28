@@ -19,18 +19,18 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
 from otalo.AO.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
-from otalo.surveys.models import Survey, Prompt, Input, Call
+from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from django.core import serializers
 from django.conf import settings
-from django.db.models import Min, Count
+from django.db.models import Min, Max, Count
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts
 
-# Code in order of how they are declared in Message.java
-MESSAGE_STATUS_PENDING = 0
-MESSAGE_STATUS_APPROVED = 1
-MESSAGE_STATUS_REJECTED = 2
+# Only keep these around as legacy
+MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
+MESSAGE_STATUS_APPROVED = Message_forum.STATUS_APPROVED
+MESSAGE_STATUS_REJECTED = Message_forum.STATUS_REJECTED
 
 # Routing Constants
 MAX_RESPONDERS = 5
@@ -210,7 +210,7 @@ def movemessage(request):
             m.save()    
         elif m.position == None:
             # go from where positions end till this message, setting positions
-            need_pos = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft = 1, position = None, message__date__gt = m.message.date).order_by('-message__date')
+            need_pos = Message_forum.objects.filter(forum = m.forum, status = Message_forum.STATUS_APPROVED, message__lft = 1, position = None, message__date__gt = m.message.date).order_by('-message__date')
             # start with the next position
             min_pos = forum_msgs.aggregate(Min('position'))
             min = min_pos.values()[0]
@@ -244,7 +244,7 @@ def movemessage(request):
             if min == m.position:
                 # below is the first msg without a position
                 # it should always exist since position accomodates all msgs in forum
-                below = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, position = None).order_by('-message__date')[:1]
+                below = Message_forum.objects.filter(forum = m.forum, status = Message_forum.STATUS_APPROVED, message__lft=1, position = None).order_by('-message__date')[:1]
                 below = below[0]
             else:
                 below = Message_forum.objects.get(forum = m.forum, position = m.position-1)
@@ -258,12 +258,12 @@ def movemessage(request):
         elif m.position == None:
             # get below message
             # do the check first to avoid any work if this is the last msg
-            below = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, message__date__lt = m.message.date).order_by('-message__date')[:1]
+            below = Message_forum.objects.filter(forum = m.forum, status = Message_forum.STATUS_APPROVED, message__lft=1, message__date__lt = m.message.date).order_by('-message__date')[:1]
             if below.count() == 1:
                 below = below[0]
                 
                 # go from where positions end till this message, setting positions
-                need_pos = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft = 1, position = None, message__date__gt = m.message.date).order_by('-message__date')
+                need_pos = Message_forum.objects.filter(forum = m.forum, status = Message_forum.STATUS_APPROVED, message__lft = 1, position = None, message__date__gt = m.message.date).order_by('-message__date')
                 # start with the next position
                 min_pos = forum_msgs.aggregate(Min('position'))
                 min = min_pos.values()[0]
@@ -325,13 +325,13 @@ def createmessage(request, forum, content, summary=False, parent=False):
     pos = None
     if not parent:
         # only set position if there are some already set
-        msgs = Message_forum.objects.filter(forum=forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
+        msgs = Message_forum.objects.filter(forum=forum, status=Message_forum.STATUS_APPROVED, message__lft = 1).order_by('-position')
         if msgs.count() > 0 and msgs[0].position != None:
             pos = msgs[0].position + 1
     
     msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
     msg.save()
-    msg_forum = Message_forum(message=msg, forum=forum,  status=MESSAGE_STATUS_APPROVED, position = pos)
+    msg_forum = Message_forum(message=msg, forum=forum,  status=Message_forum.STATUS_APPROVED, position = pos)
 
     if parent:
         add_child(msg, parent.message)
@@ -359,12 +359,12 @@ def updatestatus(request, action):
     m = get_object_or_404(Message_forum, pk=params['messageforumid'])
     current_status = m.status
     
-    if action == 'approve' and current_status != MESSAGE_STATUS_APPROVED:
-        m.status = MESSAGE_STATUS_APPROVED
+    if action == 'approve' and current_status != Message_forum.STATUS_APPROVED:
+        m.status = Message_forum.STATUS_APPROVED
         
         if m.message.lft == 1:
             # only set position if there are some already set
-            msgs = Message_forum.objects.filter(forum=m.forum, status=MESSAGE_STATUS_APPROVED, message__lft = 1).order_by('-position')
+            msgs = Message_forum.objects.filter(forum=m.forum, status=Message_forum.STATUS_APPROVED, message__lft = 1).order_by('-position')
             if msgs.count() > 0 and msgs[0].position != None:
                 m.position = msgs[0].position + 1
         else:
@@ -381,8 +381,8 @@ def updatestatus(request, action):
                 alerts.answer_call(m.forum.line_set.all()[0], userid, m)
             
             
-    elif action == 'reject' and current_status != MESSAGE_STATUS_REJECTED: # newly rejecting
-        m.status = MESSAGE_STATUS_REJECTED
+    elif action == 'reject' and current_status != Message_forum.STATUS_REJECTED: # newly rejecting
+        m.status = Message_forum.STATUS_REJECTED
         # Reject all responses
         if m.message.lft == 1:
             top = m.message
@@ -390,12 +390,12 @@ def updatestatus(request, action):
             top = m.message.thread
         responses = Message_forum.objects.filter(forum = m.forum, message__thread=top, message__lft__gt=m.message.lft, message__rgt__lt=m.message.rgt)
         for msg in responses:
-            msg.status = MESSAGE_STATUS_REJECTED
+            msg.status = Message_forum.STATUS_REJECTED
             msg.save()
         
         if m.message.lft == 1 and m.position:
             # bump down the position of everyone ahead
-            ahead = Message_forum.objects.filter(forum = m.forum, status = MESSAGE_STATUS_APPROVED, message__lft=1, position__gt=m.position)
+            ahead = Message_forum.objects.filter(forum = m.forum, status = Message_forum.STATUS_APPROVED, message__lft=1, position__gt=m.position)
             for msg in ahead:
                 msg.position -= 1
                 msg.save()
@@ -481,10 +481,10 @@ def bcast(request):
     # Get subjects
     if params.__contains__('bynumbers'):
         numsRaw = params['numbersarea']
-        if '\n' in numsRaw:
-            numbers = numsRaw.split('\n')
-        elif ',' in numsRaw:
+        if ',' in numsRaw:
             numbers = numsRaw.split(',')
+        elif '\n' in numsRaw:
+            numbers = numsRaw.split('\n')
         else:
             numbers = [numsRaw]
         
@@ -573,7 +573,7 @@ def surveyinput(request, survey_id):
     survey.getstatus()
     
     # get all prompts in reverse order so that the last ones will be inserted first into the widget
-    prompts = Prompt.objects.filter(survey=survey, option__action=broadcast.OPTION_RECORD).distinct().order_by('-order')
+    prompts = Prompt.objects.filter(survey=survey, option__action=Option.RECORD).distinct().order_by('-order')
     
     return send_response(prompts, relations=('survey',))
 
@@ -590,14 +590,17 @@ def surveydetails(request, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id)
     calls = Call.objects.filter(survey=survey)
     
-    firstCallDate = calls.aggregate(Min('date'))
-    firstCallDate = firstCallDate.values()[0]
+    firstcalldate = calls.aggregate(Min('date'))
+    firstcalldate = firstcalldate.values()[0]
+    
+    lastcalldate = calls.aggregate(Max('date'))
+    lastcalldate = lastcalldate.values()[0]
     
     numpairs = calls.values('subject__number').distinct()
     numbers = [pair.values()[0] for pair in numpairs]
-    numbers = ','.join(numbers)
+    numbers = ', '.join(numbers)
     
-    response = HttpResponse('[{"model":"SURVEY_METADATA", "date":"'+str(firstCallDate)+'","numbers":"'+numbers+'"}]')
+    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","enddate":"'+str(lastcalldate)+'","numbers":"'+numbers+'"}]')
     response['Pragma'] = "no cache"
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response
