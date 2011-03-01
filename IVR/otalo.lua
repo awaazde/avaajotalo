@@ -584,7 +584,7 @@ end
 
 function playforum (forumid)
    local forum = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code FROM AO_forum WHERE id = " .. forumid);
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code, confirm_recordings FROM AO_forum WHERE id = " .. forumid);
    cur:fetch(forum);
    cur:close();
    local forumname = forum[1];
@@ -593,6 +593,7 @@ function playforum (forumid)
    local responsesallowed = forum[4];
    local maxlength = forum[5];
    local filter_code = tonumber(forum[6]);
+   local confirm_recordings = forum[7];
    local d = "";
    local adminmode = is_admin(forumid, adminforums);
    local tagid = nil;
@@ -655,7 +656,7 @@ function playforum (forumid)
 	  end
 	  if ((postingallowed == 'y' or adminmode) and d == "1") then
 	     read(aosd .. "okrecord.wav", 1000);
-	     if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode) == GLOBAL_MENU_MAINMENU) then
+	     if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode, confirm_recordings) == GLOBAL_MENU_MAINMENU) then
 	        return;
 	     end
 	     read(aosd .. "backtoforum.wav", 1000);
