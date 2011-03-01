@@ -230,7 +230,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 			 end
 	     end
 	  else
-	  	 d = 1;
+	  	 d = "1";
 	  end
    until (d == "1");
    
