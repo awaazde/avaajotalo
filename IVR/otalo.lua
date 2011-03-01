@@ -316,9 +316,10 @@ function mainmenu ()
    end
    local numforums = i;
    
+   local chkrepliesidx = -1;
    if (personal_inbox == 1) then
 	   i = i + 1;
-	   local chkrepliesidx = i;
+	   chkrepliesidx = i;
 	   read(aosd .. "checkmyreplies.wav", 0);
 	   read(aosd .. "digits/" .. chkrepliesidx .. ".wav", 1000);
    end
