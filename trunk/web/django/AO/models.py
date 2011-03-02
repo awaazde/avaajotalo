@@ -88,6 +88,12 @@ class Forum(models.Model):
     # responders to route top-level posts to upon approval
     routeable = models.CharField(max_length=1)
     #===========================================================
+    # purely for the phone interface. If this false, then 
+    listening_allowed = models.BooleanField(default=True)
+    
+    # On answer calls that go out, do you want to prompt for a response
+    # to the response that was played
+    respondtoresponse_allowed = models.BooleanField(default=False)
     # The coded value specified for the object must be consistent with paths.lua
     FILTER_CODE_ALL_ONLY = 0
     FILTER_CODE_ALL_FIRST = 1
