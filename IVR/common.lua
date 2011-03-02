@@ -186,6 +186,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
+   freeswitch.consoleLog("info", script_name .. " : confirm is" .. tostring(confirm) .. "\n");
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
@@ -624,13 +625,13 @@ end
 -----------
 
 function get_option (promptid, number)
-   local query = " SELECT opti.id, opt.action";
+   local query = " SELECT opt.id, opt.action";
    query = query .. " FROM surveys_option opt, surveys_prompt prompt ";
    query = query .. " WHERE prompt.id = " .. promptid;
    query = query .. " AND opt.prompt_id = prompt.id ";
    query = query .. " AND opt.number = '" .. number .. "' ";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-   return rows(query)
+   return row(query)
 end
 
 -----------
@@ -647,7 +648,8 @@ function get_params (optionid)
    local paramtbl = {};
    local current_param = params();
    while (current_param ~= nil) do
-   		paramtbl[current_param[1]] = current_param[2];
+  	paramtbl[current_param[1]] = current_param[2];
+	current_param = params();
    end
    return paramtbl;
 end
@@ -847,7 +849,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
-   local conirm = confirm or 1;
+   local confirm = confirm or 1;
    
    recordsd = aosd .. lang .. '/';
    repeat
