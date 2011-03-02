@@ -235,7 +235,7 @@ def thread(messageforum, template, responseprompt):
         for option in Option.objects.filter(prompt=prompt):
             if option.action == Option.RECORD:
                 oncancel = Param.objects.get(option=option, name=Param.ONCANCEL)
-                oncancel.value = int(option.action_param2) + ntoshift
+                oncancel.value = int(oncancel.value) + ntoshift
                 oncancel.save()
         prompt.save()
     
