@@ -197,7 +197,7 @@ if (msg ~= nil) then
 		DIALSTRING_SUFFIX = row[3];
 	end
 	
-	local destination = row[5] or row[4];
+	destination = row[5] or row[4];
 	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
 	
 	-- script-specific sounds
