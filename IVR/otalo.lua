@@ -33,8 +33,8 @@ userid = nil;
 adminforums = {};
 
 -- set the language, check if line is restricted
-line_num = session:getVariable("destination_number");
-query = "SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox FROM AO_line WHERE number LIKE '%" .. line_num .. "%'";
+destination = session:getVariable("destination_number");
+query = "SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox FROM AO_line WHERE number LIKE '%" .. destination .. "%'";
 cur = con:execute(query);
 line_info = {};
 result = cur:fetch(line_info);
@@ -54,10 +54,10 @@ local DIALSTRING_SUFFIX = line_info[4];
 local callback_allowed = line_info[5];
 local personal_inbox = line_info[6];
 
-phonenum = session:getVariable("caller_id_number");
-phonenum = phonenum:sub(-10);
-freeswitch.consoleLog("info", script_name .. " : caller id = " .. phonenum .. "\n");
-query = "SELECT id, allowed FROM AO_user WHERE number = " .. phonenum;
+caller = session:getVariable("caller_id_number");
+caller = caller:sub(-10);
+freeswitch.consoleLog("info", script_name .. " : caller id = " .. caller .. "\n");
+query = "SELECT id, allowed FROM AO_user WHERE number = " .. caller;
 cur = con:execute(query);
 uid = {};
 result = cur:fetch(uid);
@@ -74,7 +74,7 @@ if (result ~= nil) then
 else
 	if (open == 1) then
 	   -- first time caller
-	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..phonenum.."','y')";
+	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..caller.."','y')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
@@ -99,7 +99,7 @@ function my_cb(s, type, obj, arg)
    if (type == "dtmf") then
       
       logfile:write(sessid, "\t",
-      session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t",
+      caller, "\t", destination, "\t", os.time(), "\t",
       "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
       
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
@@ -251,7 +251,7 @@ end
 function isresponder (userid, linenum)
    local query = "SELECT 1 ";
    query = query .. "FROM AO_forum_responders fr, AO_line line, AO_line_forums lf, AO_forum forum ";
-   query = query .. " WHERE line.number LIKE '%" .. line_num .. "%' "; 
+   query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
    query = query .. " AND line.id = lf.line_id and lf.forum_id = forum.id AND forum.id = fr.forum_id and fr.user_id = " .. userid;
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    cur = con:execute(query);
@@ -300,7 +300,7 @@ function mainmenu ()
    -- auxilary options (there is at least the checkmyreplies option)
    local query = "SELECT forum.id, forum.name_file, line.id ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
-   query = query .. " WHERE line.number LIKE '%" .. line_num .. "%' "; 
+   query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
    query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id";
    query = query .. " ORDER BY forum.id ASC";
    
@@ -333,7 +333,7 @@ function mainmenu ()
    end
    
    local responderidx = -1;
-   if (isresponder(userid, line_num)) then
+   if (isresponder(userid, destination)) then
    	  i = i + 1;
    	  responderidx = i;
    	  read(aosd .. "checkmyassignedquestions.wav", 0);
@@ -718,11 +718,11 @@ function get_msgid(file, delay)
 
    if (digits == "") then
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       digits = session:read(5, 5, file, delay, "#");
       if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
+	 logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
    end
 end
@@ -786,10 +786,10 @@ if (callback_allowed == 1) then
 	session:hangup();
 	local vars = '{';
 	vars = vars .. 'ignore_early_media=true';
-	vars = vars .. ',caller_id_number='..phonenum;
-	vars = vars .. ',origination_caller_id_number='..line_num;
+	vars = vars .. ',caller_id_number='..caller;
+	vars = vars .. ',origination_caller_id_number='..destination;
 	vars = vars .. '}'
-	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
+	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
 	-- wait a while before testing
 	sleep(2000);
@@ -808,7 +808,7 @@ session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 session:setInputCallback("my_cb", "arg");
 
-logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
+logfile:write(sessid, "\t", caller, "\t", destination,
 "\t", os.time(), "\t", "Start call", "\n");
 
 -- sleep for a sec

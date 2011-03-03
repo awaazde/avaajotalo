@@ -23,7 +23,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 
 function hangup() 
    logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		 caller, "\t", destination, "\t",
 		 os.time(), "\t", "End call", "\n");
 
    -- cleanup
@@ -91,11 +91,11 @@ end
 function read(file, delay)
    if (digits == "") then
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       digits = session:read(1, 1, file, delay, "#");
       if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
+	 logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
    end
 end
@@ -106,7 +106,7 @@ end
 
 function read_no_bargein(file, delay)
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
       session:streamFile(file);
       sleep(delay);
@@ -137,7 +137,7 @@ function playcontent (summary, content)
    if (summary ~= nil and summary ~= "") then
       arg[1] = sd .. summary;
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Stream", "\t", arg[1], "\n");
       session:streamFile(sd .. summary);
       sleep(1000);
@@ -164,7 +164,7 @@ function playcontent (summary, content)
    
    arg[1] = sd .. content;
    logfile:write(sessid, "\t",
-		 session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		 caller, "\t", destination, "\t",
 		 os.time(), "\t", "Stream", "\t", arg[1], "\n");
 
    session:streamFile(sd .. content);
@@ -199,7 +199,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
+		    caller, "\t", destination, "\t", 
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 100 5");
       --sleep(1000);
@@ -218,7 +218,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 			 read(aosd .. "notsatisfied.wav", 2000);
 			 sleep(6000)
 			 d = use();
-			 review_cnt = check_abort(review_cnt, 6)
+			 review_cnt = check_abort(review_cnt, 3)
 	      end
 	      
 	     if (d ~= "1" and d ~= "2") then
@@ -313,12 +313,12 @@ LISTENS_THRESH = "5"
 function read_phone_num(file, delay)
    if (digits == "") then
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t",
+		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
 	  -- allow 1 or 10 (1 to cancel)
       digits = session:read(1, 10, file, delay, "#");
       if (digits ~= "") then
-	 logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
+	 logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
    end
 end
@@ -844,7 +844,7 @@ end
 -- recordsurveyinput
 -----------
 
-function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
+function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    local maxlength = maxlength or 180000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
@@ -862,7 +862,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
       session:execute("playback", "tone_stream://%(500, 0, 620)");
       freeswitch.consoleLog("info", script_name .. " : Recording " .. filename .. "\n");
       logfile:write(sessid, "\t",
-		    session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", 
+		    caller, "\t", destination, "\t", 
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 100 5");
       
@@ -876,7 +876,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
 			 read(recordsd .. "notsatisfied.wav", 2000);
 			 sleep(6000)
 			 d = use();
-			 review_cnt = check_abort(review_cnt, 6)
+			 review_cnt = check_abort(review_cnt, 3)
 	      end
 	      
 	     if (d ~= "1" and d ~= "2") then
@@ -897,16 +897,20 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
    
    -- check if this sh be attached as a response to an existing msg
-   if (thread ~= nil) then
+   if (mfid ~= nil) then
    	   -- get rgt, forumid
-   	   query = "SELECT mf.forum_id, m.rgt FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. thread;
+   	   query = "SELECT mf.forum_id, m.rgt, m.thread FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
 	   local cur = con:execute(query);
 	   local result = {};
 	   result = cur:fetch(result);
 	   cur:close();
 	   
-	   forumid = result[1];
-	   rgt = result[2];
+	   local forumid = result[1];
+	   local rgt = result[2];
+	   local thread = result[3];
+	   if (thread == nil) then
+	   		thread = mfid;
+	   end
 
 		-- get userid
 		query = "SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid;
@@ -926,26 +930,26 @@ function recordsurveyinput (callid, promptid, lang, maxlength, thread, confirm)
 		   userid = tostring(cur:fetch());
 		   cur:close();
 		end  
-	       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
-	       con:execute(query);
-	       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-	       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
-	       con:execute(query);
-	       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-	       
-	       query = "INSERT INTO AO_message (user_id, content_file, date, thread_id, lft, rgt)";
-		   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
-		   con:execute(query);
-		   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-		   id = {};
-		   cur = con:execute("SELECT LAST_INSERT_ID()");
-		   cur:fetch(id);
-		   cur:close();
-		   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
-		   
-		   query = "INSERT INTO AO_message_forum (message_id, forum_id, status) ";
-		   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
-		   con:execute(query);
+       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+       con:execute(query);
+       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+       con:execute(query);
+       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+       
+       query = "INSERT INTO AO_message (user_id, content_file, date, thread_id, lft, rgt)";
+	   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
+	   con:execute(query);
+	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+	   id = {};
+	   cur = con:execute("SELECT LAST_INSERT_ID()");
+	   cur:fetch(id);
+	   cur:close();
+	   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
+	   
+	   query = "INSERT INTO AO_message_forum (message_id, forum_id, status) ";
+	   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
+	   con:execute(query);
    end	
    
    return d;
@@ -964,7 +968,7 @@ end
 function check_abort(counter, threshold)
 	counter = counter + 1;
 	if (counter >= threshold) then
-		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t", "Abort call", "\n");
+		logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "Abort call", "\n");
 		hangup();
 	else
 		return counter;

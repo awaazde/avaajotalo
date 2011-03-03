@@ -50,22 +50,22 @@ sessid = os.time();
 prevprompts = {};
 
 -- survey phonenumber
-survey_phonenum = session:getVariable("destination_number");
+destination = session:getVariable("destination_number");
 -- caller's number
-phonenum = session:getVariable("caller_id_number");
+caller = session:getVariable("caller_id_number");
 -- there is no outbound call
 callid = nil;
 
 -- get survey id
 query = 		"SELECT survey.id, survey.complete_after ";
 query = query .. " FROM surveys_survey survey ";
-query = query .. " WHERE number LIKE '%" .. survey_phonenum .. "%'";
+query = query .. " WHERE number LIKE '%" .. destination .. "%'";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query);
 surveyid = res[1];
 complete_after_idx = res[2];
 
-freeswitch.consoleLog("info", script_name .. " , num = " .. phonenum .. " , survey = " .. surveyid .. "\n");
+freeswitch.consoleLog("info", script_name .. " , num = " .. caller .. " , survey = " .. surveyid .. "\n");
 
 -----------
 -- my_cb
@@ -77,7 +77,7 @@ function my_cb(s, type, obj, arg)
    if (type == "dtmf") then
       
       logfile:write(sessid, "\t",
-      session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t",
+      caller, "\t", destination, "\t", os.time(), "\t",
       "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
       
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
@@ -109,13 +109,13 @@ if (session:ready() == true) then
 	-- sleep for a bit
 	session:sleep(1000);
 	
-	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
+	logfile:write(sessid, "\t", caller, "\t", destination,
 	"\t", os.time(), "\t", "Start call", "\n");
 	
 	-- play prompts
 	play_prompts(prompts);
 	
-	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
+	logfile:write(sessid, "\t", caller, "\t", destination,
 	"\t", os.time(), "\t", "End call", "\n");
 end
 

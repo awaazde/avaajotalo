@@ -53,11 +53,11 @@ query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 local res = row(query);
 local subjectid = res[1];
-local phonenum = res[2];
+local caller = res[2];
 local surveyid = res[3];
-local originationnum = res[7] or "";
+local destination = res[7] or "";
 
-CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..originationnum..'}';
+CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
 
 DIALSTRING_PREFIX = "";
 DIALSTRING_SUFFIX = "";
@@ -70,7 +70,7 @@ end
 
 complete_after_idx = tonumber(res[6]);
 
-freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. phonenum .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
+freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. caller .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
 
 -----------
 -- my_cb
@@ -82,7 +82,7 @@ function my_cb(s, type, obj, arg)
    if (type == "dtmf") then
       
       logfile:write(sessid, "\t",
-      session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t",
+      caller, "\t", destination, "\t", os.time(), "\t",
       "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
       
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
@@ -108,8 +108,8 @@ end
 prompts = get_prompts(surveyid);
 
 -- make the call
-session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. phonenum .. DIALSTRING_SUFFIX)
-session:setVariable("caller_id_number", phonenum)
+session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+session:setVariable("caller_id_number", caller)
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 --session:setInputCallback("my_cb", "arg");
@@ -117,7 +117,7 @@ session:setHangupHook("hangup");
 -- wait a while before testing
 session:sleep(2000);
 if (session:ready() == true) then
-	logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
+	logfile:write(sessid, "\t", caller, "\t", destination,
 	"\t", os.time(), "\t", "Start call", "\n");
 	
 	-- play prompts

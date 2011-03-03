@@ -48,7 +48,7 @@ cur = con:execute(query);
 row = {};
 result = cur:fetch(row);
 cur:close();
-phone_num = tostring(row[1]);
+caller = tostring(row[1]);
 
 -- FUNCTIONS
 -----------
@@ -61,7 +61,7 @@ function my_cb(s, type, obj, arg)
    if (type == "dtmf") then
       
       logfile:write(sessid, "\t",
-      session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"), "\t", os.time(), "\t",
+      caller, "\t", destination, "\t", os.time(), "\t",
       "dtmf", "\t", arg[1], "\t", obj['digit'], "\n");
       
       freeswitch.console_log("info", "\ndigit: [" .. obj['digit']
@@ -197,15 +197,15 @@ if (msg ~= nil) then
 		DIALSTRING_SUFFIX = row[3];
 	end
 	
-	local originationnum = row[5] or row[4];
-	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..originationnum..'}';
+	local destination = row[5] or row[4];
+	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
 	
 	-- script-specific sounds
 	anssd = aosd .. "answer/";
 
 	-- make the call
-	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. phone_num .. DIALSTRING_SUFFIX)
-	session:setVariable("caller_id_number", phone_num);
+	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+	session:setVariable("caller_id_number", caller);
 	session:setVariable("playback_terminators", "#");
 	session:setHangupHook("hangup");
 	session:setInputCallback("my_cb", "arg");
@@ -214,7 +214,7 @@ if (msg ~= nil) then
 	session:sleep(2000);
 	if (session:ready() == true) then
 
-		logfile:write(sessid, "\t", session:getVariable("caller_id_number"), "\t", session:getVariable("destination_number"),
+		logfile:write(sessid, "\t", caller, "\t", destination,
 		"\t", os.time(), "\t", "Start call", "\n");
 		
 		local mainmenu_cnt = 0;
