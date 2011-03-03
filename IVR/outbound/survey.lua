@@ -53,9 +53,9 @@ query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 local res = row(query);
 local subjectid = res[1];
-local caller = res[2];
+caller = res[2];
 local surveyid = res[3];
-local destination = res[7] or "";
+destination = res[7] or "";
 
 CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
 
