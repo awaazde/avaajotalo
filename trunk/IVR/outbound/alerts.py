@@ -113,8 +113,8 @@ def answer_call(line, userid, answer):
     order += 1
     
     # get the immediate parent of this message
-    fullthread = Message.objects.filter(Q(thread=answer.thread) | Q(pk=answer.thread.pk))
-    ancestors = fullthread.filter(lft__lt=answer.lft, rgt__gt=answer.rgt).order_by('-lft')
+    fullthread = Message.objects.filter(Q(thread=answer.message.thread) | Q(pk=answer.message.thread.pk))
+    ancestors = fullthread.filter(lft__lt=answer.message.lft, rgt__gt=answer.message.rgt).order_by('-lft')
     parent = ancestors[0]
     original = Prompt(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
     original.save()
