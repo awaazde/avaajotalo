@@ -17,7 +17,7 @@ import sys,router
 from datetime import datetime, timedelta
 from django.db.models import Q
 from otalo.AO.models import Message, Message_forum, User, Line, User
-from otalo.surveys.models import Subject, Survey, Prompt, Option, Call
+from otalo.surveys.models import Subject, Survey, Prompt, Option, Call, Param
 from otalo.settings import MEDIA_ROOT
 from ESL import *
 import re, time, sched
