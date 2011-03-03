@@ -777,7 +777,7 @@ if (callback_allowed == 1) then
 	local uuid = session:getVariable('uuid');
 	local mc_cnt = 0;
     while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
-	 	sleep(3000);
+	 	session:sleep(3000);
 	 	mc_cnt = check_abort(mc_cnt, 11)
   	end
 	
@@ -792,7 +792,7 @@ if (callback_allowed == 1) then
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
 	-- wait a while before testing
-	sleep(2000);
+	session:sleep(2000);
 	if (session:ready() == false) then
 		hangup();
 	end
