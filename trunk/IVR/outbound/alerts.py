@@ -15,19 +15,13 @@
 #===============================================================================
 import sys,router
 from datetime import datetime, timedelta
+from django.db.models import Q
 from otalo.AO.models import Message, Message_forum, User, Line, User
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Call
 from otalo.settings import MEDIA_ROOT
 from ESL import *
 import re, time, sched
 from threading import Timer
-
-# These should be consistent with the constants
-# in survey.lua
-OPTION_NEXT = 1
-OPTION_PREV = 2
-OPTION_REPLAY = 3
-OPTION_GOTO = 4
 
 # should match the interval of the cron running this script
 INTERVAL_HOURS = 1
@@ -104,27 +98,75 @@ def answer_call(line, userid, answer):
     else:
         num = line.number
         
-    s = Survey(name=ANSWER_CALL_DESIGNATOR + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, number=num)
+    s = Survey(name=ANSWER_CALL_DESIGNATOR + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num)
     #print ("adding announcement survey " + str(s))
     s.save()
-
-    # welcome
-    welcome = Prompt(file=line.language+"/welcome_answercall.mp3", order=1, bargein=False, survey=s)
-    welcome.save()
-    welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
-    welcome_opt.save()
+    order = 1
     
+    # welcome
+    welcome = Prompt(file=line.language+"/welcome_responsecall.wav", order=order, bargein=True, survey=s)
+    welcome.save()
+    welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
+    welcome_opt.save()
+    welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
+    welcome_opt2.save()
+    order += 1
+    
+    # get the immediate parent of this message
+    fullthread = Message.objects.filter(Q(thread=answer.thread) | Q(pk=answer.thread.pk))
+    ancestors = fullthread.filter(lft__lt=answer.lft, rgt__gt=answer.rgt).order_by('-lft')
+    parent = ancestors[0]
+    original = Prompt(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
+    original.save()
+    original_opt = Option(number="", action=Option.NEXT, prompt=original)
+    original_opt.save()
+    original_opt2 = Option(number="1", action=Option.NEXT, prompt=original)
+    original_opt2.save()
+    order += 1
+    
+    response = Prompt(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
+    response.save()
+    response_opt = Option(number="", action=Option.NEXT, prompt=response)
+    response_opt.save()
+    response_opt2 = Option(number="1", action=Option.NEXT, prompt=response)
+    response_opt2.save()
+    order += 1
 
-    a = Prompt(file=MEDIA_ROOT+'/'+answer.message.content_file, order=2, bargein=False, survey=s)
+    a = Prompt(file=MEDIA_ROOT+'/'+answer.message.content_file, order=order, bargein=True, survey=s)
     a.save()
-    a_opt = Option(number="", action=OPTION_NEXT, prompt=a)
+    a_opt = Option(number="", action=Option.NEXT, prompt=a)
     a_opt.save()
+    a_opt2 = Option(number="1", action=Option.NEXT, prompt=a)
+    a_opt2.save()
+    order += 1
+    
+    if answer.forum.respondtoresponse_allowed:
+        record = Prompt(file=line.language+"/record_responsecall.wav", order=order, bargein=True, survey=s, delay=3000)
+        record.save()
+        record_opt = Option(number="", action=Option.GOTO, prompt=record)
+        record_opt.save()
+        param = Param(option=record_opt, name=Param.IDX, value=order+2)
+        param.save()
+        record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
+        record_opt2.save()
+        param2 = Param(option=record_opt2, name=Param.MFID, value=answer.id)
+        param2.save()
+        param3 = Param(option=record_opt2, name=Param.ONCANCEL, value=order+2)
+        param3.save()
+        order += 1
+        
+        recordthanks = Prompt(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s)
+        recordthanks.save()
+        recordthanks_opt = Option(number="", action=Option.NEXT, prompt=recordthanks)
+        recordthanks_opt.save()
+        order += 1
     
     # thanks
-    thanks = Prompt(file=line.language+"/thankyou_answercall.mp3", order=3, bargein=False, survey=s)
+    thanks = Prompt(file=line.language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
     thanks.save()
-    thanks_opt = Option(number="", action=OPTION_NEXT, prompt=thanks)
+    thanks_opt = Option(number="", action=Option.NEXT, prompt=thanks)
     thanks_opt.save()
+    order += 1
     
     #create a call
     call = Call(survey=s, subject=asker, date=now, priority=1)
