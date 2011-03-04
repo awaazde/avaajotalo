@@ -899,7 +899,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    -- check if this sh be attached as a response to an existing msg
    if (mfid ~= nil) then
    	   -- get rgt, forumid
-   	   query = "SELECT mf.forum_id, m.rgt, m.thread FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
+   	   query = "SELECT mf.forum_id, m.rgt, m.thread_id FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
 	   local cur = con:execute(query);
 	   local result = {};
 	   result = cur:fetch(result);
