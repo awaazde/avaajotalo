@@ -186,7 +186,6 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
-   freeswitch.consoleLog("info", script_name .. " : confirm is" .. tostring(confirm) .. "\n");
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
@@ -899,7 +898,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    -- check if this sh be attached as a response to an existing msg
    if (mfid ~= nil) then
    	   -- get rgt, forumid
-   	   query = "SELECT mf.forum_id, m.rgt, m.thread_id FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
+   	   query = "SELECT mf.forum_id, m.rgt, m.thread_id, m.id FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
 	   local cur = con:execute(query);
 	   local result = {};
 	   result = cur:fetch(result);
@@ -907,10 +906,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   
 	   local forumid = result[1];
 	   local rgt = result[2];
-	   local thread = result[3];
-	   if (thread == nil) then
-	   		thread = mfid;
-	   end
+	   local thread = result[3] or result[4];
 
 		-- get userid
 		query = "SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid;
@@ -923,7 +919,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 		if (result ~= nil) then
 			userid = tostring(uid[1]);
 		else
-		   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..session:getVariable("caller_id_number").."','y')";
+		   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..caller.."','y')";
 		   con:execute(query);
 		   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 		   cur = con:execute("SELECT LAST_INSERT_ID()");

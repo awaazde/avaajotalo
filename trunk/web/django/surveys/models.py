@@ -138,6 +138,7 @@ class Option(models.Model):
     INPUT = 6
     TRANSFER = 7;
     action = models.IntegerField()
+    
     prompt = models.ForeignKey(Prompt)
     
 class Param(models.Model):
