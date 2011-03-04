@@ -612,62 +612,59 @@ function playforum (forumid)
    
    repeat
    	  local i = 1;
-   	  if (postingallowed == 'y' or adminmode) then
-   	  	 if (listeningallowed == 1) then
-	   	 	read(aosd .. "record.wav", 0);
-	   	 else
-	   	 	-- short-circuit and go straight to recording
-	   	 	digits = "1";
-	   	 end
+   	  if ((postingallowed == 'y' and listeningallowed == 1) or adminmode) then
+	   	 read(aosd .. "record.wav", 0);
 	   	 i = i + 1;
-	  elseif (listeningallowed == 0 or filter_code == FILTER_CODE_ALL_ONLY) then 	 
+	  elseif (postingallowed == 'n' and filter_code == FILTER_CODE_ALL_ONLY) then 	 
 	  	 -- short-circuit prompt to go straight
 	  	 -- to playing messages
 	  	 break;
 	  end
 	  first_listen_opt = i;
-
-   	  if (filter_code == FILTER_CODE_ALL_ONLY) then
-	  	 read(aosd .. "listen.wav", 3000);
-	  else
-		 if (filter_code == FILTER_CODE_ALL_FIRST) then
-		  	 read(aosd .. "listen_all.wav", 0);
-		  	 read(aosd .. "digits/" .. i .. ".wav", 500);
-		  	 listen_opts_ids[i] = nil;
-		  	 listen_opts_names[i] = "listen_all.wav";
-		  	 i = i + 1;
-		 end
-		 
-		 local query = "SELECT tag.id, tag.tag_file ";
-		 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tag forum_tag ";
-		 query = query .. " WHERE forum.id = " .. forumid; 
-		 query = query .. " AND forum_tag.forum_id = forum.id AND forum_tag.tag_id = tag.id ";
-		 query = query .. " AND forum_tag.filtering_allowed = 1 ";
-		 query = query .. " ORDER BY tag.id ASC";
-		   
-		 for row in rows (query) do
-		      listen_opts_ids[i] = row[1];
-		      listen_opts_names[i] = row[2];
-		      read(aosd .. "listento_tag_pre.wav", 0);
-		      read(tagsd .. listen_opts_names[i], 0);
-		      read(aosd .. "listento_tag_post.wav", 0);
-		      read(aosd .. "digits/" .. i .. ".wav", 500);
-		      i = i + 1;
-		 end
-		 
-		 if (filter_code == FILTER_CODE_ALL_LAST) then
-		 	  read(aosd .. "listen_all.wav", 0);
-		  	  read(aosd .. "digits/" .. i .. ".wav", 500);
-		  	  listen_opts_ids[i] = nil;
-		  	  listen_opts_names[i] = "listen_all.wav";
-		 end
-	  end
-	  	 
+	  
+	  if (listeningallowed == 1) then
+	   	  if (filter_code == FILTER_CODE_ALL_ONLY) then
+		  	 read(aosd .. "listen.wav", 3000);
+		  else
+			 if (filter_code == FILTER_CODE_ALL_FIRST) then
+			  	 read(aosd .. "listen_all.wav", 0);
+			  	 read(aosd .. "digits/" .. i .. ".wav", 500);
+			  	 listen_opts_ids[i] = nil;
+			  	 listen_opts_names[i] = "listen_all.wav";
+			  	 i = i + 1;
+			 end
+			 
+			 local query = "SELECT tag.id, tag.tag_file ";
+			 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tag forum_tag ";
+			 query = query .. " WHERE forum.id = " .. forumid; 
+			 query = query .. " AND forum_tag.forum_id = forum.id AND forum_tag.tag_id = tag.id ";
+			 query = query .. " AND forum_tag.filtering_allowed = 1 ";
+			 query = query .. " ORDER BY tag.id ASC";
+			   
+			 for row in rows (query) do
+			      listen_opts_ids[i] = row[1];
+			      listen_opts_names[i] = row[2];
+			      read(aosd .. "listento_tag_pre.wav", 0);
+			      read(tagsd .. listen_opts_names[i], 0);
+			      read(aosd .. "listento_tag_post.wav", 0);
+			      read(aosd .. "digits/" .. i .. ".wav", 500);
+			      i = i + 1;
+			 end
+			 
+			 if (filter_code == FILTER_CODE_ALL_LAST) then
+			 	  read(aosd .. "listen_all.wav", 0);
+			  	  read(aosd .. "digits/" .. i .. ".wav", 500);
+			  	  listen_opts_ids[i] = nil;
+			  	  listen_opts_names[i] = "listen_all.wav";
+			 end
+		  end
+	  end 
 	  d = use();
 	  if (d == GLOBAL_MENU_MAINMENU) then
 	     return;
 	  end
-	  if ((postingallowed == 'y' or adminmode) and d == "1") then
+	  -- if the option was either legally chosen or there is only the option to record
+	  if (((postingallowed == 'y' or adminmode) and d == "1") or (postingallowed == 'y' and listeningallowed == 0)) then
 	  	 if (listeningallowed == 1) then
 	  	    -- otherwise this is redundant
 	     	read(aosd .. "okrecord.wav", 1000);
