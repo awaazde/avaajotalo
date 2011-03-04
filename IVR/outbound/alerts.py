@@ -79,12 +79,16 @@ def missed_call(line, user_ids):
             					break 						
 	con.disconnect()
 
-def answer_call(line, userid, answer):
+def answer_call(line, answer):
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
     
-    user = User.objects.get(pk=userid)
-    asker = Subject.objects.filter(number=user.number)
+    # get the immediate parent of this message
+    fullthread = Message.objects.filter(Q(thread=answer.message.thread) | Q(pk=answer.message.thread.pk))
+    ancestors = fullthread.filter(lft__lt=answer.message.lft, rgt__gt=answer.message.rgt).order_by('-lft')
+    parent = ancestors[0]
+
+    asker = Subject.objects.filter(number=parent.user.number)
     if not bool(asker):
     	asker = Subject(name=user.name, number=user.number)
     	asker.save()
@@ -112,10 +116,6 @@ def answer_call(line, userid, answer):
     welcome_opt2.save()
     order += 1
     
-    # get the immediate parent of this message
-    fullthread = Message.objects.filter(Q(thread=answer.message.thread) | Q(pk=answer.message.thread.pk))
-    ancestors = fullthread.filter(lft__lt=answer.message.lft, rgt__gt=answer.message.rgt).order_by('-lft')
-    parent = ancestors[0]
     original = Prompt(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
     original.save()
     original_opt = Option(number="", action=Option.NEXT, prompt=original)
