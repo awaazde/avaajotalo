@@ -609,7 +609,7 @@ function playforum (forumid)
 	   	 	read(aosd .. "record.wav", 0);
 	   	 else
 	   	 	-- short-circuit and go straight to recording
-	   	 	d = "1";
+	   	 	digits = "1";
 	   	 end
 	   	 i = i + 1;
 	  elseif (listeningallowed == 0 or filter_code == FILTER_CODE_ALL_ONLY) then 	 
@@ -781,7 +781,6 @@ end
 if (callback_allowed == 1) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
-
 	api = freeswitch.API();
 	local uuid = session:getVariable('uuid');
 	local mc_cnt = 0;
@@ -789,6 +788,7 @@ if (callback_allowed == 1) then
 	 	session:sleep(3000);
 	 	mc_cnt = check_abort(mc_cnt, 11)
   	end
+		freeswitch.consoleLog("info", script_name .. " : woke up \n");
 	
 	-- Missed call; 
 	-- call the user back
