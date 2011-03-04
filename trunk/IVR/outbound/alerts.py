@@ -90,7 +90,7 @@ def answer_call(line, answer):
 
     asker = Subject.objects.filter(number=parent.user.number)
     if not bool(asker):
-    	asker = Subject(name=user.name, number=user.number)
+    	asker = Subject(name=user.name, number=parent.user.number)
     	asker.save()
     else:
 	    asker = asker[0]
