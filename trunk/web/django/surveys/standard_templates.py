@@ -41,7 +41,7 @@ def standard_template(line, contenttype):
     else:
         num = line.number
     
-    name = contenttype[:3].upper() + '_' + broadcast.TEMPLATE_DESIGNATOR + ' (' + str(line.id) + ')'
+    name = contenttype[:3].upper() + '_' + Survey.TEMPLATE_DESIGNATOR + ' (' + str(line.id) + ')'
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
