@@ -178,23 +178,23 @@ def main():
 		calls_attempted = 0
 		calls_completed = 0
 		for subject in subjects:			
-			calls = Call.objects.filter(subject=subject, survey=survey, date__gte=today, date__lt=today+oneday)
-			if bool(calls):
-				n_subjects += 1
+			calls = Call.objects.filter(subject=subject, survey=survey)
+			calls_today = calls.filter(date__gte=today, date__lt=today+oneday)
 			# check if this survey has been completed for this subj
 			# ASSUMES that the same survey does not have multiple P1s
 			# WHY? Because if we account for this then the ordering of P1s wrt P2s
 			# matters. The consequence is that if a survey is reused, then these
 			# numbers will underestimate the actual since it will not consider future P1s
-			completed_call = calls.filter(complete=True)
-			tilldate = today + oneday
-			if bool(completed_call):
+			if bool(calls_today.filter(complete=True)):
+				n_subjects += 1
 				calls_completed += 1
-				completed_call = completed_call[0]
-				tilldate = completed_call.date				
-				calls_attempted += calls.filter(date__lte=tilldate).count()
-			else:
-				calls_attempted += calls.count()
+				completed_today = calls_today.filter(complete=True)[0]
+				tilldate = completed_today.date				
+				calls_attempted += calls_today.filter(date__lte=tilldate).count()
+			# if the call has not been completed at *any time*, add the call attempts for today
+			elif calls.filter(complete=False):
+				n_subjects += 1
+				calls_attempted += calls_today.count()
 		
 		print("<tr>")
 		print("<td>"+survey.name+"</td>")
