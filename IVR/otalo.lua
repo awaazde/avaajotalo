@@ -296,8 +296,6 @@ function mainmenu ()
    local i = 0;
    local adminmode = is_admin(nil, adminforums);
 
-   -- Don't need to handle single forum case because of the
-   -- auxilary options (there is at least the checkmyreplies option)
    local query = "SELECT forum.id, forum.name_file, line.id ";
    query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
    query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
@@ -308,13 +306,23 @@ function mainmenu ()
       i = i + 1;
       forumids[i] = row[1];
       forumnames[i] = row[2];
-      lineid = row[3];
-      read(aosd .. "listento_pre.wav", 0);
-      read(aosd .. forumnames[i], 0);
-      read(aosd .. "listento_post.wav", 0);
-      read(aosd .. "digits/" .. i .. ".wav", 500);
    end
+   -- ASSUME all forums from same line
+   lineid = row[3];
    local numforums = i;
+   
+   local responder = isresponder(userid, destination);
+   if (numforums == 1 and personal_inbox == 0 and not adminmode and not responder) then
+   		-- go to the one and only forum straight away
+   		playforum(forumids[1]);
+   else
+	   for i,fname in ipairs(forumnames) do
+	      read(aosd .. "listento_pre.wav", 0);
+	      read(aosd .. fname, 0);
+	      read(aosd .. "listento_post.wav", 0);
+	      read(aosd .. "digits/" .. i .. ".wav", 500);
+	   end
+   end
    
    local chkrepliesidx = -1;
    if (personal_inbox == 1) then
@@ -333,7 +341,7 @@ function mainmenu ()
    end
    
    local responderidx = -1;
-   if (isresponder(userid, destination)) then
+   if (responder) then
    	  i = i + 1;
    	  responderidx = i;
    	  read(aosd .. "checkmyassignedquestions.wav", 0);
@@ -640,7 +648,6 @@ function playforum (forumid)
 		 for row in rows (query) do
 		      listen_opts_ids[i] = row[1];
 		      listen_opts_names[i] = row[2];
-		      lineid = row[3];
 		      read(aosd .. "listento_tag_pre.wav", 0);
 		      read(tagsd .. listen_opts_names[i], 0);
 		      read(aosd .. "listento_tag_post.wav", 0);
