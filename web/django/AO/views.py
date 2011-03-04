@@ -332,14 +332,13 @@ def createmessage(request, forum, content, summary=False, parent=False):
     msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
     msg.save()
     msg_forum = Message_forum(message=msg, forum=forum,  status=Message_forum.STATUS_APPROVED, position = pos)
-
+    msg_forum.save()
+    
     if parent:
         add_child(msg, parent.message)
         # if an upload happens, send the reply outbound no
         # matter the status of the message
         alerts.answer_call(forum.line_set.all()[0], msg_forum)
-        
-    msg_forum.save()
 
     return msg_forum
 
