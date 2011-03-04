@@ -337,7 +337,7 @@ def createmessage(request, forum, content, summary=False, parent=False):
         add_child(msg, parent.message)
         # if an upload happens, send the reply outbound no
         # matter the status of the message
-        alerts.answer_call(forum.line_set.all()[0], parent.message.user.id, msg_forum)
+        alerts.answer_call(forum.line_set.all()[0], msg_forum)
         
     msg_forum.save()
 
@@ -368,9 +368,6 @@ def updatestatus(request, action):
             if msgs.count() > 0 and msgs[0].position != None:
                 m.position = msgs[0].position + 1
         else:
-            # this is a reply, send an alert to the original poster
-            orig_msg = Message.objects.get(pk=m.message.thread.id)
-            userid = orig_msg.user.id
             # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
             # from otalo.notification import notification_utils as notut
             # if m.thread and m.thread.message_forum_set.count()>=1:
@@ -378,7 +375,7 @@ def updatestatus(request, action):
             #     notut.process_notification(m, parent)
             #alerts.missed_call(m.forum.line_set.all()[0], [userid])
             if not Prompt.objects.filter(file__contains=m.message.content_file):
-                alerts.answer_call(m.forum.line_set.all()[0], userid, m)
+                alerts.answer_call(m.forum.line_set.all()[0], m)
             
             
     elif action == 'reject' and current_status != Message_forum.STATUS_REJECTED: # newly rejecting
