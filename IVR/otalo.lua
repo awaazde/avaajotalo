@@ -584,7 +584,7 @@ end
 
 function playforum (forumid)
    local forum = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code, confirm_recordings FROM AO_forum WHERE id = " .. forumid);
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code, confirm_recordings, listening_allowed FROM AO_forum WHERE id = " .. forumid);
    cur:fetch(forum);
    cur:close();
    local forumname = forum[1];
@@ -594,6 +594,7 @@ function playforum (forumid)
    local maxlength = forum[5];
    local filter_code = tonumber(forum[6]);
    local confirm_recordings = forum[7];
+   local listeningallowed = forum[8];
    local d = "";
    local adminmode = is_admin(forumid, adminforums);
    local tagid = nil;
@@ -604,9 +605,14 @@ function playforum (forumid)
    repeat
    	  local i = 1;
    	  if (postingallowed == 'y' or adminmode) then
-	   	 read(aosd .. "record.wav", 0);
+   	  	 if (listeningallowed == 1) then
+	   	 	read(aosd .. "record.wav", 0);
+	   	 else
+	   	 	-- short-circuit and go straight to recording
+	   	 	d = "1";
+	   	 end
 	   	 i = i + 1;
-	  elseif (filter_code == FILTER_CODE_ALL_ONLY) then 	 
+	  elseif (listeningallowed == 0 or filter_code == FILTER_CODE_ALL_ONLY) then 	 
 	  	 -- short-circuit prompt to go straight
 	  	 -- to playing messages
 	  	 break;
@@ -655,7 +661,10 @@ function playforum (forumid)
 	     return;
 	  end
 	  if ((postingallowed == 'y' or adminmode) and d == "1") then
-	     read(aosd .. "okrecord.wav", 1000);
+	  	 if (listeningallowed == 1) then
+	  	    -- otherwise this is redundant
+	     	read(aosd .. "okrecord.wav", 1000);
+	     end
 	     if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode, confirm_recordings) == GLOBAL_MENU_MAINMENU) then
 	        return;
 	     end
@@ -665,7 +674,7 @@ function playforum (forumid)
 	     sleep(6000);
 	  end
    until (d ~= "" and tonumber(d) >= first_listen_opt);
-  
+   
    if (postingallowed == 'y' or adminmode) then
    		if (filter_code == FILTER_CODE_ALL_ONLY) then
    			read(aosd .. "okplay.wav", 1000);
