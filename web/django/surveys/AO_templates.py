@@ -227,7 +227,7 @@ def rating_template(line, contenttype, scheme, scales):
         motivation_opt2 = Option(number="1", action=Option.NEXT, prompt=motivation)
         motivation_opt2.save()
 
-        rate = Prompt(file=language+"/"+scheme+SOUND_EXT, order=5, bargein=True, delay=5000, survey=s, name='Rating')
+        rate = Prompt(file=language+"/"+scheme+SOUND_EXT, order=5, bargein=True, delay=7000, survey=s, name='Rating')
         rate.save()
         idx = 1
         for scale in scales:
@@ -243,7 +243,7 @@ def rating_template(line, contenttype, scheme, scales):
         
         
         # thanks
-        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
+        thanks = Prompt(file=language+"/ratethankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
         thanks.save()
         thanks_opt = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt.save()
