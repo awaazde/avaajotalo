@@ -227,12 +227,13 @@ def rating_template(line, contenttype, scheme, scales):
         motivation_opt2 = Option(number="1", action=Option.NEXT, prompt=motivation)
         motivation_opt2.save()
 
-        rate = Prompt(file=language+"/"+scheme+SOUND_EXT, order=5, bargein=True, delay=7000, survey=s, name='Rating')
+        rate = Prompt(file=language+"/likert"+scheme+SOUND_EXT, order=5, bargein=True, delay=7000, survey=s, name='Rating')
         rate.save()
         idx = 1
         for scale in scales:
             scale_opt = Option(number=str(idx), action=Option.INPUT, prompt=rate)
             scale_opt.save()
+            idx += 1
             
         # add a noinput uption
         # exit without thanking
