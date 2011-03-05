@@ -824,7 +824,7 @@ function play_prompts (prompts)
 		    current_prompt = prevprompts[current_prompt_idx];
 	    	end
 	  elseif (action == OPTION_TRANSFER) then
-	  	local number = getparams(optionid)[OPARAM_NUM];
+	  	local number = get_params(optionid)[OPARAM_NUM];
 	  	session:setAutoHangup(false);
         session:transfer(number, "XML", "default");
 	  end
