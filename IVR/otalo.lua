@@ -371,7 +371,7 @@ function mainmenu ()
       use();
    	  local rmsgs = get_responder_messages(userid);
       play_responder_messages(userid, rmsgs, adminforums);
-   elseif (d == GLOBAL_JUMP_MESSAGE) then
+   --elseif (d == GLOBAL_JUMP_MESSAGE) then
           --jumptomessage() ;
    elseif (d ~= nil) then
       freeswitch.consoleLog("info", script_name .. " : No such forum number : " .. d .. "\n");
