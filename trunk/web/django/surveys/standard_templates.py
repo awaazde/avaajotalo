@@ -20,16 +20,6 @@ from otalo.surveys.models import Survey, Subject, Call, Prompt, Option
 from random import shuffle
 import broadcast
 
-# These should be consistent with the constants
-# in survey.lua
-OPTION_NEXT = 1
-OPTION_PREV = 2
-OPTION_REPLAY = 3
-OPTION_GOTO = 4
-OPTION_RECORD = 5
-OPTION_INPUT = 6
-OPTION_TRANSFER = 7
-
 SOUND_EXT = ".wav"
 
 def standard_template(line, contenttype):
@@ -52,25 +42,25 @@ def standard_template(line, contenttype):
         # welcome
         welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=True, survey=s)
         welcome.save()
-        welcome_opt1 = Option(number="", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt1 = Option(number="", action=Option.NEXTT, prompt=welcome)
         welcome_opt1.save()
-        welcome_opt2 = Option(number="1", action=OPTION_NEXT, prompt=welcome)
+        welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
         welcome_opt2.save()
         
         # content
         content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
         content.save()
-        content_opt = Option(number="", action=OPTION_NEXT, prompt=content)
+        content_opt = Option(number="", action=Option.NEXT, prompt=content)
         content_opt.save()
-        content_opt2 = Option(number="1", action=OPTION_NEXT, prompt=content)
+        content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=4, bargein=True, delay=5000, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=4, bargein=True, survey=s)
         thanks.save()
-        thanks_opt1 = Option(number="", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt1.save()
-        thanks_opt2 = Option(number="1", action=OPTION_NEXT, prompt=thanks)
+        thanks_opt2 = Option(number="1", action=Option.NEXT, prompt=thanks)
         thanks_opt2.save()
         
         return s
