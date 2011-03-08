@@ -306,9 +306,8 @@ function mainmenu ()
       i = i + 1;
       forumids[i] = row[1];
       forumnames[i] = row[2];
+      lineid = row[3];
    end
-   -- ASSUME all forums from same line
-   lineid = row[3];
    local numforums = i;
    
    local responder = isresponder(userid, destination);
