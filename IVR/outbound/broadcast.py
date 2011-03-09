@@ -329,7 +329,7 @@ def backup_calls(survey, subjects, start_time, end_time):
     call_time = start_time
     i = 0
     while i < len(subjects):
-        scheduled_cnt = Call.objects.filter(date=call_time).count()
+        scheduled_cnt = Call.objects.filter(survey=survey, date=call_time).count()
         if scheduled_cnt < CALL_BLOCK_SIZE:
             # get a block of numbers to call
             subj_block = subjects[i:i+CALL_BLOCK_SIZE]
