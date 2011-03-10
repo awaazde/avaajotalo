@@ -39,7 +39,7 @@ def standard_template(line, contenttype):
         s.save()
     
         # welcome
-        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
+        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=True, survey=s)
         welcome.save()
         welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
         welcome_opt1.save()
