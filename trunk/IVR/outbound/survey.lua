@@ -41,6 +41,7 @@ sessid = os.time();
 -- The prompts_played queue. Make global to record listens
 -- on hangup event
 prevprompts = {};
+opencursors = {};
 
 -- receive the call object
 callid = argv[1];

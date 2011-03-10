@@ -26,6 +26,10 @@ function hangup()
 		 caller, "\t", destination, "\t",
 		 os.time(), "\t", "End call", "\n");
 
+   for i,curs in ipairs(opencursors) do
+		curs:close();
+   end
+   
    -- cleanup
    con:close();
    env:close();
@@ -41,22 +45,23 @@ end
 -----------
 
 function rows (sql_statement)
-   local cursor = assert (con:execute (sql_statement));
-   local closed = false;
-   freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n")
-   return function ()
-	     if (closed) then 
-		return nil;
-	     end;
-	     local row = {};
-	     result = cursor:fetch(row);
-	     if (result == nil) then
-		cursor:close();
-		closed = true;
-		return nil;
-	     end;
-	     return row;
-	  end
+	local cursor = assert (con:execute (sql_statement));
+	local closed = false;
+	freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n");
+	table.insert(opencursors, cursor);
+	return function ()
+		if (closed) then 
+			return nil;
+		end
+		local row = {};
+		result = cursor:fetch(row);
+		if (result == nil) then
+			cursor:close();
+			closed = true;
+			return nil;
+		end
+		return row;
+	end
 end
 
 -----------
@@ -64,6 +69,7 @@ end
 -----------
 function row(sql_statement)
 	local cursor = assert (con:execute (sql_statement));
+	freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n");
 	local row = {};
 	result = cursor:fetch(row);
 	cursor:close();
@@ -271,7 +277,8 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 	 if (thread == nil) then
 		    cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
 		    -- only set position if we have to
-		    pos = cur:fetch()
+		    pos = cur:fetch();
+		    cur:close();
 		    if (pos ~= nil) then 
 		       position = tonumber(pos) + 1;
 		    end
@@ -909,14 +916,9 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   local thread = result[3] or result[4];
 
 		-- get userid
-		query = "SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid;
-	   	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-		cur = con:execute(query);
-		uid = {};
-		result = cur:fetch(uid);
-		cur:close();
+		uid = row("SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid);
 		local userid = '';
-		if (result ~= nil) then
+		if (uid ~= nil) then
 			userid = tostring(uid[1]);
 		else
 		   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..caller.."','y')";

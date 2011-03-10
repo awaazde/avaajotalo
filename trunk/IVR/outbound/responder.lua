@@ -39,16 +39,14 @@ userid = argv[1];
 -- on hangup event
 prevmsgs = {};
 adminforums = {};
+opencursors = {};
 
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- Get phone number to call out
-query = "SELECT number FROM AO_user where id = ".. userid;
-cur = con:execute(query);
-row = {};
-result = cur:fetch(row);
-cur:close();
-caller = tostring(row[1]);
+local num = row("SELECT number FROM AO_user where id = ".. userid);
+
+caller = tostring(num[1]);
 
 -- FUNCTIONS
 -----------
@@ -160,11 +158,7 @@ if (msg ~= nil) then
 	query = query .. " AND  line_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.message_id = " .. msg[1];
-	freeswitch.consoleLog("info", script_name .. " :  query = " .. query .. "\n");
-	cur = con:execute(query);
-	row = {};
-	result = cur:fetch(row);
-	cur:close();
+	row = row(query);
 	
 	-- since we joined on message_forum, we are assured
 	-- that there was only one line returned by the above.

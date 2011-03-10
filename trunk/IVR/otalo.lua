@@ -31,15 +31,11 @@ arg = {};
 sessid = os.time();
 userid = nil;
 adminforums = {};
+opencursors = {};
 
 -- set the language, check if line is restricted
 destination = session:getVariable("destination_number");
-query = "SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox FROM AO_line WHERE number LIKE '%" .. destination .. "%'";
-cur = con:execute(query);
-line_info = {};
-result = cur:fetch(line_info);
-cur:close();
-
+line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota FROM AO_line WHERE number LIKE '%" .. destination .. "%'");
 aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		
 
 -- responder section-specific sounds
@@ -53,17 +49,15 @@ local DIALSTRING_PREFIX = line_info[3];
 local DIALSTRING_SUFFIX = line_info[4];
 local callback_allowed = line_info[5];
 local personal_inbox = line_info[6];
+local quota_imposed = line_info[7];
 
 caller = session:getVariable("caller_id_number");
 caller = caller:sub(-10);
 freeswitch.consoleLog("info", script_name .. " : caller id = " .. caller .. "\n");
-query = "SELECT id, allowed FROM AO_user WHERE number = " .. caller;
-cur = con:execute(query);
-uid = {};
-result = cur:fetch(uid);
-cur:close();
+uid = row("SELECT id, allowed, balance FROM AO_user WHERE number = " .. caller);
+local balance = nil;
 
-if (result ~= nil) then
+if (uid ~= nil) then
 	local allowed = uid[2];
 	if (allowed == 'n') then
 		-- number not allowed; exit
@@ -71,6 +65,7 @@ if (result ~= nil) then
 	end
 	
 	userid = tostring(uid[1]);
+	balance = tonumber(uid[3]);
 else
 	if (open == 1) then
 	   -- first time caller
@@ -416,6 +411,7 @@ function playmessage (msg, listenreplies)
      	local cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
 	    -- only set position if we have to
 	    local pos = cur:fetch()
+	    cur:close();
 	    if (pos ~= nil) then 
 	       position = tonumber(pos) + 1;
 	    end
@@ -784,7 +780,7 @@ while (adminforum ~= nil) do
 	adminforum = adminrows();
 end
 
-if (callback_allowed == 1) then
+if (callback_allowed == 1 and (quota_imposed == 0 or balance ~= 0)) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	api = freeswitch.API();
@@ -795,6 +791,15 @@ if (callback_allowed == 1) then
 	 	mc_cnt = check_abort(mc_cnt, 11)
   	end
 		freeswitch.consoleLog("info", script_name .. " : woke up \n");
+	
+	-- decrease the caller's balance if necessary
+	if (quota_imposed and balance > 0) then
+		local query = " UPDATE AO_users ";
+	   	query = query .. " SET quota = quota - 1 ";
+	   	query = query .. " WHERE id = " .. userid;
+	   	con:execute(query);
+	   	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+	end
 	
 	-- Missed call; 
 	-- call the user back

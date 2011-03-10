@@ -33,6 +33,8 @@ class Line(models.Model):
     # does this line allow missed calls to be called back?
     # use in combination with user.quota (TODO)
     callback = models.BooleanField(default=False)
+    # does this line use quotas for free access?
+    quota = models.BooleanField(default=False)
     # for dialing out
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
@@ -56,7 +58,9 @@ class User(models.Model):
     district_file = models.CharField(max_length=24, blank=True, null=True)
     taluka_file = models.CharField(max_length=24, blank=True, null=True)
     village_file = models.CharField(max_length=24, blank=True, null=True)
+    balance = models.IntegerField(blank=True, null=True)
     tags = models.ManyToManyField('Tag', blank=True, null=True)
+
 
     def __unicode__(self):
         if self.name and self.name != '':
