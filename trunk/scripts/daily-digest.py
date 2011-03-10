@@ -24,7 +24,7 @@ def main():
 	print("<html>")
 	print("<div> Below are basic usage statistics for " + str(line.name) + " over the last four days, starting with today. </div>")
 	# calls
-	print("<div><h4>Number of Calls</h4></div>")
+	print("<div><h4>Number of Incoming Calls</h4></div>")
 	print("<table>")
 	
 	for i in range (0,4):
@@ -91,7 +91,7 @@ def main():
 	print("</div>")
 	
 	# questions
-	print("<div><h4>Number of Questions</h4></div>")
+	print("<div><h4>Number of Original Messages</h4></div>")
 	print("<table>")
 	
 	for i in range (0,4):
@@ -106,7 +106,7 @@ def main():
 	print("</table>")
 	
 	# answers
-	print("<div><h4>Number of Answers</h4></div>")
+	print("<div><h4>Number of Responses</h4></div>")
 	print("<table>")
 	
 	for i in range (0,4):
@@ -155,17 +155,17 @@ def main():
 	n_completed = answercalls.filter(complete=True).count()
 	
 	print("<br/><div>")
-	print("<b>Answer calls sent:</b> ")
+	print("<b>Response calls attempted:</b> ")
 	print(n_recipients)
 	print("<br/>")
-	print("<b>Answer calls completed:</b> ")
+	print("<b>Response calls matured:</b> ")
 	print(n_completed)
 	print("</div>")
 	
-	print("<div><h4>Today's Announcements</h4></div>")
+	print("<div><h4>Today's Broadcasts</h4></div>")
 	print("<table>")
 	print("<tr>")
-	print("<td width='500px'><u>Announcement</u></td><td width='150px'><u>Recipients</u></td><td width='100px'><u>Completed</u></td>")
+	print("<td width='500px'><u>Broadcasts</u></td><td width='150px'><u>Recipients</u></td><td width='100px'><u>Matured</u></td>")
 	print("</tr>")
 	
 	# Announcements
@@ -198,7 +198,7 @@ def main():
 		
 		print("<tr>")
 		print("<td>"+survey.name+"</td>")
-		print("<td>"+str(n_subjects)+" (" + str(calls_attempted) +" calls)</td>")
+		print("<td>"+str(n_subjects)+" (" + str(calls_attempted) +" attempts)</td>")
 		print("<td>"+str(calls_completed)+"</td>")
 		print("</tr>")
           	
