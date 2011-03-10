@@ -48,6 +48,7 @@ sessid = os.time();
 -- The prompts_played queue. Make global to record listens
 -- on hangup event
 prevprompts = {};
+opencursors = {};
 
 -- survey phonenumber
 destination = session:getVariable("destination_number");
