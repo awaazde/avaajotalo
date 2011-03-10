@@ -608,6 +608,7 @@ function playforum (forumid)
    local first_listen_opt = nil;
    local listen_opts_ids = {}
    local listen_opts_names = {}
+   local pf_cnt = 0;
    
    repeat
    	  local i = 1;
@@ -676,6 +677,8 @@ function playforum (forumid)
 	  elseif (d == "") then
 	     sleep(6000);
 	  end
+	  
+	  pf_cnt = check_abort(pf_cnt, 4)
    until (d ~= "" and tonumber(d) >= first_listen_opt);
    
    if (postingallowed == 'y' or adminmode) then
@@ -751,19 +754,19 @@ function jumptomessage()
    if (d == GLOBAL_MENU_MAINMENU) then
       return;
    else
-   id_forum = tonumber(d);
-   get_msgid("", 2000)  -- Expecting 5 Digit Msg ID
-   d = use();
-   if (d ~= "") then
-      id_msg = tonumber(d);
-      id_msg = id_msg % 100000;
-      local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
-      query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
-      query = query .. " WHERE forum.id = " .. tostring(id_forum) .. " AND message_forum.forum_id = " .. tostring(id_forum) ;
-      query = query .. " AND message.id = " .. tostring(id_msg) .. " AND message_forum.message_id = "	.. tostring(id_msg);
-      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-      playmessage(row(query),'y');
-   end
+	   id_forum = tonumber(d);
+	   get_msgid("", 2000)  -- Expecting 5 Digit Msg ID
+	   d = use();
+	   if (d ~= "") then
+	      id_msg = tonumber(d);
+	      id_msg = id_msg % 100000;
+	      local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
+	      query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+	      query = query .. " WHERE forum.id = " .. tostring(id_forum) .. " AND message_forum.forum_id = " .. tostring(id_forum) ;
+	      query = query .. " AND message.id = " .. tostring(id_msg) .. " AND message_forum.message_id = "	.. tostring(id_msg);
+	      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+	      playmessage(row(query),'y');
+	   end
    end
       
 end 
@@ -835,7 +838,7 @@ while (1) do
    read(aosd .. "mainmenu.wav", 1000);
    
    -- prevent the non-deterministic spinning forever
-   mm_cnt = check_abort(mm_cnt, 10)
+   mm_cnt = check_abort(mm_cnt, 4)
 end
 
 -- say goodbye 
