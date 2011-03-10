@@ -838,7 +838,7 @@ while (1) do
    read(aosd .. "mainmenu.wav", 1000);
    
    -- prevent the non-deterministic spinning forever
-   mm_cnt = check_abort(mm_cnt, 4)
+   mm_cnt = check_abort(mm_cnt, 5)
 end
 
 -- say goodbye 
