@@ -141,11 +141,6 @@ def updatemessage(request):
     if not params.__contains__('position'):
         m.position = None
         m.save()
-
-    # Check to see if there was a response uploaded
-    if request.FILES:
-        f = request.FILES['response']
-        resp = createmessage(request, m.forum, f, parent=m)
         
     # Save tags
     tags_changed = int(params['tags_changed'])
@@ -292,12 +287,20 @@ def uploadmessage(request):
         if 'summary' in request.FILES:
             summary = request.FILES['summary']
 
-        f = get_object_or_404(Forum, pk=request.POST['forumid'])
-        m = createmessage(request, f, main, summary)
+        author = get_object_or_404(User, number=request.POST['number'].strip())
+        
+        parent = False
+        if request.POST.__contains__('messageforumid'):
+            parent = get_object_or_404(Message_forum, pk=request.POST['messageforumid'])
+            f = parent.forum
+        else:
+            f = get_object_or_404(Forum, pk=request.POST['forumid'])
+        
+        m = createmessage(request, f, main, author, summary, parent)
 
         return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
 
-def createmessage(request, forum, content, summary=False, parent=False):
+def createmessage(request, forum, content, author, summary=False, parent=False):
     t = datetime.now()
     summary_filename = ''
 
@@ -320,8 +323,6 @@ def createmessage(request, forum, content, summary=False, parent=False):
         os.chmod(summary_filename_abs, 0644)
         destination.close()
 
-    # create a new message for this content
-    admin = get_console_user(request)
     pos = None
     if not parent:
         # only set position if there are some already set
@@ -329,7 +330,7 @@ def createmessage(request, forum, content, summary=False, parent=False):
         if msgs.count() > 0 and msgs[0].position != None:
             pos = msgs[0].position + 1
     
-    msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=admin)
+    msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=author)
     msg.save()
     msg_forum = Message_forum(message=msg, forum=forum,  status=Message_forum.STATUS_APPROVED, position = pos)
     msg_forum.save()
@@ -428,14 +429,14 @@ def messageresponder(request, message_forum_id):
     responders = Message_responder.objects.filter(message_forum=message_forum_id)
     return send_response(responders, ('user'))
 
-def username(request):
+def moderator(request):
     auth_user = request.user
     if not auth_user.is_superuser:
-        user = get_list_or_404(User, admin__auth_user=auth_user)
+        moderator = get_list_or_404(User, admin__auth_user=auth_user)
     else:
-        user = []
+        moderator = []
     
-    return send_response(user)
+    return send_response(moderator)
 
 def line(request):
     auth_user = request.user
@@ -593,10 +594,14 @@ def surveydetails(request, survey_id):
     lastcalldate = lastcalldate.values()[0]
     
     numpairs = calls.values('subject__number').distinct()
+    numpairscomplete = calls.filter(complete=True).values('subject__number').distinct()
     numbers = [pair.values()[0] for pair in numpairs]
-    numbers = ', '.join(numbers)
+    completed_numbers = [pair.values()[0] for pair in numpairscomplete]
+    pending_numbers = list(set(numbers) - set(completed_numbers))
+    completed = ', '.join(completed_numbers)
+    pending = ', '.join(pending_numbers)
     
-    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","enddate":"'+str(lastcalldate)+'","numbers":"'+numbers+'"}]')
+    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","enddate":"'+str(lastcalldate)+'","completed":"'+completed+'","pending":"'+pending+'"}]')
     response['Pragma'] = "no cache"
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response

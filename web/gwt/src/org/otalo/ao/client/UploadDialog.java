@@ -17,6 +17,8 @@ package org.otalo.ao.client;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
+import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -27,14 +29,18 @@ import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 
 
 public class UploadDialog extends DialogBox {
 	private FormPanel uploadForm = new FormPanel();
 	private Hidden forumId = new Hidden("forumid");
+	private Hidden messageForumId = new Hidden("messageforumid");
+	private TextBox number;
 	
 	public UploadDialog() {
 		setText("Upload Content");
@@ -54,6 +60,14 @@ public class UploadDialog extends DialogBox {
 		summary.setTitle("Summary");
 		Label summaryLabel = new Label("Summary (optional):");
 		
+		number = new TextBox();
+		number.setName("number");
+		User moderator = Messages.get().getModerator();
+		if (moderator != null)
+			// default is the moderator's number
+			number.setValue(moderator.getNumber());
+		Label numberLabel = new Label("Author Number:");
+		
 		Button saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	uploadForm.submit();
@@ -72,6 +86,10 @@ public class UploadDialog extends DialogBox {
 		outer.setWidget(1, 0, summaryLabel);
 		outer.getCellFormatter().setWordWrap(1, 0, false);
 		outer.setWidget(1, 1, summary);
+		outer.setWidget(2, 0, numberLabel);
+		outer.getCellFormatter().setWordWrap(2, 0, true);
+		outer.setWidget(2, 1, number);
+
 		
 		HorizontalPanel buttons = new HorizontalPanel();
 		// tables don't obey the setHorizontal of parents, and buttons is a table,
@@ -79,9 +97,10 @@ public class UploadDialog extends DialogBox {
 		DOM.setStyleAttribute(buttons.getElement(), "cssFloat", "right");
 		buttons.add(saveButton);
 		buttons.add(cancelButton);
-		outer.setWidget(2, 1, buttons);
+		outer.setWidget(3, 1, buttons);
 		
 		outer.setWidget(outer.getRowCount(), 0, forumId);
+		outer.setWidget(outer.getRowCount(), 0, messageForumId);
 		
 		uploadForm.setWidget(outer);
 		
@@ -93,9 +112,18 @@ public class UploadDialog extends DialogBox {
 		forumId.setValue(f.getId());
 	}
 	
+	public void setMessageForum(MessageForum mf)
+	{
+		messageForumId.setValue(mf.getId());
+	}
+	
 	public void reset()
 	{
-		uploadForm.reset();		
+		uploadForm.reset();
+		User moderator = Messages.get().getModerator();
+		if (moderator != null)
+			// default is the moderator's number
+			number.setValue(moderator.getNumber());
 	}
 	
 	public void setCompleteHandler(SubmitCompleteHandler handler)

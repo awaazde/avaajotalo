@@ -72,6 +72,7 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 	  p = new VerticalPanel();
   
 	  initWidget(p);
+	  load();
   }
   
   public void load()

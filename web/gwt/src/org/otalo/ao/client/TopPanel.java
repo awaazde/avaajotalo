@@ -39,17 +39,24 @@ public class TopPanel extends Composite implements ClickHandler {
   private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
   private HTML aboutLink = new HTML("<a href='javascript:;'>About</a>");
   private HorizontalPanel outer, inner;
-  private Line line = null;
 
-  public TopPanel() {
+  public TopPanel(Line line, User moderator) {
     outer = new HorizontalPanel();
     inner = new HorizontalPanel();
 
+    if (line != null)
+    {
+	    Image logo = new Image(line.getLogoFile());
+	    outer.add(logo);
+			outer.setCellHorizontalAlignment(logo, HorizontalPanel.ALIGN_LEFT);
+    }
     outer.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
     inner.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
     inner.setSpacing(4);
 
     outer.add(inner);
+    if (moderator != null)
+    	inner.add(new HTML("<b>Welcome back, " + moderator.getName() + "</b>&nbsp;|&nbsp;"));
     inner.add(signOutLink);
     inner.add(aboutLink);
     
@@ -59,63 +66,8 @@ public class TopPanel extends Composite implements ClickHandler {
     initWidget(outer);
     setStyleName("mail-TopPanel");
     inner.setStyleName("mail-TopPanelLinks");
-    getUsername();
-    getLogo();
-  }
-  
-  private void getUsername()
-  {
-	  JSONRequest request = new JSONRequest();
-	  request.doFetchURL(AoAPI.USERNAME, new UsernameRequestor());
-  }
-  
-  private void getLogo()
-  {
-	  JSONRequest request = new JSONRequest();
-	  request.doFetchURL(AoAPI.LINE, new LineRequestor());
-	  
-  }
-  
-  public Line getLine()
-  {
-  	return line;
-  }
-  
-  private class UsernameRequestor implements JSONRequester {
-		 
-		public void dataReceived(List<JSOModel> models) 
-		{
-			// for e.g. superuser will not have an associated AO_admin record
-			if (models.size() > 0)
-			{
-				User u = new User(models.get(0));
-				inner.insert(new HTML("<b>Welcome back, " + u.getName() + "</b>&nbsp;|&nbsp;"), 0);
-			}
 
-		}
-	 }
-  
-  private class LineRequestor implements JSONRequester {
-		 
-		public void dataReceived(List<JSOModel> models) 
-		{
-			// for e.g. superuser will not have an associated AO_admin record
-			if (models.size() > 0)
-			{
-				line = new Line(models.get(0));
-				if (!"null".equals(line.getLogoFile()) && !"".equals(line.getLogoFile()))
-				{
-					Image logo = new Image(line.getLogoFile());
-					outer.insert(logo, 0);
-					outer.setCellHorizontalAlignment(logo, HorizontalPanel.ALIGN_LEFT);
-				    
-				}
-			}
-			// do all the stuff that depends on line being loaded
-			Messages.get().loadBroadcasts();
-
-		}
-	 }
+  }
 
   public void onClick(ClickEvent event) {
     Object sender = event.getSource();
