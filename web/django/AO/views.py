@@ -659,7 +659,7 @@ def add_child(child, parent):
     # update all nodes to the right of the child
     # use child.lft to include the immediate parent (the algorithm typically asks you to get all nodes
     # to the rgt of the current parent's rgt, which is child.lft)
-    msgs = Message.objects.filter(Q(thread=child.thread, rgt__gte=child.lft) | Q(pk=thread.id)).exclude(pk=child.id)
+    msgs = Message.objects.filter(Q(thread=child.thread, rgt__gte=child.lft) | Q(pk=child.thread.id)).exclude(pk=child.id)
 
     for m in msgs:
         m.rgt += 2
