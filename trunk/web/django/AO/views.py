@@ -22,7 +22,7 @@ from otalo.AO.models import Line, Forum, Message, Message_forum, User, Tag, Mess
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from django.core import serializers
 from django.conf import settings
-from django.db.models import Min, Max, Count
+from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts
@@ -654,11 +654,12 @@ def add_child(child, parent):
 
     child.lft = parent.rgt
     child.rgt = child.lft + 1
-    parent.rgt += 2
-    parent.save()
+    child.save()
 
     # update all nodes to the right of the child
-    msgs = Message.objects.filter(thread=child.thread, rgt__gte=child.lft).exclude(pk=child.id)
+    # use child.lft to include the immediate parent (the algorithm typically asks you to get all nodes
+    # to the rgt of the current parent's rgt, which is child.lft)
+    msgs = Message.objects.filter(Q(thread=child.thread, rgt__gte=child.lft) | Q(pk=thread.id)).exclude(pk=child.id)
 
     for m in msgs:
         m.rgt += 2
@@ -666,7 +667,6 @@ def add_child(child, parent):
             m.lft += 2
         m.save()
         
-    child.save()
 
 def download(request, model, model_id):
     if model == 'mf':
