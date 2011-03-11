@@ -16,12 +16,17 @@
  */
 package org.otalo.ao.client;
 
+import java.util.List;
+
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.Forum;
+import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Prompt;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -32,6 +37,9 @@ import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -67,11 +75,13 @@ public class Messages implements EntryPoint, ResizeHandler {
   private TopPanel topPanel;
   private VerticalPanel rightPanel = new VerticalPanel();
   private MessageList messageList;
-  private MessageDetail messageDetail = new MessageDetail();
-  private Fora fora = new Fora(images);
+  private MessageDetail messageDetail;
+  private Fora fora;
   private Broadcasts bcasts;
   private Shortcuts shortcuts;
   private BroadcastInterface broadcastIface;
+  private User moderator;
+  private Line line;
 
   /**
    * Displays the specified item. 
@@ -194,7 +204,12 @@ public class Messages implements EntryPoint, ResizeHandler {
   
   public Line getLine()
   {
-  	return topPanel.getLine();
+  	return line;
+  }
+  
+  public User getModerator()
+  {
+  	return moderator;
   }
   /**
    * This method constructs the application user interface by instantiating
@@ -202,12 +217,18 @@ public class Messages implements EntryPoint, ResizeHandler {
    */
   public void onModuleLoad() {
     singleton = this;
-    
-    topPanel = new TopPanel();
-    topPanel.setWidth("100%");
+    // before kicking off, get line and moderator info
+    JSONRequest request = new JSONRequest();
+	  request.doFetchURL(AoAPI.MODERATOR, new ModeratorRequestor());
+  }
+  
+  public void loadRest() {
 
-    // MailList uses Mail.get() in its constructor, so initialize it after
-    // 'singleton'.
+    topPanel = new TopPanel(line, moderator);
+    topPanel.setWidth("100%");
+    
+    fora = new Fora(images);
+    messageDetail = new MessageDetail();
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
@@ -280,4 +301,34 @@ public class Messages implements EntryPoint, ResizeHandler {
     shortcuts.setHeight(shortcutHeight + "px");
 
   }
+  
+  private class ModeratorRequestor implements JSONRequester {
+		 
+		public void dataReceived(List<JSOModel> models) 
+		{
+			// for e.g. superuser will not have an associated AO_admin record
+			if (models.size() > 0)
+			{
+				moderator = new User(models.get(0));
+			}
+			
+			JSONRequest request = new JSONRequest();
+		  request.doFetchURL(AoAPI.LINE, new LineRequestor());
+		}
+	 }
+  
+  private class LineRequestor implements JSONRequester {
+		 
+		public void dataReceived(List<JSOModel> models) 
+		{
+			// for e.g. superuser will not have an associated AO_admin record
+			if (models.size() > 0)
+			{
+				line = new Line(models.get(0));
+			}
+			// do all the stuff that depends on line being loaded
+			loadRest();
+
+		}
+	 }
 }

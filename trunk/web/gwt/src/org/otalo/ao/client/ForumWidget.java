@@ -194,7 +194,6 @@ public class ForumWidget implements ClickHandler {
 		public void onSubmitComplete(SubmitCompleteEvent event) {
 				uploadDlg.hide();
 				ConfirmDialog saved = new ConfirmDialog("Uploaded!");
-				saved.setText("Result");
 				saved.center();
 				
 				// get the message that was updated

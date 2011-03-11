@@ -54,7 +54,7 @@ public final class JSONRequest {
 		public static final String MESSAGE_TAGS = "messagetag/";
 		public static final String RESPONDERS = "responders/";
 		public static final String MESSAGE_RESPONDERS = "messageresponder/";
-		public static final String USERNAME = "username/";
+		public static final String MODERATOR = "moderator/";
 		public static final String LINE = "line/";
 		public static final String DOWNLOAD = "download/mf/";
 		public static final String DOWNLOAD_SURVEY_INPUT = "download/si/";

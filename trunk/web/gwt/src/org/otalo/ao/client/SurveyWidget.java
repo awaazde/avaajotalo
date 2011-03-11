@@ -278,21 +278,31 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	    // Create the 'about' text and set a style name so we can style it with CSS.
 	    String startdate = details.get("startdate");
 	    String enddate = details.get("enddate");
-			String numbers = details.get("numbers");
+			String completed = details.get("completed");
+			String pending = details.get("pending");
 			
 			String surveyDetails = "<b>Start: </b> " + startdate + "<br><br>";
 			surveyDetails += "<b>End: </b> " + enddate + "<br><br>";
-			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(numbers.split(", ").length) + "<br><br>";
+			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(completed.split(", ").length+pending.split(", ").length);
 			
-			surveyDetails += "<b>Numbers:</b>";
-	    HTML sdHTML = new HTML(surveyDetails);
-			sdHTML.setStyleName("mail-AboutText");
-	    outer.add(sdHTML);
+			surveyDetails += "<br><br><b>Pending:</b>";    
+	    HTML pendingHTML = new HTML(surveyDetails);
+			pendingHTML.setStyleName("mail-AboutText");
+	    outer.add(pendingHTML);
 	    
-	    Label numsLbl = new Label(numbers, true);
-	    numsLbl.setWordWrap(true);
-	    numsLbl.setStyleName("dialog-NumsText");
-	    outer.add(numsLbl);
+	    Label pendingLbl = new Label(pending, true);
+	    pendingLbl.setWordWrap(true);
+	    pendingLbl.setStyleName("dialog-NumsText");
+	    outer.add(pendingLbl);
+	    
+	    HTML compHTML = new HTML("<br><b>Completed:</b>");
+			compHTML.setStyleName("mail-AboutText");
+	    outer.add(compHTML);
+	    
+	    Label completedLbl = new Label(completed, true);
+	    completedLbl.setWordWrap(true);
+	    completedLbl.setStyleName("dialog-NumsText");
+	    outer.add(completedLbl);
 
 	    // Create the 'OK' button, along with a handler that hides the dialog
 	    // when the button is clicked.

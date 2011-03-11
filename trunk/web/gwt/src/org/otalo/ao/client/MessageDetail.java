@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.otalo.ao.client.ForumWidget.UploadComplete;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
@@ -60,7 +61,7 @@ public class MessageDetail extends Composite {
 	private Hidden userId, messageForumId, moveDirection;
 	private Button saveButton, moveUpButton, moveDownButton, clickedButton;
 	private VerticalPanel moveButtons, thread, controls, metadata;
-	private HorizontalPanel outer, responsePanel;
+	private HorizontalPanel outer;
 	private DockPanel threadPanel;
 	private FlexTable detailsTable;
 	private CheckBox sticky;
@@ -69,6 +70,7 @@ public class MessageDetail extends Composite {
 	private RoutingWidget routing;
 	private Anchor downloadLink, broadcastLink;
 	private HandlerRegistration forwardHandler = null;
+	private UploadDialog uploadDlg;
 
   public MessageDetail() {
   	outer = new HorizontalPanel();
@@ -124,14 +126,16 @@ public class MessageDetail extends Composite {
   	threadPanel.add(threadTitle, DockPanel.NORTH);
   	
   	threadPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-  	FileUpload response = new FileUpload();
-  	response.setName("response");
-  	Label responseLabel = new Label("Response:");
-  	responsePanel = new HorizontalPanel();
-  	responsePanel.setSpacing(10);
-  	responsePanel.add(responseLabel);
-  	responsePanel.add(response);
-  	threadPanel.add(responsePanel, DockPanel.SOUTH);
+  	uploadDlg = new UploadDialog();
+    uploadDlg.setCompleteHandler(new UploadComplete());
+  	Button uploadResponse = new Button("Upload Response", new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				uploadDlg.reset();
+	    	uploadDlg.center();			
+			}
+		});
+  	threadPanel.add(uploadResponse, DockPanel.SOUTH);
   	thread = new VerticalPanel();
   	thread.setSize("100%", "100%");
   	thread.setSpacing(3);
@@ -235,6 +239,7 @@ public class MessageDetail extends Composite {
   	reset();
   	
   	messageForumId.setValue(messageForum.getId());
+  	uploadDlg.setMessageForum(messageForum);
   	Forum f = messageForum.getForum();
   	setModerated(f.moderated());
   	setRouteable(f.routeable());
@@ -438,6 +443,21 @@ public class MessageDetail extends Composite {
 			
 			submitComplete();
 			
+		}
+	}
+	
+	public class UploadComplete implements SubmitCompleteHandler {
+
+		public void onSubmitComplete(SubmitCompleteEvent event) {
+				// get the message that was updated
+				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
+				MessageForum mf = new MessageForum(model);
+			
+				uploadDlg.hide();
+				ConfirmDialog saved = new ConfirmDialog("Uploaded!");
+				saved.center();
+				
+				Messages.get().displayMessages(mf);
 		}
 	}
 
