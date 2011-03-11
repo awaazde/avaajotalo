@@ -780,7 +780,7 @@ while (adminforum ~= nil) do
 	adminforum = adminrows();
 end
 
-if (callback_allowed == 1 and (quota_imposed == 0 or balance ~= 0)) then
+if (callback_allowed == 1 and (quota_imposed == 0 or (balance ~= nil and balance ~= 0))) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	api = freeswitch.API();
@@ -793,9 +793,9 @@ if (callback_allowed == 1 and (quota_imposed == 0 or balance ~= 0)) then
 		freeswitch.consoleLog("info", script_name .. " : woke up \n");
 	
 	-- decrease the caller's balance if necessary
-	if (quota_imposed and balance > 0) then
-		local query = " UPDATE AO_users ";
-	   	query = query .. " SET quota = quota - 1 ";
+	if (quota_imposed == 1 and balance > 0) then
+		local query = " UPDATE AO_user ";
+	   	query = query .. " SET balance = balance - 1 ";
 	   	query = query .. " WHERE id = " .. userid;
 	   	con:execute(query);
 	   	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
