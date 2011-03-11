@@ -17,18 +17,23 @@ package org.otalo.ao.client;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
+import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerManager;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -41,6 +46,10 @@ public class UploadDialog extends DialogBox {
 	private Hidden forumId = new Hidden("forumid");
 	private Hidden messageForumId = new Hidden("messageforumid");
 	private TextBox number;
+	private HorizontalPanel numberPanel = new HorizontalPanel();
+	private HorizontalPanel contentPanel = new HorizontalPanel();
+	public static final int INVALID_NUMBER = 1;
+	public static final int NO_CONTENT = 2;
 	
 	public UploadDialog() {
 		setText("Upload Content");
@@ -82,13 +91,19 @@ public class UploadDialog extends DialogBox {
 		
 		outer.setWidget(0, 0, mainLabel);
 		outer.getCellFormatter().setWordWrap(0, 0, false);
-		outer.setWidget(0, 1, main);
+		contentPanel.setSpacing(2);
+		DOM.setStyleAttribute(contentPanel.getElement(), "textAlign", "left");
+		contentPanel.add(main);
+		outer.setWidget(0, 1, contentPanel);
 		outer.setWidget(1, 0, summaryLabel);
 		outer.getCellFormatter().setWordWrap(1, 0, false);
 		outer.setWidget(1, 1, summary);
 		outer.setWidget(2, 0, numberLabel);
-		outer.getCellFormatter().setWordWrap(2, 0, true);
-		outer.setWidget(2, 1, number);
+		outer.getCellFormatter().setWordWrap(2, 0, false);
+		numberPanel.setSpacing(2);	
+		DOM.setStyleAttribute(numberPanel.getElement(), "textAlign", "left");
+		numberPanel.add(number);
+		outer.setWidget(2, 1, numberPanel);
 
 		
 		HorizontalPanel buttons = new HorizontalPanel();
@@ -117,10 +132,27 @@ public class UploadDialog extends DialogBox {
 		messageForumId.setValue(mf.getId());
 	}
 	
+	public void validationError(int type, String msg)
+	{
+		HTML msgHTML = new HTML("<span style='color:red'>("+msg+")</span>");
+		if (type == INVALID_NUMBER && numberPanel.getWidgetCount() == 1)
+		{
+			numberPanel.insert(msgHTML, 0);
+		}
+		else if (type == NO_CONTENT && contentPanel.getWidgetCount() == 1)
+		{
+			contentPanel.insert(msgHTML, 0);
+		}
+	}
+	
 	public void reset()
 	{
 		uploadForm.reset();
 		User moderator = Messages.get().getModerator();
+		if (numberPanel.getWidgetCount() == 2)
+			numberPanel.remove(0);
+		if (contentPanel.getWidgetCount() == 2)
+			contentPanel.remove(0);
 		if (moderator != null)
 			// default is the moderator's number
 			number.setValue(moderator.getNumber());
@@ -130,4 +162,5 @@ public class UploadDialog extends DialogBox {
 	{
 		uploadForm.addSubmitCompleteHandler(handler);
 	}
+
 }

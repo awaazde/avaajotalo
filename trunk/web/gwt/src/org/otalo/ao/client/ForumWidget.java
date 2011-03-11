@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.otalo.ao.client.Fora.Images;
 import org.otalo.ao.client.model.Forum;
+import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -192,12 +194,24 @@ public class ForumWidget implements ClickHandler {
 	public class UploadComplete implements SubmitCompleteHandler {
 
 		public void onSubmitComplete(SubmitCompleteEvent event) {
+			JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
+			if (model.get("model").equals("VALIDATION_ERROR"))
+			{
+				String msg = model.get("message");
+				int type = Integer.valueOf(model.get("type"));
+				uploadDlg.validationError(type, msg);
+			}
+			else
+			{
+				// get the message that was updated
 				uploadDlg.hide();
 				ConfirmDialog saved = new ConfirmDialog("Uploaded!");
 				saved.center();
 				
 				// get the message that was updated
 				Messages.get().displayMessages(forum, MessageStatus.APPROVED, 0);
+			}
+
 		}
 	}
 	

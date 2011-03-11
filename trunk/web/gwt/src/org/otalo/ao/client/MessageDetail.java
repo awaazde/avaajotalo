@@ -449,8 +449,16 @@ public class MessageDetail extends Composite {
 	public class UploadComplete implements SubmitCompleteHandler {
 
 		public void onSubmitComplete(SubmitCompleteEvent event) {
+			JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
+			if (model.get("model").equals("VALIDATION_ERROR"))
+			{
+				String msg = model.get("message");
+				int type = Integer.valueOf(model.get("type"));
+				uploadDlg.validationError(type, msg);
+			}
+			else
+			{
 				// get the message that was updated
-				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
 				MessageForum mf = new MessageForum(model);
 			
 				uploadDlg.hide();
@@ -458,6 +466,7 @@ public class MessageDetail extends Composite {
 				saved.center();
 				
 				Messages.get().displayMessages(mf);
+			}
 		}
 	}
 

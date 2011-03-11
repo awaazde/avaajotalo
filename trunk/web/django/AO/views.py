@@ -41,6 +41,10 @@ LISTEN_THRESH = 5
 # This variable should be consistent with MessageList.java
 VISIBLE_MESSAGE_COUNT = 10
 
+# Validation error codes
+INVALID_NUMBER = "1"
+NO_CONTENT = "2"
+
 @login_required
 def index(request):
     #return render_to_response('AO/index.html', {'fora':fora})
@@ -281,13 +285,20 @@ def movemessage(request):
     return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
         
 def uploadmessage(request):
-    if request.FILES:
+    if 'main' in request.FILES:
         main = request.FILES['main']
         summary = False
         if 'summary' in request.FILES:
             summary = request.FILES['summary']
 
-        author = get_object_or_404(User, number=request.POST['number'].strip())
+        author = User.objects.filter(number=request.POST['number'].strip())
+        if author:
+            author = author[0]
+        else:
+            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
+            response['Pragma'] = "no cache"
+            response['Cache-Control'] = "no-cache, must-revalidate"
+            return response
         
         parent = False
         if request.POST['messageforumid']:
@@ -299,6 +310,11 @@ def uploadmessage(request):
         m = createmessage(request, f, main, author, summary, parent)
 
         return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
+    else:
+        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
+        response['Pragma'] = "no cache"
+        response['Cache-Control'] = "no-cache, must-revalidate"
+        return response
 
 def createmessage(request, forum, content, author, summary=False, parent=False):
     t = datetime.now()
