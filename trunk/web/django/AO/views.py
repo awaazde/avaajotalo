@@ -290,7 +290,7 @@ def uploadmessage(request):
         author = get_object_or_404(User, number=request.POST['number'].strip())
         
         parent = False
-        if request.POST.__contains__('messageforumid'):
+        if request.POST['messageforumid']:
             parent = get_object_or_404(Message_forum, pk=request.POST['messageforumid'])
             f = parent.forum
         else:
