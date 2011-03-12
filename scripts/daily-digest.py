@@ -17,8 +17,8 @@ def main():
 	now = datetime.now()
 	# reset to beginning of day
 	today = datetime(year=now.year, month=now.month, day=now.day)
-	#today = datetime(year=2011, month=2, day=2)
 	oneday = timedelta(days=1)
+	#today = today - oneday
 	line = Line.objects.get(pk=int(lineid))
 	
 	print("<html>")
@@ -192,7 +192,7 @@ def main():
 				tilldate = completed_today.date				
 				calls_attempted += calls_today.filter(date__lte=tilldate).count()
 			# if the call has not been completed at *any time*, add the call attempts for today
-			elif calls.filter(complete=False):
+			elif calls.filter(complete=True).count() == 0:
 				n_subjects += 1
 				calls_attempted += calls_today.count()
 		
