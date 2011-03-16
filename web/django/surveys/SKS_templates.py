@@ -54,8 +54,18 @@ def standard_template(line, contenttype):
         content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
         
+        # repeat
+        repeat = Prompt(file=language+"/repeat"+SOUND_EXT, order=4, bargein=True, delay=3000, survey=s)
+        repeat.save()
+        repeat_opt = Option(number="", action=Option.NEXT, prompt=repeat)
+        repeat_opt.save()
+        repeat_opt2 = Option(number="9", action=Option.GOTO, prompt=repeat)
+        repeat_opt2.save()
+        param = Param(option=repeat_opt2, name=Param.IDX, value=3)
+        param.save()
+        
         # thanks
-        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=4, bargein=True, delay=5000, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=5, bargein=True, survey=s)
         thanks.save()
         thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt1.save()
@@ -98,9 +108,19 @@ def freecall_template(line, contenttype):
         content_opt.save()
         content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
+        
+         # repeat
+        repeat = Prompt(file=language+"/repeat"+SOUND_EXT, order=4, bargein=True, delay=3000, survey=s)
+        repeat.save()
+        repeat_opt = Option(number="", action=Option.NEXT, prompt=repeat)
+        repeat_opt.save()
+        repeat_opt2 = Option(number="9", action=Option.GOTO, prompt=repeat)
+        repeat_opt2.save()
+        param = Param(option=repeat_opt2, name=Param.IDX, value=3)
+        param.save()
                
         # freecall
-        freecall = Prompt(file=language+"/freecall"+SOUND_EXT, order=4, bargein=True, delay=5000, survey=s )
+        freecall = Prompt(file=language+"/freecall"+SOUND_EXT, order=5, bargein=True, delay=5000, survey=s )
         freecall.save()
         freecall_opt = Option(number="", action=Option.NEXT, prompt=freecall)
         freecall_opt.save()
@@ -110,7 +130,7 @@ def freecall_template(line, contenttype):
         param.save()
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=5, bargein=True, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
         thanks.save()
         thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt1.save()
@@ -154,38 +174,48 @@ def record_template(line, contenttype):
         content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
         
+         # repeat
+        repeat = Prompt(file=language+"/repeat"+SOUND_EXT, order=4, bargein=True, delay=3000, survey=s)
+        repeat.save()
+        repeat_opt = Option(number="", action=Option.NEXT, prompt=repeat)
+        repeat_opt.save()
+        repeat_opt2 = Option(number="9", action=Option.GOTO, prompt=repeat)
+        repeat_opt2.save()
+        param = Param(option=repeat_opt2, name=Param.IDX, value=3)
+        param.save()
+        
         # to record
-        motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=4, bargein=True, survey=s, delay=5000)
+        motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=5, bargein=True, survey=s, delay=5000)
         motivation.save()
         motivation_opt = Option(number="", action=Option.GOTO, prompt=motivation)
         motivation_opt.save()
-        param = Param(option=motivation_opt, name=Param.IDX, value=7)
+        param = Param(option=motivation_opt, name=Param.IDX, value=8)
         param.save()
         motivation_opt2 = Option(number="1", action=Option.NEXT, prompt=motivation)
         motivation_opt2.save()
         
         # record
-        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=5, bargein=True, survey=s, name='Response' )
+        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=6, bargein=True, survey=s, name='Response' )
         record.save()
         record_opt = Option(number="", action=Option.RECORD, prompt=record)
         record_opt.save()
-        param = Param(option=record_opt, name=Param.ONCANCEL, value=7)
+        param = Param(option=record_opt, name=Param.ONCANCEL, value=8)
         param.save()
         record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
         record_opt2.save()
-        param2 = Param(option=record_opt2, name=Param.ONCANCEL, value=7)
+        param2 = Param(option=record_opt2, name=Param.ONCANCEL, value=8)
         param2.save()
         
         # thanks
-        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=6, bargein=True, survey=s)
+        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=7, bargein=True, survey=s)
         thanks.save()
         thanks_opt = Option(number="", action=Option.GOTO, prompt=thanks)
         thanks_opt.save()
-        param = Param(option=thanks_opt, name=Param.IDX, value=8)
+        param = Param(option=thanks_opt, name=Param.IDX, value=9)
         param.save()
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=7, bargein=True, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=8, bargein=True, survey=s)
         thanks.save()
         thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt1.save()
