@@ -85,7 +85,7 @@ def freecall_template(line, contenttype):
     else:
         num = line.number
     
-    name = contenttype[:3].upper() +'_SESS_' + Survey.TEMPLATE_DESIGNATOR
+    name = contenttype[:3].upper() +'_CALL_' + Survey.TEMPLATE_DESIGNATOR
     
     s = Survey.objects.filter(name=name)
     if not bool(s):
