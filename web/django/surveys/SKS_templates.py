@@ -195,7 +195,7 @@ def record_template(line, contenttype):
         motivation_opt2.save()
         
         # record
-        record = Prompt(file=language+"/recordmessage"+SOUND_EXT, order=6, bargein=True, survey=s, name='Response' )
+        record = Prompt(file=language+"/recordmessage_short"+SOUND_EXT, order=6, bargein=True, survey=s, name='Response' )
         record.save()
         record_opt = Option(number="", action=Option.RECORD, prompt=record)
         record_opt.save()
@@ -229,8 +229,6 @@ def record_template(line, contenttype):
 def main():
     line = Line.objects.get(pk=3)
     Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
-    standard_template(line, 'qna')
-    standard_template(line, 'announcement')
     
     freecall_template(line, 'qna')
     freecall_template(line, 'announcement')
