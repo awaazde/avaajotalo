@@ -159,7 +159,7 @@ def answer_call(line, answer):
         param3.save()
         order += 1
         
-        recordthanks = Prompt(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s)
+        recordthanks = Prompt(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s, delay=0)
         recordthanks.save()
         recordthanks_opt = Option(number="", action=Option.NEXT, prompt=recordthanks)
         recordthanks_opt.save()
