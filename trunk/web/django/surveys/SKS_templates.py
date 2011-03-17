@@ -114,8 +114,10 @@ def freecall_template(line, contenttype):
         repeat.save()
         repeat_opt = Option(number="", action=Option.NEXT, prompt=repeat)
         repeat_opt.save()
-        repeat_opt2 = Option(number="9", action=Option.GOTO, prompt=repeat)
+        repeat_opt2 = Option(number="1", action=Option.NEXT, prompt=repeat)
         repeat_opt2.save()
+        repeat_opt3 = Option(number="9", action=Option.GOTO, prompt=repeat)
+        repeat_opt3.save()
         param = Param(option=repeat_opt2, name=Param.IDX, value=3)
         param.save()
                
