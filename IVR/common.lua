@@ -41,6 +41,29 @@ function hangup()
 end
 
 -----------
+-- transfer_hangup
+-- Do everything as above
+-- except hangup the session
+-----------
+
+function transfer_hangup() 
+   logfile:write(sessid, "\t",
+		 caller, "\t", destination, "\t",
+		 os.time(), "\t", "End call", "\n");
+
+   for i,curs in ipairs(opencursors) do
+		curs:close();
+   end
+   
+   -- cleanup
+   con:close();
+   env:close();
+   logfile:flush();
+   logfile:close();
+   
+end
+
+-----------
 -- rows 
 -----------
 
@@ -833,6 +856,7 @@ function play_prompts (prompts)
 	  elseif (action == OPTION_TRANSFER) then
 	  	local number = get_params(optionid)[OPARAM_NUM];
 	  	session:setAutoHangup(false);
+	  	session:setHangupHook("transfer_hangup");
         session:transfer(number, "XML", "default");
 	  end
     
