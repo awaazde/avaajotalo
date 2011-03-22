@@ -4,7 +4,7 @@ from datetime import datetime,timedelta
 from otalo.AO.models import Message, Line
 from django.db.models import Max
 
-def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, date_filter=0, quiet=False, legacy_log=False):
+def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False):
 	calls = {}
 	nums = []
 	current_week_start = 0
@@ -33,9 +33,13 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=0, dat
 			if phone_num_filter and not phone_num in phone_num_filter:
 				continue
 			
-			if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
-				#print("filtering out " + otalo_utils.date_str(current_date))
-				continue
+			if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
 			
 			if destnum and destnum.find(dest) == -1:
 				continue
@@ -183,7 +187,7 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 	for date in dates:
 		print(otalo_utils.date_str(date) +": \t"+str(features[date]['q']) + "\t" + str(features[date]['a']) + "\t\t" + str(features[date]['r']) + "\t" + str(features[date]['e']) + "\t")
 
-def get_features_within_call(filename, destnum, date_filter=0, phone_num_filter=0, quiet=False):
+def get_features_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	features = {}
 	current_week_start = 0
 	feature_chosen = 0
@@ -211,10 +215,23 @@ def get_features_within_call(filename, destnum, date_filter=0, phone_num_filter=
 			if phone_num_filter and not phone_num in phone_num_filter:
 				continue
 				
-			if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
-				continue
+			if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
 			
 			if destnum.find(dest) == -1:
+				continue
+			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls and len(dest) < 10:
 				continue
 			
 			if not current_week_start:
@@ -285,10 +302,10 @@ def get_features_within_call(filename, destnum, date_filter=0, phone_num_filter=
 			#print("PhoneNumException: " + line)
 			continue
 	
-	if phone_num_filter:
-		print("Data for phone numbers: " + str(phone_num_filter))
-	
 	if not quiet:
+		if phone_num_filter:
+			print("Data for phone numbers: " + str(phone_num_filter))
+		
 		print("Histogram of number of features accessed within call, by week:")
 		dates = features.keys()
 		dates.sort()
@@ -555,7 +572,7 @@ def get_num_qna(line, responder_ids=[], quiet=False):
 				print(otalo_utils.date_str(date) +" \t"+str(qna[date][0]) + "\t\t" + str(qna[date][1]))
 	
 	return qna
-	
+
 def main():
 	if not len(sys.argv) > 1:
 		print("Wrong")

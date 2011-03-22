@@ -28,7 +28,7 @@ def main():
 	print("<table>")
 	
 	for i in range (0,4):
-		calls = num_calls.get_calls(filename=f, destnum=str(line.number), date_filter=today-oneday*i, quiet=True)
+		calls = num_calls.get_calls(filename=f, destnum=str(line.number), date_start=today-oneday*i, date_end=today-oneday*(i-1), quiet=True)
 		ncalls = calls[calls.keys()[0]] if calls else 0
 		print("<tr>")
 		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
@@ -57,7 +57,7 @@ def main():
 	print("<div><h4>Today's calls by number of feature accesses</h4></div>")
 	print("<table>")
 
-	calls = num_calls.get_features_within_call(filename=f, destnum=str(line.number), date_filter=today, quiet=True)
+	calls = num_calls.get_features_within_call(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
 	feature_calls = calls[calls.keys()[0]] if calls else {}
 	features_hist = {}
 	for call in feature_calls:
@@ -95,12 +95,12 @@ def main():
 	print("<table>")
 	
 	for i in range (0,4):
-		ncalls = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft=1)
-		n_approved = ncalls.filter(status = Message_forum.STATUS_APPROVED).count()
+		msgs = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft=1)
+		n_approved = msgs.filter(status = Message_forum.STATUS_APPROVED).count()
 		print("<tr>")
 		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
-		print("<td>"+str(ncalls.count())+" (" + str(n_approved) + " approved) </td>")
+		print("<td>"+str(msgs.count())+" (" + str(n_approved) + " approved) </td>")
 		print("</tr>")
 	
 	print("</table>")
@@ -110,11 +110,11 @@ def main():
 	print("<table>")
 	
 	for i in range (0,4):
-		ncalls = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft__gt=1).count()
+		n_msgs = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft__gt=1).count()
 		print("<tr>")
 		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
-		print("<td>"+str(ncalls)+"</td>")
+		print("<td>"+str(n_msgs)+"</td>")
 		print("</tr>")
 	
 	print("</table>")
