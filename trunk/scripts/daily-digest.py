@@ -5,7 +5,6 @@ import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.AO.models import Message, Message_forum, Line, User, Message_responder
 from otalo.surveys.models import Survey, Call, Subject
 from otalo.AO.views import LISTEN_THRESH
-from alerts import ANSWER_CALL_DESIGNATOR
 
 def main():
 	if len(sys.argv) < 2:
@@ -150,7 +149,7 @@ def main():
 	print("</table>")
 	
 	# Answer Calls
-	answercalls = Call.objects.filter(survey__name__contains=ANSWER_CALL_DESIGNATOR, date__gte=today, date__lt=today+oneday)
+	answercalls = Call.objects.filter(survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, date__gte=today, date__lt=today+oneday)
 	unique_answercalls = answercalls.values('subject', 'survey').distinct()
 	n_recipients = 0
 	n_completed = 0

@@ -39,6 +39,7 @@ class Survey(models.Model):
     broadcast = models.BooleanField(default=False)
     
     TEMPLATE_DESIGNATOR = 'TEMPLATE'
+    ANSWER_CALL_DESIGNATOR = 'AnswerCall'
     template = models.BooleanField(default=False)
     
     OUTBOUND_DESIGNATOR = 'CALL_TO_OUTBOUND_NO'
