@@ -13,7 +13,7 @@ def print_digest(inbound_log, bang, motiv=None):
 	now = datetime.now()
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
-	thisweek = now - timedelta(days=today.weekday())
+	thisweek = today - timedelta(days=today.weekday())
 	oneweek = timedelta(days=6)
 	
 	print("<html>")
