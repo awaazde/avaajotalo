@@ -29,8 +29,6 @@ SURVEY_SCRIPT = 'AO/outbound/survey.lua'
 MAX_WAIT_SECS = 12
 EXEC_WAIT_SECS = 7
 
-ANSWER_CALL_DESIGNATOR = "AnswerCall_"
-
 def new_responses(line, user_ids=False):
      if not user_ids:
      	# Get all new responses in the last INTERVAL_HOURS
@@ -102,7 +100,7 @@ def answer_call(line, answer):
     else:
         num = line.number
         
-    s = Survey(name=ANSWER_CALL_DESIGNATOR + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num)
+    s = Survey(name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num)
     #print ("adding announcement survey " + str(s))
     s.save()
     order = 1
