@@ -110,7 +110,7 @@ def print_bcast_table(inbound_log, line, conditions):
 	print(exp1_header)
 	print("</tr>")
 	
-	calls = []
+	call_tots = []
 	for bcast_msg in unique_bcasts:
 		bcast_calls = {}
 		bcast_surveys = thisweeks_bcasts.filter(prompt__file__contains=bcast_msg.message.content_file)
@@ -143,7 +143,7 @@ def print_bcast_table(inbound_log, line, conditions):
 							
 				bcast_calls[condition+'_behavior'] = n_one_plus_sessions
 				
-		calls.append(bcast_calls)
+		call_tots.append(bcast_calls)
 	
 	# overall numbers
 	bcast_calls = {}
@@ -180,12 +180,12 @@ def print_bcast_table(inbound_log, line, conditions):
 								
 					bcast_calls[condition+'_behavior'] += n_one_plus_sessions
 					
-	calls.append(bcast_calls)
+	call_tots.append(bcast_calls)
 	
 	for condition in conditions:
 		print("<tr>")
 		print("<td>"+condition+"</td>")
-		for bcast in calls:
+		for bcast in call_tots:
 			print("<td>"+str(bcast[condition+'_recipients'])+" of "+str(bcast[condition+'_completed'])+" completed; "+str(bcast_calls[condition+'_behavior'])+" actions</td>")
 		print("</tr>")
 
