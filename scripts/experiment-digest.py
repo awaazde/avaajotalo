@@ -19,7 +19,7 @@ def print_digest(inbound_log, bang, motiv=None):
 	print("<html>")
 	print("<div><h2>This week's experiment results</h3></div>")
 	print("<div><h3>Experiment 1: Free Access vs. Free Contribution </h4></div>")
-	print_bcast_table(inbound_call, bang, ['CALL', 'REC', 'RATE'])
+	print_bcast_table(inbound_log, bang, ['CALL', 'REC', 'RATE'])
 	
 	thisweeks_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=thisweek, call__date__lt=today+oneday).distinct()
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
@@ -155,8 +155,8 @@ def print_bcast_table(inbound_log, line, conditions):
 	for survey in all_bcasts:
 		for condition in conditions:
 			if '_'+condition+'_' in survey.name:
-				bcast_calls[condition+'_recipients'] += Call.objects.filter(survey__in=survey).exclude(subject__in=blacklist).values('subject').distinct().count()
-				bcast_calls[condition+'_completed'] += Call.objects.filter(survey__in=survey, complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
+				bcast_calls[condition+'_recipients'] += Call.objects.filter(survey=survey).exclude(subject__in=blacklist).values('subject').distinct().count()
+				bcast_calls[condition+'_completed'] += Call.objects.filter(survey=survey, complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
 				if condition != 'CALL':
 					bcast_calls[condition+'_behavior'] += Input.objects.filter(call__survey__in=bcast_surveys, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()
 				else:
@@ -186,7 +186,7 @@ def print_bcast_table(inbound_log, line, conditions):
 		print("<tr>")
 		print("<td>"+condition+"</td>")
 		for bcast in call_tots:
-			print("<td>"+str(bcast[condition+'_recipients'])+" of "+str(bcast[condition+'_completed'])+" completed; "+str(bcast_calls[condition+'_behavior'])+" actions</td>")
+			print("<td>"+str(bcast[condition+'_completed'])+" of "+str(bcast[condition+'_recipients'])+" completed; "+str(bcast_calls[condition+'_behavior'])+" actions</td>")
 		print("</tr>")
 
 	print("</table>")
@@ -199,7 +199,7 @@ def print_bcast_table(inbound_log, line, conditions):
 	
 	for bcast_msg in unique_bcasts:
 		inbound_data = {}
-		bcast_surveys = thisweeks_bcasts.filter(prompt__file__contains=bcast.message.content_file)
+		bcast_surveys = thisweeks_bcasts.filter(prompt__file__contains=bcast_msg.message.content_file)
 		
 		for condition in conditions:
 			print("<tr>")
@@ -208,13 +208,13 @@ def print_bcast_table(inbound_log, line, conditions):
 			numbers = [subj.number for subj in subjects]
 			calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=thisweek, quiet=True)
 			n_thisweek = calls[calls.keys()[0]] if calls else 0
-			posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=bang, message__number__in=call_numbers)
+			posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 			n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 			print("<td>"+str(n_thisweek)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 				
 			calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=STUDY_START, quiet=True)
 			n_total = calls[calls.keys()[0]] if calls else 0
-			posts = Message_forum.objects.filter(message__date__gte=STUDY_START, message__date__lt=today+oneday, forum__line=bang, message__number__in=call_numbers)
+			posts = Message_forum.objects.filter(message__date__gte=STUDY_START, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 			n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 			print("<td>"+str(n_total)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 
