@@ -19,7 +19,7 @@ def print_digest(inbound_log, bang, motiv=None):
 	print("<html>")
 	print("<div><h2>This week's experiment results</h3></div>")
 	print("<div><h3>Experiment 1: Free Access vs. Free Contribution </h4></div>")
-	print_bcast_table(bang, ['CALL', 'REC', 'RATE'])
+	print_bcast_table(inbound_call, bang, ['CALL', 'REC', 'RATE'])
 	
 	thisweeks_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=thisweek, call__date__lt=today+oneday).distinct()
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
@@ -80,12 +80,12 @@ def print_digest(inbound_log, bang, motiv=None):
 	
 	if motiv:
 		print("<div><h3>Experiment 2: Self vs. Group Motivation </h4></div>")
-		print_bcast_table(motiv, ['SELF', 'GROUP', 'NONE'])
+		print_bcast_table(inbound_log, motiv, ['SELF', 'GROUP', 'NONE'])
 		
 	
 	print("</html>")
 
-def print_bcast_table(line, conditions):
+def print_bcast_table(inbound_log, line, conditions):
 	now = datetime.now()
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
