@@ -151,8 +151,15 @@ def main():
 	
 	# Answer Calls
 	answercalls = Call.objects.filter(survey__name__contains=ANSWER_CALL_DESIGNATOR, date__gte=today, date__lt=today+oneday)
-	n_recipients = answercalls.values('subject').distinct().count()
-	n_completed = answercalls.filter(complete=True).count()
+	unique_answercalls = answercalls.values('subject', 'survey').distinct()
+	n_recipients = 0
+	n_completed = 0
+	for answercall in unique_answercalls:
+		if answercalls.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True):
+			n_recipeints += 1
+			n_completed += 1
+		elif Call.objects.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True).count() == 0:
+			n_recipeints += 1
 	
 	print("<br/><div>")
 	print("<b>Response calls attempted:</b> ")
