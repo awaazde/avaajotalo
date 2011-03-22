@@ -100,7 +100,6 @@ def print_bcast_table(inbound_log, line, conditions):
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
 	bcast_prompt_files = [os.path.basename(pair.values()[0]) for pair in bcast_prompts.values('file')]
 	unique_bcasts = Message_forum.objects.filter(message__content_file__in=bcast_prompt_files)
-	
 	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=STUDY_START, call__date__lt=today+oneday).distinct()
 	
 	exp1_header = "<td width='100px'><u>Condition</u></td>"
@@ -186,7 +185,7 @@ def print_bcast_table(inbound_log, line, conditions):
 		print("<tr>")
 		print("<td>"+condition+"</td>")
 		for bcast in call_tots:
-			print("<td>"+str(bcast[condition+'_completed'])+" of "+str(bcast[condition+'_recipients'])+" completed; "+str(bcast_calls[condition+'_behavior'])+" actions</td>")
+			print("<td>"+str(bcast[condition+'_completed'])+" of "+str(bcast[condition+'_recipients'])+" completed; "+str(bcast[condition+'_behavior'])+" actions</td>")
 		print("</tr>")
 
 	print("</table>")
