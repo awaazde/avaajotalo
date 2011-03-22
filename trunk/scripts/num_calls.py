@@ -4,7 +4,7 @@ from datetime import datetime,timedelta
 from otalo.AO.models import Message, Line
 from django.db.models import Max
 
-def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False):
+def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False):
 	calls = {}
 	nums = []
 	current_week_start = 0
@@ -42,6 +42,17 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 						continue
 			
 			if destnum and destnum.find(dest) == -1:
+				continue
+			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
 				continue
 				
 			if not current_week_start:
@@ -231,7 +242,10 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 			# start time to a time window related to the end
 			# of the survey call (in which you can keep the flag
 			# false and give a more targeted start and end date)
-			if transfer_calls and len(dest) < 10:
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
 				continue
 			
 			if not current_week_start:
