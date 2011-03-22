@@ -89,7 +89,7 @@ def print_bcast_table(inbound_log, line, conditions):
 	now = datetime.now()
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
-	thisweek = now - timedelta(days=today.weekday())
+	thisweek = today - timedelta(days=today.weekday())
 	oneweek = timedelta(days=6)
 	
 	print("<div><h4>This week's broadcasts</h4></div>")
