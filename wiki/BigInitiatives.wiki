@@ -3,6 +3,7 @@
   # Port all code to Python
   # Rename code from AO to Awaaz De (including name of Goog Code project)
   # Develop with GSM gateway/cheap line serving options (and in general make deployment as easy as FrontlineSMS)
+    # Create installable for Linux
   # Develop thin distributed client for cheap long distance calling (or get carriers to forward calls to IP address)
   # Analytics platform (with public and internal interfaces) a la DG
   # Interfaces for app creation, survey creation and deployment
