@@ -155,10 +155,10 @@ def main():
 	n_completed = 0
 	for answercall in unique_answercalls:
 		if answercalls.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True):
-			n_recipeints += 1
+			n_recipients += 1
 			n_completed += 1
 		elif Call.objects.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True).count() == 0:
-			n_recipeints += 1
+			n_recipients += 1
 	
 	print("<br/><div>")
 	print("<b>Response calls attempted:</b> ")
