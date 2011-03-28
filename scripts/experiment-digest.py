@@ -5,7 +5,9 @@ import otalo_utils, num_calls
 from otalo.surveys.models import Subject, Survey, Prompt, Call, Input
 from otalo.AO.models import Line, Message_forum
 
-STUDY_START = datetime(year=2011, month=3, day=10)
+# only start calling after free call bug fix
+STUDY_START1 = datetime(year=2011, month=3, day=17)
+STUDY_START2 = datetime(year=2011, month=3, day=3)
 blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845']
 blacklist = Subject.objects.filter(number__in=blacklist_nums)
 
@@ -19,13 +21,13 @@ def print_digest(inbound_log, bang, motiv=None):
 	print("<html>")
 	print("<div><h2>This week's experiment results</h3></div>")
 	print("<div><h3>Experiment 1: Free Access vs. Free Contribution </h4></div>")
-	print_bcast_table(inbound_log, bang, ['CALL', 'REC', 'RATE'])
+	print_bcast_table(inbound_log, bang, ['CALL', 'REC', 'RATE'], STUDY_START1)
 	
 	thisweeks_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=thisweek, call__date__lt=today+oneday).distinct()
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
 	bcast_prompt_files = [os.path.basename(pair.values()[0]) for pair in bcast_prompts.values('file')]
 	unique_bcasts = Message_forum.objects.filter(message__content_file__in=bcast_prompt_files)
-	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=STUDY_START, call__date__lt=today+oneday).distinct()
+	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=STUDY_START1, call__date__lt=today+oneday).distinct()
 	
 	print("<div><h4>Rating Results</h4></div>")
 	print("<table>")
@@ -80,12 +82,12 @@ def print_digest(inbound_log, bang, motiv=None):
 	
 	if motiv:
 		print("<div><h3>Experiment 2: Self vs. Group Motivation </h4></div>")
-		print_bcast_table(inbound_log, motiv, ['SELF', 'GROUP', 'NONE'])
+		print_bcast_table(inbound_log, motiv, ['SELF', 'GROUP', 'NONE'], STUDY_START2)
 		
 	
 	print("</html>")
 
-def print_bcast_table(inbound_log, line, conditions):
+def print_bcast_table(inbound_log, line, conditions, study_start):
 	now = datetime.now()
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
@@ -100,7 +102,7 @@ def print_bcast_table(inbound_log, line, conditions):
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
 	bcast_prompt_files = [os.path.basename(pair.values()[0]) for pair in bcast_prompts.values('file')]
 	unique_bcasts = Message_forum.objects.filter(message__content_file__in=bcast_prompt_files)
-	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=STUDY_START, call__date__lt=today+oneday).distinct()
+	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=study_start, call__date__lt=today+oneday).distinct()
 	
 	exp1_header = "<td width='100px'><u>Condition</u></td>"
 	for bcast_msg in unique_bcasts:
@@ -208,9 +210,9 @@ def print_bcast_table(inbound_log, line, conditions):
 		print("<td>"+str(n_thisweek)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 		
 		# Total
-		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=STUDY_START, quiet=True)
+		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=study_start, quiet=True)
 		n_total = calls[calls.keys()[0]] if calls else 0
-		posts = Message_forum.objects.filter(message__date__gte=STUDY_START, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
+		posts = Message_forum.objects.filter(message__date__gte=study_start, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 		print("<td>"+str(n_total)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 
