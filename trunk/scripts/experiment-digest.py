@@ -157,7 +157,7 @@ def print_bcast_table(inbound_log, line, conditions):
 				bcast_calls[condition+'_recipients'] += Call.objects.filter(survey=survey).exclude(subject__in=blacklist).values('subject').distinct().count()
 				bcast_calls[condition+'_completed'] += Call.objects.filter(survey=survey, complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
 				if condition != 'CALL':
-					bcast_calls[condition+'_behavior'] += Input.objects.filter(call__survey__in=bcast_surveys, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()
+					bcast_calls[condition+'_behavior'] += Input.objects.filter(call__survey__in=survey, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()
 				else:
 					# only count sessions that have at least one feature access
 					n_one_plus_sessions = 0
@@ -195,35 +195,32 @@ def print_bcast_table(inbound_log, line, conditions):
 	print("<tr>")
 	print("<td width='100px'><u>Condition</u></td><td width='250px'><u>This week</u></td><td width='250px'><u>Total</u></td>")
 	print("</tr>")
-	
-	for bcast_msg in unique_bcasts:
-		inbound_data = {}
-		bcast_surveys = thisweeks_bcasts.filter(prompt__file__contains=bcast_msg.message.content_file)
 		
-		for condition in conditions:
-			print("<tr>")
-			print("<td>"+condition+"</td>")
-			subjects = Subject.objects.filter(call__survey__in=bcast_surveys, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct()
-			numbers = [subj.number for subj in subjects]
-			calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=thisweek, quiet=True)
-			n_thisweek = calls[calls.keys()[0]] if calls else 0
-			posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
-			n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
-			print("<td>"+str(n_thisweek)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
-				
-			calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=STUDY_START, quiet=True)
-			n_total = calls[calls.keys()[0]] if calls else 0
-			posts = Message_forum.objects.filter(message__date__gte=STUDY_START, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
-			n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
-			print("<td>"+str(n_total)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
+	for condition in conditions:
+		print("<tr>")
+		print("<td>"+condition+"</td>")
+		subjects = Subject.objects.filter(call__survey__in=thisweeks_bcasts, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct()
+		numbers = [subj.number for subj in subjects]
+		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=thisweek, quiet=True)
+		n_thisweek = calls[calls.keys()[0]] if calls else 0
+		posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
+		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
+		print("<td>"+str(n_thisweek)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
+		
+		# Total
+		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=STUDY_START, quiet=True)
+		n_total = calls[calls.keys()[0]] if calls else 0
+		posts = Message_forum.objects.filter(message__date__gte=STUDY_START, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
+		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
+		print("<td>"+str(n_total)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 
 
-			print("</tr>")
+		print("</tr>")
 			
 	print("</table>")
 
 def main():
-	if len(sys.argv) < 2:
+	if len(sys.argv) < 3:
 		print("Wrong")
 	else:
 		f = sys.argv[1]
