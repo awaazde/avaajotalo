@@ -159,7 +159,7 @@ def print_bcast_table(inbound_log, line, conditions, study_start):
 				bcast_calls[condition+'_recipients'] += Call.objects.filter(survey=survey).exclude(subject__in=blacklist).values('subject').distinct().count()
 				bcast_calls[condition+'_completed'] += Call.objects.filter(survey=survey, complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
 				if condition != 'CALL':
-					bcast_calls[condition+'_behavior'] += Input.objects.filter(call__survey__in=survey, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()
+					bcast_calls[condition+'_behavior'] += Input.objects.filter(call__survey=survey, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()
 				else:
 					# only count sessions that have at least one feature access
 					n_one_plus_sessions = 0
