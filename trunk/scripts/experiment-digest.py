@@ -6,7 +6,7 @@ from otalo.surveys.models import Subject, Survey, Prompt, Call, Input
 from otalo.AO.models import Line, Message_forum
 
 # only start calling after free call bug fix
-STUDY_START1 = datetime(year=2011, month=3, day=17)
+STUDY_START1 = datetime(year=2011, month=3, day=9)
 STUDY_START2 = datetime(year=2011, month=3, day=3)
 blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845']
 blacklist = Subject.objects.filter(number__in=blacklist_nums)
