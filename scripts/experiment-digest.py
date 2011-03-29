@@ -211,7 +211,9 @@ def print_bcast_table(inbound_log, line, conditions, study_start):
 		
 		# Total
 		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=study_start, quiet=True)
-		n_total = calls[calls.keys()[0]] if calls else 0
+		n_total = 0
+		for week in calls:
+			n_total += calls[week]
 		posts = Message_forum.objects.filter(message__date__gte=study_start, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 		print("<td>"+str(n_total)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
