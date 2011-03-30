@@ -18,7 +18,6 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.db.models import Q
 from otalo.AO.models import Forum, Line, Message_forum, Message, User, Tag
-from otalo.AO.views import MESSAGE_STATUS_APPROVED
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
 
@@ -130,7 +129,7 @@ def forum(forum, line, since=None):
     else:
         since = today
             
-    messages = Message_forum.objects.filter(forum=forum, message__date__gte=since, status=MESSAGE_STATUS_APPROVED).order_by('-message__date')
+    messages = Message_forum.objects.filter(forum=forum, message__date__gte=since, status=Message_forum.STATUS_APPROVED).order_by('-message__date')
     if messages:
         filenames = []
         for msg in messages:

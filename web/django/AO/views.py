@@ -25,7 +25,7 @@ from django.conf import settings
 from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
-import alerts
+import alerts, broadcast
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -468,11 +468,6 @@ def line(request):
         
     return send_response(line)
 
-'''
-Do this below the other imports bc
-broadcast mod itself imports from this file
-'''
-import broadcast
 def survey(request):
     params = request.GET
     
