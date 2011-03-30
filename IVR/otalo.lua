@@ -460,16 +460,13 @@ function playmessage (msg, listenreplies)
   -- remind about the options, and
   -- give some time for users to compose themselves and
   -- potentially respond
-  if (d == "") then
-    if (responsesallowed == 'y') then
+  if (responsesallowed == 'y') then
 	  	read(aosd .. "instructions_between.wav", 4000)
 	  	d = use();
-	end
-    if (d ~= "") then
-    	return d;
-    end
-  else
-  	return d;
+	  	
+	  	if (d ~= "") then
+			return d;
+		end
   end
 	
   -- default	
