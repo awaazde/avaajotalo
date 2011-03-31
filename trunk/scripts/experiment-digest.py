@@ -128,7 +128,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 			firstcalldate = firstcalldate.values()[0]
 			lastcalldate = calls.aggregate(Max('date'))
 			lastcalldate = lastcalldate.values()[0]
-			listens = num_calls.get_calls(outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True)
+			listens = num_calls.get_calls(filename=outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
 			n_listens = 0
 			for week in listens:
 				n_listens += listens[week]
@@ -182,7 +182,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 				lastcalldate = calls.aggregate(Max('date'))
 				lastcalldate = lastcalldate.values()[0]
 					
-				listens = num_calls.get_calls(outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True)
+				listens = num_calls.get_calls(filename=outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
 				n_listens = 0
 				for week in listens:
 					n_listens += listens[week]
@@ -225,7 +225,6 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 		print("<td>"+condition+"</td>")
 		subjects = Subject.objects.filter(call__survey__in=thisweeks_bcasts, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct()
 		numbers = [subj.number for subj in subjects]
-		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=thisweek, quiet=True)
 		calls = stats_by_phone_num.get_calls_by_number(filename=inbound_log, destnum=line.number, date_start=thisweek, quiet=True)
 		n_unique = 0
 		n_thisweek = 0
@@ -239,13 +238,16 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 		print("<td>"+str(n_thisweek)+" calls by "+str(n_unique)+ " callers; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 		
 		# Total
-		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=study_start, quiet=True)
+		calls = stats_by_phone_num.get_calls_by_number(filename=inbound_log, destnum=line.number, date_start=study_start, quiet=True)
+		n_unique = 0
 		n_total = 0
-		for week in calls:
-			n_total += calls[week]
+		for number, tot in calls:
+			if number in numbers:
+				n_unique += 1
+				n_total += tot
 		posts = Message_forum.objects.filter(message__date__gte=study_start, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
-		print("<td>"+str(n_total)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
+		print("<td>"+str(n_total)+" calls by "+str(n_total)+" callers; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 
 
 		print("</tr>")
