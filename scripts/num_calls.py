@@ -99,7 +99,7 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 		
 # only counts when a call is verified as open 
 # (i.e. in between an explicit call-started and hang-up)
-def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False):
+def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False, date_end=False, quiet=False, legacy_log=False):
 	features = {}
 	current_week_start = 0
 	feature_chosen = 0
@@ -126,6 +126,14 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 			
 			if phone_num_filter and not phone_num in phone_num_filter:
 				continue
+			
+			if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
 			
 			if not current_week_start:
 				current_week_start = current_date
@@ -188,15 +196,16 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, legacy_log=False
 			#print("PhoneNumException: " + line)
 			continue
 	
-	if phone_num_filter:
-		print("Data for phone numbers: " + str(phone_num_filter))
-		
-	print("Number of calls by feature, by week:")
-	print("\t\tq&a\tannouncements\tradio\texperiences")
-	dates = features.keys()
-	dates.sort()
-	for date in dates:
-		print(otalo_utils.date_str(date) +": \t"+str(features[date]['q']) + "\t" + str(features[date]['a']) + "\t\t" + str(features[date]['r']) + "\t" + str(features[date]['e']) + "\t")
+	if not quiet:
+		if phone_num_filter:
+			print("Data for phone numbers: " + str(phone_num_filter))
+			
+		print("Number of calls by feature, by week:")
+		print("\t\tq&a\tannouncements\tradio\texperiences")
+		dates = features.keys()
+		dates.sort()
+		for date in dates:
+			print(otalo_utils.date_str(date) +": \t"+str(features[date]['q']) + "\t" + str(features[date]['a']) + "\t\t" + str(features[date]['r']) + "\t" + str(features[date]['e']) + "\t")
 
 def get_features_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	features = {}

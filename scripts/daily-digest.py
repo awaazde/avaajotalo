@@ -42,9 +42,7 @@ def main():
 	print("<table>")
 	
 	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
-	calls_sorted = sorted(calls.iteritems(), key=lambda(k,v): (v,k))
-	calls_sorted.reverse()
-	for num, tot in calls_sorted:
+	for num, tot in calls:
 		print("<tr>")
 		print("<td width='100px'>"+num+"</td>")
 		print("<td>"+str(tot)+"</td>")
@@ -78,7 +76,7 @@ def main():
 	
 		
 	# call duration
-	durations = call_duration.get_call_durations(filename=f, destnum=str(line.number), date_filter=today, quiet=True)
+	durations = call_duration.get_call_durations(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
 	durs_by_call = durations[durations.keys()[0]] if durations else {}
 	durs = [dur[1].seconds for dur in durs_by_call] 
 	
