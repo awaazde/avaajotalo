@@ -237,7 +237,7 @@ def thread(messageforum, template, responseprompt):
                 oncancel.value = int(oncancel.value) + ntoshift
                 oncancel.save()
             if option.action == Option.GOTO:
-                goto = Param.objects.get(option=option, name=Param.GOTO)
+                goto = Param.objects.get(option=option, name=Param.IDX)
                 goto.value = int(goto.value) + ntoshift
                 goto.save()
         prompt.save()
