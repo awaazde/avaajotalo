@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 from otalo.AO.models import Line, User, Message
 
-def get_calls_by_number(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False):
+def get_calls_by_number(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False):
 	calls = {}
 	phone_nums = ''
 	
@@ -35,6 +35,17 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_start=Fa
 					
 			if destnum and destnum.find(dest) == -1:
 				#print("dest num not = " + destnum)
+				continue
+			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
 				continue
 				
 			if line.find(log) != -1:
