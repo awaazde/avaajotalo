@@ -2,7 +2,7 @@ import otalo_utils
 import sys
 from datetime import datetime
 
-def get_call_durations(filename, destnum, date_filter=0, quiet=False):
+def get_call_durations(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False):
 	durations = {}
 	current_week_start = 0
 	open_calls = {}
@@ -28,8 +28,16 @@ def get_call_durations(filename, destnum, date_filter=0, quiet=False):
 			
 			current_time = otalo_utils.get_time(line)
 			
-			if date_filter and (current_date.year != date_filter.year or current_date.month != date_filter.month or current_date.day != date_filter.day):
+			if phone_num_filter and not phone_num in phone_num_filter:
 				continue
+				
+			if date_start:
+				if date_end:
+					 if not (current_date >= date_start and current_date < date_end):
+						continue
+				else:
+					if not current_date >= date_start:
+						continue
 			
 			if destnum.find(dest) == -1:
 				continue
@@ -96,6 +104,9 @@ def get_call_durations(filename, destnum, date_filter=0, quiet=False):
 	flush_open_calls(durations, open_calls, current_week_start)
 	
 	if not quiet:
+		if phone_num_filter:
+			print("Data for phone numbers: " + str(phone_num_filter))
+		
 		print("Average call duration, by week (s):")
 		dates = durations.keys()
 		dates.sort()
@@ -109,7 +120,8 @@ def get_call_durations(filename, destnum, date_filter=0, quiet=False):
 			calls += len(durs)
 			print(date.strftime('%Y-%m-%d') +": "+ str(sum(durs)/len(durs)))
 		
-		print('Overall Average: ' + str(secs/calls))
+		if calls > 0:
+			print('Overall Average: ' + str(secs/calls))
 	
 	return durations
 

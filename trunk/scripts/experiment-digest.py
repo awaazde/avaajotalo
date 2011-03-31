@@ -1,7 +1,7 @@
 import sys, os
 from datetime import datetime, timedelta
 from django.db.models import Min, Max
-import otalo_utils, num_calls
+import num_calls, stats_by_phone_num
 from otalo.surveys.models import Subject, Survey, Prompt, Call, Input
 from otalo.AO.models import Line, Message_forum
 
@@ -11,7 +11,7 @@ STUDY_START2 = datetime(year=2011, month=3, day=3)
 blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845']
 blacklist = Subject.objects.filter(number__in=blacklist_nums)
 
-def print_digest(inbound_log, bang, motiv=None):
+def print_digest(inbound_log, outbound_log, bang, motiv=None):
 	now = datetime.now()
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
@@ -21,7 +21,7 @@ def print_digest(inbound_log, bang, motiv=None):
 	print("<html>")
 	print("<div><h2>This week's experiment results</h3></div>")
 	print("<div><h3>Experiment 1: Free Access vs. Free Contribution </h4></div>")
-	print_bcast_table(inbound_log, bang, ['CALL', 'REC', 'RATE'], STUDY_START1)
+	print_bcast_table(inbound_log, outbound_log, bang, ['CALL', 'REC', 'RATE'], {'CALL':'guj/freecall', 'REC':'guj/recordmessage', 'RATE':'guj/likert'}, STUDY_START1)
 	
 	thisweeks_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=thisweek, call__date__lt=today+oneday).distinct()
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
@@ -82,12 +82,12 @@ def print_digest(inbound_log, bang, motiv=None):
 	
 	if motiv:
 		print("<div><h3>Experiment 2: Self vs. Group Motivation </h4></div>")
-		print_bcast_table(inbound_log, motiv, ['SELF', 'GROUP', 'NONE'], STUDY_START2)
+		print_bcast_table(inbound_log, outbound_log, motiv, ['SELF', 'GROUP', 'NONE'], {'SELF':"hin/recordmessage", 'GROUP':"hin/recordmessage", 'NONE':"hin/recordmessage"}, STUDY_START2)
 		
 	
 	print("</html>")
 
-def print_bcast_table(inbound_log, line, conditions, study_start):
+def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points, study_start):
 	now = datetime.now()
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
@@ -119,6 +119,20 @@ def print_bcast_table(inbound_log, line, conditions, study_start):
 		for condition in conditions:
 			bcast_calls[condition+'_recipients'] = Call.objects.filter(survey__in=bcast_surveys, survey__name__contains='_'+condition+'_').exclude(subject__in=blacklist).values('subject').distinct().count()
 			bcast_calls[condition+'_completed'] = Call.objects.filter(survey__in=bcast_surveys, survey__name__contains='_'+condition+'_', complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
+			numbers = Subject.objects.filter(call__survey__in=bcast_surveys).exclude(number__in=blacklist_nums).distinct().values('number')
+			numbers = [pair.values()[0] for pair in numbers]
+			# ASSUME: Broadcasts don't overlaop each other in time, so if a number got a bcast within 
+			# the start and end window of this bcast, it was for this bcast only
+			calls = Call.objects.filter(survey__in=bcast_surveys)
+			firstcalldate = calls.aggregate(Min('date'))
+			firstcalldate = firstcalldate.values()[0]
+			lastcalldate = calls.aggregate(Max('date'))
+			lastcalldate = lastcalldate.values()[0]
+			listens = num_calls.get_calls(outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True)
+			n_listens = 0
+			for week in listens:
+				n_listens += listens[week]
+			bcast_calls[condition+'_listens'] = n_listens
 			
 			if condition != 'CALL':
 				bcast_calls[condition+'_behavior'] = Input.objects.filter(call__survey__in=bcast_surveys, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()			
@@ -152,25 +166,33 @@ def print_bcast_table(inbound_log, line, conditions, study_start):
 		bcast_calls[condition+'_recipients'] = 0
 		bcast_calls[condition+'_completed'] = 0
 		bcast_calls[condition+'_behavior'] = 0
+		bcast_calls[condition+'_listens'] = 0
 
 	for survey in all_bcasts:
 		for condition in conditions:
 			if '_'+condition+'_' in survey.name:
 				bcast_calls[condition+'_recipients'] += Call.objects.filter(survey=survey).exclude(subject__in=blacklist).values('subject').distinct().count()
 				bcast_calls[condition+'_completed'] += Call.objects.filter(survey=survey, complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
+				
+				numbers = Subject.objects.filter(call__survey=survey).exclude(number__in=blacklist_nums).distinct().values('number')
+				numbers = [pair.values()[0] for pair in numbers]
+				calls = Call.objects.filter(survey=survey)
+				firstcalldate = calls.aggregate(Min('date'))
+				firstcalldate = firstcalldate.values()[0]
+				lastcalldate = calls.aggregate(Max('date'))
+				lastcalldate = lastcalldate.values()[0]
+					
+				listens = num_calls.get_calls(outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True)
+				n_listens = 0
+				for week in listens:
+					n_listens += listens[week]
+				bcast_calls[condition+'_listens'] += n_listens
+				
 				if condition != 'CALL':
 					bcast_calls[condition+'_behavior'] += Input.objects.filter(call__survey=survey, call__survey__name__contains='_'+condition+'_').exclude(call__subject__in=blacklist).distinct().count()
 				else:
 					# only count sessions that have at least one feature access
-					n_one_plus_sessions = 0
-					numbers = Subject.objects.filter(call__survey=survey).exclude(number__in=blacklist_nums).distinct().values('number')
-					numbers = [pair.values()[0] for pair in numbers]
-					calls = Call.objects.filter(survey=survey)
-					firstcalldate = calls.aggregate(Min('date'))
-					firstcalldate = firstcalldate.values()[0]
-					lastcalldate = calls.aggregate(Max('date'))
-					lastcalldate = lastcalldate.values()[0]
-				    
+					n_one_plus_sessions = 0	    
 					calls = num_calls.get_features_within_call(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
 					feature_calls = calls[calls.keys()[0]] if calls else {}
 					features_hist = {}
@@ -187,7 +209,7 @@ def print_bcast_table(inbound_log, line, conditions, study_start):
 		print("<tr>")
 		print("<td>"+condition+"</td>")
 		for bcast in call_tots:
-			print("<td>"+str(bcast[condition+'_completed'])+" of "+str(bcast[condition+'_recipients'])+" completed; "+str(bcast[condition+'_behavior'])+" actions</td>")
+			print("<td>"+str(bcast[condition+'_recipients'])+" attempts; "+str(bcast[condition+'_completed'])+" completed; "+str(bcast[condition+'_listens'])+" action prompts; "+str(bcast[condition+'_behavior'])+" actions</td>")
 		print("</tr>")
 
 	print("</table>")
@@ -204,10 +226,17 @@ def print_bcast_table(inbound_log, line, conditions, study_start):
 		subjects = Subject.objects.filter(call__survey__in=thisweeks_bcasts, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct()
 		numbers = [subj.number for subj in subjects]
 		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=thisweek, quiet=True)
-		n_thisweek = calls[calls.keys()[0]] if calls else 0
+		calls = stats_by_phone_num.get_calls_by_number(filename=inbound_log, destnum=line.number, date_start=thisweek, quiet=True)
+		n_unique = 0
+		n_thisweek = 0
+		for number, tot in calls:
+			if number in numbers:
+				n_unique += 1
+				n_thisweek += tot
+				
 		posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
-		print("<td>"+str(n_thisweek)+" calls; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
+		print("<td>"+str(n_thisweek)+" calls by "+str(n_unique)+ " callers; "+str(posts.count())+" posts ("+str(n_approved)+" approved)</td>")
 		
 		# Total
 		calls = num_calls.get_calls(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=study_start, quiet=True)
@@ -228,13 +257,14 @@ def main():
 		print("Wrong")
 	else:
 		f = sys.argv[1]
-		bangid = sys.argv[2]
+		survey = sys.argv[2]
+		bangid = sys.argv[3]
 		bang = Line.objects.get(pk=int(bangid))	
 		motiv = None
-		if len(sys.argv) > 3:
-			motivid = sys.argv[3]
+		if len(sys.argv) > 4:
+			motivid = sys.argv[4]
 			motiv = Line.objects.get(pk=int(motivid))
 	
-	print_digest(f, bang, motiv)
+	print_digest(f, survey, bang, motiv)
     
 main()

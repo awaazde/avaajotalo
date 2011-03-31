@@ -51,11 +51,12 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_start=Fa
 			continue
 		except otalo_utils.PhoneNumException:
 			continue
-
+		
+	calls_sorted = sorted(calls.iteritems(), key=lambda(k,v): (v,k))
+	calls_sorted.reverse()
 	if not quiet:
 		print("Number of "+ log + "'s by phone number:")
-		calls_sorted = sorted(calls.iteritems(), key=lambda(k,v): (v,k))
-		calls_sorted.reverse()
+		
 		total = 0
 		for num, tot in calls_sorted:
 			total += tot
@@ -63,7 +64,7 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_start=Fa
 			
 		print('total is ' + str(total));	
 		print('numbers are ' + phone_nums)
-	return calls
+	return calls_sorted
 
 def get_calls_by_feature(filename):		
 	features = {}
