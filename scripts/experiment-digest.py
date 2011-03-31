@@ -119,7 +119,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 		for condition in conditions:
 			bcast_calls[condition+'_recipients'] = Call.objects.filter(survey__in=bcast_surveys, survey__name__contains='_'+condition+'_').exclude(subject__in=blacklist).values('subject').distinct().count()
 			bcast_calls[condition+'_completed'] = Call.objects.filter(survey__in=bcast_surveys, survey__name__contains='_'+condition+'_', complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
-			numbers = Subject.objects.filter(call__survey__in=bcast_surveys, survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct().values('number')
+			numbers = Subject.objects.filter(call__survey__in=bcast_surveys, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct().values('number')
 			numbers = [pair.values()[0] for pair in numbers]
 			# ASSUME: Broadcasts don't overlaop each other in time, so if a number got a bcast within 
 			# the start and end window of this bcast, it was for this bcast only
