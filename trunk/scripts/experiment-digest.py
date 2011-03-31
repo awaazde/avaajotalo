@@ -106,8 +106,8 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 	
 	exp1_header = "<td width='100px'><u>Condition</u></td>"
 	for bcast_msg in unique_bcasts:
-		exp1_header += "<td width='250px'><u>"+str(bcast_msg)+"</u></td>"
-	exp1_header += "<td width='250px'><u>Overall</u></td>"
+		exp1_header += "<td width='300px'><u>"+str(bcast_msg)+"</u></td>"
+	exp1_header += "<td width='300px'><u>Overall</u></td>"
 	print(exp1_header)
 	print("</tr>")
 	
@@ -119,7 +119,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 		for condition in conditions:
 			bcast_calls[condition+'_recipients'] = Call.objects.filter(survey__in=bcast_surveys, survey__name__contains='_'+condition+'_').exclude(subject__in=blacklist).values('subject').distinct().count()
 			bcast_calls[condition+'_completed'] = Call.objects.filter(survey__in=bcast_surveys, survey__name__contains='_'+condition+'_', complete=True).exclude(subject__in=blacklist).values('subject').distinct().count()
-			numbers = Subject.objects.filter(call__survey__in=bcast_surveys).exclude(number__in=blacklist_nums).distinct().values('number')
+			numbers = Subject.objects.filter(call__survey__in=bcast_surveys, survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct().values('number')
 			numbers = [pair.values()[0] for pair in numbers]
 			# ASSUME: Broadcasts don't overlaop each other in time, so if a number got a bcast within 
 			# the start and end window of this bcast, it was for this bcast only
@@ -209,7 +209,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 		print("<tr>")
 		print("<td>"+condition+"</td>")
 		for bcast in call_tots:
-			print("<td>"+str(bcast[condition+'_recipients'])+" attempts; "+str(bcast[condition+'_completed'])+" completed; "+str(bcast[condition+'_listens'])+" action prompts; "+str(bcast[condition+'_behavior'])+" actions</td>")
+			print("<td>"+str(bcast[condition+'_recipients'])+" attempts; "+str(bcast[condition+'_completed'])+" pickups; "+str(bcast[condition+'_listens'])+" action prompts; "+str(bcast[condition+'_behavior'])+" actions</td>")
 		print("</tr>")
 
 	print("</table>")
@@ -217,7 +217,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 	print("<div><h4>Inbound Calling</h4></div>")
 	print("<table>")
 	print("<tr>")
-	print("<td width='100px'><u>Condition</u></td><td width='250px'><u>This week</u></td><td width='250px'><u>Total</u></td>")
+	print("<td width='100px'><u>Condition</u></td><td width='300px'><u>This week</u></td><td width='300px'><u>Total</u></td>")
 	print("</tr>")
 		
 	for condition in conditions:
