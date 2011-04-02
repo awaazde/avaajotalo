@@ -235,8 +235,8 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 				
 		posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
-		n_unique = posts.values('message__user').distinct().count()
-		print("<td>"+str(n_thisweek)+" calls by "+str(n_unique)+ " callers; "+str(posts.count())+" posts by "+str(n_unique)+" posters ("+str(n_approved)+" approved)</td>")
+		n_unique_posters = posts.values('message__user').distinct().count()
+		print("<td>"+str(n_thisweek)+" calls by "+str(n_unique)+ " callers; "+str(posts.count())+" posts by "+str(n_unique_posters)+" posters ("+str(n_approved)+" approved)</td>")
 		
 		# Total
 		calls = stats_by_phone_num.get_calls_by_number(filename=inbound_log, destnum=line.number, date_start=study_start, quiet=True)
@@ -248,8 +248,8 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 				n_total += tot
 		posts = Message_forum.objects.filter(message__date__gte=study_start, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
-		n_unique = posts.values('message__user').distinct().count()
-		print("<td>"+str(n_total)+" calls by "+str(n_unique)+" callers; "+str(posts.count())+" posts by "+str(n_unique)+" posters ("+str(n_approved)+" approved)</td>")
+		n_unique_posters = posts.values('message__user').distinct().count()
+		print("<td>"+str(n_total)+" calls by "+str(n_unique)+" callers; "+str(posts.count())+" posts by "+str(n_unique_posters)+" posters ("+str(n_approved)+" approved)</td>")
 
 
 		print("</tr>")
