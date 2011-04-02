@@ -236,12 +236,10 @@ def main():
     line = Line.objects.get(pk=3)
     Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
     
-    freecall_template(line, 'qna')
     freecall_template(line, 'announcement')
-    
-    record_template(line, 'qna')
     record_template(line, 'announcement')
-
-    
+    freecall_template(line, 'qna')
+    record_template(line, 'qna')
+        
 main()
 
