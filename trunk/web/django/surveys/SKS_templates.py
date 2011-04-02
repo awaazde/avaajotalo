@@ -120,7 +120,7 @@ def freecall_template(line, contenttype):
         repeat_opt2.save()
         repeat_opt3 = Option(number="9", action=Option.GOTO, prompt=repeat)
         repeat_opt3.save()
-        param = Param(option=repeat_opt2, name=Param.IDX, value=3)
+        param = Param(option=repeat_opt3, name=Param.IDX, value=3)
         param.save()
                
         # freecall
