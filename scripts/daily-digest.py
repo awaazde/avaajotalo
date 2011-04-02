@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.db.models import Count
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.AO.models import Message, Message_forum, Line, User, Message_responder
-from otalo.surveys.models import Survey, Call, Subject
+from otalo.surveys.models import Survey, Call, Subject, Input
 from otalo.AO.views import LISTEN_THRESH
 
 def main():
@@ -57,8 +57,11 @@ def main():
 	calls = num_calls.get_features_within_call(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
 	feature_calls = calls[calls.keys()[0]] if calls else {}
 	features_hist = {}
+	features_tot = 0
 	for call in feature_calls:
-		features_tot = call['q'] + call['a'] + call['r'] + call['e']
+		for feature in call:
+			if feature != 'order':
+				features_tot = call[feature]
 		if features_tot in features_hist:
 			features_hist[features_tot] += 1 
 		else: 
@@ -157,6 +160,7 @@ def main():
 			n_completed += 1
 		elif Call.objects.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True).count() == 0:
 			n_recipients += 1
+	n_response_to_response = Input.objects.filter(call__in=answercalls).count()
 	
 	print("<br/><div>")
 	print("<b>Response calls attempted:</b> ")
@@ -164,6 +168,9 @@ def main():
 	print("<br/>")
 	print("<b>Response calls matured:</b> ")
 	print(n_completed)
+	print("<br/>")
+	print("<b>Responses to response:</b> ")
+	print(n_response_to_response)
 	print("</div>")
 	
 	print("<div><h4>Today's Broadcasts</h4></div>")

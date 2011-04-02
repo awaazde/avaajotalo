@@ -281,8 +281,8 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 					
 				# add new call
 				#print("adding new call: " + phone_num)
-				open_calls[phone_num] = {'q':0, 'a':0, 'r':0, 'e':0, 'order':''} 
-					
+				open_calls[phone_num] = {'order':''}
+				
 			elif line.find("End call") != -1:
 				if phone_num in open_calls:
 					# close out call				
@@ -295,21 +295,13 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 					# on the next go-around, look for the feature
 					feature_chosen = 1
 					continue
-				if feature_chosen and line.find("qna") != -1:
-					call['q'] += 1
-					call['order'] += 'q'
-				elif feature_chosen and line.find("announcements") != -1:
-					call['a'] += 1
-					call['order'] += 'a'
-				elif feature_chosen and line.find("radio") != -1:
-					call['r'] += 1
-					call['order'] += 'r'
-				elif feature_chosen and line.find("experiences") != -1:
-					call['e'] += 1
-					call['order'] += 'e'
-				elif feature_chosen and line.find("dg") != -1:
-					call['r'] += 1
-					call['order'] += 'r'
+				if feature_chosen:
+					feature = line[line.rfind('/')+1:line.find('.wav')]
+					if feature in call:
+						call[feature] += 1
+					else:
+						call[feature] = 1
+					call['order'] += feature
 				
 				feature_chosen = 0
 			
