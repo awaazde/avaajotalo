@@ -348,7 +348,11 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
     
     msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=author)
     msg.save()
-    msg_forum = Message_forum(message=msg, forum=forum,  status=Message_forum.STATUS_APPROVED, position = pos)
+    if bool(Admin.objects.filter(user=author,forum=forum)):
+        status = Message_forum.STATUS_APPROVED
+    else:
+        status = Message_forum.STATUS_PENDING
+    msg_forum = Message_forum(message=msg, forum=forum,  status=status, position = pos)
     msg_forum.save()
     
     if parent:
