@@ -204,12 +204,13 @@ public class ForumWidget implements ClickHandler {
 			else
 			{
 				// get the message that was updated
+				MessageForum mf = new MessageForum(model);
 				uploadDlg.hide();
 				ConfirmDialog saved = new ConfirmDialog("Uploaded!");
 				saved.center();
 				
-				// get the message that was updated
-				Messages.get().displayMessages(forum, MessageStatus.APPROVED, 0);
+				Messages.get().displayMessages(mf);
+				
 			}
 
 		}
