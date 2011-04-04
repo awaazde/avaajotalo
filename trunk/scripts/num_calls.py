@@ -35,8 +35,10 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 			
 			if date_start:
 				if date_end:
-					 if not (current_date >= date_start and current_date < date_end):
+					if not (current_date >= date_start and current_date < date_end):
 						continue
+					if current_date > date_end:
+						break
 				else:
 					if not current_date >= date_start:
 						continue
@@ -101,9 +103,10 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 # (i.e. in between an explicit call-started and hang-up)
 def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False, date_end=False, quiet=False, legacy_log=False):
 	features = {}
+	feature_names = []
 	current_week_start = 0
 	feature_chosen = 0
-	open_calls = []
+	open_calls = {}
 	
 	f = open(filename)
 	
@@ -129,8 +132,10 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False
 			
 			if date_start:
 				if date_end:
-					 if not (current_date >= date_start and current_date < date_end):
+					if not (current_date >= date_start and current_date < date_end):
 						continue
+					if current_date > date_end:
+						break
 				else:
 					if not current_date >= date_start:
 						continue
@@ -145,44 +150,43 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False
 
 			if delta.days > 6:
 				#flush all open calls
-				open_calls = []
+				open_calls = {}
 				
 				current_week_start = current_date
 			
 			if not current_week_start in features:
 				features[current_week_start] = {'q':0, 'a':0, 'r':0, 'e':0} 
-			
+				features[current_week_start] = {}
+				
 			if line.find("Start call") != -1:
 				# check to see if this caller already has one open
 				if phone_num in open_calls:
 					# close out current call					
-					open_calls.remove(phone_num)
+					del open_calls[phone_num]
 					
-				# add new call
-				#print("adding new call: " + phone_num)
-				open_calls.append(phone_num)
+				# add new call with no feature access yet
+				open_calls[phone_num] = 0
 					
 			elif line.find("End call") != -1:
 				if phone_num in open_calls:
 					# close out call				
-					open_calls.remove(phone_num)
+					del open_calls[phone_num]
 			elif phone_num in open_calls:
 				if line.find("okyouwant_pre") != -1:
 					# on the next go-around, look for the feature
-					feature_chosen = 1
-					continue
-				if feature_chosen and line.find("qna") != -1:
-					features[current_week_start]['q'] += 1
-				elif feature_chosen and line.find("announcements") != -1:
-					features[current_week_start]['a'] += 1
-				elif feature_chosen and line.find("radio") != -1:
-					features[current_week_start]['r'] += 1
-				elif feature_chosen and line.find("experiences") != -1:
-					features[current_week_start]['e'] += 1
-				elif feature_chosen and line.find("dg") != -1:
-					features[current_week_start]['r'] += 1
+					open_calls[phone_num] = 1
+				elif open_calls[phone_num]:
+					feature = line[line.rfind('/')+1:line.find('.wav')]
+					#if feature not in ['announcements', 'qna', 'radio', 'experiences']:
+						#print(line)
+					if feature not in feature_names:
+						feature_names.append(feature)
+					if feature in features[current_week_start]:
+						features[current_week_start][feature] += 1
+					else:
+						features[current_week_start][feature] = 1
 				
-				feature_chosen = 0
+					open_calls[phone_num] = 0
 			
 		except KeyError as err:
 			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
@@ -201,16 +205,24 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False
 			print("Data for phone numbers: " + str(phone_num_filter))
 			
 		print("Number of calls by feature, by week:")
-		print("\t\tq&a\tannouncements\tradio\texperiences")
+		header = "\t"
+		for name in feature_names:
+			header += name+"\t"
+		print(header)
 		dates = features.keys()
 		dates.sort()
 		for date in dates:
-			print(otalo_utils.date_str(date) +": \t"+str(features[date]['q']) + "\t" + str(features[date]['a']) + "\t\t" + str(features[date]['r']) + "\t" + str(features[date]['e']) + "\t")
+			row = otalo_utils.date_str(date) +"\t"
+			for name in feature_names:
+				if name in features[date]:
+					row += str(features[date][name]) + "\t"
+				else:
+					row += "0\t"
+			print(row)
 
 def get_features_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	features = {}
 	current_week_start = 0
-	feature_chosen = 0
 	open_calls = {}
 	
 	f = open(filename)
@@ -237,8 +249,10 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 				
 			if date_start:
 				if date_end:
-					 if not (current_date >= date_start and current_date < date_end):
+					if not (current_date >= date_start and current_date < date_end):
 						continue
+					if current_date > date_end:
+						break
 				else:
 					if not current_date >= date_start:
 						continue
@@ -281,7 +295,7 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 					
 				# add new call
 				#print("adding new call: " + phone_num)
-				open_calls[phone_num] = {'order':''}
+				open_calls[phone_num] = {'order':'','feature_chosen':False}
 				
 			elif line.find("End call") != -1:
 				if phone_num in open_calls:
@@ -293,17 +307,16 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 				call = open_calls[phone_num]
 				if line.find("okyouwant_pre") != -1:
 					# on the next go-around, look for the feature
-					feature_chosen = 1
-					continue
-				if feature_chosen:
+					call['feature_chosen'] = True
+				elif call['feature_chosen']:
 					feature = line[line.rfind('/')+1:line.find('.wav')]
 					if feature in call:
 						call[feature] += 1
 					else:
 						call[feature] = 1
-					call['order'] += feature
-				
-				feature_chosen = 0
+					call['order'] += feature+','
+					
+					open_calls[phone_num]['feature_chosen'] = False
 			
 		except KeyError as err:
 			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
@@ -321,40 +334,42 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 		if phone_num_filter:
 			print("Data for phone numbers: " + str(phone_num_filter))
 		
-		print("Histogram of number of features accessed within call, by week:")
+		print("Histogram of number of features accessed within call:")
 		dates = features.keys()
 		dates.sort()
+		features_hist = {}
 		for date in dates:
-			features_hist = {}
 			for call in features[date]:
-				features_tot = call['q'] + call['a'] + call['r'] + call['e']
+				features_tot = 0
+				for feature in call:
+					if feature != 'feature_chosen' and feature != 'order':
+						features_tot += call[feature]
 				if features_tot in features_hist:
 					features_hist[features_tot] += 1 
 				else: 
 					features_hist[features_tot] = 1
 			
-			sorted_items = features_hist.items()
-			sorted_items.sort()
-			#features_hist = [[k,v] for k,v in sorted_items]
-			
-			print(date.strftime('%Y-%m-%d') + ": " + str(sorted_items))
+		sorted_items = features_hist.items()
+		sorted_items.sort()
+		for num, tot in sorted_items:
+			print(str(num)+"\t"+str(tot))
 			
 		print("Average features accessed within call, by week:")
 		for date in dates:
 			total_features = 0
 			num_calls = len(features[date])
 			for call in features[date]:
-				total_features += call['q'] + call['a'] + call['r'] + call['e']
+				for feature in call:
+					if feature != 'feature_chosen' and feature != 'order':
+						total_features += call[feature]
 	
 			print(date.strftime('%Y-%m-%d') + ": " + str(float(total_features)/float(num_calls)))	
 			
 	return features
-#ignoring announcements, since its typically all or nothing
-def get_listens_within_call(filename, phone_num_filter=0):
+
+def get_listens_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	listens = {}
 	current_week_start = 0
-	feature_chosen = 0
-	feature = 0
 	open_calls = {}
 	
 	f = open(filename)
@@ -371,11 +386,36 @@ def get_listens_within_call(filename, phone_num_filter=0):
 		## All of those below should probably always be.
 		
 			phone_num = otalo_utils.get_phone_num(line)
-			current_date = otalo_utils.get_date(line)				
+			current_date = otalo_utils.get_date(line)		
+			dest = otalo_utils.get_destination(line)			
 		##
 		################################################
 			
 			if phone_num_filter and not phone_num in phone_num_filter:
+				continue
+				
+			if date_start:
+				if date_end:
+					if not (current_date >= date_start and current_date < date_end):
+						continue
+					if current_date > date_end:
+						break
+				else:
+					if not current_date >= date_start:
+						continue
+			
+			if destnum.find(dest) == -1:
+				continue
+			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
 				continue
 			
 			if not current_week_start:
@@ -390,76 +430,27 @@ def get_listens_within_call(filename, phone_num_filter=0):
 				current_week_start = current_date
 			
 			if not current_week_start in listens:
-				listens[current_week_start] = {'q':[], 'q-longest':0, 'r':[], 'r-longest':0, 'a':[], 'a-longest':0, 'e':[], 'e-longest':0}
+				listens[current_week_start] = []
 	
 			if line.find("Start call") != -1:
 				# check to see if this caller already has one open
 				if phone_num in open_calls:
 					# close out current call
-					call = open_calls[phone_num]
-					if call['qcount'] > 0:
-						count = call['qcount']
-						listens[current_week_start]['q'].append(count)
-						listens[current_week_start]['q-longest'] = max(listens[current_week_start]['q-longest'], count)
-					elif call['rcount'] > 0:
-						count = call['rcount']
-						listens[current_week_start]['r'].append(count)
-						listens[current_week_start]['r-longest'] = max(listens[current_week_start]['r-longest'], count)
-					elif call['acount'] > 0:
-						count = call['acount']
-						listens[current_week_start]['a'].append(count)
-						listens[current_week_start]['a-longest'] = max(listens[current_week_start]['a-longest'], count)
-					elif call['ecount'] > 0:
-						count = call['ecount']
-						listens[current_week_start]['e'].append(count)
-						listens[current_week_start]['e-longest'] = max(listens[current_week_start]['e-longest'], count)
-					
+					tot = open_calls[phone_num]
+					listens[current_week_start].append(tot)
 					del open_calls[phone_num]
-					
-				# add new call
-				#print("adding new call: " + phone_num)
-				open_calls[phone_num] = {'qcount':0, 'rcount':0, 'acount':0, 'ecount':0} 
-					
+				open_calls[phone_num] = 0
+				
 			elif line.find("End call") != -1:
 				if phone_num in open_calls:
 					# close out call				
-					call = open_calls[phone_num]
-					if call['qcount'] > 0:
-						count = call['qcount']
-						listens[current_week_start]['q'].append(count)
-						listens[current_week_start]['q-longest'] = max(listens[current_week_start]['q-longest'], count)
-					elif call['rcount'] > 0:
-						count = call['rcount']
-						listens[current_week_start]['r'].append(count)
-						listens[current_week_start]['r-longest'] = max(listens[current_week_start]['r-longest'], count)
-					elif call['acount'] > 0:
-						count = call['acount']
-						listens[current_week_start]['a'].append(count)
-						listens[current_week_start]['a-longest'] = max(listens[current_week_start]['a-longest'], count)
-					elif call['ecount'] > 0:
-						count = call['ecount']
-						listens[current_week_start]['e'].append(count)
-						listens[current_week_start]['e-longest'] = max(listens[current_week_start]['e-longest'], count)
-										
+					tot = open_calls[phone_num]
+					listens[current_week_start].append(tot)
 					del open_calls[phone_num]
-			elif phone_num in open_calls:
-				call = open_calls[phone_num]
-				if line.find("okyouwant_pre") != -1:
-					# on the next go-around, look for the feature
-					feature_chosen = 1
-					continue
-				if feature_chosen and line.find("qna") != -1:
-					feature = 'q'
-				elif feature_chosen and line.find("announcements") != -1:
-					feature = 'a'
-				elif feature_chosen and line.find("radio") != -1:
-					feature = 'r'
-				elif feature_chosen and line.find("experiences") != -1:
-					feature = 'e'
-					
-				feature_chosen = 0
-				if line.find("Stream") != -1:
-					call[feature+'count'] += 1
+			elif line.find("Stream") != -1:
+				if phone_num in open_calls:
+					open_calls[phone_num] += 1
+				
 			
 		except KeyError as err:
 			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
@@ -473,20 +464,42 @@ def get_listens_within_call(filename, phone_num_filter=0):
 			#print("PhoneNumException: " + line)
 			continue
 	
-	if phone_num_filter:
-		print("Data for phone numbers: " + str(phone_num_filter))
+	if not quiet:
+		if phone_num_filter:
+			print("Data for phone numbers: " + str(phone_num_filter))
 		
-	print("Average number of content listens within call, by week:")
-	dates = listens.keys()
-	dates.sort()
-	for date in dates:
-		totals = listens[date]
-		avg_q = float(sum(totals['q'])) / float(len(totals['q']))
-		avg_a = float(sum(totals['a'])) / float(len(totals['a']))
-		avg_r = float(sum(totals['r'])) / float(len(totals['r']))
-		avg_e = 0 if len(totals['e']) == 0 else float(sum(totals['e'])) / float(len(totals['e']))
-		
-		print(date.strftime('%Y-%m-%d') + ": Questions - " + str(avg_q) + "; longest = " + str(totals['q-longest']) + "\tAnnouncements - " + str(avg_a) + "; longest = " + str(totals['a-longest']) + "\tRadio - " + str(avg_r) + "; longest = " + str(totals['r-longest']) + "\tExperiences - " + str(avg_e) + "; longest = " + str(totals['e-longest']) )
+		print("Histogram of number of listens within call")
+		dates = listens.keys()
+		dates.sort()
+		listens_hist = {}
+		for date in dates:
+			for tot in listens[date]:
+				if tot in listens_hist:
+					listens_hist[tot] += 1 
+				else: 
+					listens_hist[tot] = 1
+			
+		sorted_items = listens_hist.items()
+		sorted_items.sort()
+		for num, tot in sorted_items:
+			print(str(num)+"\t"+str(tot))
+			
+			
+		print("Average listens within call, by week:")
+		for date in dates:
+			total_listens = 0
+			num_calls = len(listens[date])
+			for tot in listens[date]:
+				total_listens += tot
+				
+			if total_listens == 0:
+				avg = 0
+			else:
+				avg = float(total_listens)/float(num_calls)
+				
+			print(date.strftime('%Y-%m-%d') + ": " + str(avg))	
+			
+	return listens
 		
 def get_log_as_percent(filename, log, phone_num_filter=0):
 	calls = {}
