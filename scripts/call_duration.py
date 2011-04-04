@@ -33,8 +33,10 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 				
 			if date_start:
 				if date_end:
-					 if not (current_date >= date_start and current_date < date_end):
+					if not (current_date >= date_start and current_date < date_end):
 						continue
+					if current_date > date_end:
+						break
 				else:
 					if not current_date >= date_start:
 						continue

@@ -27,8 +27,10 @@ def get_calls_by_number(filename, destnum=False, log="Start call", date_start=Fa
 		################################################
 			if date_start:
 				if date_end:
-					 if not (current_date >= date_start and current_date < date_end):
+					if not (current_date >= date_start and current_date < date_end):
 						continue
+					if current_date > date_end:
+						break
 				else:
 					if not current_date >= date_start:
 						continue

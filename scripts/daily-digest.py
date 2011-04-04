@@ -60,8 +60,8 @@ def main():
 	features_tot = 0
 	for call in feature_calls:
 		for feature in call:
-			if feature != 'order':
-				features_tot = call[feature]
+			if feature != 'order' and feature != 'feature_chosen':
+				features_tot += call[feature]
 		if features_tot in features_hist:
 			features_hist[features_tot] += 1 
 		else: 

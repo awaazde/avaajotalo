@@ -6,8 +6,8 @@ from otalo.surveys.models import Subject, Survey, Prompt, Call, Input
 from otalo.AO.models import Line, Message_forum
 
 # only start calling after free call bug fix
-STUDY_START1 = datetime(year=2011, month=3, day=9)
-STUDY_START2 = datetime(year=2011, month=3, day=3)
+BANG_START = datetime(year=2011, month=3, day=9)
+MOTIV_START = datetime(year=2011, month=3, day=3)
 blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845']
 blacklist = Subject.objects.filter(number__in=blacklist_nums)
 
@@ -21,13 +21,13 @@ def print_digest(inbound_log, outbound_log, bang, motiv=None):
 	print("<html>")
 	print("<div><h2>This week's experiment results</h3></div>")
 	print("<div><h3>Experiment 1: Free Access vs. Free Contribution </h4></div>")
-	print_bcast_table(inbound_log, outbound_log, bang, ['CALL', 'REC', 'RATE'], {'CALL':'guj/freecall', 'REC':'guj/recordmessage', 'RATE':'guj/likert'}, STUDY_START1)
+	print_bcast_table(inbound_log, outbound_log, bang, ['CALL', 'REC', 'RATE'], {'CALL':'guj/freecall', 'REC':'guj/recordmessage', 'RATE':'guj/likert'}, BANG_START)
 	
 	thisweeks_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=thisweek, call__date__lt=today+oneday).distinct()
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
 	bcast_prompt_files = [os.path.basename(pair.values()[0]) for pair in bcast_prompts.values('file')]
 	unique_bcasts = Message_forum.objects.filter(message__content_file__in=bcast_prompt_files)
-	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=STUDY_START1, call__date__lt=today+oneday).distinct()
+	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=BANG_START, call__date__lt=today+oneday).distinct()
 	
 	print("<div><h4>Rating Results</h4></div>")
 	print("<table>")
@@ -82,7 +82,7 @@ def print_digest(inbound_log, outbound_log, bang, motiv=None):
 	
 	if motiv:
 		print("<div><h3>Experiment 2: Self vs. Group Motivation </h4></div>")
-		print_bcast_table(inbound_log, outbound_log, motiv, ['SELF', 'GROUP', 'NONE'], {'SELF':"hin/recordmessage", 'GROUP':"hin/recordmessage", 'NONE':"hin/recordmessage"}, STUDY_START2)
+		print_bcast_table(inbound_log, outbound_log, motiv, ['SELF', 'GROUP', 'NONE'], {'SELF':"hin/recordmessage", 'GROUP':"hin/recordmessage", 'NONE':"hin/recordmessage"}, MOTIV_START)
 		
 	
 	print("</html>")
@@ -152,7 +152,10 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 					feature_calls = calls[calls.keys()[0]] if calls else {}
 					features_hist = {}
 					for call in feature_calls:
-						features_tot = call['q'] + call['a'] + call['r'] + call['e']
+						features_tot = 0
+						for feature in call:
+							if feature != 'order' and feature != 'feature_chosen':
+								features_tot += call[feature]
 						if features_tot > 0:
 							n_one_plus_sessions += 1
 							
@@ -197,7 +200,10 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 					feature_calls = calls[calls.keys()[0]] if calls else {}
 					features_hist = {}
 					for call in feature_calls:
-						features_tot = call['q'] + call['a'] + call['r'] + call['e']
+						features_tot = 0
+						for feature in call:
+							if feature != 'order' and feature != 'feature_chosen':
+								features_tot += call[feature]
 						if features_tot > 0:
 							n_one_plus_sessions += 1
 								
@@ -256,6 +262,61 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 			
 	print("</table>")
 
+def subject_stats(inbound_log, bang, motiv):
+	now = datetime.now()
+	today = datetime(year=now.year, month=now.month, day=now.day)
+	oneday = timedelta(days=1)
+
+	print("Bang Experiment")
+	bang_conditions = ['CALL', 'REC', 'RATE']
+	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=BANG_START, call__date__lt=today+oneday).distinct()
+	
+	for condition in bang_conditions:
+		print(condition)
+		print("Number\tPickups\tActions")
+		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains=condition).exclude(number__in=blacklist_nums).distinct().values('number')
+		
+		for subj in subjects:
+			calls = Call.objects.filter(subject=subj, survey__in=all_bcasts)
+			n_completed = calls.filter(complete=True).count()
+			firstcalldate = calls.aggregate(Min('date'))
+			firstcalldate = firstcalldate.values()[0]
+			lastcalldate = calls.aggregate(Max('date'))
+			lastcalldate = lastcalldate.values()[0]
+			
+			if condition != 'CALL':
+				n_actions = Input.objects.filter(call__subject=subj).count()
+			else:
+				n_actions = 0	    
+				transfers = num_calls.get_features_within_call(filename=inbound_log, destnum=bang.number, phone_num_filter=[subj.number], date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
+				for date in transfers:
+					feature_calls = transfers[date]
+					features_hist = {}
+					for call in feature_calls:
+						features_tot = 0
+						for feature in call:
+							if feature != 'order' and feature != 'feature_chosen':
+								features_tot += call[feature]
+						if features_tot > 0:
+							n_actions += 1
+			print(subj.number+"\t"+str(n_completed)+"\t"+str(n_actions))
+	
+	print("Motiv Experiment")
+	motiv_conditions = ['SELF', 'GROUP', 'NONE']
+	all_bcasts = Survey.objects.filter(broadcast=True, number__in=[motiv.number, motiv.outbound_number], call__date__gt=MOTIV_START, call__date__lt=today+oneday).distinct()
+	
+	for condition in motiv_conditions:
+		print(condition)
+		print("Number\tPickups\tActions")
+		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains=condition).exclude(number__in=blacklist_nums).distinct().values('number')
+		
+		for subj in subjects:
+			calls = Call.objects.filter(subject=subject, survey__in=all_bcasts)
+			n_completed = calls.filter(complete=True).count()
+			n_actions = Input.objects.filter(call__subject=subj).count()
+			
+			print(subj.number+"\t"+str(n_completed)+"\t"+str(n_actions))
+	
 def main():
 	if len(sys.argv) < 3:
 		print("Wrong")
@@ -269,6 +330,7 @@ def main():
 			motivid = sys.argv[4]
 			motiv = Line.objects.get(pk=int(motivid))
 	
-	print_digest(f, survey, bang, motiv)
+	#print_digest(f, survey, bang, motiv)
+	subject_stats(f, bang, motiv)
     
 main()
