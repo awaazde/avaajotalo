@@ -229,7 +229,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 	for condition in conditions:
 		print("<tr>")
 		print("<td>"+condition+"</td>")
-		subjects = Subject.objects.filter(call__survey__in=thisweeks_bcasts, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct()
+		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains='_'+condition+'_').exclude(number__in=blacklist_nums).distinct()
 		numbers = [subj.number for subj in subjects]
 		calls = stats_by_phone_num.get_calls_by_number(filename=inbound_log, destnum=line.number, date_start=thisweek, quiet=True)
 		n_unique = 0
