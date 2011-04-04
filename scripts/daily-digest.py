@@ -57,8 +57,8 @@ def main():
 	calls = num_calls.get_features_within_call(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
 	feature_calls = calls[calls.keys()[0]] if calls else {}
 	features_hist = {}
-	features_tot = 0
 	for call in feature_calls:
+		features_tot = 0
 		for feature in call:
 			if feature != 'order' and feature != 'feature_chosen':
 				features_tot += call[feature]
