@@ -682,9 +682,9 @@ function playforum (forumid)
    			if (tagid == nil) then
    				read(aosd .. "okplay_all.wav", 1000);
    			else
-   				read(aosd .. "okyouwant_tag_pre.wav", 0)
+   				read(aosd .. "okplaytag_pre.wav", 0)
    				read(tagsd .. listen_opts_names[tonumber(d)], 0);
-		      		read(aosd .. "okyouwant_tag_post.wav", 0);
+		      		read(aosd .. "okplaytag_post.wav", 0);
 		     
    			end
    		end
