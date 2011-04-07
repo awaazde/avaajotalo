@@ -149,51 +149,53 @@ def turn_around_time(line, date_start=False, date_end=False):
 	# number of E2Es
 	# of those E2Es, average response time
 	
-def response_call_recievers(f, line, date_start=False, date_end=False):
+def response_call_recievers(f, line, date_start, window_end, date_end=False):
 	# get people who picked up a response call
-	receivers = Subject.objects.filter(call__survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, call__complete=True)
+	receivers = Subject.objects.filter(call__survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, call__complete=True, call__date__gte=date_start, call__date__lt=window_end).distinct()
 	numbers = [subj.number for subj in receivers]
-
+	calls = stats_by_phone_num.get_calls_by_number(f, line.number, date_start=date_start, date_end=window_end, quiet=True)
+	others = list(set([num for num,tot in calls ]) - set(numbers))
+	
+	print("n_recievers is " + str(len(numbers)) + "; n_others is "+ str(len(others)))
 	# calculate their calling and posting
 	calls = num_calls.get_calls(f, line.number, phone_num_filter=numbers, date_start=date_start, date_end=date_end, quiet=True)
 	dates = calls.keys()
 	dates.sort()
-	num_receivers = len(numbers)
+	n_receivers = len(numbers)
 	print("Calls by response call receivers")
 	print("Date\tCalls\tCalls per Caller")
 	for date in dates:
-		print(otalo_utils.date_str(date) +"\t"+str(calls[date])+"\t"+str(float(calls[date])/float(num_receivers)))
+		print(otalo_utils.date_str(date) +"\t"+str(calls[date])+"\t"+str(float(calls[date])/float(n_receivers)))
 	
 	print("Posting by response call receivers")
-	print("Date\tPosts\tOriginal\tApproved\tUnique Posters")
+	print("Date\tPosts\tOriginal\tApproved\tUnique Posters\tPosts per Poster")
 	for date in dates:
 		msgs = Message_forum.objects.filter(message__user__number__in=numbers, message__date__gte=date, message__date__lt=date+timedelta(days=7), forum__line=line)
 		n_total = msgs.count()
 		n_orig = msgs.filter(message__lft=1).count()
-		n_approved = msgs.filter(status=Message_forum.STATUS_APPROVED)
-		n_unique = msgs.values('message__user').count()
-		print(otalo_utils.date_str(date) +"\t"+str(n_total)+"\t"+str(n_orig)+"\t"+str(n_approved)+"\t"+str(n_unique))
+		n_approved = msgs.filter(status=Message_forum.STATUS_APPROVED).count()
+		n_unique = msgs.values('message__user').distinct().count()
+		print(otalo_utils.date_str(date) +"\t"+str(n_total)+"\t"+str(n_orig)+"\t"+str(n_approved)+"\t"+str(n_unique)+"\t"+str(float(n_total)/float(len(numbers))))
 		
 	# compare it to non-receivers
-	otalo_utils.blacklist += receivers
-	calls = num_calls.get_calls(f, line.number, date_start=date_start, date_end=date_end, quiet=True)
+	calls = num_calls.get_calls(f, line.number, phone_num_filter=others, date_start=date_start, date_end=date_end, quiet=True)
 	dates = calls.keys()
 	dates.sort()
-	num_receivers = len(numbers)
+	n_others = len(others)
 	print("Calls by non-receivers")
 	print("Date\tCalls\tCalls per Caller")
 	for date in dates:
-		print(otalo_utils.date_str(date) +"\t"+str(calls[date])+"\t"+str(float(calls[date])/float(num_receivers)))
+		print(otalo_utils.date_str(date) +"\t"+str(calls[date])+"\t"+str(float(calls[date])/float(n_others)))
 		
 	print("Posting by non-receivers")
-	print("Date\tPosts\tOriginal\tApproved\tUnique Posters")
+	print("Date\tPosts\tOriginal\tApproved\tUnique Posters\tPosts per Poster")
 	for date in dates:
 		msgs = Message_forum.objects.filter(message__date__gte=date, message__date__lt=date+timedelta(days=7), forum__line=line).exclude(message__user__number__in=numbers)
 		n_total = msgs.count()
 		n_orig = msgs.filter(message__lft=1).count()
-		n_approved = msgs.filter(status=Message_forum.STATUS_APPROVED)
-		n_unique = msgs.values('message__user').count()
-		print(otalo_utils.date_str(date) +"\t"+str(n_total)+"\t"+str(n_orig)+"\t"+str(n_approved)+"\t"+str(n_unique))
+		n_approved = msgs.filter(status=Message_forum.STATUS_APPROVED).count()
+		n_unique = msgs.values('message__user').distinct().count()
+		print(otalo_utils.date_str(date) +"\t"+str(n_total)+"\t"+str(n_orig)+"\t"+str(n_approved)+"\t"+str(n_unique)+"\t"+str(float(n_total)/float(len(others))))
 	
 def main():
 	if len(sys.argv) < 3:
@@ -209,19 +211,18 @@ def main():
 	end = datetime(year=2011, month=4, day=1)
 	#repeat_callers(f, line, start, window_end, end, timedelta(days=30), min=4)
 	#regular_callers(f,line,start,timedelta(days=30),start+timedelta(90),min=4)
-	#start = datetime(year=2011, month=3, day=10)
-	#window_end = datetime(year=2011, month=2, day=1)
-	#end = datetime(year=2011, month=3, day=30)
-	#regular_callers(f,line,start,timedelta(days=7),end,min=1)
-	#num_calls.get_calls(f, line.number, date_start=start, date_end=end)
-	#call_duration.get_call_durations(f, line.number, date_start=start, date_end=end)
-	#num_calls.get_calls_by_feature(f, line.number, date_start=start, date_end=end)
-	#num_calls.get_features_within_call(f, line.number, date_start=start, date_end=end)
-	#num_calls.get_listens_within_call(f, line.number, date_start=start, date_end=end)
+	#num_calls.get_calls(f, line.number)
+	#call_duration.get_call_durations(f, line.number)
+	#num_calls.get_calls_by_feature(f, line.number)
+	#num_calls.get_features_within_call(f, line.number)
+	#num_calls.get_listens_within_call(f, line.number)
 	#num_calls.get_calls(f, line.number, log="okyourreplies", date_start=start, date_end=end)
 	
 	#stats_by_phone_num.get_calls_by_number(f, destnum=line.number)
 	#stats_by_phone_num.new_and_repeat_callers(f,line.number)
-	response_call_recievers(f,line)
+	#response_call_recievers(f, line, start, start+timedelta(days=90))
+	
+	#num_calls.get_num_qna(line,1, start)
+	num_calls.get_lurking_and_posting(f, line.number, [5])
 	
 main()

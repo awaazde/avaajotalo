@@ -318,7 +318,100 @@ def get_numbers_by_date(filename, destnum=False, log="Start call", date_start=Fa
 			
 		print('numbers are ' + phone_nums)
 	return calls
+
+def new_and_repeat_callers(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False):
+	calls = {}
+	phone_nums = ''
+	already_called = []
+	current_week_start = False
 	
+	f = open(filename)
+
+	while(True):
+		line = f.readline()
+		if not line:
+			break
+		try:
+
+		#################################################
+		## Use the calls here to determine what pieces
+		## of data must exist for the line to be valid.
+		## All of those below should probably always be.
+
+			phone_num = otalo_utils.get_phone_num(line)
+			current_date = otalo_utils.get_date(line, legacy_log)
+			dest = otalo_utils.get_destination(line, legacy_log)		
+		##
+		################################################
+			if date_start:
+				if date_end:
+					if not (current_date >= date_start and current_date < date_end):
+						continue
+					if current_date > date_end:
+						break
+				else:
+					if not current_date >= date_start:
+						continue
+			
+			if destnum and destnum.find(dest) == -1:
+				continue
+			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
+				continue
+				
+			if not current_week_start:
+				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
+
+			delta = current_date - current_week_start
+
+			if delta.days > 6:
+				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
+
+			if line.lower().find(log.lower()) != -1:
+				if current_week_start in calls:
+					if phone_num not in already_called:
+						already_called.append(phone_num)
+						calls[current_week_start]['new'] += 1
+					else:
+						calls[current_week_start]['repeat'] += 1
+				else:
+					if phone_num not in already_called:
+						already_called.append(phone_num)
+						calls[current_week_start] = {'new':1,'repeat':0}
+					else:
+						calls[current_week_start] = {'new':0,'repeat':1}
+
+		except ValueError as err:
+			#print("ValueError: " + str(err.args))
+			continue
+		except IndexError:
+			continue
+		except otalo_utils.PhoneNumException:
+			continue
+		
+	if not quiet:
+		print("Number of "+ log + "'s by new and repeat callers:")
+		print("Date\tNew Caller Calls\tRepeat Caller Calls\tNew Calls Rate")
+		dates = calls.keys()
+		dates.sort()
+		total = 0
+		for date in dates:
+			total += calls[date]['new'] + calls[date]['repeat'] 
+			print(otalo_utils.date_str(date) +"\t"+str(calls[date]['new'])+"\t"+str(calls[date]['repeat'])+"\t"+str(float(calls[date]['new']) / float(calls[date]['repeat'])))
+
+		print("total is " + str(total))
+		print ("number of unique callers is " + str(len(already_called)))
+	
+	return calls
+
 def main():
 	if not len(sys.argv) > 1:
 		print("Wrong")
