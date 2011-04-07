@@ -357,7 +357,7 @@ end
 -----------
 
 function get_responder_messages (userid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder, AO_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND forum.id = message_forum.forum_id ";
