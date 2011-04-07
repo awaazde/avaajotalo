@@ -363,12 +363,20 @@ function get_responder_messages (userid)
    query = query .. " AND forum.id = message_forum.forum_id ";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
    query = query .. " AND message_responder.user_id = " .. userid;
-   -- Next part says to only select a msgs you haven't
-   -- already responded to
+   -- Next part says to only select messages
+   -- for response if this user hasn't already
+   -- responded to it
    query = query .. " AND NOT EXISTS (SELECT 1 ";
-   query = query .. "			  FROM AO_message msg, AO_message_forum mf ";
-   query = query .. "			  WHERE msg.id = mf.message_id ";
-   query = query .. "			  AND msg.thread_id = message.id ";
+   query = query .. "			  FROM AO_message msg ";
+   query = query .. "			  WHERE ( (message.thread_id IS NULL AND msg.thread_id = message.id) OR ";
+   query = query .. "			  		  (message.thread_id IS NOT NULL AND msg.thread_id = message.thread_id) )";
+   -- NOTE that the below does not quite work for the case that this responder has already
+   -- responded to a message that is a *response* to 'message', but this seems unlikely.
+   -- to fix it we'd need to probaby do another nested query that only considers 'msgs'
+   -- that don't have both a lft and rgt between the lft and rgt of any other msg in msgs.
+   -- Till then this query is overly conservative and won't surface assignments if there is already a deeper response
+   query = query .. "			  AND msg.lft > message.lft ";
+   query = query .. "			  AND msg.rgt < message.rgt ";
    query = query .. "			  AND msg.user_id = " .. userid ..") ";
    query = query .. " AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";
