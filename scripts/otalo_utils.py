@@ -7,6 +7,10 @@ blacklist += ["9427054132", "9428463288", "9426333577", "9033873101", "903387310
 class PhoneNumException(Exception):
 	pass
 
+def get_sessid(line):
+	data = line.split('\t')
+	return data[0]
+	
 def get_phone_num(line):
 	data = line.split('\t')
 	# get last 10 digits only

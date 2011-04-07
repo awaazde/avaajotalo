@@ -154,7 +154,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 					for call in feature_calls:
 						features_tot = 0
 						for feature in call:
-							if feature != 'order' and feature != 'feature_chosen':
+							if feature != 'order' and feature != 'feature_chosen' and feature != 'start' and feature != 'last':
 								features_tot += call[feature]
 						if features_tot > 0:
 							n_one_plus_sessions += 1
@@ -202,7 +202,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 					for call in feature_calls:
 						features_tot = 0
 						for feature in call:
-							if feature != 'order' and feature != 'feature_chosen':
+							if feature != 'order' and feature != 'feature_chosen' and feature != 'start' and feature != 'last':
 								features_tot += call[feature]
 						if features_tot > 0:
 							n_one_plus_sessions += 1
@@ -295,7 +295,7 @@ def subject_stats(inbound_log, bang, motiv):
 					for call in feature_calls:
 						features_tot = 0
 						for feature in call:
-							if feature != 'order' and feature != 'feature_chosen':
+							if feature != 'order' and feature != 'feature_chosen' and feature != 'start' and feature != 'last':
 								features_tot += call[feature]
 						if features_tot > 0:
 							n_actions += 1

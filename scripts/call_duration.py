@@ -2,7 +2,7 @@ import otalo_utils
 import sys
 from datetime import datetime
 
-def get_call_durations(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False):
+def get_call_durations(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	durations = {}
 	current_week_start = 0
 	open_calls = {}
@@ -44,8 +44,19 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 			if destnum.find(dest) == -1:
 				continue
 			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
+				continue
+			
 			if not current_week_start:
-				current_week_start = current_date
+				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
 
 			delta = current_date - current_week_start
 
@@ -54,7 +65,7 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 				flush_open_calls(durations, open_calls, current_week_start)				
 				open_calls = {}
 				
-				current_week_start = current_date
+				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
 			
 			if not current_week_start in durations:
 				durations[current_week_start] = [] 
@@ -66,7 +77,7 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 					call = open_calls[phone_num]
 					del open_calls[phone_num]
 					dur = call['last'] - call['start']		
-					#print("closing out call pre-emptively: " + phone_num + ", duration: " + str(dur.seconds) + " ending " + otalo.date_str(current_date) + " " + otalo.time_str(current_time))
+					#print("closing out call pre-emptively: " + phone_num + ", "+otalo_utils.date_str(current_date) + ", "+otalo_utils.get_sessid(line) + ", duration: " + str(dur.seconds))
 					durations[current_week_start].append([phone_num,dur])
 					
 				# add new call
@@ -78,15 +89,14 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 					# close out call				
 					call = open_calls[phone_num]
 					dur = current_time - call['start']			
-					#print("closing out call: " + phone_num + ", duration: " + str(dur.seconds) + " ending " + otalo.date_str(current_date) + " " + otalo.time_str(current_time))
+					#print("closing out call: "+phone_num + ", "+otalo_utils.date_str(current_date) + ", "+ otalo_utils.get_sessid(line) + ", duration: " + str(dur.seconds))
 					durations[current_week_start].append([phone_num,dur])
 					del open_calls[phone_num]
-			elif line.find(phone_num):
+			elif phone_num in open_calls:
 				#print("updating call dur: " + phone_num)
 				# this makes things conservative. A call is only officially counted if
 				# it starts with a call_started
-				if phone_num in open_calls.keys():
-					open_calls[phone_num]['last'] = current_time
+				open_calls[phone_num]['last'] = current_time
 			
 			#print("open_calls: " + str(open_calls))
 		
