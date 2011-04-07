@@ -252,8 +252,9 @@ def thread(messageforum, template, responseprompt):
     origpost_opt2.save()
     order += 1
     
-    for response in responses:
-        if response.message.lft == 2:
+    for i in range(responses.count()):
+        response = responses[i]
+        if i == 0:
             responseintro = Prompt(file=language+'/firstresponse'+SOUND_EXT, order=order, bargein=True, survey=bcast)
         else:
             responseintro = Prompt(file=language+'/nextresponse'+SOUND_EXT, order=order, bargein=True, survey=bcast)
