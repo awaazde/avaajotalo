@@ -357,7 +357,7 @@ end
 -----------
 
 function get_responder_messages (userid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder, AO_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND forum.id = message_forum.forum_id ";
@@ -537,7 +537,7 @@ function play_responder_messages (userid, msgs, adminforums)
       
       if (d == GLOBAL_MENU_RESPOND) then
 	    read(aosd .. "okrecordresponse.wav", 500);
-	    local thread = current_msg[1];
+	    local thread = current_msg[8] or current_msg[1];
 	    local forumid = current_msg[5];
 	    local rgt = current_msg[4];
 	    local moderated = current_msg[7];
