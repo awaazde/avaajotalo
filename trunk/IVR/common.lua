@@ -370,14 +370,13 @@ function get_responder_messages (userid)
    query = query .. "			  FROM AO_message msg ";
    query = query .. "			  WHERE ( (message.thread_id IS NULL AND msg.thread_id = message.id) OR ";
    query = query .. "			  		  (message.thread_id IS NOT NULL AND msg.thread_id = message.thread_id) )";
-   -- NOTE that the below does not quite work for the case that this responder has already
-   -- responded to a message that is a *response* to 'message', but this seems unlikely.
-   -- to fix it we'd need to probaby do another nested query that only considers 'msgs'
-   -- that don't have both a lft and rgt between the lft and rgt of any other msg in msgs.
-   -- Till then this query is overly conservative and won't surface assignments if there is already a deeper response
-   query = query .. "			  AND msg.lft > message.lft ";
-   query = query .. "			  AND msg.rgt < message.rgt ";
+   query = query .. "			  AND msg.lft BETWEEN message.lft AND message.rgt AND NOT EXISTS (SELECT 1";
+   query = query .. "			   														FROM AO_message msg2 ";
+   query = query .. "			   														WHERE msg2.thread_id = msg.thread_id ";
+   query = query .. "			   														AND msg2.lft BETWEEN message.lft and message.rgt ";
+   query = query .. "			   														AND msg.lft > msg2.lft AND msg.rgt < msg2.rgt ";
    query = query .. "			  AND msg.user_id = " .. userid ..") ";
+   -- END part referenced above
    query = query .. " AND message_responder.listens <= " .. LISTENS_THRESH;
    query = query .. " AND message_responder.passed_date IS NULL ";
    query = query .. " AND (message_responder.reserved_by_id IS NULL ";
