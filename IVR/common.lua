@@ -365,7 +365,7 @@ function get_responder_messages (userid)
    query = query .. " AND message_responder.user_id = " .. userid;
    -- Next part says to only select messages
    -- for response if this user hasn't already
-   -- responded to it
+   -- responded to it message
    query = query .. " AND NOT EXISTS (SELECT 1 ";
    query = query .. "			  FROM AO_message msg ";
    query = query .. "			  WHERE ( (message.thread_id IS NULL AND msg.thread_id = message.id) OR ";
@@ -373,7 +373,7 @@ function get_responder_messages (userid)
    query = query .. "			  AND msg.lft BETWEEN message.lft AND message.rgt AND NOT EXISTS (SELECT 1";
    query = query .. "			   														FROM AO_message msg2 ";
    query = query .. "			   														WHERE msg2.thread_id = msg.thread_id ";
-   query = query .. "			   														AND msg2.lft BETWEEN message.lft and message.rgt ";
+   query = query .. "			   														AND msg2.lft > message.lft AND msg2.lft < message.rgt ";
    query = query .. "			   														AND msg.lft > msg2.lft AND msg.rgt < msg2.rgt ) ";
    query = query .. "			  AND msg.user_id = " .. userid ..") ";
    -- END part referenced above
