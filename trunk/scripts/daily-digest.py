@@ -110,11 +110,12 @@ def main():
 	print("<table>")
 	
 	for i in range (0,4):
-		n_msgs = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft__gt=1).count()
+		msgs = Message_forum.objects.filter(message__date__gte=today-oneday*i, message__date__lt=oneday+today-oneday*i, forum__line=line, message__lft__gt=1)
+		n_approved = msgs.filter(status = Message_forum.STATUS_APPROVED).count()
 		print("<tr>")
 		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
 		# since a single day's calls can only be bucketed into a single week
-		print("<td>"+str(n_msgs)+"</td>")
+		print("<td>"+str(msgs.count())+" (" + str(n_approved) + " approved) </td>")
 		print("</tr>")
 	
 	print("</table>")
