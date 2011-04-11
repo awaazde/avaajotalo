@@ -340,16 +340,15 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
         destination.close()
 
     pos = None
-    if not parent:
-        # only set position if there are some already set
-        msgs = Message_forum.objects.filter(forum=forum, status=Message_forum.STATUS_APPROVED, message__lft = 1).order_by('-position')
-        if msgs.count() > 0 and msgs[0].position != None:
-            pos = msgs[0].position + 1
-    
     msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=author)
     msg.save()
     if bool(Admin.objects.filter(user=author,forum=forum)):
         status = Message_forum.STATUS_APPROVED
+        if not parent:
+            # only set position if there are some already set
+            msgs = Message_forum.objects.filter(forum=forum, status=Message_forum.STATUS_APPROVED, message__lft = 1).order_by('-position')
+            if msgs.count() > 0 and msgs[0].position != None:
+                pos = msgs[0].position + 1
     else:
         status = Message_forum.STATUS_PENDING
     msg_forum = Message_forum(message=msg, forum=forum,  status=status, position = pos)
