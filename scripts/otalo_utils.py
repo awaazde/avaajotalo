@@ -50,6 +50,15 @@ def is_prompt(line, legacy_log=False):
 	
 	return type == "Prompt"
 
+def is_record(line, legacy_log=False):
+	data = line.split('\t')
+	if not legacy_log:
+		type = data[4]
+	else:
+		type = data[3]
+	
+	return type == "Record"
+
 def get_prompt(line, legacy_log=False):
 	data = line.split('\t')
 	if not legacy_log:

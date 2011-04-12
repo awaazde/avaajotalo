@@ -670,7 +670,7 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, quiet=False
 			print(row)
 	return qna
 
-def get_lurking_and_posting(filename, destnum, forumids, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
+def get_lurking_and_posting(filename, destnum, forums, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	listens = {}
 	durations = {}
 	current_week_start = 0
@@ -678,7 +678,7 @@ def get_lurking_and_posting(filename, destnum, forumids, phone_num_filter=False,
 	
 	f = open(filename)
 	
-	forum_names = Forum.objects.filter(pk__in=forumids).values('name_file')
+	forum_names = forums.values('name_file')
 	forum_names = [pair.values()[0] for pair in forum_names]
 	
 	while(True):
@@ -810,6 +810,83 @@ def get_lurking_and_posting(filename, destnum, forumids, phone_num_filter=False,
 			print(date.strftime('%Y-%m-%d') + "\t" + str(lurks) + "\t" + str(posts) + "\t" + str(lurk_rate) + "\t" + str(avg_listens))	
 			
 	return listens
+
+def get_recordings(filename, destnum=False, phone_num_filter=False, date_start=False, date_end=False, legacy_log=False, transfer_calls=False):
+	files = []
+	current_week_start = 0
+	total = 0
+	
+	f = open(filename)
+	
+	while(True):
+		line = f.readline()
+		if not line:
+			break
+		try:
+		
+		#################################################
+		## Use the calls here to determine what pieces
+		## of data must exist for the line to be valid.
+		## All of those below should probably always be.
+		
+			phone_num = otalo_utils.get_phone_num(line)
+			current_date = otalo_utils.get_date(line, legacy_log)
+			dest = otalo_utils.get_destination(line, legacy_log)			
+		##
+		################################################
+			#print(phone_num + ': dest = ' + dest)
+			
+			if phone_num_filter and not phone_num in phone_num_filter:
+				continue
+			
+			if date_start:
+				if date_end:
+					if not (current_date >= date_start and current_date < date_end):
+						continue
+					if current_date > date_end:
+						break
+				else:
+					if not current_date >= date_start:
+						continue
+			
+			if destnum and destnum.find(dest) == -1:
+				continue
+			
+			# A hacky way to test for transfer call
+			# In the future you want to compare this call's
+			# start time to a time window related to the end
+			# of the survey call (in which you can keep the flag
+			# false and give a more targeted start and end date)
+			if transfer_calls:
+				if len(dest) < 10:
+					continue
+			elif len(dest) == 10:
+				continue
+				
+			if not current_week_start:
+				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
+
+			delta = current_date - current_week_start
+
+			if delta.days > 6:
+				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
+			
+
+			if otalo_utils.is_record(line):
+				filename = otalo_utils.get_prompt(line)
+				filename = filename[filename.rfind('/')+1:]
+				files.append(filename)
+					
+		except ValueError as err:
+			#print("ValueError: " + line)
+			continue
+		except IndexError as err:
+			continue
+		except otalo_utils.PhoneNumException:
+			#print("PhoneNumException: " + line)
+			continue
+	
+	return files
 
 def main():
 	if not len(sys.argv) > 1:

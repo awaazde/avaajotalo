@@ -238,8 +238,8 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 			if number in numbers:
 				n_unique += 1
 				n_thisweek += tot
-				
-		posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
+		transfer_posts = num_calls.get_recordings(filename=inbound_log, destnum=line.number, date_start=study_start, quiet=True, transfer_calls=True)
+		posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers).exclude(message__content_file__in=transfer_posts)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 		n_unique_posters = posts.values('message__user').distinct().count()
 		print("<td>"+str(n_thisweek)+" calls by "+str(n_unique)+ " callers; "+str(posts.count())+" posts by "+str(n_unique_posters)+" posters ("+str(n_approved)+" approved)</td>")
@@ -252,7 +252,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 			if number in numbers:
 				n_unique += 1
 				n_total += tot
-		posts = Message_forum.objects.filter(message__date__gte=study_start, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers)
+		posts = Message_forum.objects.filter(message__date__gte=study_start, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers).exclude(message__content_file__in=transfer_posts)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 		n_unique_posters = posts.values('message__user').distinct().count()
 		print("<td>"+str(n_total)+" calls by "+str(n_unique)+" callers; "+str(posts.count())+" posts by "+str(n_unique_posters)+" posters ("+str(n_approved)+" approved)</td>")
@@ -330,7 +330,7 @@ def main():
 			motivid = sys.argv[4]
 			motiv = Line.objects.get(pk=int(motivid))
 	
-	#print_digest(f, survey, bang, motiv)
-	subject_stats(f, bang, motiv)
+	print_digest(f, survey, bang, motiv)
+	#subject_stats(f, bang, motiv)
     
 main()
