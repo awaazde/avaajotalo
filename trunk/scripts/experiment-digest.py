@@ -238,7 +238,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 			if number in numbers:
 				n_unique += 1
 				n_thisweek += tot
-		transfer_posts = num_calls.get_recordings(filename=inbound_log, destnum=line.number, date_start=study_start, quiet=True, transfer_calls=True)
+		transfer_posts = num_calls.get_recordings(filename=inbound_log, destnum=line.number, date_start=study_start, transfer_calls=True)
 		posts = Message_forum.objects.filter(message__date__gte=thisweek, message__date__lt=today+oneday, forum__line=line, message__user__number__in=numbers).exclude(message__content_file__in=transfer_posts)
 		n_approved = posts.filter(status = Message_forum.STATUS_APPROVED).count()
 		n_unique_posters = posts.values('message__user').distinct().count()
