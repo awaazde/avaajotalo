@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.db.models import Count
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.surveys.models import Survey, Call, Subject
-from otalo.AO.models import Line, Message_forum
+from otalo.AO.models import Line, Forum, Message_forum
 
 def calls_by_caller(f, line, min=False, max=False, date_start=None, date_end=None):
 	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_start=date_start, date_end=date_end, quiet=True)
@@ -212,7 +212,7 @@ def main():
 	#repeat_callers(f, line, start, window_end, end, timedelta(days=30), min=4)
 	#regular_callers(f,line,start,timedelta(days=30),start+timedelta(90),min=4)
 	#num_calls.get_calls(f, line.number)
-	#call_duration.get_call_durations(f, line.number)
+	#call_duration.get_call_durations(f, line.number, transfer_calls=True)
 	#num_calls.get_calls_by_feature(f, line.number)
 	#num_calls.get_features_within_call(f, line.number)
 	#num_calls.get_listens_within_call(f, line.number)
@@ -223,6 +223,8 @@ def main():
 	#response_call_recievers(f, line, start, start+timedelta(days=90))
 	
 	#num_calls.get_num_qna(line,1, start)
-	num_calls.get_lurking_and_posting(f, line.number, [5])
+	#forums = Forum.objects.filter(line=line, posting_allowed='y')
+	#num_calls.get_lurking_and_posting(f, line.number, forums)
+	stats_by_phone_num.get_posts_by_caller(line,date_start=start)
 	
 main()
