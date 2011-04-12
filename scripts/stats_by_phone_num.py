@@ -1,7 +1,7 @@
 import otalo_utils
 import sys
 from datetime import datetime
-from otalo.AO.models import Line, User, Message
+from otalo.AO.models import Line, Forum, User, Message
 
 def get_calls_by_number(filename, destnum=False, log="Start call", date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False):
 	calls = {}
@@ -411,6 +411,43 @@ def new_and_repeat_callers(filename, destnum=False, log="Start call", date_start
 		print ("number of unique callers is " + str(len(already_called)))
 	
 	return calls
+
+def get_posts_by_caller(line, forums=None, date_start=False, date_end=False, quiet=False):
+	calls = {}
+	if not forums:
+		forums = Forum.objects.filter(line=line)
+		
+	users = User.objects.filter(message__forum__in=forums).distinct()
+	if date_start:
+		users = users.filter(message__date__gte=date_start)
+	if date_end:
+		users = users.filter(message__date__lt=date_end)
+		
+	for user in users:
+		msgs = Message.objects.filter(user=user, forum__in=forums)
+		if date_start:
+			msgs = msgs.filter(date__gte=date_start)
+		if date_end:
+			msgs = msgs.filter(date__lt=date_end)
+			
+		calls[user] = msgs.count()
+		
+	calls_sorted = sorted(calls.iteritems(), key=lambda(k,v): (v,k))
+	calls_sorted.reverse()
+	if not quiet:
+		print("Number of message posts by phone number:")
+		
+		total = 0
+		n_callers = 0
+		for user, tot in calls_sorted:
+			total += tot
+			n_callers += 1
+			print(str(user) +"\t"+str(tot))
+			
+		print('total is ' + str(total));	
+		print('num callers is ' + str(n_callers));	
+	return calls_sorted
+		
 
 def main():
 	if not len(sys.argv) > 1:
