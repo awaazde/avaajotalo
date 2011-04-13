@@ -635,7 +635,7 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_f
 			this_weeks_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_start+oneweek)
 		
 		if phone_num_filter:
-			this_weeks_msgs.filter(message__user__number__in=phone_num_filter)
+			this_weeks_msgs = this_weeks_msgs.filter(message__user__number__in=phone_num_filter)
 			
 		questions = this_weeks_msgs.filter(message__lft=1)
 		n_questions = questions.count()
