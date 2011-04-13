@@ -635,7 +635,6 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_f
 			this_weeks_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_start+oneweek)
 		
 		if phone_num_filter:
-			print('filtering '+str(phone_num_filter))
 			this_weeks_msgs.filter(message__user__number__in=phone_num_filter)
 			
 		questions = this_weeks_msgs.filter(message__lft=1)
@@ -871,8 +870,7 @@ def get_recordings(filename, destnum=False, phone_num_filter=False, date_start=F
 			if otalo_utils.is_record(line):
 				filename = otalo_utils.get_prompt(line)
 				filename = filename[filename.rfind('/')+1:]
-				print("adding "+filename)
-				files.append(filename)
+				files.append(filename.strip())
 					
 		except ValueError as err:
 			#print("ValueError: " + line)
@@ -894,6 +892,8 @@ def main():
 		if len(sys.argv) == 3:
 			lineid = sys.argv[2]
 			line = Line.objects.get(pk=lineid)
+		start = datetime(year=2011, month=1, day=15)
+		get_calls(f, line.number, date_start=start)
 			
 		#get_calls(f, line.number)
 		#get_calls_by_feature(f, line.number, legacy_log=True)
