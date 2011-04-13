@@ -611,7 +611,7 @@ def get_log_as_percent(filename, log, phone_num_filter=0):
 	for date in dates:
 		print(date.strftime('%Y-%m-%d') +": "+str(calls[date]))
 		
-def get_num_qna(line, forum=False, date_start=False, date_end=False, quiet=False):
+def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_filter=False, quiet=False):
 	qna = {}
 	oneweek = timedelta(days=7)
 	
@@ -633,6 +633,11 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, quiet=False
 			this_weeks_msgs = Message_forum.objects.filter(forum=forum, message__date__gte=date_start, message__date__lt=date_start+oneweek)
 		else:
 			this_weeks_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_start+oneweek)
+		
+		if phone_num_filter:
+			print('filtering '+str(phone_num_filter))
+			this_weeks_msgs.filter(message__user__number__in=phone_num_filter)
+			
 		questions = this_weeks_msgs.filter(message__lft=1)
 		n_questions = questions.count()
 		n_qs_unique = questions.values('message__user').distinct().count()
@@ -862,19 +867,11 @@ def get_recordings(filename, destnum=False, phone_num_filter=False, date_start=F
 					continue
 			elif len(dest) == 10:
 				continue
-				
-			if not current_week_start:
-				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
-
-			delta = current_date - current_week_start
-
-			if delta.days > 6:
-				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
-			
 
 			if otalo_utils.is_record(line):
 				filename = otalo_utils.get_prompt(line)
 				filename = filename[filename.rfind('/')+1:]
+				print("adding "+filename)
 				files.append(filename)
 					
 		except ValueError as err:
@@ -898,7 +895,7 @@ def main():
 			lineid = sys.argv[2]
 			line = Line.objects.get(pk=lineid)
 			
-		get_calls(f, line.number)
+		#get_calls(f, line.number)
 		#get_calls_by_feature(f, line.number, legacy_log=True)
 		#get_features_within_call(f)
 		#get_listens_within_call(f)
@@ -909,5 +906,5 @@ def main():
 		#get_num_questions(f)
 		#responder_ids = [2,3,4,5,6,48,54,125,126]
 		#get_num_qna(line, responder_ids)
-			
+		get_recordings(f, line.number, transfer_calls=True)
 #main()
