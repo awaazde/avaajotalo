@@ -279,7 +279,7 @@ def subject_stats(inbound_log, bang, motiv):
 	for condition in bang_conditions:
 		print(condition)
 		print("Number\tPickups\tActions")
-		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains=condition).exclude(number__in=blacklist_nums).distinct().values('number')
+		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains=condition).exclude(number__in=blacklist_nums).distinct()
 		
 		for subj in subjects:
 			calls = Call.objects.filter(subject=subj, survey__in=all_bcasts)
@@ -313,10 +313,10 @@ def subject_stats(inbound_log, bang, motiv):
 	for condition in motiv_conditions:
 		print(condition)
 		print("Number\tPickups\tActions")
-		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains=condition).exclude(number__in=blacklist_nums).distinct().values('number')
+		subjects = Subject.objects.filter(call__survey__in=all_bcasts, call__survey__name__contains=condition).exclude(number__in=blacklist_nums).distinct()
 		
 		for subj in subjects:
-			calls = Call.objects.filter(subject=subject, survey__in=all_bcasts)
+			calls = Call.objects.filter(subject=subj, survey__in=all_bcasts)
 			n_completed = calls.filter(complete=True).count()
 			n_actions = Input.objects.filter(call__subject=subj).count()
 			
