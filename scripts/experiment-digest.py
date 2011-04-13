@@ -8,7 +8,7 @@ from otalo.AO.models import Line, Message_forum
 # only start calling after free call bug fix
 BANG_START = datetime(year=2011, month=3, day=9)
 MOTIV_START = datetime(year=2011, month=3, day=3)
-blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845']
+blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845', '9824991658', '9662062754', '9428826158']
 blacklist = Subject.objects.filter(number__in=blacklist_nums)
 
 def print_digest(inbound_log, outbound_log, bang, motiv=None):
