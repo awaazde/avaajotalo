@@ -21,7 +21,7 @@ def print_digest(inbound_log, outbound_log, bang, motiv=None):
 	print("<html>")
 	print("<div><h2>This week's experiment results</h3></div>")
 	print("<div><h3>Experiment 1: Free Access vs. Free Contribution </h4></div>")
-	print_bcast_table(inbound_log, outbound_log, bang, ['CALL', 'REC', 'RATE'], {'CALL':'guj/freecall', 'REC':'guj/recordmessage', 'RATE':'guj/likert'}, BANG_START)
+	print_bcast_table(inbound_log, outbound_log, bang, ['CALL', 'REC', 'RATE'], {'CALL':'guj/freecall', 'REC':'guj/recordmessage', 'RATE':'Prompt  /usr/local/freeswitch/scripts/AO/sounds/survey/guj/likert'}, BANG_START)
 	
 	thisweeks_bcasts = Survey.objects.filter(broadcast=True, number__in=[bang.number, bang.outbound_number], call__date__gt=thisweek, call__date__lt=today+oneday).distinct()
 	bcast_prompts = Prompt.objects.filter(survey__in=thisweeks_bcasts, order=3)
