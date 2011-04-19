@@ -29,19 +29,15 @@ SURVEY_SCRIPT = 'AO/outbound/survey.lua'
 MAX_WAIT_SECS = 12
 EXEC_WAIT_SECS = 7
 
-def new_responses(line, user_ids=False):
-     if not user_ids:
-     	# Get all new responses in the last INTERVAL_HOURS
-     	interval = timedelta(hours=INTERVAL_HOURS)
-     	now = datetime.now()
-     
-    	# Get responses in the last INTERVAL_HOURS
-     	new_response_thread_ids = Message.objects.filter(lft__gt=1, date__gte=now-interval, message_forum__forum__line=line, message_forum__status=MESSAGE_STATUS_APPROVED).values_list('thread', flat=True).distinct()
-     	# Get the authors of the creators of the threads
-     	user_ids = User.objects.filter(message__id__in=new_response_thread_ids).values_list('id', flat=True).distinct()
-     
-     missed_call(line, user_ids)
-
+def unsent_responses():
+    interval = timedelta(hours=INTERVAL_HOURS)
+    now = datetime.now()
+    # Get responses in the last INTERVAL_HOURS
+    responses = Message_forum.objects.filter(message__lft__gt=1, message__date__gte=now-interval, status=Message_forum.STATUS_APPROVED)
+    for response in responses:
+        if not Prompt.objects.filter(file__contains=response.message.content_file):
+            answer_call(response.forum.line_set.all()[0], response)
+            
 def hangup(uid):
 	# hangup call
 	#print("hupall normal_clearing uid " + str(uid) + ": hangup command")
@@ -188,19 +184,6 @@ def answer_call(line, answer):
     
 	
 def main():
-    if len(sys.argv) > 1:
-	line = sys.argv[1]
-	line = Line.objects.get(pk=int(line))
-	if len(sys.argv) > 2:
-		if len(sys.argv) > 3:
-			user_id = sys.argv[2]
-			mfid = sys.argv[3]
-			mf = Message_forum.objects.get(pk=int(mfid))
-			answer_call(line,int(user_id),mf)
-		else:
-			user_ids = sys.argv[2].split(',')
-        		#new_responses(line, user_ids.split(','))
-			missed_call(line, user_ids)
-	else:
-		new_responses(line)
-#main()
+	unsent_responses()
+
+main()
