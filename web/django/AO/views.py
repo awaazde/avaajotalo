@@ -356,9 +356,8 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
     
     if parent:
         add_child(msg, parent.message)
-        # if an upload happens, send the reply outbound no
-        # matter the status of the message
-        alerts.answer_call(forum.line_set.all()[0], msg_forum)
+        if msg_forum.status == Message_forum.STATUS_APPROVED:
+            alerts.answer_call(forum.line_set.all()[0], msg_forum)
 
     return msg_forum
 
