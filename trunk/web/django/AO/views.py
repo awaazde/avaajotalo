@@ -132,7 +132,8 @@ def updatemessage(request):
     params = request.POST
     
     u = User.objects.get(pk=params['userid'])
-    u.number = params['number']
+    if params['number'] and params['number'] != '':
+        u.number = params['number']
     u.name = params['name']
     u.district = params['district']
     u.taluka = params['taluka']
