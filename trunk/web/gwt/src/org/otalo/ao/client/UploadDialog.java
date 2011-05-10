@@ -46,7 +46,9 @@ public class UploadDialog extends DialogBox {
 	private Hidden forumId = new Hidden("forumid");
 	private Hidden messageForumId = new Hidden("messageforumid");
 	private TextBox number;
+	private Label Original_number;
 	private HorizontalPanel numberPanel = new HorizontalPanel();
+	private HorizontalPanel InfoPanel = new HorizontalPanel();
 	private HorizontalPanel contentPanel = new HorizontalPanel();
 	public static final int INVALID_NUMBER = 1;
 	public static final int NO_CONTENT = 2;
@@ -68,13 +70,18 @@ public class UploadDialog extends DialogBox {
 		summary.setName("summary");
 		summary.setTitle("Summary");
 		Label summaryLabel = new Label("Summary (optional):");
-		
+		Original_number = new Label();
 		number = new TextBox();
 		number.setName("number");
 		User moderator = Messages.get().getModerator();
 		if (moderator != null)
 			// default is the moderator's number
-			number.setValue(moderator.getNumber());
+			Original_number.setText("Yours Registered Number : "+moderator.getNumber());
+		// Following lines are commented so that uploader can fill it
+			//	number.setValue(moderator.getNumber());
+		else
+			Original_number.setText("Unregistered Mobile Number");
+				
 		Label numberLabel = new Label("Author Number:");
 		
 		Button saveButton = new Button("Save", new ClickHandler() {
@@ -113,7 +120,10 @@ public class UploadDialog extends DialogBox {
 		buttons.add(saveButton);
 		buttons.add(cancelButton);
 		outer.setWidget(3, 1, buttons);
-		
+		InfoPanel.setSpacing(2);
+		InfoPanel.add(Original_number);
+        outer.setWidget(4, 1, InfoPanel);	
+        
 		outer.setWidget(outer.getRowCount(), 0, forumId);
 		outer.setWidget(outer.getRowCount(), 0, messageForumId);
 		
