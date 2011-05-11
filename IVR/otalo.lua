@@ -527,6 +527,11 @@ function playmessages (msgs, listenreplies)
 		    end
 		    local forumid = current_msg[6];
 		    local confirm = current_msg[10];
+                    local Data = {};   
+                    cur = con:execute("SELECT maxlength FROM AO_forum WHERE id = " .. forumid);
+                    cur:fetch(Data);
+                    cur:close();
+   		    local maxlength = Data[1];
 		    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[4], adminmode, confirm);
 		    if (d == GLOBAL_MENU_MAINMENU) then
 		       return d;
