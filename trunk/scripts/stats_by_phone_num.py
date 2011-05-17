@@ -79,8 +79,8 @@ def get_calls_by_number(filename, destnum=False, log="Start call", phone_num_fil
 		print("Number of "+ log + "'s by phone number:")
 		
 		total = 0
-		#for num, tot in calls_sorted:
-		for num, tot in calls.items():
+		for num, tot in calls_sorted:
+		#for num, tot in calls.items():
 			total += tot
 			print(num +"\t"+str(tot))
 			
