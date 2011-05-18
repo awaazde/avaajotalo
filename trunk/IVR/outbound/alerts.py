@@ -110,24 +110,21 @@ def answer_call(line, answer):
     welcome_opt2.save()
     order += 1
     
-    # NOTE: This conditional is for legacy purposes only. Once everyone records the new responsecall set
-    # this if should go away
-    if answer.forum.respondtoresponse_allowed: 
-        original = Prompt(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
-        original.save()
-        original_opt = Option(number="", action=Option.NEXT, prompt=original)
-        original_opt.save()
-        original_opt2 = Option(number="1", action=Option.NEXT, prompt=original)
-        original_opt2.save()
-        order += 1
-        
-        response = Prompt(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
-        response.save()
-        response_opt = Option(number="", action=Option.NEXT, prompt=response)
-        response_opt.save()
-        response_opt2 = Option(number="1", action=Option.NEXT, prompt=response)
-        response_opt2.save()
-        order += 1
+    original = Prompt(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
+    original.save()
+    original_opt = Option(number="", action=Option.NEXT, prompt=original)
+    original_opt.save()
+    original_opt2 = Option(number="1", action=Option.NEXT, prompt=original)
+    original_opt2.save()
+    order += 1
+    
+    response = Prompt(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
+    response.save()
+    response_opt = Option(number="", action=Option.NEXT, prompt=response)
+    response_opt.save()
+    response_opt2 = Option(number="1", action=Option.NEXT, prompt=response)
+    response_opt2.save()
+    order += 1
         
 
     a = Prompt(file=MEDIA_ROOT+'/'+answer.message.content_file, order=order, bargein=True, survey=s)
