@@ -50,7 +50,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * A wrapper class for Forums to be able to act on their widget
+ * A wrapper class for Surveys to be able to act on their widget
  * representation in the interface.
  * 
  * @author dsc
@@ -66,7 +66,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	private HashMap<HTML,Prompt> promptMap = new HashMap<HTML, Prompt>();
 	private HashMap<HTML,TreeItem> leaves = new HashMap<HTML, TreeItem>();
 	private AreYouSureDialog confirm;
-	private JSOModel detailsModel;
+	private JSOModel detailsModel = null;
 	
 	public SurveyWidget(Survey s, Images images, Composite parent)
 	{
@@ -105,19 +105,21 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 			}
 		});
     
-    JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.SURVEY_INPUT + survey.getId() + "/", this);
-    
-    request = new JSONRequest();
-		request.doFetchURL(AoAPI.SURVEY_DETAILS + survey.getId() + "/", new SurveyDetailsRequester() );
-    
     detailsHTML = imageItemHTML(images.drafts(), "Details");
     detailsHTML.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				DetailsDialog details = new DetailsDialog(detailsModel);
-				details.show();
-				details.center();
+				if (detailsModel == null)
+				{
+					JSONRequest request = new JSONRequest();
+					request.doFetchURL(AoAPI.SURVEY_DETAILS + survey.getId() + "/", new SurveyDetailsRequester() );
+				}
+				else
+				{
+					DetailsDialog details = new DetailsDialog(detailsModel);
+					details.show();
+					details.center();
+				}
 				
 			}
 		});
@@ -161,23 +163,32 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 		String pName;
 		Prompt p;
 		
-    for (JSOModel model : models)
+		// don't re-populate
+		if (promptMap.size() == 0)
 		{
-			p = new Prompt(model);
-    	pName = p.getName() != null ? p.getName() : "Prompt " + p.getOrder(); 
-			promptHTML = imageItemHTML(images.responses(), pName);
-			prompt = new TreeItem(promptHTML);
-			promptMap.put(promptHTML, p);
-			leaves.put(promptHTML, prompt);
-			//root.addItem(prompt);
-			root.insertItem(0, prompt);
+	    for (JSOModel model : models)
+			{
+				p = new Prompt(model);
+	    	pName = p.getName() != null ? p.getName() : "Prompt " + p.getOrder(); 
+				promptHTML = imageItemHTML(images.responses(), pName);
+				prompt = new TreeItem(promptHTML);
+				promptMap.put(promptHTML, p);
+				leaves.put(promptHTML, prompt);
+				//root.addItem(prompt);
+				root.insertItem(0, prompt);
+			}
 		}
-		
+    
+		selectFirst();
 	}
 	
 	private class SurveyDetailsRequester implements JSONRequester {
 		public void dataReceived(List<JSOModel> models) {
 			detailsModel = models.get(0);
+			
+			DetailsDialog details = new DetailsDialog(detailsModel);
+			details.show();
+			details.center();
 		}
 		
 	}
@@ -188,7 +199,9 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 			saved.show();
 			saved.center();
 			
-			Messages.get().loadBroadcasts();
+	  	// assume that the cancellation is
+			// done to a bcast in the first page
+			Messages.get().loadBroadcasts(0);
 		}
 		
 	}
@@ -251,7 +264,8 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 		
 		if (sender == rootHTML)
 		{
-			selectFirst();
+	    JSONRequest request = new JSONRequest();
+			request.doFetchURL(AoAPI.SURVEY_INPUT + survey.getId() + "/", this);
 		}
 		else if (promptMap.containsKey(sender))
 		{
