@@ -42,7 +42,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * A panel of fora, each presented as a tree.
+ * A panel of broadcasts, each presented as a tree.
  */
 public class Broadcasts extends Composite implements JSONRequester, ClickHandler {
   private ArrayList<SurveyWidget> widgets = new ArrayList<SurveyWidget>();
@@ -61,6 +61,12 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 
   private Images images;
   private VerticalPanel p;
+  private Anchor more;
+  private int startIndex = 0;
+  /*
+	 * This variable should be consistent with otalo/views.py
+	 */
+  private static final int BCAST_PAGE_SIZE = 10;
 
   /**
    * Constructs a new list of forum widgets with a bundle of images.
@@ -70,17 +76,28 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   public Broadcasts(Images images) {
 	  this.images = images;
 	  p = new VerticalPanel();
+	  more = new Anchor("More");
+	  more.addClickHandler(new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				startIndex += BCAST_PAGE_SIZE;
+				Messages.get().loadBroadcasts(startIndex);
+			}
+		});
+	  more.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	  p.add(more);
   
 	  initWidget(p);
-	  load();
+	  load(startIndex);
   }
   
-  public void load()
+  public void load(int start)
   {
   	// Get surveys
 	  JSONRequest request = new JSONRequest();
-	  String lineId = Messages.get().getLine() != null ? "?lineid=" + Messages.get().getLine().getId() : ""; 
-		request.doFetchURL(AoAPI.SURVEY + lineId, this);
+	  String params = "?start="+String.valueOf(start);
+	  params += Messages.get().getLine() != null ? "&lineid=" + Messages.get().getLine().getId() : ""; 
+		request.doFetchURL(AoAPI.SURVEY + params, this);
   }
 
 	public void dataReceived(List<JSOModel> models) {
@@ -88,15 +105,13 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 		SurveyWidget w;
 		List<Survey> surveys = new ArrayList<Survey>();
 		
-		p.clear();
-		
 		for (JSOModel model : models)
 	  {
 				s = new Survey(model);
 				surveys.add(s);
 				w = new SurveyWidget(s, images, this);
 				
-				p.add(w.getWidget());
+				p.insert(w.getWidget(), p.getWidgetCount()-1);
 				widgets.add(w);
 	  }
 		

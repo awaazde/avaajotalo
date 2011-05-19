@@ -155,9 +155,9 @@ public class Messages implements EntryPoint, ResizeHandler {
 		broadcastIface.setVisible(true);
   }
   
-  public void loadBroadcasts()
+  public void loadBroadcasts(int start)
   {
-  	bcasts.load();
+  	bcasts.load(start);
   }
   
   public void displaySurveyInputPanel()

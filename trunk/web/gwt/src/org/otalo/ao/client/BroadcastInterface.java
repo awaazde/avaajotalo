@@ -397,7 +397,7 @@ public class BroadcastInterface extends Composite {
 				sent.center();
 				
 				sendComplete();
-				Messages.get().loadBroadcasts();
+				Messages.get().loadBroadcasts(0);
 				
 				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
 				/*
