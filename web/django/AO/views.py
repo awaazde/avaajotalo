@@ -45,6 +45,9 @@ VISIBLE_MESSAGE_COUNT = 10
 INVALID_NUMBER = "1"
 NO_CONTENT = "2"
 
+# How many bcasts to display at a time
+BCAST_PAGE_SIZE = 10
+
 @login_required
 def index(request):
     #return render_to_response('AO/index.html', {'fora':fora})
@@ -474,13 +477,15 @@ def line(request):
 
 def survey(request):
     params = request.GET
+    start = int(params['start'])
     
     surveys = Survey.objects.filter(broadcast=True).order_by('-id')
     if params.__contains__('lineid'):
         line_id = int(params['lineid'])
         line = get_object_or_404(Line, pk=line_id)
         surveys = surveys.filter(number__in=[line.number,line.outbound_number])
-       
+    
+    surveys = surveys[start:start+BCAST_PAGE_SIZE]
     return send_response(surveys)
 
 def bcast(request):
