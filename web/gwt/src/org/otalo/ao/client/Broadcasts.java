@@ -61,7 +61,7 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 
   private Images images;
   private VerticalPanel p;
-  private Anchor more;
+
   private int startIndex = 0;
   /*
 	 * This variable should be consistent with otalo/views.py
@@ -76,7 +76,7 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   public Broadcasts(Images images) {
 	  this.images = images;
 	  p = new VerticalPanel();
-	  more = new Anchor("More");
+	  Anchor more = new Anchor("More");
 	  more.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
@@ -84,7 +84,6 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 				Messages.get().loadBroadcasts(startIndex);
 			}
 		});
-	  more.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 	  p.add(more);
   
 	  initWidget(p);
@@ -93,6 +92,14 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   
   public void load(int start)
   {
+  	startIndex = start;
+  	if (start == 0)
+  	{
+  		Widget more = p.getWidget(p.getWidgetCount()-1);
+  		p.clear();
+  		p.add(more);
+  	}
+  	
   	// Get surveys
 	  JSONRequest request = new JSONRequest();
 	  String params = "?start="+String.valueOf(start);
