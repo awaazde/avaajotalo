@@ -631,8 +631,9 @@ def promptresponses(request, prompt_id):
     
     prompt = get_object_or_404(Prompt, pk=prompt_id)
     start = int(params['start'])
-    input = Input.objects.filter(prompt=prompt)[start:start+VISIBLE_MESSAGE_COUNT]
+    input = Input.objects.filter(prompt=prompt)
     count = input.count()
+    input = input[start:start+VISIBLE_MESSAGE_COUNT]
     
     resp = send_response(input, relations={'call':{'relations':{'subject':{'fields':('name','number',)}}}, 'prompt':()} )
     
