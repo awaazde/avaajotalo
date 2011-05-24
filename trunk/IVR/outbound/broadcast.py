@@ -48,7 +48,7 @@ def subjects_by_numbers(numbers):
         if number == '':
             continue
         u = User.objects.filter(number=number)
-        if bool(u) and (u[0].allowed == 'n' or not u[0].indirect_bcasts_allowed):
+        if bool(u) and u[0].allowed == 'n':
             continue
         
         s = Subject.objects.filter(number = number)
@@ -90,7 +90,7 @@ def subjects_by_log(logfile, line, since, lastn=0, callthresh=DEFAULT_CALL_THRES
         
     for number in numbers:
         u = User.objects.filter(number=number)
-        if bool(u) and u[0].allowed == 'n':
+        if bool(u) and (u[0].allowed == 'n' or not u[0].indirect_bcasts_allowed):
             continue
         
         s = Subject.objects.filter(number = number)
