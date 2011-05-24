@@ -176,7 +176,7 @@ end
 -----------
 
 function getmessages (forumid, tagid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.maxlength ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. " WHERE forum.id = " .. forumid .. " AND message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
@@ -197,7 +197,7 @@ end
 -----------
 
 function getreplies (thread)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.maxlength ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id";
@@ -215,7 +215,7 @@ end
 -----------
 
 function getusermessages ()
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.maxlength ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
    query = query .. " AND message_forum.forum_id = forum.id";
@@ -230,7 +230,7 @@ end
 -----------
 
 function getpendingmessages (lineid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.maxlength ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum, AO_line_forums line_forum ";
    query = query .. "WHERE message.id = message_forum.message_id";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING .. " AND message_forum.forum_id = forum.id AND line_forum.forum_id = forum.id AND line_forum.line_id = " .. lineid;
@@ -527,11 +527,7 @@ function playmessages (msgs, listenreplies)
 		    end
 		    local forumid = current_msg[6];
 		    local confirm = current_msg[10];
-                    local Data = {};   
-                    cur = con:execute("SELECT maxlength FROM AO_forum WHERE id = " .. forumid);
-                    cur:fetch(Data);
-                    cur:close();
-   		    local maxlength = Data[1];
+                    local maxlength = current_msg[11];
 		    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[4], adminmode, confirm);
 		    if (d == GLOBAL_MENU_MAINMENU) then
 		       return d;
