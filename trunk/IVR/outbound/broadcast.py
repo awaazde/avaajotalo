@@ -48,7 +48,7 @@ def subjects_by_numbers(numbers):
         if number == '':
             continue
         u = User.objects.filter(number=number)
-        if bool(u) and u[0].allowed == 'n':
+        if bool(u) and (u[0].allowed == 'n' or not u[0].indirect_bcasts_allowed):
             continue
         
         s = Subject.objects.filter(number = number)
@@ -67,7 +67,7 @@ def subjects_by_tags(tags, line):
     
     users = User.objects.filter(Q(message__message_forum__tags__in=tags, message__message_forum__forum__line=line) | Q(tags__in=tags)).distinct()
     for user in users:
-        if user.allowed == 'n':
+        if user.allowed == 'n' or not user.indirect_bcasts_allowed:
             continue
         s = Subject.objects.filter(number = user.number)
         if not bool(s):

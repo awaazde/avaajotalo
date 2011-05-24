@@ -59,6 +59,9 @@ class User(models.Model):
     taluka_file = models.CharField(max_length=24, blank=True, null=True)
     village_file = models.CharField(max_length=24, blank=True, null=True)
     balance = models.IntegerField(blank=True, null=True)
+    # whether broadcasts should consider this number if found
+    # from indirect sources (log, based on tags, etc.)
+    indirect_bcasts_allowed = models.BooleanField(default=True)
     tags = models.ManyToManyField('Tag', blank=True, null=True)
 
 
