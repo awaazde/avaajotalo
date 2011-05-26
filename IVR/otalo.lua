@@ -52,7 +52,7 @@ local personal_inbox = line_info[6];
 local quota_imposed = line_info[7];
 local lineid = line_info[8];
 
-logfilename = logfileroot .. "inbound_" ..id .. ".log";
+logfilename = logfileroot .. "inbound_" .. lineid .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
