@@ -1,17 +1,18 @@
 import sys
 from datetime import datetime, timedelta
 from django.db.models import Count
+from django.conf import settings
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.AO.models import Message, Message_forum, Line, User, Message_responder
 from otalo.surveys.models import Survey, Call, Subject, Input
 from otalo.AO.views import LISTEN_THRESH
 
 def main():
-	if len(sys.argv) < 2:
+	if len(sys.argv) < 1:
 		print("Wrong")
 	else:
-		f = sys.argv[1]
-		lineid = sys.argv[2]
+		lineid = sys.argv[1]
+		f = settings.INBOUND_LOG_ROOT + lineid + '.log'
 	
 	now = datetime.now()
 	# reset to beginning of day

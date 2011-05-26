@@ -107,4 +107,4 @@ SERIALIZATION_MODULES = {
     'json': 'wadofstuff.django.serializers.json'
 }
 
-IVR_LOGFILE = '/home/dsc/Documents/Log/AO/ao.log'
+INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
