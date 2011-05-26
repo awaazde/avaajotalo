@@ -297,7 +297,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 			
 			String surveyDetails = "<b>Start: </b> " + startdate + "<br><br>";
 			surveyDetails += "<b>End: </b> " + enddate + "<br><br>";
-			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(completed.split(", ").length+pending.split(", ").length);
+			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(completed.split(", ").length+pending.split(", ").length-1);
 			
 			surveyDetails += "<br><br><b>Pending:</b>";    
 	    HTML pendingHTML = new HTML(surveyDetails);
