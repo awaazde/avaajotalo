@@ -2,9 +2,10 @@ import otalo_utils
 import sys
 from datetime import datetime,timedelta
 from otalo.AO.models import User, Message_forum, Forum, Line
+from otalo.surveys.models import Input
 from django.db.models import Min,Max
 
-def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False):
+def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False, daily_data=False):
 	calls = {}
 	nums = []
 	current_week_start = 0
@@ -43,28 +44,36 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 					if not current_date >= date_start:
 						continue
 			
-			if destnum and destnum.find(dest) == -1:
-				continue
+			if not legacy_log:
 			
-			# A hacky way to test for transfer call
-			# In the future you want to compare this call's
-			# start time to a time window related to the end
-			# of the survey call (in which you can keep the flag
-			# false and give a more targeted start and end date)
-			if transfer_calls:
-				if len(dest) < 10:
+				if destnum and destnum.find(dest) == -1:
 					continue
-			elif len(dest) == 10:
-				continue
-				
+				# A hacky way to test for transfer call
+				# In the future you want to compare this call's
+				# start time to a time window related to the end
+				# of the survey call (in which you can keep the flag
+				# false and give a more targeted start and end date)
+				if transfer_calls:
+					if len(dest) < 10:
+						continue
+				elif len(dest) == 10:
+					continue
+
 			if not current_week_start:
 				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
 
 			delta = current_date - current_week_start
-
-			if delta.days > 6:
-				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
 			
+			if daily_data:
+				days = 0
+			else:
+				days = 6
+				
+			if delta.days > days:
+				current_week_start += timedelta(days=days+1)
+				calls[current_week_start] = 0
+			
+			#print('found3 ' + phone_num)
 			if phone_num not in nums:
 				nums.append(phone_num)
 
@@ -92,7 +101,7 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 		dates.sort()
 		for date in dates:
 			total += calls[date]
-			print(otalo_utils.date_str(date) +": "+str(calls[date]))
+			print(otalo_utils.date_str(date) +"\t"+str(calls[date]))
 
 		print("total is " + str(total))
 		print ("number of unique callers is " + str(len(nums)))
@@ -385,11 +394,11 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 					if feature != 'feature_chosen' and feature != 'order' and feature != 'start' and feature != 'last':
 						total_features += call[feature]
 	
-			print(date.strftime('%Y-%m-%d') + ": " + str(float(total_features)/float(num_calls)))	
+			print(date.strftime('%Y-%m-%d') + "\t" + str(float(total_features)/float(num_calls)))	
 			
 	return features
 
-def get_listens_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
+def get_listens_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False, daily_data=False):
 	listens = {}
 	durations = {}
 	current_week_start = 0
@@ -445,12 +454,17 @@ def get_listens_within_call(filename, destnum, phone_num_filter=False, date_star
 				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
 
 			delta = current_date - current_week_start
-
-			if delta.days > 6:
+			
+			if daily_data:
+				days = 0
+			else:
+				days = 6
+				
+			if delta.days > days:
 				#flush all open calls
 				open_calls = {}
 				
-				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
+				current_week_start += timedelta(days=days+1)
 			
 			if not current_week_start in listens:
 				listens[current_week_start] = []
@@ -529,7 +543,7 @@ def get_listens_within_call(filename, destnum, phone_num_filter=False, date_star
 			durs = [dur.seconds for dur in durs_by_call] 
 			print(str(num)+"\t"+str(tot)+"\t"+str(sum(durs)/len(durs)))		
 			
-		print("Average listens within call, by week:")
+		print("Average and total listens within call, by week:")
 		for date in dates:
 			total_listens = 0
 			num_calls = len(listens[date])
@@ -541,7 +555,7 @@ def get_listens_within_call(filename, destnum, phone_num_filter=False, date_star
 			else:
 				avg = float(total_listens)/float(num_calls)
 				
-			print(date.strftime('%Y-%m-%d') + ": " + str(avg))	
+			print(date.strftime('%Y-%m-%d') + "\t" + str(avg) + "\t" + str(total_listens))	
 			
 	return listens
 		
@@ -609,9 +623,9 @@ def get_log_as_percent(filename, log, phone_num_filter=0):
 	dates = calls.keys()
 	dates.sort()
 	for date in dates:
-		print(date.strftime('%Y-%m-%d') +": "+str(calls[date]))
+		print(date.strftime('%Y-%m-%d') +"\t"+str(calls[date]))
 		
-def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_filter=False, quiet=False):
+def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, phone_num_filter=False, quiet=False):
 	qna = {}
 	oneweek = timedelta(days=7)
 	
@@ -627,6 +641,8 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_f
 		else:		
 			date_end = Message_forum.objects.filter(forum__line=line).aggregate(Max('message__date'))
 		date_end = date_end[date_end.keys()[0]]
+		
+	transfer_recordings = get_recordings(filename, destnum=line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end, transfer_calls=True)
 	
 	while(date_start < date_end):
 		if forum:
@@ -637,6 +653,9 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_f
 		if phone_num_filter:
 			this_weeks_msgs = this_weeks_msgs.filter(message__user__number__in=phone_num_filter)
 			
+		this_weeks_msgs = this_weeks_msgs.exclude(message__content_file__in=transfer_recordings)
+#		for msg in this_weeks_msgs:
+#			print(str(msg))
 		questions = this_weeks_msgs.filter(message__lft=1)
 		n_questions = questions.count()
 		n_qs_unique = questions.values('message__user').distinct().count()
@@ -657,12 +676,13 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_f
 			responder_rate = float(n_responders)/float(n_responses)
 		
 		qna[date_start] = [n_questions, n_qs_approved, n_qs_unique, n_responses, n_rs_approved, n_rs_unique, n_responders,n_responders_approved,n_responders_unique,responder_rate]
+		#print("adding to "+otalo_utils.date_str(date_start)+": " +str(qna[date_start]))
 		
 		date_start += oneweek
 	
 	if not quiet:	
 		print("Number of questions and responses, by week:")
-		print("Date\ttot messages\ttot approved\tunique posters\ttotal responses\tapproved\tunique\tresponder msgs\tapproved\tunique\trate")
+		print("Date\ttot questions\ttot approved\tunique posters\ttotal responses\tapproved\tunique\tresponder msgs\tapproved\tunique\trate")
 		
 		dates = qna.keys()
 		dates.sort()
@@ -674,6 +694,76 @@ def get_num_qna(line, forum=False, date_start=False, date_end=False, phone_num_f
 			print(row)
 	return qna
 
+def get_posts(inbound, outbound, blanks, line, phone_num_filter=False, date_start=False, date_end=False, quiet=False, daily_data=False):
+	posts = {}
+	if daily_data:
+		increment = timedelta(days=1)
+	else:
+		increment = timedelta(days=7)
+	
+	if not date_start:
+		date_start = Message_forum.objects.filter(forum__line=line).aggregate(Min('message__date'))
+		date_start = date_start[date_start.keys()[0]]
+	if not date_end:		
+		date_end = Message_forum.objects.filter(forum__line=line).aggregate(Max('message__date'))
+		date_end = date_end[date_end.keys()[0]]
+	
+	uploaded = get_uploaded_msgs(inbound,outbound,line,date_start=date_start,date_end=date_end, phone_num_filter=phone_num_filter)
+	blanks = get_blank_input(blanks)
+	#print("num uploaded ="+str(len(uploaded))+ "; num blanks = "+str(len(blanks)))
+	
+	while (date_start < date_end):
+		period_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_start+increment).exclude(id__in=uploaded)	
+		bcast_msgs = Input.objects.filter(call__survey__broadcast=True, call__date__gte=date_start, call__date__lt=date_start+increment, input__contains=".mp3").exclude(id__in=blanks)
+		
+		if phone_num_filter:
+			period_msgs = period_msgs.filter(message__user__number__in=phone_num_filter)
+			bcast_msgs = bcast_msgs.filter(call__subject__number__in=phone_num_filter)
+		
+		posts[date_start] = period_msgs.count() + bcast_msgs.count()
+		posts[date_start] = period_msgs.count()
+		
+		date_start += increment
+		
+	if not quiet:	
+		print("Number of posts, by time period:")
+		
+		dates = posts.keys()
+		dates.sort()
+		for date in dates:
+			print(otalo_utils.date_str(date) +"\t"+str(posts[date]))
+	return posts
+
+# putting it here instead of stats_by_phone_num since it depends on bunch of other funcs here
+def get_posts_by_number(inbound, outbound, blanks, line, phone_num_filter, date_start=False, date_end=False, quiet=False):
+	posts = {}
+
+	if not date_start:
+		date_start = Message_forum.objects.filter(forum__line=line).aggregate(Min('message__date'))
+		date_start = date_start[date_start.keys()[0]]
+	if not date_end:		
+		date_end = Message_forum.objects.filter(forum__line=line).aggregate(Max('message__date'))
+		date_end = date_end[date_end.keys()[0]]
+	
+	uploaded = get_uploaded_msgs(inbound,outbound,line,date_start=date_start,date_end=date_end, phone_num_filter=phone_num_filter)
+	blanks = get_blank_input(blanks)
+	#print("num uploaded ="+str(len(uploaded))+ "; num blanks = "+str(len(blanks)))
+	
+	# taking a shortcut and making filter mandatory
+	for num in phone_num_filter:
+		inbound_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_end, message__user__number=num).exclude(id__in=uploaded)	
+		bcast_msgs = Input.objects.filter(call__survey__broadcast=True, call__date__gte=date_start, call__date__lt=date_end, input__contains=".mp3", call__subject__number=num).exclude(id__in=blanks)
+		
+		posts[num] = inbound_msgs.count() + bcast_msgs.count()
+		#posts[num] = inbound_msgs.count()
+		
+	if not quiet:
+		print("Total posts, by phone number:")
+		for num, tot in posts.items():
+			print(num+"\t"+str(tot))
+			
+	return posts
+
 def get_lurking_and_posting(filename, destnum, forums, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False):
 	listens = {}
 	durations = {}
@@ -684,6 +774,8 @@ def get_lurking_and_posting(filename, destnum, forums, phone_num_filter=False, d
 	
 	forum_names = forums.values('name_file')
 	forum_names = [pair.values()[0] for pair in forum_names]
+	forumids = forums.values('pk')
+	forumids = [pair.values()[0] for pair in forumids]
 	
 	while(True):
 		line = f.readline()
@@ -738,7 +830,7 @@ def get_lurking_and_posting(filename, destnum, forums, phone_num_filter=False, d
 				#flush all open calls
 				open_calls = {}
 				
-				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
+				current_week_start += timedelta(days=7)
 			
 			if not current_week_start in listens:
 				listens[current_week_start] = {'lurks':0,'posts':0,'listens':[]}
@@ -807,9 +899,13 @@ def get_lurking_and_posting(filename, destnum, forums, phone_num_filter=False, d
 		for date in dates:
 			lurks = listens[date]['lurks']
 			posts = listens[date]['posts']
-			lurk_rate = float(lurks)/float(lurks + posts)
+			lurk_rate = "n/a"
+			if lurks+posts > 0:
+				lurk_rate = float(lurks)/float(lurks + posts)
 			n_listens = listens[date]['listens']
-			avg_listens = float(sum(n_listens))/float(len(n_listens))
+			avg_listens = "n/a"
+			if len(n_listens) > 0:
+				avg_listens = float(sum(n_listens))/float(len(n_listens))
 				
 			print(date.strftime('%Y-%m-%d') + "\t" + str(lurks) + "\t" + str(posts) + "\t" + str(lurk_rate) + "\t" + str(avg_listens))	
 			
@@ -883,6 +979,52 @@ def get_recordings(filename, destnum=False, phone_num_filter=False, date_start=F
 	
 	return files
 
+def get_uploaded_msgs(inbound, outbound, line, forums=False, destnum=False, phone_num_filter=False, date_start=False, date_end=False):
+	# first get all messages
+	if not date_start:
+		if forums:
+			date_start = Message_forum.objects.filter(forum__in=forums).aggregate(Min('message__date'))
+		else:
+			date_start = Message_forum.objects.filter(forum__line=line).aggregate(Min('message__date'))
+		date_start = date_start[date_start.keys()[0]]
+	if not date_end:
+		if forums:
+			date_end = Message_forum.objects.filter(forum__in=forums).aggregate(Max('message__date'))
+		else:		
+			date_end = Message_forum.objects.filter(forum__line=line).aggregate(Max('message__date'))
+		date_end = date_end[date_end.keys()[0]]
+		
+	if forums:
+		msgs = Message_forum.objects.filter(forum__in=forums, message__date__gte=date_start, message__date__lt=date_end)
+	else:
+		msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_end)
+	
+	if phone_num_filter:
+		msgs = msgs.filter(message__user__number__in=phone_num_filter)
+		
+	# now get all recordings logged
+	recordings = get_recordings(inbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end)
+	recordings += get_recordings(inbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end, transfer_calls=True)
+	recordings += get_recordings(outbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end)
+	recordings += get_recordings(outbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end, transfer_calls=True)
+	
+	msgs = msgs.exclude(message__content_file__in=recordings)
+	msg_ids = msgs.values('pk')
+	msg_ids = [pair.values()[0] for pair in msg_ids]
+	
+	#print(msgs)
+	return msg_ids
+
+def get_blank_input(who_when):
+	blanks = []
+	oneday=timedelta(days=1)
+	for num,day in who_when.items():
+		#print("looking for "+num+" on "+otalo_utils.date_str(day))
+		rec = Input.objects.get(call__subject__number=num, call__date__gt=day, call__date__lte=day+oneday)
+		blanks.append(rec.id)
+	
+	return blanks
+		
 def main():
 	if not len(sys.argv) > 1:
 		print("Wrong")
