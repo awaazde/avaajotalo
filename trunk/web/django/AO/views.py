@@ -527,7 +527,7 @@ def bcast(request):
             # in case no date is selected, get no subjects
             since = datetime.now()
                
-        subjects += broadcast.subjects_by_log(settings.IVR_LOGFILE, line, since, lastncallers)
+        subjects += broadcast.subjects_by_log(line, since, lastncallers)
     
     # remove dups
     subjects = list(set(subjects))

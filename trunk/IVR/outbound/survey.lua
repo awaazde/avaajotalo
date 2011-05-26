@@ -53,7 +53,7 @@ caller = res[2];
 local surveyid = res[3];
 destination = res[7] or "";
 
-logfilename = logfileroot .. "survey_" .. destination .. ".log";
+logfilename = logfileroot .. "outbound_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 

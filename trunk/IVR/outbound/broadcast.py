@@ -80,8 +80,9 @@ def subjects_by_tags(tags, line):
     
     return subjects
 
-def subjects_by_log(logfile, line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
-    calls = stats_by_phone_num.get_numbers_by_date(filename=logfile, destnum=str(line.number), date_start=since, quiet=True)
+def subjects_by_log(line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
+    filename = settings.INBOUND_LOG_ROOT+str(line.id)+'.log'
+    calls = stats_by_phone_num.get_numbers_by_date(filename=filename, destnum=str(line.number), date_start=since, quiet=True)
     numbers = calls.keys()
     subjects = []
     
