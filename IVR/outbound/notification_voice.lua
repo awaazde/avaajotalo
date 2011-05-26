@@ -24,8 +24,7 @@ require "luasql.odbc";
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
--- overwrite standard logfile
-logfilename = "/home/nokia/notification_voice.log";
+logfilename = logfileroot .. "notification_voice.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 

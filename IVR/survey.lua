@@ -31,8 +31,7 @@ require "luasql.odbc";
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
--- overwrite standard logfile
-logfilename = "/home/dsc/Documents/Log/AO/survey_in.log";
+logfilename = logfileroot .. "survey_in.log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 

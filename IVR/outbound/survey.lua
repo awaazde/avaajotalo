@@ -24,11 +24,6 @@ require "luasql.odbc";
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
--- overwrite standard logfile
-logfilename = "/home/neil/Log/AO/survey.log";
-logfile = io.open(logfilename, "a");
-logfile:setvbuf("line");
-
 script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
@@ -57,6 +52,10 @@ local subjectid = res[1];
 caller = res[2];
 local surveyid = res[3];
 destination = res[7] or "";
+
+logfilename = logfileroot .. "survey_" .. destination .. ".log";
+logfile = io.open(logfilename, "a");
+logfile:setvbuf("line");
 
 CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
 

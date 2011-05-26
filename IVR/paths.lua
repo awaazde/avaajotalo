@@ -66,7 +66,7 @@ basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 
 sd = "/home/dsc/media/";
-logfilename = "/home/dsc/Documents/Log/AO/ao.log";
+logfileroot = "/home/dsc/Documents/Log/AO/"
 
 --[[
 aosd = basedir .. "/scripts/AO/sounds/eng/";
@@ -76,9 +76,6 @@ logfilename = sd .. "ao.log";
 
 env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
-
-logfile = io.open(logfilename, "a");
-logfile:setvbuf("line");
 
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )

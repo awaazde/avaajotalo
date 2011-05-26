@@ -24,11 +24,6 @@ require "luasql.odbc";
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
--- overwrite standard logfile
-logfilename = "/home/dsc/Documents/Log/AO/responder.log";
-logfile = io.open(logfilename, "a");
-logfile:setvbuf("line");
-
 script_name = "responder.lua";
 digits = "";
 arg = {};
@@ -151,8 +146,9 @@ end
 check_n_msgs = get_responder_messages(userid);
 msg = check_n_msgs();
 if (msg ~= nil) then
+	local lineid = "";
 	-- set the language
-	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix, line.number, line.outbound_number ";
+	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix, line.number, line.outbound_number, line.id ";
 	query = query .. " FROM AO_line line, AO_line_forums line_forum, AO_forum forum, AO_message_forum message_forum ";
 	query = query .. " WHERE line.id = line_forum.line_id ";
 	query = query .. " AND  line_forum.forum_id = forum.id ";
@@ -165,12 +161,17 @@ if (msg ~= nil) then
 	-- What we are not doing is adjusting this per message in
 	-- this responder's queue, which we will have to do if
 	-- a responder belongs to multiple lines (then billing the call is an issue)
-	if (result == nil) then
+	if (row == nil) then
 	   -- default
 	   aosd = basedir .. "/scripts/AO/sounds/eng/";
 	else
 	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
+	   lineid = row[6];
 	end	
+	
+	logfilename = logfileroot .. "responder_" .. lineid .. ".log";
+	logfile = io.open(logfilename, "a");
+	logfile:setvbuf("line");
 
 	-- get admin permissions
 	adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
