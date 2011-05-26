@@ -35,7 +35,7 @@ opencursors = {};
 
 -- set the language, check if line is restricted
 destination = session:getVariable("destination_number");
-line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota FROM AO_line WHERE number LIKE '%" .. destination .. "%'");
+line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota, id FROM AO_line WHERE number LIKE '%" .. destination .. "%'");
 aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		
 
 -- responder section-specific sounds
@@ -50,6 +50,11 @@ local DIALSTRING_SUFFIX = line_info[4];
 local callback_allowed = line_info[5];
 local personal_inbox = line_info[6];
 local quota_imposed = line_info[7];
+local lineid = line_info[8];
+
+logfilename = logfileroot .. "inbound_" ..id .. ".log";
+logfile = io.open(logfilename, "a");
+logfile:setvbuf("line");
 
 caller = session:getVariable("caller_id_number");
 caller = caller:sub(-10);
