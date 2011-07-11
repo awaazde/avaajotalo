@@ -486,6 +486,10 @@ def survey(request):
         surveys = surveys.filter(number__in=[line.number,line.outbound_number])
     
     surveys = surveys[start:start+BCAST_PAGE_SIZE]
+    for survey in surveys:
+        # update the status
+        survey.getstatus()
+        
     return send_response(surveys)
 
 def bcast(request):
@@ -586,8 +590,6 @@ def forwardthread(request, message_forum_id):
 
 def surveyinput(request, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id)
-    # update the status
-    survey.getstatus()
     
     # get all prompts in reverse order so that the last ones will be inserted first into the widget
     prompts = Prompt.objects.filter(survey=survey, option__action=Option.RECORD).distinct().order_by('-order')
