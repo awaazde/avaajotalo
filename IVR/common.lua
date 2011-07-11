@@ -498,6 +498,7 @@ end
 -----------
 
 function play_responder_messages (userid, msgs, adminforums)
+	local maxlength = 120000;
    -- get the first top-level message for this forum
    local current_msg = msgs();
    if (current_msg == nil) then
@@ -882,7 +883,7 @@ end
 -----------
 
 function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
-   local maxlength = maxlength or 180000;
+   local maxlength = maxlength or 90000;
    local partfilename = os.time() .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
