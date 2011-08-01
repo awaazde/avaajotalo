@@ -204,12 +204,9 @@ end
 function getreplies (thread)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.maxlength ";
    query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
-   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id";
-   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id";
-   -- TAP: even though we have threading information (lft, rgt), we
-   -- only order by date.  consider losing the lft, right altogether.
-   query = query .. " ORDER BY message.date ASC";
-   -- query = query .. "ORDER BY message.lft";
+   query = query .. "WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id ";
+   query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id ";
+   query = query .. "ORDER BY message.lft";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
 end
