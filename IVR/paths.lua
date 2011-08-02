@@ -32,7 +32,7 @@ FILTER_CODE_ALL_LAST = 3;
 
 -- Sh be consistent with Survey model constants
 TEMPLATE_DESIGNATOR = "TEMPLATE";
-OUTBOUND_DESIGNATOR = "CALL_TO_OUTBOUND_NO";
+INBOUND_DESIGNATOR = "INBOUND";
 
 --  Should be consistent with Option model
 OPTION_NEXT = 1;

@@ -59,7 +59,8 @@ callid = nil;
 -- get survey id
 query = 		"SELECT survey.id, survey.complete_after ";
 query = query .. " FROM surveys_survey survey ";
-query = query .. " WHERE number LIKE '%" .. destination .. "%'";
+query = query .. " WHERE number LIKE '%" .. destination .. "%' ";
+query = query .. " AND name LIKE '%" .. INBOUND_DESIGNATOR .. "%'";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 res = row(query);
 surveyid = res[1];
