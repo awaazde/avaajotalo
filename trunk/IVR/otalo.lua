@@ -352,7 +352,7 @@ function mainmenu ()
       read(aosd .. forumnames[d], 0);
       read(aosd .. "okyouwant_post.wav", 0);
       playforum(forumids[d]);
-   elseif (d == chkrepliesidx) then
+   elseif (d == chkrepliesidx and personal_inbox == 1) then
       read(aosd .. "okyourreplies.wav", 0);
       use();
       playmessages(getusermessages(), 'y');
@@ -362,7 +362,7 @@ function mainmenu ()
       -- pending messages shouldn't have replies so
       -- leave the flag as 'n'
       playmessages(getpendingmessages(lineid), 'n');
-   elseif (d == responderidx) then
+   elseif (d == responderidx and responder) then
    	  read(aosd .. "okresponder.mp3", 0);
       use();
    	  local rmsgs = get_responder_messages(userid);
