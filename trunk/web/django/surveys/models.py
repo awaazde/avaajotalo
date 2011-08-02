@@ -40,9 +40,8 @@ class Survey(models.Model):
     
     TEMPLATE_DESIGNATOR = 'TEMPLATE'
     ANSWER_CALL_DESIGNATOR = 'AnswerCall'
+    INBOUND_DESIGNATOR = 'INBOUND'
     template = models.BooleanField(default=False)
-    
-    OUTBOUND_DESIGNATOR = 'CALL_TO_OUTBOUND_NO'
     
     STATUS_ACTIVE = 0
     STATUS_EXPIRED = 1
