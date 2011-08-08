@@ -54,10 +54,10 @@ def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False,
 				# of the survey call (in which you can keep the flag
 				# false and give a more targeted start and end date)
 				if transfer_calls:
-					if len(dest) < 10:
+					if transfer_calls == "INBOUND_ONLY" and len(dest) == 10:
 						continue
-				elif len(dest) == 10:
-					continue
+					elif transfer_calls == "TRANSFER_ONLY" and len(dest) < 10:
+						continue
 
 			if not current_week_start:
 				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
@@ -164,7 +164,6 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False
 				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
 			
 			if not current_week_start in features:
-				features[current_week_start] = {'q':0, 'a':0, 'r':0, 'e':0} 
 				features[current_week_start] = {}
 				
 			if line.find("Start call") != -1:
@@ -174,28 +173,34 @@ def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False
 					del open_calls[phone_num]
 					
 				# add new call with no feature access yet
-				open_calls[phone_num] = 0
+				open_calls[phone_num] = False
 					
 			elif line.find("End call") != -1:
 				if phone_num in open_calls:
 					# close out call				
 					del open_calls[phone_num]
 			elif phone_num in open_calls:
-				if line.find("okyouwant_pre") != -1:
-					# on the next go-around, look for the feature
-					open_calls[phone_num] = 1
-				elif open_calls[phone_num]:
-					feature = line[line.rfind('/')+1:line.find('.wav')]
-					#if feature not in ['announcements', 'qna', 'radio', 'experiences']:
-						#print(line)
+				feature_chosen = open_calls[phone_num]
+				feature = line[line.rfind('/')+1:line.find('.wav')]
+				
+				if feature == "okyourreplies" or feature == "okplay_all" or feature == "okplay" or feature == "okrecord":
 					if feature not in feature_names:
 						feature_names.append(feature)
 					if feature in features[current_week_start]:
 						features[current_week_start][feature] += 1
 					else:
 						features[current_week_start][feature] = 1
-				
-					open_calls[phone_num] = 0
+				elif feature == "okyouwant_pre" or feature == "okplaytag_pre":
+					# on the next go-around, look for the feature
+					open_calls[phone_num] = True
+				elif feature_chosen:
+					if feature not in feature_names:
+						feature_names.append(feature)
+					if feature in features[current_week_start]:
+						features[current_week_start][feature] += 1
+					else:
+						features[current_week_start][feature] = 1
+					open_calls[phone_num] = False
 			
 		except KeyError as err:
 			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
@@ -234,7 +239,7 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 	durations = {}
 	current_week_start = 0
 	open_calls = {}
-	
+		
 	f = open(filename)
 	
 	while(True):
@@ -276,10 +281,10 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 			# of the survey call (in which you can keep the flag
 			# false and give a more targeted start and end date)
 			if transfer_calls:
-				if len(dest) < 10:
+				if transfer_calls == "INBOUND_ONLY" and len(dest) == 10:
 					continue
-			elif len(dest) == 10:
-				continue
+				elif transfer_calls == "TRANSFER_ONLY" and len(dest) < 10:
+					continue
 			
 			if not current_week_start:
 				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)
@@ -333,19 +338,25 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 					del open_calls[phone_num]
 			elif phone_num in open_calls:
 				call = open_calls[phone_num]
-				if line.find("okyouwant_pre") != -1 or line.find("okyourreplies") != -1:
-					# on the next go-around, look for the feature
-					call['feature_chosen'] = True
-				elif call['feature_chosen']:
-					feature = line[line.rfind('/')+1:line.find('.wav')]
+				feature = line[line.rfind('/')+1:line.find('.wav')]
+				if feature == "okyourreplies" or feature == "okplay_all" or feature == "okplay" or feature == "okrecord":
 					if feature in call:
 						call[feature] += 1
 					else:
 						call[feature] = 1
 					call['order'] += feature+','
+				elif feature == "okyouwant_pre" or feature == "okplaytag_pre":
+				    # on the next go-around, look for the feature
+				    call['feature_chosen'] = True
+				elif call['feature_chosen']:
+				    if feature in call:
+				        call[feature] += 1
+				    else:
+				        call[feature] = 1
+				    call['order'] += feature+','
+				    call['feature_chosen'] = False
+				call['last'] = current_date    
 					
-					open_calls[phone_num]['feature_chosen'] = False
-			
 		except KeyError as err:
 			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
 			raise
@@ -395,7 +406,6 @@ def get_features_within_call(filename, destnum, phone_num_filter=False, date_sta
 						total_features += call[feature]
 	
 			print(date.strftime('%Y-%m-%d') + "\t" + str(float(total_features)/float(num_calls)))	
-			
 	return features
 
 def get_listens_within_call(filename, destnum, phone_num_filter=False, date_start=False, date_end=False, quiet=False, transfer_calls=False, daily_data=False):
@@ -721,7 +731,6 @@ def get_posts(inbound, outbound, blanks, line, phone_num_filter=False, date_star
 			bcast_msgs = bcast_msgs.filter(call__subject__number__in=phone_num_filter)
 		
 		posts[date_start] = period_msgs.count() + bcast_msgs.count()
-		posts[date_start] = period_msgs.count()
 		
 		date_start += increment
 		
@@ -749,13 +758,19 @@ def get_posts_by_number(inbound, outbound, blanks, line, phone_num_filter, date_
 	blanks = get_blank_input(blanks)
 	#print("num uploaded ="+str(len(uploaded))+ "; num blanks = "+str(len(blanks)))
 	
+	# for paid posts only
+	freebie_posts = get_recordings(inbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end, transfer_calls=True)
+	
 	# taking a shortcut and making filter mandatory
 	for num in phone_num_filter:
-		inbound_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_end, message__user__number=num).exclude(id__in=uploaded)	
+		inbound_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_end, message__user__number=num).exclude(id__in=uploaded)
 		bcast_msgs = Input.objects.filter(call__survey__broadcast=True, call__date__gte=date_start, call__date__lt=date_end, input__contains=".mp3", call__subject__number=num).exclude(id__in=blanks)
+			
+		#posts[num] = inbound_msgs.count() + bcast_msgs.count()
 		
-		posts[num] = inbound_msgs.count() + bcast_msgs.count()
-		#posts[num] = inbound_msgs.count()
+		# for paid posts only
+		inbound_msgs = inbound_msgs.exclude(message__content_file__in=freebie_posts)
+		posts[num] = inbound_msgs.count()
 		
 	if not quiet:
 		print("Total posts, by phone number:")
@@ -1024,6 +1039,44 @@ def get_blank_input(who_when):
 		blanks.append(rec.id)
 	
 	return blanks
+
+def print_log_for_nums(filename, destnums, lang=False):
+	f = open(filename)
+	
+	while(True):
+		line = f.readline()
+		if not line:
+			break
+		try:
+		
+		#################################################
+		## Use the calls here to determine what pieces
+		## of data must exist for the line to be valid.
+		## All of those below should probably always be.
+			
+			dest = otalo_utils.get_destination(line)			
+		##
+		################################################
+			match = False
+			for num in destnums:
+				if num.find(dest) != -1:
+					match = True
+				elif lang and line.find(lang) != -1:
+					match = True
+			
+			if not match or dest == '':
+				continue
+			
+			print(line.strip())
+			
+		except ValueError as err:
+			#print("ValueError: " + line)
+			continue
+		except IndexError as err:
+			continue
+		except otalo_utils.PhoneNumException:
+			#print("PhoneNumException: " + line)
+			continue
 		
 def main():
 	if not len(sys.argv) > 1:
@@ -1034,12 +1087,11 @@ def main():
 		if len(sys.argv) == 3:
 			lineid = sys.argv[2]
 			line = Line.objects.get(pk=lineid)
-		start = datetime(year=2011, month=1, day=15)
-		get_calls(f, line.number, date_start=start)
-			
-		#get_calls(f, line.number)
-		#get_calls_by_feature(f, line.number, legacy_log=True)
-		#get_features_within_call(f)
+		
+		date_start= datetime(year=2011, month=1, day=1)
+		get_calls(filename=f, destnum=line.number, date_start=date_start)
+		#get_calls_by_feature(f, line.number)
+		#get_calls_by_feature(f, line.number, date_start=date_start)
 		#get_listens_within_call(f)
 		#get_log_as_percent(f, "instructions_full")
 		#get_calls(f, "okrecorded")
@@ -1048,5 +1100,11 @@ def main():
 		#get_num_questions(f)
 		#responder_ids = [2,3,4,5,6,48,54,125,126]
 		#get_num_qna(line, responder_ids)
-		get_recordings(f, line.number, transfer_calls=True)
+		#get_recordings(f, line.number, transfer_calls=True)
+#		destnums = [line.number]
+#		if line.outbound_number:
+#			destnums.append(line.outbound_number)
+#		destnums=['7961907777']
+#		print_log_for_nums(f, destnums, lang="kan/")
+		
 #main()
