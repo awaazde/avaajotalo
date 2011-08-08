@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from otalo.surveys.models import Call, Subject
 
 # This should match with how often the cron runs
-INTERVAL_MINS = 10
+INTERVAL_MINS = 1
 IVR_SCRIPT = 'AO/outbound/survey.lua'
 # should match the var in IVR_SCRIPT
 CALLID_VAR_VAL = 'ao_survey true'

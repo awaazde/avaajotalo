@@ -22,22 +22,10 @@ from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
 
 SOUND_EXT = ".wav"
-
-DEFAULT_DURATION_DAYS = 2
-DEFAULT_START_TIME = timedelta(hours=7)
-DEFAULT_END_TIME = timedelta(hours=19)
 # Minimum number of times a caller
 # must have called in to count in outbound broadcast
 # (if getting subjects by log)
 DEFAULT_CALL_THRESHOLD = 2
-# get callers to the line
-# over the past X time
-SUBJECT_PERIOD = timedelta(days=90)
-MAX_N_NUMS = 300
-
-CALL_BLOCK_SIZE = 10
-# should match INTERVAL_MINS in survey.py and the frequency of the cron
-CALL_BLOCK_INTERVAL_MINUTES = timedelta(minutes=10)
 
 def subjects_by_numbers(numbers):
     subjects = []
@@ -289,7 +277,7 @@ def thread(messageforum, template, responseprompt):
     
     return bcast
 
-def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT_START_TIME, bcast_end_time=DEFAULT_END_TIME, duration=DEFAULT_DURATION_DAYS, backups=False):
+def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time, bcast_end_time, blocksize, interval, duration, backups):
     count = 0
     # This is the only survey to send, so the
     # block is the entire duration period
@@ -305,7 +293,7 @@ def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT
             pending_p1s = [subj for subj in subjects if subj not in assigned_p1s]
             i = 0
             while i < len(pending_p1s):
-                subj_block = pending_p1s[i:i+CALL_BLOCK_SIZE]
+                subj_block = pending_p1s[i:i+blocksize]
                 for subject in subj_block:
                     call = Call.objects.filter(survey=survey, subject=subject, priority=1)
                     if not bool(call):
@@ -315,8 +303,8 @@ def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT
                         count += 1
                         assigned_p1s.append(subject)
                     
-                i += CALL_BLOCK_SIZE
-                call_time += CALL_BLOCK_INTERVAL_MINUTES
+                i += blocksize
+                call_time += timedelta(minutes=interval)
                 
                 if call_time > survey_day + bcast_end_time:
                     break
@@ -324,20 +312,20 @@ def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time=DEFAULT
         # end P1 assignments
         # with any remaining time left, assign P2's
         if backups:
-            backup_calls(survey, subjects, survey_day + bcast_start_time, survey_day + bcast_end_time)   
+            backup_calls(survey, subjects, survey_day + bcast_start_time, survey_day + bcast_end_time, blocksize, interval)   
 
 # keep adding, as many times as possible,
 # backup phone calls in the given range
-def backup_calls(survey, subjects, start_time, end_time):
+def backup_calls(survey, subjects, start_time, end_time, blocksize, interval):
     scheduled_calls = []
     count = 0
     call_time = start_time
     i = 0
     while i < len(subjects):
         scheduled_cnt = Call.objects.filter(survey=survey, date=call_time).count()
-        if scheduled_cnt < CALL_BLOCK_SIZE:
+        if scheduled_cnt < blocksize:
             # get a block of numbers to call
-            subj_block = subjects[i:i+CALL_BLOCK_SIZE]
+            subj_block = subjects[i:i+blocksize]
             for subject in subj_block:
                 call = Call.objects.filter(survey=survey, subject=subject, date=call_time, priority=2)
                 if not bool(call):
@@ -347,12 +335,12 @@ def backup_calls(survey, subjects, start_time, end_time):
                     count += 1
                     scheduled_calls.append(subject)
             
-            i += CALL_BLOCK_SIZE
+            i += blocksize
             # keep adding the numbers over and over
             if i >= len(subjects):
                 i = 0
                 
-        call_time += CALL_BLOCK_INTERVAL_MINUTES
+        call_time += timedelta(minutes=interval)
         
         if call_time > end_time:
             break
@@ -360,35 +348,3 @@ def backup_calls(survey, subjects, start_time, end_time):
     #print(str(count) + " new backup calls added.")   
     
     return scheduled_calls
-
-def main():
-    # get the forum
-#    if len(sys.argv) < 2:
-#        print("Wrong")
-#    else:
-#        f = sys.argv[1]
-#    
-#    #subjects_by_numbers(['333','444'])
-#    ts = Tag.objects.filter(tag__in=['Banana'])
-#    subjects_by_tags(ts)
-#    
-#    now = datetime.now()
-#    threemosago = now - timedelta(days=90)
-#    ln = Line.objects.get(pk=1)
-#    s = subjects_by_log(f, ln, threemosago, lastn=300, callthresh=DEFAULT_CALL_THRESHOLD)
-#    
-#    content = open(f, 'r')
-#    b = single(content, ln)
-#    messages = Message_forum.objects.filter(pk__in=[1,2])
-#    forum = Forum.objects.get(pk=2)
-#    b2 = messages(messages, ln)
-#    b3 = forum(forum, ln, since=None)
-#    
-#    now = datetime.now()
-#    today = datetime(year=now.year, month=now.month, day=now.day)
-    #broadcast_calls(b, s, today)
-    mf = Message_forum.objects.get(pk=1844)
-    temp = Survey.objects.get(pk=4)
-    thread(mf, temp)
-
-#main()
