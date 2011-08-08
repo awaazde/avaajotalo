@@ -130,7 +130,7 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 			
 			secs += sum(durs)
 			calls += len(durs)
-			print(date.strftime('%Y-%m-%d') +": "+ str(sum(durs)/len(durs)))
+			print(date.strftime('%Y-%m-%d') +"\t"+ str(sum(durs)/len(durs)))
 		
 		if calls > 0:
 			print('Overall Average: ' + str(secs/calls))

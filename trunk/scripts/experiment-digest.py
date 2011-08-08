@@ -7,13 +7,14 @@ from otalo.AO.models import Line, Message_forum
 
 # only start calling after free call bug fix
 BANG_START = datetime(year=2011, month=3, day=9)
+# BANG end april 12th
 MOTIV_START = datetime(year=2011, month=3, day=3)
 blacklist_nums = ['9596550654', '9173911854', '9726537942', '7940086740', '9893966806', '7554078142', '9755195845', '9824991658', '9662062754', '9428826158', '9009572884']
 blacklist = Subject.objects.filter(number__in=blacklist_nums)
 
 def print_digest(inbound_log, outbound_log, bang, motiv=None):
 	#now = datetime.now()
-	now = datetime(year=2011,month=4,day=19)
+	now = datetime(year=2011,month=4,day=13)
 	today = datetime(year=now.year, month=now.month, day=now.day)
 	oneday = timedelta(days=1)
 	thisweek = today - timedelta(days=today.weekday())
@@ -130,7 +131,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 			firstcalldate = firstcalldate.values()[0]
 			lastcalldate = calls.aggregate(Max('date'))
 			lastcalldate = lastcalldate.values()[0]
-			listens = num_calls.get_calls(filename=outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
+			listens = num_calls.get_calls(filename=outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True)
 			n_listens = 0
 			for week in listens:
 				n_listens += listens[week]
@@ -150,7 +151,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 					lastcalldate = calls.aggregate(Max('date'))
 					lastcalldate = lastcalldate.values()[0]
 				    
-					calls = num_calls.get_features_within_call(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
+					calls = num_calls.get_features_within_call(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls="TRANSER_ONLY")
 					feature_calls = calls[calls.keys()[0]] if calls else {}
 					features_hist = {}
 					for call in feature_calls:
@@ -187,7 +188,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 				lastcalldate = calls.aggregate(Max('date'))
 				lastcalldate = lastcalldate.values()[0]
 					
-				listens = num_calls.get_calls(filename=outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
+				listens = num_calls.get_calls(filename=outbound_log, destnum=line.number, log=manip_points[condition], phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True)
 				n_listens = 0
 				for week in listens:
 					n_listens += listens[week]
@@ -198,7 +199,7 @@ def print_bcast_table(inbound_log, outbound_log, line, conditions, manip_points,
 				else:
 					# only count sessions that have at least one feature access
 					n_one_plus_sessions = 0	    
-					calls = num_calls.get_features_within_call(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
+					calls = num_calls.get_features_within_call(filename=inbound_log, destnum=str(line.number), phone_num_filter=numbers, date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls="TRANSER_ONLY")
 					feature_calls = calls[calls.keys()[0]] if calls else {}
 					features_hist = {}
 					for call in feature_calls:
@@ -295,7 +296,7 @@ def subject_stats(inbound_log, bang, motiv):
 				n_actions = Input.objects.filter(call__subject=subj).count()
 			else:
 				n_actions = 0	    
-				transfers = num_calls.get_features_within_call(filename=inbound_log, destnum=bang.number, phone_num_filter=[subj.number], date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls=True)
+				transfers = num_calls.get_features_within_call(filename=inbound_log, destnum=bang.number, phone_num_filter=[subj.number], date_start=firstcalldate, date_end=lastcalldate, quiet=True, transfer_calls="TRANSER_ONLY")
 				for date in transfers:
 					feature_calls = transfers[date]
 					features_hist = {}

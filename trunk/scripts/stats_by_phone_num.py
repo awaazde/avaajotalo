@@ -57,7 +57,7 @@ def get_calls_by_number(filename, destnum=False, log="Start call", phone_num_fil
 					continue
 			elif len(dest) == 10:
 				continue
-				
+			
 			if line.find(log) != -1:
 				if phone_num in calls.keys():
 					calls[phone_num] += 1
@@ -697,7 +697,7 @@ def main():
 		if len(sys.argv) == 4:
 			demographics_file = sys.argv[3]
 		
-		start=datetime(year=2010,month=9,day=30)
+		start=datetime(year=2011,month=1,day=1)
 		get_calls_by_number(f,line.number, date_start=start)
 		#get_guj_nums_only(f, legacy_log=True)
 		#get_calls_by_feature(f)
