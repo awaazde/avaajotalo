@@ -321,7 +321,8 @@ public class Messages implements EntryPoint, ResizeHandler {
 		 
 		public void dataReceived(List<JSOModel> models) 
 		{
-			// for e.g. superuser will not have an associated AO_admin record
+			// just in case, though the controller should return
+			// something even for the supersu
 			if (models.size() > 0)
 			{
 				line = new Line(models.get(0));

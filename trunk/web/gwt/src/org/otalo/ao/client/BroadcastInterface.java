@@ -53,7 +53,7 @@ public class BroadcastInterface extends Composite {
 	private Button sendButton, cancelButton;
 	private TextBox sinceField, bcastDateField;
 	private DatePicker since, bcastDate;
-	private ListBox tags, lastNCallers, surveys, from, till, duration;
+	private ListBox tags, lastNCallers, templates, from, till, duration, blockSize, interval;
 	private Hidden messageforumid;
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
@@ -172,25 +172,23 @@ public class BroadcastInterface extends Composite {
 		
 		VerticalPanel whatPanel = new VerticalPanel();
 		whatPanel.setSpacing(10);
-		Label templates = new Label("Template: ");
+		Label tempLbl = new Label("Template: ");
 		CheckBox response = new CheckBox("Allow response");
 		response.setName("response");
 		
-  	surveys = new ListBox();
-  	surveys.setName("survey");
+  	templates = new ListBox();
+  	templates.setName("survey");
   	
   	HorizontalPanel surveyPanel = new HorizontalPanel();
   	surveyPanel.setSpacing(10);
+  	surveyPanel.add(tempLbl);
   	surveyPanel.add(templates);
-  	surveyPanel.add(surveys);
   	surveyPanel.add(response);
   	
   	what.add(surveyPanel);
   	
   	HorizontalPanel whenPanel = new HorizontalPanel();
   	whenPanel.setSpacing(10);
-  	Label note = new Label("NOTE: Calls are scheduled from the start time of the starting date in 10-minute intervals, 10 recipients at a time.");
-  	note.setWidth("100%");
   	now = new RadioButton("when","Start now");
   	now.setFormValue("now");
   	now.addClickHandler(new ClickHandler() {
@@ -206,7 +204,7 @@ public class BroadcastInterface extends Composite {
 			public void onClick(ClickEvent event) {
 				from.setEnabled(true);
 				from.clear();
-				for(int i=0; i < 24; i++)
+				for(int i=1; i < 24; i++)
 				{
 					String time = String.valueOf(i) + ":00";
 					from.addItem(time, String.valueOf(i));
@@ -245,12 +243,35 @@ public class BroadcastInterface extends Composite {
 		Label tillLbl = new Label("till");
 		till = new ListBox();
 		till.setName("tilltime");
-		for(int i=0; i < 24; i++)
+		for(int i=1; i < 24; i++)
 		{
 			String time = String.valueOf(i) + ":00";
 			from.addItem(time, String.valueOf(i));
 			till.addItem(time, String.valueOf(i));
 		}
+		
+		Label makeLbl = new Label("Make");
+		blockSize = new ListBox();
+		blockSize.setName("blocksize");
+		blockSize.addItem("5");
+		blockSize.addItem("10");
+		blockSize.addItem("15");
+		blockSize.addItem("20");
+		blockSize.addItem("25");
+		blockSize.addItem("30");
+		Label everyLbl = new Label("calls at a time, every");
+		interval = new ListBox();
+		interval.setName("interval");
+		interval.addItem("2");
+		interval.addItem("3");
+		interval.addItem("4");
+		interval.addItem("5");
+		interval.addItem("6");
+		interval.addItem("7");
+		interval.addItem("8");
+		interval.addItem("9");
+		interval.addItem("10");
+		Label minLbl = new Label("minutes");
 		
 		Label durationLbl = new Label("Duration (days):");
 		duration = new ListBox();
@@ -266,6 +287,14 @@ public class BroadcastInterface extends Composite {
 		fromTillPanel.add(tillLbl);
 		fromTillPanel.add(till);
 		
+		HorizontalPanel blockPanel = new HorizontalPanel();
+		blockPanel.setSpacing(10);
+		blockPanel.add(makeLbl);
+		blockPanel.add(blockSize);
+		blockPanel.add(everyLbl);
+		blockPanel.add(interval);
+		blockPanel.add(minLbl);
+		
 		CheckBox backups = new CheckBox("Backup Calls");
 		backups.setName("backups");
 		
@@ -280,19 +309,22 @@ public class BroadcastInterface extends Composite {
 		bcastDate.setVisible(false);
 		datePanel.add(bcastDate);
 		
-		HorizontalPanel ftDurationPanel = new HorizontalPanel();
-		ftDurationPanel.setWidth("55%");
-		ftDurationPanel.add(fromTillPanel);
-		ftDurationPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		ftDurationPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		ftDurationPanel.add(durationLbl);
-		ftDurationPanel.add(duration);
-		ftDurationPanel.add(backups);
+		HorizontalPanel ftBlockPanel = new HorizontalPanel();
+		ftBlockPanel.setWidth("65%");
+		ftBlockPanel.add(fromTillPanel);
+		ftBlockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		ftBlockPanel.add(blockPanel);
 		
-		when.add(note);
+		HorizontalPanel durationPanel = new HorizontalPanel();
+		durationPanel.setSpacing(10);
+		durationPanel.add(durationLbl);
+		durationPanel.add(duration);
+		durationPanel.add(backups);
+		
 		when.add(nowPanel);
 		when.add(datePanel);
-		when.add(ftDurationPanel);
+		when.add(ftBlockPanel);
+		when.add(durationPanel);
 		
 		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
 		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Template"), true);
@@ -303,7 +335,7 @@ public class BroadcastInterface extends Composite {
 		sendButton = new Button("Send", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	setClickedButton();
-    		surveys.setEnabled(true);
+    		templates.setEnabled(true);
       	bcastForm.setAction(JSONRequest.BASE_URL + AoAPI.BCAST_MESSAGE);
         bcastForm.submit();
       }
@@ -372,18 +404,18 @@ public class BroadcastInterface extends Composite {
 		 
 			public void dataReceived(List<JSOModel> models) {
 				Survey s;
-				surveys.clear();
+				templates.clear();
 				
 				for (JSOModel model : models)
 			  	{
 						s = new Survey(model);
-						surveys.addItem(s.getName(), s.getId());
+						templates.addItem(s.getName(), s.getId());
 			  	}
 				
 				Messages.get().displayBroadcastPanel(thread);
-				if (surveys.getItemCount() == 1)
+				if (templates.getItemCount() == 1)
 				{
-					surveys.setEnabled(false);
+					templates.setEnabled(false);
 				}
 				
 			}
@@ -439,13 +471,15 @@ public class BroadcastInterface extends Composite {
 		 // Select 7am-7pm by default
 		 from.setEnabled(true);
 		 from.clear();
-		 for(int i=0; i < 24; i++)
+		 for(int i=1; i < 24; i++)
 			{
 				String time = String.valueOf(i) + ":00";
 				from.addItem(time, String.valueOf(i));
 			}
-		 from.setItemSelected(7, true);
-		 till.setItemSelected(19, true);
+		 from.setItemSelected(6, true);
+		 till.setItemSelected(18, true);
+		 blockSize.setSelectedIndex(1);
+		 interval.setSelectedIndex(8);
 		 lastNCallers.setItemSelected(3, true);
 		 duration.setItemSelected(1,true);
 		 

@@ -471,7 +471,7 @@ def line(request):
         forum = admin.forum
         line = forum.line_set.all()[:1]
     else:
-        line = []
+        line = Line.objects.filter(pk=1)
         
     return send_response(line)
 
@@ -557,10 +557,12 @@ def bcast(request):
         start_date = datetime.strptime(bcastdate, '%b-%d-%Y')
         
     tilltime = timedelta(hours=int(params['tilltime']))
+    blocksize = int(params['blocksize'])
+    interval = int(params['interval'])
     duration = int(params['duration'])
     backups = params.__contains__("backups")
 
-    broadcast.broadcast_calls(survey, subjects, start_date, bcast_start_time=fromtime, bcast_end_time=tilltime, duration=duration, backups=backups)
+    broadcast.broadcast_calls(survey, subjects, start_date, fromtime, tilltime, blocksize, interval, duration, backups)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(params['messageforumid']),)))
