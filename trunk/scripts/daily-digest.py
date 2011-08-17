@@ -152,7 +152,7 @@ def main():
 	print("</table>")
 	
 	# Answer Calls
-	answercalls = Call.objects.filter(survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, number__in=[line.number, line.outbound_number], date__gte=today, date__lt=today+oneday)
+	answercalls = Call.objects.filter(survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, survey__number__in=[line.number, line.outbound_number], date__gte=today, date__lt=today+oneday)
 	unique_answercalls = answercalls.values('subject', 'survey').distinct()
 	n_recipients = 0
 	n_completed = 0
