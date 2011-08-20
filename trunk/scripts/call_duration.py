@@ -50,10 +50,10 @@ def get_call_durations(filename, destnum, phone_num_filter=False, date_start=Fal
 			# of the survey call (in which you can keep the flag
 			# false and give a more targeted start and end date)
 			if transfer_calls:
-				if len(dest) < 10:
+				if transfer_calls == "INBOUND_ONLY" and len(dest) == 10:
 					continue
-			elif len(dest) == 10:
-				continue
+				elif transfer_calls == "TRANSFER_ONLY" and len(dest) < 10:
+					continue
 			
 			if not current_week_start:
 				current_week_start = datetime(year=current_date.year, month=current_date.month, day=current_date.day)

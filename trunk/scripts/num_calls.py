@@ -1,9 +1,9 @@
 import otalo_utils
 import sys
 from datetime import datetime,timedelta
-from otalo.AO.models import User, Message_forum, Forum, Line
+from otalo.AO.models import User, Message, 	Message_forum, Forum, Line
 from otalo.surveys.models import Input
-from django.db.models import Min,Max
+from django.db.models import Min,Max,Q
 
 def get_calls(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False, daily_data=False):
 	calls = {}
@@ -654,6 +654,8 @@ def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, p
 		
 	transfer_recordings = get_recordings(filename, destnum=line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end, transfer_calls=True)
 	
+	tot_turn_around = 0
+	num_app_responses = 0
 	while(date_start < date_end):
 		if forum:
 			this_weeks_msgs = Message_forum.objects.filter(forum=forum, message__date__gte=date_start, message__date__lt=date_start+oneweek)
@@ -674,7 +676,28 @@ def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, p
 		responses = this_weeks_msgs.filter(message__lft__gt=1)
 		n_responses = responses.count()
 		n_rs_unique = responses.values('message__user').distinct().count()
-		n_rs_approved = responses.filter(status=Message_forum.STATUS_APPROVED).count()
+		approved_responses = responses.filter(status=Message_forum.STATUS_APPROVED)
+		n_rs_approved = approved_responses.count()
+		response_files = responses.values('message__content_file')
+		response_files = [pair.values()[0] for pair in response_files]
+		n_rs_bcast = Input.objects.filter(input__in=response_files).count()
+		
+		turn_around_time = 0
+		for resp in approved_responses:
+			#print('resp is '+str(resp))
+			fullthread = Message.objects.filter(Q(thread=resp.message.thread) | Q(pk=resp.message.thread.pk))
+			ancestors = fullthread.filter(lft__lt=resp.message.lft, rgt__gt=resp.message.rgt).order_by('-lft')
+			# ignore buggy threads
+			if ancestors:
+				parent = ancestors[0]
+				turn_around_time += (resp.message.date-parent.date).seconds/3600
+
+		avg_turn_around_time = 'N/A'
+		if turn_around_time > 0:
+			avg_turn_around_time = float(turn_around_time)/float(approved_responses.count())
+		
+		tot_turn_around += turn_around_time
+		num_app_responses += approved_responses.count()
 		
 		responders = User.objects.filter(forum__line=line).distinct()
 		responder_responses = responses.filter(message__user__in=responders)
@@ -685,14 +708,14 @@ def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, p
 		if n_responses>0:
 			responder_rate = float(n_responders)/float(n_responses)
 		
-		qna[date_start] = [n_questions, n_qs_approved, n_qs_unique, n_responses, n_rs_approved, n_rs_unique, n_responders,n_responders_approved,n_responders_unique,responder_rate]
+		qna[date_start] = [n_questions, n_qs_approved, n_qs_unique, n_responses, n_rs_approved,n_rs_unique,n_rs_bcast,avg_turn_around_time, n_responders,n_responders_approved,n_responders_unique,responder_rate]
 		#print("adding to "+otalo_utils.date_str(date_start)+": " +str(qna[date_start]))
 		
 		date_start += oneweek
 	
 	if not quiet:	
 		print("Number of questions and responses, by week:")
-		print("Date\ttot questions\ttot approved\tunique posters\ttotal responses\tapproved\tunique\tresponder msgs\tapproved\tunique\trate")
+		print("Date\ttot questions\ttot approved\tunique posters\ttotal responses\tapproved\tunique\tbcast response\tavg turn-around-time (h)\tresponder msgs\tapproved\tunique\trate")
 		
 		dates = qna.keys()
 		dates.sort()
@@ -702,6 +725,9 @@ def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, p
 			for stat in stats:
 				row += str(stat) + "\t"
 			print(row)
+		
+		avg_turn_around = float(tot_turn_around)/float(num_app_responses)
+		print('overall turn-around: '+str(avg_turn_around))
 	return qna
 
 def get_posts(inbound, outbound, blanks, line, phone_num_filter=False, date_start=False, date_end=False, quiet=False, daily_data=False):
@@ -765,7 +791,9 @@ def get_posts_by_number(inbound, outbound, blanks, line, phone_num_filter, date_
 	for num in phone_num_filter:
 		inbound_msgs = Message_forum.objects.filter(forum__line=line, message__date__gte=date_start, message__date__lt=date_end, message__user__number=num).exclude(id__in=uploaded)
 		bcast_msgs = Input.objects.filter(call__survey__broadcast=True, call__date__gte=date_start, call__date__lt=date_end, input__contains=".mp3", call__subject__number=num).exclude(id__in=blanks)
-			
+		
+		#TODO: the line below double-counts bcast msgs that are auto-associated
+		# with threads via Allow Responses checkbox
 		#posts[num] = inbound_msgs.count() + bcast_msgs.count()
 		
 		# for paid posts only

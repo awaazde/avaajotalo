@@ -28,7 +28,7 @@ def main():
 	print("<table>")
 	
 	for i in range (0,4):
-		calls = num_calls.get_calls(filename=f, destnum=str(line.number), date_start=today-oneday*i, date_end=today-oneday*(i-1), quiet=True)
+		calls = num_calls.get_calls(filename=f, destnum=str(line.number), date_start=today-oneday*i, date_end=today-oneday*(i-1), quiet=True,transfer_calls='INBOUND_ONLY')
 		ncalls = calls[calls.keys()[0]] if calls else 0
 		print("<tr>")
 		print("<td width='100px'>"+otalo_utils.date_str(today-oneday*i)+"</td>")
@@ -42,7 +42,7 @@ def main():
 	print("<div><h4>Who called today?</h4></div>")
 	print("<table>")
 	
-	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
+	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True,transfer_calls='INBOUND_ONLY')
 	for num, tot in calls:
 		print("<tr>")
 		print("<td width='100px'>"+num+"</td>")
@@ -55,7 +55,7 @@ def main():
 	print("<div><h4>Today's calls by number of feature accesses</h4></div>")
 	print("<table>")
 
-	calls = num_calls.get_features_within_call(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
+	calls = num_calls.get_features_within_call(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True, transfer_calls='INBOUND_ONLY')
 	feature_calls = calls[calls.keys()[0]] if calls else {}
 	features_hist = {}
 	for call in feature_calls:
@@ -80,7 +80,7 @@ def main():
 	
 		
 	# call duration
-	durations = call_duration.get_call_durations(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True)
+	durations = call_duration.get_call_durations(filename=f, destnum=str(line.number), date_start=today, date_end=today+oneday, quiet=True, transfer_calls='INBOUND_ONLY')
 	durs_by_call = durations[durations.keys()[0]] if durations else {}
 	durs = [dur[1].seconds for dur in durs_by_call] 
 	
