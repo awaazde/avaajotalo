@@ -88,78 +88,118 @@ def get_calls_by_number(filename, destnum=False, log="Start call", phone_num_fil
 		print('numbers are ' + phone_nums)
 	return calls_sorted
 
-def get_calls_by_feature(filename):		
+def get_calls_by_feature(filename, destnum, phone_num_filter=0, date_start=False, date_end=False, quiet=False, legacy_log=False):
 	features = {}
-	open_calls = []
+	feature_names = []
 	feature_chosen = 0
+	open_calls = {}
 	
 	f = open(filename)
-
+	
 	while(True):
 		line = f.readline()
 		if not line:
 			break
 		try:
-
+		
 		#################################################
 		## Use the calls here to determine what pieces
 		## of data must exist for the line to be valid.
 		## All of those below should probably always be.
-
-			phone_num = otalo.get_phone_num(line)
-			current_date = otalo.get_date(line)		
+		
+			phone_num = otalo_utils.get_phone_num(line)
+			current_date = otalo_utils.get_date(line, legacy_log)
+			dest = otalo_utils.get_destination(line, legacy_log)					
 		##
 		################################################
-			current_time = otalo.get_time(line)
 			
-			if not phone_num in features.keys():
-				features[phone_num] = {'q':0, 'a':0, 'r':0, 'e':0} 
+			if phone_num_filter and not phone_num in phone_num_filter:
+				continue
+			
+			if date_start:
+				if date_end:
+					if not (current_date >= date_start and current_date < date_end):
+						continue
+					if current_date > date_end:
+						break
+				else:
+					if not current_date >= date_start:
+						continue
+			
+			if not legacy_log and destnum and destnum.find(dest) == -1:
+				continue
+
+			if phone_num not in features:
+				features[phone_num] = {}
 				
 			if line.find("Start call") != -1:
 				# check to see if this caller already has one open
 				if phone_num in open_calls:
 					# close out current call					
-					open_calls.remove(phone_num)
-
-				# add new call
-				#print("adding new call: " + phone_num)
-				open_calls.append(phone_num)
-
+					del open_calls[phone_num]
+					
+				# add new call with no feature access yet
+				open_calls[phone_num] = False
+					
 			elif line.find("End call") != -1:
 				if phone_num in open_calls:
 					# close out call				
-					open_calls.remove(phone_num)
+					del open_calls[phone_num]
 			elif phone_num in open_calls:
-				if line.find("okyouwant_pre") != -1:
-					# on the next go-around, look for the feature
-					feature_chosen = 1
-					continue
-				if feature_chosen and line.find("qna") != -1:
-					features[phone_num]['q'] += 1
-				elif feature_chosen and line.find("announcements") != -1:
-					features[phone_num]['a'] += 1
-				elif feature_chosen and line.find("radio") != -1:
-					features[phone_num]['r'] += 1
-				elif feature_chosen and line.find("experiences") != -1:
-					features[phone_num]['e'] += 1
+				feature_chosen = open_calls[phone_num]
+				feature = line[line.rfind('/')+1:line.find('.wav')]
+				curr_features = features[phone_num]
 				
-				feature_chosen = 0
-							
+				if feature == "okyourreplies" or feature == "okplay_all" or feature == "okplay" or feature == "okrecord":
+					if feature not in feature_names:
+						feature_names.append(feature)
+					if feature in curr_features.keys():
+						curr_features[feature] += 1
+					else:
+						curr_features[feature] = 1
+				elif feature == "okyouwant_pre" or feature == "okplaytag_pre":
+					# on the next go-around, look for the feature
+					open_calls[phone_num] = True
+				elif feature_chosen:
+					if feature not in feature_names:
+						feature_names.append(feature)
+					if feature in curr_features.keys():
+						curr_features[feature] += 1
+					else:
+						curr_features[feature] = 1
+					open_calls[phone_num] = False
+			
+		except KeyError as err:
+			#print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+			raise
 		except ValueError as err:
-			#print("ValueError: " + str(err.args))
+			#print("ValueError: " + line)
 			continue
-		except IndexError:
+		except IndexError as err:
 			continue
-		except otalo.PhoneNumException:
+		except otalo_utils.PhoneNumException:
+			#print("PhoneNumException: " + line)
 			continue
-	
-	print("Number of calls by phone number, by feature:")
-	print("\t\tq&a\tannouncements\tradio\texperiences")
-	features = sorted(features.iteritems(), key=lambda(k,v): (v,k))
-	features.reverse()
-	for num, tots in features:
-		print(num +": \t"+str(tots['q']) + "\t" + str(tots['a']) + "\t\t" + str(tots['r']) + "\t" + str(tots['e']) )
-
+		
+	if not quiet:
+		if phone_num_filter:
+			print("Data for phone numbers: " + str(phone_num_filter))
+			
+		print("Number of calls by phone number, by feature:")
+		header = "\t"
+		for name in feature_names:
+			header += name+"\t"
+		print(header)
+		numbers = features.keys()
+		for num in numbers:
+			row = num +"\t"
+			for name in feature_names:
+				if name in features[num]:
+					row += str(features[num][name]) + "\t"
+				else:
+					row += "0\t"
+			print(row)
+		
 def get_calls_by_geography(filename, demographics):
 
 	calls = get_calls_by_number(filename, quiet=True)
@@ -698,7 +738,7 @@ def main():
 			demographics_file = sys.argv[3]
 		
 		start=datetime(year=2011,month=1,day=1)
-		get_calls_by_number(f,line.number, date_start=start)
+		get_calls_by_feature(f,line.number, date_start=start)
 		#get_guj_nums_only(f, legacy_log=True)
 		#get_calls_by_feature(f)
 		#get_calls_by_geography(f, demographics_file)
