@@ -290,8 +290,40 @@ def answer_call_effect(f, line, date_start=False, date_end=False):
 		# get number of picked up answer calls
 		n_answer_calls = Call.objects.filter(subject__number=num, survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, complete=True).count()
 		print(num +"\t"+str(tot)+"\t"+str(n_answer_calls))
-	 
-
+		
+def topics(line, date_start=False, date_end=False):
+	cropcounts = {}
+	topiccounts = {}
+	messages = Message_forum.objects.filter(forum__line=line)
+	
+	if date_start:
+		messages = messages.filter(message__date__gte=date_start)
+	
+	if date_end:
+		messages = messages.filter(message__date__lt=date_end)
+	
+	for msg in messages:
+		for t in msg.tags.all():
+			if t.type == 'agri-crop':
+				if t.tag in cropcounts:
+					cropcounts[t.tag] += 1
+				else:
+					cropcounts[t.tag] = 1
+			elif t.type == 'agri-topic':
+				if t.tag in topiccounts:
+					topiccounts[t.tag] += 1
+				else:
+					topiccounts[t.tag] = 1
+					
+	print('crop counts')
+	srted = sorted(cropcounts.iteritems(), key=lambda(k,v): (v,k), reverse=True)
+	for tag, count in srted:
+		print(tag+'\t'+str(count))
+	
+	print('topic counts')
+	srted = sorted(topiccounts.iteritems(), key=lambda(k,v): (v,k), reverse=True)
+	for tag, count in srted:
+		print(tag+'\t'+str(count))
 
 def main():
 	if len(sys.argv) < 3:
@@ -302,15 +334,15 @@ def main():
 		line = Line.objects.get(pk=int(lineid))
 	#calls_by_caller(f,line)
 	#posts_by_caller(line)
-	start = datetime(year=2011, month=12, day=1)
+	start = datetime(year=2011, month=1, day=1)
 	window_end = datetime(year=2011, month=3, day=1)
-	end = datetime(year=2011, month=7, day=1)
+	end = datetime(year=2011, month=5, day=20)
 	#repeat_callers(f, line, start, end, end, timedelta(days=30), min=1)
 	#regular_callers(f,line,start,timedelta(days=30),start+timedelta(90),min=4)
 	#num_calls.get_calls(f, line.number,date_start=start)
 	#num_calls.get_calls(f, line.number, legacy_log=True)
 	#call_duration.get_call_durations(f, line.number)
-	#num_calls.get_calls_by_feature(f, line.number)
+	#num_calls.get_calls_by_feature(f, line.number, date_start=start)
 	#num_calls.get_features_within_call(f, line.number)
 	#num_calls.get_listens_within_call(f, line.number)
 	#num_calls.get_calls(f, line.number, log="okyourreplies", date_start=start, date_end=end)
@@ -319,7 +351,7 @@ def main():
 	#stats_by_phone_num.new_and_repeat_callers(f,line.number)
 	#response_call_recievers(f, line, start, start+timedelta(days=90))
 	
-	#num_calls.get_num_qna(f, line, date_start=start)
+	num_calls.get_num_qna(f, line, date_start=start)
 	#forums = Forum.objects.filter(line=line, posting_allowed='y')
 	#num_calls.get_lurking_and_posting(f, line.number, forums)
 	#stats_by_phone_num.get_posts_by_caller(line,date_start=start)
@@ -484,6 +516,7 @@ def main():
 	#num_calls.get_lurking_and_posting(f, line.number, line.forums,phone_num_filter=ao_rec)
 	#num_calls.get_lurking_and_posting(f, line.number, line.forums,phone_num_filter=ao_rate)
 	
-	num_calls.get_lurking_and_posting(f, line.number, line.forums, phone_num_filter=ao_call,date_start=exp_start, date_end=exp_end, transfer_calls=True)
-
+	#num_calls.get_lurking_and_posting(f, line.number, line.forums, phone_num_filter=ao_call,date_start=exp_start, date_end=exp_end, transfer_calls=True)
+	#topics(line, start)
+	
 main()

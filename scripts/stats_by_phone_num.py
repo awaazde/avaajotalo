@@ -53,10 +53,10 @@ def get_calls_by_number(filename, destnum=False, log="Start call", phone_num_fil
 			# of the survey call (in which you can keep the flag
 			# false and give a more targeted start and end date)
 			if transfer_calls:
-				if len(dest) < 10:
+				if transfer_calls == "INBOUND_ONLY" and len(dest) == 10:
 					continue
-			elif len(dest) == 10:
-				continue
+				elif transfer_calls == "TRANSFER_ONLY" and len(dest) < 10:
+					continue
 			
 			if line.find(log) != -1:
 				if phone_num in calls.keys():
