@@ -781,7 +781,7 @@ function play_prompts (prompts)
       
       if (action == OPTION_INPUT) then
 	    query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
-   		query = query .. " VALUES ("..callid..","..promptid..",'"..input.."')";
+   		query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..input.."')";
    		con:execute(query);
    		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
    		
