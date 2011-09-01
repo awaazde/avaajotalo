@@ -116,6 +116,7 @@ class Prompt(models.Model):
     bargein = models.BooleanField()
     survey = models.ForeignKey(Survey)
     delay = models.IntegerField(default=2000)
+    inputlen = models.IntegerField(blank=True, null=True)
     # In the future, when we want to display input results
     name = models.CharField(max_length=128, blank=True, null=True)
     
@@ -127,7 +128,7 @@ class Prompt(models.Model):
     
 class Option(models.Model):
     # use string to represent no input value
-    number = models.CharField(max_length=2)
+    number = models.CharField(max_length=10)
     
     # Actions
     NEXT = 1
@@ -153,6 +154,7 @@ class Param(models.Model):
     CONFIRM_REC = 'confirm'
     # Foe TRANSFER
     NUM = 'num'
+    
     name = models.CharField(max_length=24)
     
     value = models.CharField(max_length=128)
