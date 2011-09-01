@@ -339,7 +339,7 @@ def main():
 	end = datetime(year=2011, month=5, day=20)
 	#repeat_callers(f, line, start, end, end, timedelta(days=30), min=1)
 	#regular_callers(f,line,start,timedelta(days=30),start+timedelta(90),min=4)
-	#num_calls.get_calls(f, line.number,date_start=start)
+	num_calls.get_calls(f, line.number)
 	#num_calls.get_calls(f, line.number, legacy_log=True)
 	#call_duration.get_call_durations(f, line.number)
 	#num_calls.get_calls_by_feature(f, line.number, date_start=start)
@@ -351,7 +351,7 @@ def main():
 	#stats_by_phone_num.new_and_repeat_callers(f,line.number)
 	#response_call_recievers(f, line, start, start+timedelta(days=90))
 	
-	num_calls.get_num_qna(f, line, date_start=start)
+	#num_calls.get_num_qna(f, line, date_start=start)
 	#forums = Forum.objects.filter(line=line, posting_allowed='y')
 	#num_calls.get_lurking_and_posting(f, line.number, forums)
 	#stats_by_phone_num.get_posts_by_caller(line,date_start=start)

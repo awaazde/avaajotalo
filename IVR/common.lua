@@ -117,12 +117,13 @@ end
 -- read
 -----------
 
-function read(file, delay)
+function read(file, delay, len)
+   local len = len or 1
    if (digits == "") then
       logfile:write(sessid, "\t",
 		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
-      digits = session:read(1, 1, file, delay, "#");
+      digits = session:read(len, len, file, delay, "#");
       if (digits ~= "") then
 	 logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
@@ -134,13 +135,13 @@ end
 -----------
 
 function read_no_bargein(file, delay)
-      logfile:write(sessid, "\t",
+	logfile:write(sessid, "\t",
 		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
-      session:streamFile(file);
-      sleep(delay);
-      -- ignore all input
-      use();
+    session:streamFile(file);
+    sleep(delay);
+    -- ignore all input
+    use();
 end
 
 ----------
@@ -649,7 +650,7 @@ end
 -----------
 
 function get_prompts(surveyid)
-	local query = 	"SELECT id, file, bargein, delay ";
+	local query = 	"SELECT id, file, bargein, delay, inputlen ";
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
@@ -730,13 +731,14 @@ function play_prompts (prompts)
    	  promptfile = current_prompt[2];
    	  bargein = current_prompt[3];
    	  delay = current_prompt[4];
+   	  inputlen = tonumber(current_prompt[5]);
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
    	  if (bargein == 1) then
    	  	if (promptfile:sub(0,1) == '/') then
-   	  		read(promptfile, delay);
+   	  		read(promptfile, delay, inputlen);
    	  	else
-   	  		read(sursd .. promptfile, delay);
+   	  		read(sursd .. promptfile, delay, inputlen);
    	  	end
   	  else
   	  	if (promptfile:sub(0,1) == '/') then
