@@ -231,7 +231,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 		    caller, "\t", destination, "\t", 
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       --session:execute("record", filename .. " " .. maxlength .. " 100 5");
-      session:execute("record", filename, maxlength,100, 5);
+      session:recordFile(filename, maxlength, 100, 5); 
       --sleep(1000);
       d = use();
       
