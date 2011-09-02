@@ -270,10 +270,14 @@ def thread(messageforum, template, responseprompt):
         record_opt.save()
         param = Param(option=record_opt, name=Param.MFID, value=messageforum.id)
         param.save()
+        param2 = Param(option=record_opt, name=Param.MAXLENGTH, value=str(messageforum.forum.maxlength))
+        param2.save()
         record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
         record_opt2.save()
-        param2 = Param(option=record_opt2, name=Param.MFID, value=messageforum.id)
-        param2.save()
+        param3 = Param(option=record_opt2, name=Param.MFID, value=messageforum.id)
+        param3.save()
+        param4 = Param(option=record_opt2, name=Param.MAXLENGTH, value=str(messageforum.forum.maxlength))
+        param4.save()
     
     return bcast
 
