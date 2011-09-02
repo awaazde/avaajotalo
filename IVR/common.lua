@@ -211,7 +211,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local forumid = forumid or nil;
    local thread = thread or nil;
    local moderated = moderated or nil;
-   local maxlength = maxlength or 60000;
+   local maxlength = maxlength or 60;
    local rgt = rgt or 1;
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local partfilename = os.time() .. ".mp3";
