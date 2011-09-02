@@ -390,8 +390,8 @@ public class MessageDetail extends Composite {
   		
   		rgt.add(m);
   		User user = m.getAuthor();
-  		String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName() + " (" + user.getNumber() + ")";
-  		String threadText = callerText + " - " + m.getDate();
+  		String callerText = ("".equals(user.getName()) || "null".equals(user.getName())) ? user.getNumber() : user.getName();
+  		String threadText = callerText + " - " + m.getDate() + "(" + m.getId() + ")";
   		
   		HTML msgHTML;
   		if (selectedMessage.getId().equals(m.getId()))
