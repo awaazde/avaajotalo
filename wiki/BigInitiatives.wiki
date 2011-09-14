@@ -8,3 +8,5 @@
   # Analytics platform (with public and internal interfaces) a la DG
   # Interfaces for app creation, survey creation and deployment
   # Make all recording in wav format
+  # Admin panel search box (based on indexed content)
+  # Android App
