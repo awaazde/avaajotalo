@@ -10,3 +10,4 @@
   # Make all recording in wav format
   # Admin panel search box (based on indexed content)
   # Android App
+  # Improved reporting for moderators (daily digest, more feedback between moderators)
