@@ -24,16 +24,8 @@ BARGEIN_KEY='9'
 
 def create_survey():
     s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
-    s.save()
-        
+    s.save()    
     order = 1
-    
-    id = Prompt(file=SUBDIR+"id"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000, inputlen=4)
-    id.save()
-    for i in range(1000,2000):
-        id_opt = Option(number=str(i), action=Option.INPUT, prompt=id)
-        id_opt.save()
-    order+=1
     
     welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
     welcome.save()
