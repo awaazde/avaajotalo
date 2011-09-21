@@ -146,19 +146,20 @@ else
 	session:answer();
 end
 
-if (session:ready() == true) then
-	-- sleep for a bit
-	session:sleep(1000);
-	
-	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", os.time(), "\t", "Start call", "\n");
-	
-	-- play prompts
-	play_prompts(prompts);
-	
-	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", os.time(), "\t", "End call", "\n");
-end
+session:setVariable("playback_terminators", "#");
+session:setHangupHook("hangup");
+
+-- sleep for a bit
+session:sleep(1000);
+
+logfile:write(sessid, "\t", caller, "\t", destination,
+"\t", os.time(), "\t", "Start call", "\n");
+
+-- play prompts
+play_prompts(prompts);
+
+logfile:write(sessid, "\t", caller, "\t", destination,
+"\t", os.time(), "\t", "End call", "\n");
 
 
 
