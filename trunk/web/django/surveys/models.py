@@ -37,6 +37,8 @@ class Survey(models.Model):
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     number = models.CharField(max_length=24, blank=True, null=True)
     broadcast = models.BooleanField(default=False)
+    # This is only relevant for inbound surveys. Make it a nullable for that reason.
+    callback = models.NullBooleanField()
     
     TEMPLATE_DESIGNATOR = 'TEMPLATE'
     ANSWER_CALL_DESIGNATOR = 'AnswerCall'
