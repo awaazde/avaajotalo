@@ -932,7 +932,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    until (d == "1");
    
    local query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
-   query = query .. " VALUES ("..callid..","..promptid..",'"..partfilename.."')";
+   query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..partfilename.."')";
    con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
    
