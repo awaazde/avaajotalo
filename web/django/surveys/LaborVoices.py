@@ -37,7 +37,7 @@ def create_survey():
     welcome_opt3.save()
     order+=1
     
-    survey = Prompt(file=SUBDIR+"survey"+SOUND_EXT, order=order, survey=s, delay=0)
+    survey = Prompt(file=SUBDIR+"survey"+SOUND_EXT, order=order, survey=s, delay=0, bargein=True)
     survey.save()
     survey_opt = Option(number="", action=Option.NEXT, prompt=survey)
     survey_opt.save()
