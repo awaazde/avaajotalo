@@ -23,7 +23,7 @@ BARGEIN_KEY='9'
 '''
 
 def create_survey():
-    s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0)
+    s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
     s.save()
         
     order = 1
