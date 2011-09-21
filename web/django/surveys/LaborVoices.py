@@ -27,7 +27,7 @@ def create_survey():
     s.save()    
     order = 1
     
-    welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+    welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     welcome.save()
     welcome_opt = Option(number="1", action=Option.NEXT, prompt=welcome)
     welcome_opt.save()
@@ -41,6 +41,8 @@ def create_survey():
     survey.save()
     survey_opt = Option(number="", action=Option.NEXT, prompt=survey)
     survey_opt.save()
+    survey_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=survey)
+    survey_opt2.save()
     order+=1
     
     factory = Prompt(file=SUBDIR+"factory"+SOUND_EXT, order=order, survey=s)
