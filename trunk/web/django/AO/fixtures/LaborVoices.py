@@ -43,9 +43,6 @@ def create_survey():
     welcome_opt2.save()
     welcome_opt3 = Option(number="3", action=Option.GOTO, prompt=welcome)
     welcome_opt3.save()
-    #TODO
-    param2 = Param(option=welcome_opt3, name=Param.IDX, value=TODO)
-    param2.save()
     order+=1
     
     survey = Prompt(file=SUBDIR+"survey"+SOUND_EXT, order=order, survey=s, delay=0)
@@ -55,6 +52,7 @@ def create_survey():
     order+=1
     
     factory = Prompt(file=SUBDIR+"factory"+SOUND_EXT, order=order, survey=s)
+    factory.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=factory)
     record_opt.save()
     order+=1
@@ -84,11 +82,13 @@ def create_survey():
     order+= 1
     
     harassment = Prompt(file=SUBDIR+"harassment"+SOUND_EXT, order=order, survey=s)
+    harassment.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=harassment)
     record_opt.save()
     order+=1
     
     brand = Prompt(file=SUBDIR+"brand"+SOUND_EXT, order=order, survey=s)
+    brand.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=brand)
     record_opt.save()
     order+=1
