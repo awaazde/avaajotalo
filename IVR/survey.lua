@@ -31,10 +31,6 @@ require "luasql.odbc";
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
-logfilename = logfileroot .. "survey_in.log";
-logfile = io.open(logfilename, "a");
-logfile:setvbuf("line");
-
 script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
 -- script-specific sounds
@@ -57,14 +53,29 @@ caller = session:getVariable("caller_id_number");
 callid = nil;
 
 -- get survey id
-query = 		"SELECT survey.id, survey.complete_after ";
+query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback ";
 query = query .. " FROM surveys_survey survey ";
 query = query .. " WHERE number LIKE '%" .. destination .. "%' ";
 query = query .. " AND name LIKE '%" .. INBOUND_DESIGNATOR .. "%'";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-res = row(query);
-surveyid = res[1];
-complete_after_idx = res[2];
+local res = row(query);
+local surveyid = res[1];
+
+logfilename = logfileroot .. "survey_in_" .. destination .. ".log";
+logfile = io.open(logfilename, "a");
+logfile:setvbuf("line");
+
+local DIALSTRING_PREFIX = "";
+local DIALSTRING_SUFFIX = "";
+if (res[2] ~= nil) then
+	DIALSTRING_PREFIX = res[2];
+end
+if (res[3] ~= nil) then
+	DIALSTRING_SUFFIX = res[3];
+end
+
+local complete_after_idx = tonumber(res[4]);
+local callback_allowed = tonumber(res[5]);
 
 freeswitch.consoleLog("info", script_name .. " , num = " .. caller .. " , survey = " .. surveyid .. "\n");
 
@@ -103,8 +114,37 @@ end
 
 prompts = get_prompts(surveyid);
 
--- answer the call
-session:answer();
+if (callback_allowed == 1) then
+	-- Allow for missed calls to be made
+	session:execute("ring_ready");
+	api = freeswitch.API();
+	local uuid = session:getVariable('uuid');
+	local mc_cnt = 0;
+    while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
+	 	session:sleep(3000);
+	 	mc_cnt = check_abort(mc_cnt, 11)
+  	end
+	freeswitch.consoleLog("info", script_name .. " : woke up \n");
+		
+	-- Missed call; 
+	-- call the user back
+	session:hangup();
+	local vars = '{';
+	vars = vars .. 'ignore_early_media=true';
+	vars = vars .. ',caller_id_number='..caller;
+	vars = vars .. ',origination_caller_id_number='..destination;
+	vars = vars .. '}'
+	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+	
+	-- wait a while before testing
+	session:sleep(2000);
+	if (session:ready() == false) then
+		hangup();
+	end
+else
+	-- answer the call
+	session:answer();
+end
 
 if (session:ready() == true) then
 	-- sleep for a bit
