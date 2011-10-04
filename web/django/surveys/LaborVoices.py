@@ -63,16 +63,34 @@ def create_survey():
     working_hours_opt4.save()
     order+= 1
     
+    min_wage = Prompt(file=SUBDIR+"minimum_wage"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    min_wage.save()
+    min_wage_opt = Option(number="1", action=Option.INPUT, prompt=min_wage)
+    min_wage_opt.save()
+    min_wage_opt2 = Option(number="2", action=Option.INPUT, prompt=min_wage)
+    min_wage_opt2.save()
+    min_wage_opt3 = Option(number="3", action=Option.INPUT, prompt=min_wage)
+    min_wage_opt3.save()
+    min_wage_opt4 = Option(number="4", action=Option.INPUT, prompt=min_wage)
+    min_wage_opt4.save()
+    order+= 1
+    
+    overtime_hours = Prompt(file=SUBDIR+"overtime_hours"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    overtime_hours.save()
+    overtime_hours_opt = Option(number="1", action=Option.INPUT, prompt=overtime_hours)
+    overtime_hours_opt.save()
+    overtime_hours_opt2 = Option(number="2", action=Option.INPUT, prompt=overtime_hours)
+    overtime_hours_opt2.save()
+    overtime_hours_opt3 = Option(number="3", action=Option.INPUT, prompt=overtime_hours)
+    overtime_hours_opt3.save()
+    order+= 1
+    
     overtime_wages = Prompt(file=SUBDIR+"overtime_wages"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     overtime_wages.save()
     overtime_wages_opt = Option(number="1", action=Option.INPUT, prompt=overtime_wages)
     overtime_wages_opt.save()
     overtime_wages_opt2 = Option(number="2", action=Option.INPUT, prompt=overtime_wages)
     overtime_wages_opt2.save()
-    overtime_wages_opt3 = Option(number="3", action=Option.INPUT, prompt=overtime_wages)
-    overtime_wages_opt3.save()
-    overtime_wages_opt4 = Option(number="4", action=Option.INPUT, prompt=overtime_wages)
-    overtime_wages_opt4.save()
     order+= 1
     
     harassment = Prompt(file=SUBDIR+"harassment"+SOUND_EXT, order=order, survey=s)
