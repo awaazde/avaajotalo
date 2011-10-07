@@ -20,6 +20,7 @@ from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
 
 SOUND_EXT = ".wav"
+BARGEIN_KEY='9'
 
 def standard_template(line, contenttype):
     prefix = line.dialstring_prefix
@@ -231,15 +232,98 @@ def record_template(line, contenttype):
         return s
     else:
         return s[0]
+    
+def subscription(line):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
+    
+    name = 'Subscription_Survey_' + Survey.TEMPLATE_DESIGNATOR
+    
+    s = Survey.objects.filter(name=name)
+    if bool(s):
+        s = s[0]
+        s.delete()
+        
+    s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num, template=True)
+    print ("adding template " + str(s))
+    s.save()
+    order = 1
+    
+    # welcome
+    welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    welcome.save()
+    welcome_opt1 = Option(number="1", action=Option.NEXT, prompt=welcome)
+    welcome_opt1.save()
+    welcome_opt2 = Option(number="2", action=Option.GOTO, prompt=welcome)
+    welcome_opt2.save()
+    param = Param(option=welcome_opt2, name=Param.IDX, value=7)
+    param.save()
+    order += 1
+    
+    oksubscribe = Prompt(file=language+"/oksubscribe"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+    oksubscribe.save()
+    oksubscribe_opt1 = Option(number="", action=Option.NEXT, prompt=oksubscribe)
+    oksubscribe_opt1.save()
+    oksubscribe_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=oksubscribe)
+    oksubscribe_opt2.save()
+    order += 1
+    
+    buysell = Prompt(file=language+"/buysell"+SOUND_EXT, order=order, bargein=True, survey=s, delay=3000)
+    buysell.save()
+    buysell_opt1 = Option(number="1", action=Option.NEXT, prompt=buysell)
+    buysell_opt1.save()
+    buysell_opt2 = Option(number="2", action=Option.NEXT, prompt=buysell)
+    buysell_opt2.save()
+    order += 1
+    
+    sksystem = Prompt(file=language+"/sksystem"+SOUND_EXT, order=order, bargein=True, survey=s, delay=3000)
+    sksystem.save()
+    sksystem_opt1 = Option(number="1", action=Option.NEXT, prompt=sksystem)
+    sksystem_opt1.save()
+    sksystem_opt2 = Option(number="2", action=Option.NEXT, prompt=sksystem)
+    sksystem_opt2.save()
+    order += 1
+    
+    jaherat = Prompt(file=language+"/jaherat"+SOUND_EXT, order=order, bargein=True, survey=s, delay=3000)
+    jaherat.save()
+    jaherat_opt1 = Option(number="1", action=Option.NEXT, prompt=jaherat)
+    jaherat_opt1.save()
+    jaherat_opt2 = Option(number="2", action=Option.NEXT, prompt=jaherat)
+    jaherat_opt2.save()
+    order += 1
+    
+    thankyou = Prompt(file=language+"/thankyou"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    thankyou.save()
+    thankyou_opt1 = Option(number="", action=Option.GOTO, prompt=thankyou)
+    thankyou_opt1.save()
+    param = Param(option=thankyou_opt1, name=Param.IDX, value=order+2)
+    param.save()
+    order += 1
+    
+    # unsubscribe
+    unsubscribe = Prompt(file=language+"/unsubscribe"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    unsubscribe.save()
+    unsubscribe_opt1 = Option(number="", action=Option.NEXT, prompt=unsubscribe)
+    unsubscribe_opt1.save()
+    order += 1
+
+    return s
+    
 
 def main():
     line = Line.objects.get(pk=3)
-    Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
+    #Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
     
-    freecall_template(line, 'announcement')
-    record_template(line, 'announcement')
-    freecall_template(line, 'qna')
-    record_template(line, 'qna')
+    #freecall_template(line, 'announcement')
+    #record_template(line, 'announcement')
+    #freecall_template(line, 'qna')
+    #record_template(line, 'qna')
+    subscription(line)
         
 main()
 
