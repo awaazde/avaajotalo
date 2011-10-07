@@ -308,7 +308,7 @@ def subscription(line):
     # unsubscribe
     unsubscribe = Prompt(file=language+"/unsubscribe"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
     unsubscribe.save()
-    unsubscribe_opt1 = Option(number="", action=Option.NEXT, prompt=unsubscribe)
+    unsubscribe_opt1 = Option(number="", action=Option.INPUT, prompt=unsubscribe)
     unsubscribe_opt1.save()
     order += 1
 
