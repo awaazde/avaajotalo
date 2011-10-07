@@ -275,25 +275,25 @@ def subscription(line):
     
     buysell = Prompt(file=language+"/buysell"+SOUND_EXT, order=order, bargein=True, survey=s, delay=3000)
     buysell.save()
-    buysell_opt1 = Option(number="1", action=Option.NEXT, prompt=buysell)
+    buysell_opt1 = Option(number="1", action=Option.INPUT, prompt=buysell)
     buysell_opt1.save()
-    buysell_opt2 = Option(number="2", action=Option.NEXT, prompt=buysell)
+    buysell_opt2 = Option(number="2", action=Option.INPUT, prompt=buysell)
     buysell_opt2.save()
     order += 1
     
     sksystem = Prompt(file=language+"/sksystem"+SOUND_EXT, order=order, bargein=True, survey=s, delay=3000)
     sksystem.save()
-    sksystem_opt1 = Option(number="1", action=Option.NEXT, prompt=sksystem)
+    sksystem_opt1 = Option(number="1", action=Option.INPUT, prompt=sksystem)
     sksystem_opt1.save()
-    sksystem_opt2 = Option(number="2", action=Option.NEXT, prompt=sksystem)
+    sksystem_opt2 = Option(number="2", action=Option.INPUT, prompt=sksystem)
     sksystem_opt2.save()
     order += 1
     
     jaherat = Prompt(file=language+"/jaherat"+SOUND_EXT, order=order, bargein=True, survey=s, delay=3000)
     jaherat.save()
-    jaherat_opt1 = Option(number="1", action=Option.NEXT, prompt=jaherat)
+    jaherat_opt1 = Option(number="1", action=Option.INPUT, prompt=jaherat)
     jaherat_opt1.save()
-    jaherat_opt2 = Option(number="2", action=Option.NEXT, prompt=jaherat)
+    jaherat_opt2 = Option(number="2", action=Option.INPUT, prompt=jaherat)
     jaherat_opt2.save()
     order += 1
     
