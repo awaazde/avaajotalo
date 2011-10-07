@@ -33,6 +33,7 @@ urlpatterns = patterns('',
     (r'^upload/$', 'otalo.AO.views.uploadmessage'),
     (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.thread'),
     (r'^tags/(?P<forum_id>\d+)/$', 'otalo.AO.views.tags'),
+    (r'^tagsbyline/(?P<line_id>\d+)/$', 'otalo.AO.views.tagsbyline'),
     (r'^messagetag/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messagetag'),
     (r'^responders/(?P<forum_id>\d+)/$', 'otalo.AO.views.responders'),
     (r'^messageresponder/(?P<message_forum_id>\d+)/$', 'otalo.AO.views.messageresponder'),
@@ -46,6 +47,7 @@ urlpatterns = patterns('',
     (r'^promptresponses/(?P<prompt_id>\d+)/$', 'otalo.AO.views.promptresponses'),
     (r'^cancelsurvey/(?P<survey_id>\d+)/$', 'otalo.AO.views.cancelsurvey'),
     (r'^surveydetails/(?P<survey_id>\d+)/$', 'otalo.AO.views.surveydetails'),
+    (r'^regularbcast/(?P<line_id>\d+)/$', 'otalo.AO.views.regularbcast'),
 )
 
 if settings.DEVELOPMENT:

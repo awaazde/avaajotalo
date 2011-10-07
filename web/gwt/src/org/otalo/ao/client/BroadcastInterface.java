@@ -54,7 +54,7 @@ public class BroadcastInterface extends Composite {
 	private TextBox sinceField, bcastDateField;
 	private DatePicker since, bcastDate;
 	private ListBox tags, lastNCallers, templates, from, till, duration, blockSize, interval;
-	private Hidden messageforumid;
+	private Hidden messageforumid, lineid;
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
 	//private FileUpload fileUpload;
@@ -358,6 +358,9 @@ public class BroadcastInterface extends Composite {
 		outer.add(controls);
 		messageforumid = new Hidden("messageforumid");
 		outer.add(messageforumid);
+		lineid = new Hidden("lineid");
+		lineid.setValue(Messages.get().getLine().getId());
+		outer.add(lineid);
 		
 		initWidget(bcastForm);
 	}
@@ -371,8 +374,11 @@ public class BroadcastInterface extends Composite {
 	  // (sh be at least 2 items counting blank space)
 		if (tags.getItemCount() < 2)
 		{
-			JSONRequest request = new JSONRequest();			
-			request.doFetchURL(AoAPI.TAGS + thread.getForum().getId() + "/", new TagRequestor());
+			JSONRequest request = new JSONRequest();		
+			if (thread != null)
+				request.doFetchURL(AoAPI.TAGS + thread.getForum().getId() + "/", new TagRequestor());
+			else
+				request.doFetchURL(AoAPI.TAGS_BY_LINE + Messages.get().getLine().getId() + "/", new TagRequestor());
 		}
 	}
 	
@@ -391,16 +397,27 @@ public class BroadcastInterface extends Composite {
 	 }
 	 
 	 public void broadcastThread(MessageForum thread)
-	 {
-		 messageforumid.setValue(thread.getId());
+	 { 
 		 this.thread = thread;
 		 JSONRequest request = new JSONRequest();
-		 request.doFetchURL(AoAPI.FORWARD_THREAD + thread.getId() + "/", new BroadcastThreadRequestor());
+		 // in case it's a bcast without a thread
+		 // to insert (holeless template)
+		 if (thread != null)
+		 {
+			 messageforumid.setValue(thread.getId());
+			 request.doFetchURL(AoAPI.FORWARD_THREAD + thread.getId() + "/", new BroadcastRequestor());
+		 }
+		 else
+		 {
+			 messageforumid.setValue(null);
+			 request.doFetchURL(AoAPI.REGULAR_BCAST + Messages.get().getLine().getId() + "/", new BroadcastRequestor());
+		 }
+			 
 		 
 		 loadTags();
 	 }
 	 
-	 private class BroadcastThreadRequestor implements JSONRequester {
+	 private class BroadcastRequestor implements JSONRequester {
 		 
 			public void dataReceived(List<JSOModel> models) {
 				Survey s;

@@ -438,6 +438,18 @@ def tags(request, forum_id):
        
     return send_response(tags)
 
+def tagsbyline(request, line_id):
+    params = request.GET
+    
+    line = get_object_or_404(Line, pk=line_id)
+    tags = Tag.objects.filter(forum__line=line).distinct()
+    
+    if params.__contains__('type'):
+        types = params['type'].split()
+        tags.filter(type__in=types)
+       
+    return send_response(tags)
+
 def messagetag(request, message_forum_id):
     tags = Tag.objects.filter(message_forum=message_forum_id)
     return send_response(tags, ('tag'))
@@ -494,9 +506,14 @@ def survey(request):
 
 def bcast(request):
     params = request.POST
-    message_forum_id = int(params['messageforumid'])
-    mf = get_object_or_404(Message_forum, pk=message_forum_id)
-    line = mf.forum.line_set.all()[0]
+    if params['messageforumid']:
+        message_forum_id = int(params['messageforumid'])
+        mf = get_object_or_404(Message_forum, pk=message_forum_id)
+        line = mf.forum.line_set.all()[0]
+    else:
+        mf = None
+        line = get_object_or_404(Line, pk=int(params['lineid']))
+        
     
     subjects = []
     # Get subjects
@@ -538,10 +555,12 @@ def bcast(request):
     
     # Get template
     surveyid = params['survey']
-    survey = get_object_or_404(Survey, pk=surveyid)
-    if survey.template:
+    template = get_object_or_404(Survey, pk=surveyid)
+    if mf is not None:
         responseprompt = params.__contains__('response')
-        survey = broadcast.thread(mf, survey, responseprompt)
+        survey = broadcast.thread(mf, template, responseprompt)
+    else:
+        survey = broadcast.regular_bcast(line,template)
         
      
     # Get schedule
@@ -588,6 +607,12 @@ def forwardthread(request, message_forum_id):
                 
         templates = Survey.objects.filter(template=True, number__in=numbers)
     
+    return send_response(templates)
+
+def regularbcast(request, line_id):
+    line = get_object_or_404(Line, pk=line_id)
+    
+    templates = Survey.objects.filter(template=True, number__in=[line.number, line.outbound_number])
     return send_response(templates)
 
 def surveyinput(request, survey_id):

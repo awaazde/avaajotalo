@@ -36,6 +36,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -84,7 +85,22 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 				Messages.get().loadBroadcasts(startIndex);
 			}
 		});
-	  p.add(more);
+	  
+	  Anchor newbcast = new Anchor("New Broadcast");
+	  newbcast.addClickHandler(new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				Messages.get().forwardThread(null);
+			}
+	  	
+	  });
+	  //p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	  HorizontalPanel bcastOpts = new HorizontalPanel();
+	  bcastOpts.setWidth("100%");
+	  bcastOpts.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	  bcastOpts.add(more);
+	  bcastOpts.add(newbcast);
+	  p.add(bcastOpts);
   
 	  initWidget(p);
 	  load(startIndex);
@@ -95,9 +111,9 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   	startIndex = start;
   	if (start == 0)
   	{
-  		Widget more = p.getWidget(p.getWidgetCount()-1);
+  		Widget opts = p.getWidget(p.getWidgetCount()-1);
   		p.clear();
-  		p.add(more);
+  		p.add(opts);
   	}
   	
   	// Get surveys
