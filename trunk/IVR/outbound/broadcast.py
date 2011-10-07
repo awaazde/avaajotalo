@@ -195,20 +195,7 @@ def thread(messageforum, template, responseprompt):
     # create a clone from the template
     newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
     newname = newname[:128]
-    # avoid duplicating forums that point to the template
-    forums = Forum.objects.filter(bcast_template=template)
-    for forum in forums:
-        forum.bcast_template = None
-        forum.save()
-    oldtemp = template
-    bcast = template.deepcopy(newname=newname)
-    for forum in forums:
-        forum.bcast_template = oldtemp
-        forum.save()
-        
-    bcast.template = False
-    bcast.broadcast = True
-    bcast.save()
+    bcast = clone_template(template, newname)
     
     # shift the old prompts before we add new ones to override the order
     toshift = Prompt.objects.filter(survey=bcast, order__gt=thread_start)
@@ -278,6 +265,39 @@ def thread(messageforum, template, responseprompt):
         param3.save()
         param4 = Param(option=record_opt2, name=Param.MAXLENGTH, value=str(messageforum.forum.maxlength))
         param4.save()
+    
+    return bcast
+
+def regular_bcast(line, template):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
+        
+    # create a clone from the template
+    now = datetime.now()
+    newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + datetime.strftime(now, '%b-%d-%Y')
+    newname = newname[:128]
+    return clone_template(template, newname)
+
+def clone_template(template, newname):
+    # avoid duplicating forums that point to the template
+    forums = Forum.objects.filter(bcast_template=template)
+    for forum in forums:
+        forum.bcast_template = None
+        forum.save()
+    oldtemp = template
+    bcast = template.deepcopy(newname=newname)
+    for forum in forums:
+        forum.bcast_template = oldtemp
+        forum.save()
+        
+    bcast.template = False
+    bcast.broadcast = True
+    bcast.save()
     
     return bcast
 

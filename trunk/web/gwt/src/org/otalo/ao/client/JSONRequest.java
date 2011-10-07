@@ -51,6 +51,7 @@ public final class JSONRequest {
 		public static final String UPDATE_STATUS = "update/status/";
 		public static final String LOGOUT = "/logout/";
 		public static final String TAGS = "tags/";
+		public static final String TAGS_BY_LINE = "tagsbyline/";
 		public static final String MESSAGE_TAGS = "messagetag/";
 		public static final String RESPONDERS = "responders/";
 		public static final String MESSAGE_RESPONDERS = "messageresponder/";
@@ -65,6 +66,7 @@ public final class JSONRequest {
 		public static final String PROMPT_RESPONSES = "promptresponses/";
 		public static final String CANCEL_SURVEY = "cancelsurvey/";
 		public static final String SURVEY_DETAILS = "surveydetails/";
+		public static final String REGULAR_BCAST = "regularbcast/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
