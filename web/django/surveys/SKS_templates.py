@@ -301,14 +301,20 @@ def subscription(line):
     thankyou.save()
     thankyou_opt1 = Option(number="", action=Option.GOTO, prompt=thankyou)
     thankyou_opt1.save()
-    param = Param(option=thankyou_opt1, name=Param.IDX, value=order+2)
+    param = Param(option=thankyou_opt1, name=Param.IDX, value=order+3)
     param.save()
     order += 1
     
     # unsubscribe
+    unsubscribe_dummy = Prompt(file=language+"/blank"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    unsubscribe_dummy.save()
+    unsubscribe_dummy_opt1 = Option(number="", action=Option.INPUT, prompt=unsubscribe_dummy)
+    unsubscribe_dummy_opt1.save()
+    order += 1
+    
     unsubscribe = Prompt(file=language+"/unsubscribe"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
     unsubscribe.save()
-    unsubscribe_opt1 = Option(number="", action=Option.INPUT, prompt=unsubscribe)
+    unsubscribe_opt1 = Option(number="", action=Option.NEXT, prompt=unsubscribe)
     unsubscribe_opt1.save()
     order += 1
 
