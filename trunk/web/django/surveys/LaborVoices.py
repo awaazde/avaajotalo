@@ -149,4 +149,4 @@ def create_survey(outbound=False):
         
     return s
 
-create_survey(true)
+create_survey(True)
