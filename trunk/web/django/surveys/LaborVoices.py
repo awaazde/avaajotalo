@@ -54,7 +54,7 @@ def create_survey(outbound=False):
     survey_opt2.save()
     order+=1
     
-    factory = Prompt(file=SUBDIR+"factory"+SOUND_EXT, order=order, survey=s)
+    factory = Prompt(file=SUBDIR+"factory"+SOUND_EXT, order=order, survey=s, name="Factory")
     factory.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=factory)
     record_opt.save()
@@ -102,13 +102,13 @@ def create_survey(outbound=False):
     overtime_wages_opt2.save()
     order+= 1
     
-    harassment = Prompt(file=SUBDIR+"harassment"+SOUND_EXT, order=order, survey=s)
+    harassment = Prompt(file=SUBDIR+"harassment"+SOUND_EXT, order=order, survey=s, name='Harassment')
     harassment.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=harassment)
     record_opt.save()
     order+=1
     
-    brand = Prompt(file=SUBDIR+"brand"+SOUND_EXT, order=order, survey=s)
+    brand = Prompt(file=SUBDIR+"brand"+SOUND_EXT, order=order, survey=s, name='Brand')
     brand.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=brand)
     record_opt.save()
