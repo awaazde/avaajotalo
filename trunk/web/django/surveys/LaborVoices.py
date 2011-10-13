@@ -26,12 +26,16 @@ LV_LINEID=1
 
 def create_survey(outbound=False):
     if not outbound:
+        s = Survey.objects.get(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, template=True)
+        s.delete()
         s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
     else:
         line = Line.objects.get(pk=LV_LINEID)
         num = line.outbound_number
         if not num:
             num = line.number
+        s = Survey.objects.get(name='LV_eng_DEMO', template=True)
+        s.delete()
         s = Survey(name='LV_eng_DEMO', template=True, number=num, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
     s.save()    
     order = 1
