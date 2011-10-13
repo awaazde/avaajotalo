@@ -2,6 +2,7 @@ import os, sys, csv
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call
+from otalo.AO.models import Line
 import otalo_utils
 
 '''
@@ -15,6 +16,7 @@ NUMBER='7961907779'
 SUBDIR = 'lveng/'
 SOUND_EXT = ".wav"
 BARGEIN_KEY='9'
+LV_LINEID=1
 
 '''
 ****************************************************************************
@@ -22,8 +24,15 @@ BARGEIN_KEY='9'
 ****************************************************************************
 '''
 
-def create_survey():
-    s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
+def create_survey(outbound=False):
+    if not outbound:
+        s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
+    else:
+        line = Line.objects.get(pk=LV_LINEID)
+        num = line.outbound_number
+        if not num:
+            num = line.number
+        s = Survey(name='LV_eng_DEMO', template=True, number=num, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
     s.save()    
     order = 1
     
@@ -140,4 +149,4 @@ def create_survey():
         
     return s
 
-create_survey()
+create_survey(true)
