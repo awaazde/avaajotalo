@@ -11,4 +11,5 @@
   # Admin panel search box (based on indexed content)
   # Android App
   # Improved reporting for moderators (daily digest, more feedback between moderators)
-  # source repository refactoring (fork off private AD build, etc.)
+  # Source repository refactoring (fork off private AD build, etc.)
+  # APIs for usage data, content, and scheduling of broadcasts
