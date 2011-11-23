@@ -785,16 +785,22 @@ function play_prompts (prompts)
    		con:execute(query);
    		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
    		
-   		current_prompt_idx = current_prompt_idx + 1;
+   		local goto_idx = tonumber(get_params(optionid)[OPARAM_IDX]);
+   		if (goto_idx == nil) then
+   			goto_idx = current_prompt_idx + 1;
+   		end
 		-- check to see if we are at the last msg in the list
-	 	if (current_prompt_idx > #prevprompts) then
-		    -- get next msg from the cursor
-		    current_prompt = prompts();
-		    if (current_prompt ~= nil) then
-		       table.insert(prevprompts, current_prompt);
-		    end
+	 	if (goto_idx > #prevprompts) then
+		    for i=current_prompt_idx+1, goto_idx do
+			    current_prompt = prompts();
+			    if (current_prompt ~= nil) then
+			       table.insert(prevprompts, current_prompt);
+			    end
+			end
+			current_prompt_idx = goto_idx;
 		else
 		    -- get msg from the prev list
+		    current_prompt_idx = goto_idx;
 		    current_prompt = prevprompts[current_prompt_idx];
 	    end
       elseif (action == OPTION_NEXT) then

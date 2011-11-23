@@ -12,8 +12,8 @@ import otalo_utils
 '''
 PREFIX='freetdm/grp1/a/0'
 SUFFIX=''
-NUMBER='7961907779'
-SUBDIR = 'lveng/'
+NUMBER='7961907782'
+SUBDIR = 'kan/survey/'
 SOUND_EXT = ".wav"
 BARGEIN_KEY='9'
 LV_LINEID=1
@@ -26,27 +26,31 @@ LV_LINEID=1
 
 def create_survey(outbound=False):
     if not outbound:
-        s = Survey.objects.get(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, template=True)
-        s.delete()
-        s = Survey(name='LV_eng_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
+        s = Survey.objects.filter(name='LV_kan_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER)
+        if bool(s):
+            s = s[0]
+            s.delete()
+        s = Survey(name='LV_kan_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
     else:
         line = Line.objects.get(pk=LV_LINEID)
         num = line.outbound_number
         if not num:
             num = line.number
-        s = Survey.objects.get(name='LV_eng_DEMO', template=True)
-        s.delete()
-        s = Survey(name='LV_eng_DEMO', template=True, number=num, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
+        s = Survey.objects.filter(name='LV_kan_DEMO', template=True)
+        if bool(s):
+            s = s[0]
+            s.delete()
+        s = Survey(name='LV_kan_DEMO', template=True, number=num, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
     s.save()    
     order = 1
     
     welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     welcome.save()
-    welcome_opt = Option(number="1", action=Option.NEXT, prompt=welcome)
+    welcome_opt = Option(number="1", action=Option.INPUT, prompt=welcome)
     welcome_opt.save()
-    welcome_opt2 = Option(number="2", action=Option.GOTO, prompt=welcome)
+    welcome_opt2 = Option(number="2", action=Option.INPUT, prompt=welcome)
     welcome_opt2.save()
-    welcome_opt3 = Option(number="3", action=Option.GOTO, prompt=welcome)
+    welcome_opt3 = Option(number="3", action=Option.INPUT, prompt=welcome)
     welcome_opt3.save()
     order+=1
     
@@ -153,4 +157,4 @@ def create_survey(outbound=False):
         
     return s
 
-create_survey(True)
+create_survey()

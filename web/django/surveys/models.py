@@ -147,7 +147,7 @@ class Option(models.Model):
 class Param(models.Model):
     option = models.ForeignKey(Option)
     
-    # For GOTO
+    # For GOTO and INPUT (optional)
     IDX = 'idx'   
     # For RECORD
     MAXLENGTH = 'maxlength'

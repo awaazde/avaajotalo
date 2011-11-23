@@ -529,8 +529,9 @@ function playmessages (msgs, listenreplies)
 		    end
 		    local forumid = current_msg[6];
 		    local confirm = current_msg[10];
-                    local maxlength = current_msg[11];
-		    d = recordmessage (forumid, thread, moderated, maxlength, current_msg[4], adminmode, confirm);
+		    local maxlength = current_msg[11];
+		    local rgt = current_msg[4];
+		    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, confirm);
 		    if (d == GLOBAL_MENU_MAINMENU) then
 		       return d;
 		    else
