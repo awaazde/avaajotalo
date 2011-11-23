@@ -13,7 +13,7 @@ import otalo_utils
 PREFIX='freetdm/grp1/a/0'
 SUFFIX=''
 NUMBER='7961907782'
-SUBDIR = 'kan/survey/'
+SUBDIR = 'kan/'
 SOUND_EXT = ".wav"
 BARGEIN_KEY='9'
 LV_LINEID=1
@@ -44,7 +44,7 @@ def create_survey(outbound=False):
     s.save()    
     order = 1
     
-    welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    welcome = Prompt(file=SUBDIR+"welcome_survey"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     welcome.save()
     welcome_opt = Option(number="1", action=Option.INPUT, prompt=welcome)
     welcome_opt.save()
@@ -122,7 +122,7 @@ def create_survey(outbound=False):
     record_opt.save()
     order+=1
     
-    thankyou = Prompt(file=SUBDIR+"thank_you"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+    thankyou = Prompt(file=SUBDIR+"thankyou_survey"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
     thankyou.save()
     thankyou_opt = Option(number="", action=Option.GOTO, prompt=thankyou)
     thankyou_opt.save()
