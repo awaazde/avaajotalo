@@ -126,7 +126,7 @@ class Forum(models.Model):
         return self.name
     
 class Tag(models.Model):
-    tag = models.CharField(max_length=24)
+    tag = models.CharField(max_length=48)
     type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
     
