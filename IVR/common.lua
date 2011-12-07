@@ -737,7 +737,7 @@ function play_prompts (prompts)
    	  if (dependson ~= nil) then
    	  	local query = "SELECT input FROM surveys_input ";
    	  	query = query .. " WHERE call_id = ".. callid;
-   	  	query = query .. " AND prompt_id = ".. promptid;
+   	  	query = query .. " AND prompt_id = ".. dependson;
    	  	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 		result = row(query);
 		
