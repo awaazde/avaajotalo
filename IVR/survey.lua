@@ -74,7 +74,7 @@ if (res[3] ~= nil) then
 	DIALSTRING_SUFFIX = res[3];
 end
 
-local complete_after_idx = tonumber(res[4]);
+complete_after_idx = tonumber(res[4]);
 local callback_allowed = tonumber(res[5]);
 
 -- create a call in order to track any inputs made to this survey
