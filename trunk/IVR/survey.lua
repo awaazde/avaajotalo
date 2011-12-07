@@ -49,8 +49,6 @@ opencursors = {};
 destination = session:getVariable("destination_number");
 -- caller's number
 caller = session:getVariable("caller_id_number");
--- there is no outbound call
-callid = nil;
 
 -- get survey id
 query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback ";
@@ -76,6 +74,32 @@ end
 
 local complete_after_idx = tonumber(res[4]);
 local callback_allowed = tonumber(res[5]);
+
+-- create a call in order to track any inputs made to this survey
+-- first get subject id
+query = "SELECT subject.id FROM surveys_subject subject WHERE subject.number = " .. caller;
+freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+local cur = con:execute(query);
+local subj = row(query);
+
+if (subj == nil) then
+	query = "INSERT INTO surveys_subject (number) VALUES ('" ..caller.."')";
+	con:execute(query);
+	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+	local cur = con:execute("SELECT LAST_INSERT_ID()");
+	local subjectid = tostring(cur:fetch());
+	cur:close();
+else
+	local subjectid = subj[1];
+end
+
+-- create the call
+query = "INSERT INTO surveys_call (subject_id, survey_id, date, priority ) VALUES (" ..subjectid..","..surveyid..",now(),1) ";
+con:execute(query);
+freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+local cur = con:execute("SELECT LAST_INSERT_ID()");
+local callid = tostring(cur:fetch());
+cur:close();
 
 freeswitch.consoleLog("info", script_name .. " , num = " .. caller .. " , survey = " .. surveyid .. "\n");
 

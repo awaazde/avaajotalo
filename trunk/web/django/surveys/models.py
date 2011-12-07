@@ -40,8 +40,14 @@ class Survey(models.Model):
     # This is only relevant for inbound surveys. Make it a nullable for that reason.
     callback = models.NullBooleanField()
     
+    # Used to identify calls that were made to inbound surveys
+    # (could be done with inbound_designator, but this is more correct)
+    inbound = models.NullBooleanField()
+    
     TEMPLATE_DESIGNATOR = 'TEMPLATE'
     ANSWER_CALL_DESIGNATOR = 'AnswerCall'
+    
+    # Deprecated: use inbound field instead
     INBOUND_DESIGNATOR = 'INBOUND'
     template = models.BooleanField(default=False)
     
@@ -167,8 +173,7 @@ class Param(models.Model):
     value = models.CharField(max_length=128)
     
 class Input(models.Model):
-    # could be null if it's an incoming survey
-    call = models.ForeignKey(Call, blank=True, null=True)
+    call = models.ForeignKey(Call)
     prompt = models.ForeignKey(Prompt)
     # empty just in case we just want to record presence
     input = models.CharField(max_length=128, blank=True, null=True)
