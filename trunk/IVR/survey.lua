@@ -54,7 +54,9 @@ caller = session:getVariable("caller_id_number");
 query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback ";
 query = query .. " FROM surveys_survey survey ";
 query = query .. " WHERE number LIKE '%" .. destination .. "%' ";
-query = query .. " AND name LIKE '%" .. INBOUND_DESIGNATOR .. "%'";
+-- This is legacy, moved to inbound field
+query = query .. " AND (name LIKE '%" .. INBOUND_DESIGNATOR .. "%' ";
+query = query .. " 		OR survey.inbound = 1) ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 local res = row(query);
 local surveyid = res[1];

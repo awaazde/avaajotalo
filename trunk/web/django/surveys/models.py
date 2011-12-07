@@ -173,7 +173,16 @@ class Param(models.Model):
     value = models.CharField(max_length=128)
     
 class Input(models.Model):
+    '''
+    **********************************************************
+    'call' used to be nullable to allow for inbound calls;
+    now that inbound calls also get call objects, the 
+    migration made those input objects get -1 for call_id
+    '''
     call = models.ForeignKey(Call)
+    '''
+    **********************************************************
+    '''
     prompt = models.ForeignKey(Prompt)
     # empty just in case we just want to record presence
     input = models.CharField(max_length=128, blank=True, null=True)
