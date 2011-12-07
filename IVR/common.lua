@@ -779,7 +779,7 @@ function play_prompts (prompts)
    	  if (option ~= nil) then
    	  	optionid = option[1];
    	  	action = option[2];
-   	  elseif (inputlen > 1 and inputlen >= string.len(tostring(input))) then
+   	  elseif (inputlen ~= nil and inputlen > 1 and inputlen >= string.len(tostring(input))) then
    	  	-- there is no specific option, it is a range
    	  	optionid = nil;
    	  	action = OPTION_INPUT;
