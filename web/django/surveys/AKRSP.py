@@ -52,9 +52,9 @@ def survey(date):
     select_crop.save()
     number = 1
     for crop in CROP_NAMES:
-        crop = Option(number=str(number), action=Option.INPUT, prompt=select_crop)
-        crop.save()
-        param = Param(option=crop, name=Param.NAME, value=crop)
+        crop_opt = Option(number=str(number), action=Option.INPUT, prompt=select_crop)
+        crop_opt.save()
+        param = Param(option=crop_opt, name=Param.NAME, value=crop)
         param.save()
         number += 1
     order += 1
