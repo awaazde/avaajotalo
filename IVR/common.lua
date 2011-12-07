@@ -650,7 +650,7 @@ end
 -----------
 
 function get_prompts(surveyid)
-	local query = 	"SELECT id, file, bargein, delay, inputlen ";
+	local query = 	"SELECT id, file, bargein, delay, inputlen, dependson_id ";
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
@@ -732,6 +732,24 @@ function play_prompts (prompts)
    	  bargein = current_prompt[3];
    	  delay = current_prompt[4];
    	  inputlen = tonumber(current_prompt[5]);
+   	  dependson = tonumber(current_prompt[6]);
+   	  
+   	  if (dependson ~= nil) then
+   	  	local query = "SELECT input FROM surveys_input ";
+   	  	query = query .. " WHERE call_id = ".. callid;
+   	  	query = query .. " AND prompt_id = ".. promptid;
+		local cur = con:execute(query);
+		local result = cur:fetch();
+		cur:close(); 
+		
+		if (result == nil) then
+			result = "blank";
+		end
+		
+		-- assumes orig promptfile has trailing slash
+		promptfile = promptfile .. result .. ".wav";
+	  end
+		
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
    	  
    	  if (bargein == 1) then
@@ -758,14 +776,18 @@ function play_prompts (prompts)
    	  
    	  -- get option
    	  option = get_option(promptid, input);
-   	  if (option == nil) then
+   	  if (option ~= nil) then
+   	  	optionid = option[1];
+   	  	action = option[2];
+   	  elseif (inputlen > 1 and inputlen >= string.len(tostring(input))) then
+   	  	-- there is no specific option, it is a range
+   	  	optionid = nil;
+   	  	action = OPTION_INPUT;
+   	  else
    	  	-- default: repeat which is safer than NEXT since bad input
 		-- will make the prompt be skipped. Downside is that prompts have to have
 		-- an explicit option for no input, though this is probably better practice.
    	  	action = OPTION_REPLAY;
-   	  else
-   	  	optionid = option[1];
-   	  	action = option[2];
    	  end
       
       freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
@@ -780,6 +802,16 @@ function play_prompts (prompts)
       end
       
       if (action == OPTION_INPUT) then
+      	local params = nil;
+      	if (optionid ~= nil) then
+      		params = get_params(optionid);
+      	end
+      	-- in case there is a data for this option
+      	-- that should be inputted instead of the raw dialed number.
+      	-- Used for passing prompt names for conditional prompts.
+	   	if (params ~= nil and params[OPARAM_NAME] ~= nil) then
+	   		input = params[OPARAM_NAME];
+	   	end
 	    query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
    		query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..input.."')";
    		con:execute(query);
