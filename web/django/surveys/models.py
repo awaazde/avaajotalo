@@ -121,6 +121,8 @@ class Prompt(models.Model):
     inputlen = models.IntegerField(blank=True, null=True)
     # In the future, when we want to display input results
     name = models.CharField(max_length=128, blank=True, null=True)
+    # the prompt to be played is based on input from some other prompt
+    dependson = models.ForeignKey('self', blank=True, null=True)
     
     def __unicode__(self):
         if self.name and self.name != '':
@@ -139,7 +141,8 @@ class Option(models.Model):
     GOTO = 4
     RECORD = 5
     INPUT = 6
-    TRANSFER = 7;
+    TRANSFER = 7
+    
     action = models.IntegerField()
     
     prompt = models.ForeignKey(Prompt)
@@ -154,8 +157,10 @@ class Param(models.Model):
     ONCANCEL = 'oncancel'
     MFID = 'mfid'
     CONFIRM_REC = 'confirm'
-    # Foe TRANSFER
+    # For TRANSFER
     NUM = 'num'
+    # For INPUT (optional)
+    NAME = 'name'
     
     name = models.CharField(max_length=24)
     
