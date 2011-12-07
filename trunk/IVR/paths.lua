@@ -50,6 +50,7 @@ OPARAM_ONCANCEL = 'oncancel';
 OPARAM_MFID = 'mfid';
 OPARAM_CONFIRM_REC = 'confirm';
 OPARAM_NUM = 'num';
+OPARAM_NAME = 'name';
 
 GLOBAL_MENU_MAINMENU = "0";
 GLOBAL_MENU_NEXT = "1";
