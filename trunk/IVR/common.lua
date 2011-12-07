@@ -742,10 +742,12 @@ function play_prompts (prompts)
 		
 		if (result == nil) then
 			result = "blank";
+		else
+			result = result[1]
 		end
 		
 		-- assumes orig promptfile has trailing slash
-		promptfile = promptfile .. result[1] .. ".wav";
+		promptfile = promptfile .. result .. ".wav";
 	  end
 		
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
