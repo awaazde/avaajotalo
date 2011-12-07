@@ -31,11 +31,11 @@ NUM_DAYS=4
 '''
 
 def survey(date):
-    s = Survey.objects.filter(name='AKRSP_SURVEY_' + date_str(date) + "_" + Survey.INBOUND_DESIGNATOR)
+    s = Survey.objects.filter(name='AKRSP_SURVEY_' + date_str(date))
     if bool(s):
         s[0].delete()
     
-    s = Survey(name='AKRSP_SURVEY_' + date_str(date) + "_" + Survey.INBOUND_DESIGNATOR, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER)
+    s = Survey(name='AKRSP_SURVEY_' + date_str(date), dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER, inbound=True)
     s.save()
     print('Survey created: '+str(s))
     

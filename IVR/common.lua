@@ -738,16 +738,14 @@ function play_prompts (prompts)
    	  	local query = "SELECT input FROM surveys_input ";
    	  	query = query .. " WHERE call_id = ".. callid;
    	  	query = query .. " AND prompt_id = ".. promptid;
-		local cur = con:execute(query);
-		local result = cur:fetch();
-		cur:close(); 
+		result = row(query);
 		
 		if (result == nil) then
 			result = "blank";
 		end
 		
 		-- assumes orig promptfile has trailing slash
-		promptfile = promptfile .. result .. ".wav";
+		promptfile = promptfile .. result[1] .. ".wav";
 	  end
 		
    	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");

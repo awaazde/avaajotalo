@@ -26,11 +26,11 @@ LV_LINEID=1
 
 def create_survey(outbound=False):
     if not outbound:
-        s = Survey.objects.filter(name='LV_kan_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER)
+        s = Survey.objects.filter(name='LV_kan_DEMO', number=NUMBER, inbound=True)
         if bool(s):
             s = s[0]
             s.delete()
-        s = Survey(name='LV_kan_DEMO_'+Survey.INBOUND_DESIGNATOR, number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True)
+        s = Survey(name='LV_kan_DEMO', number=NUMBER, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=True, inbound=True)
     else:
         line = Line.objects.get(pk=LV_LINEID)
         num = line.outbound_number
