@@ -101,7 +101,7 @@ query = "INSERT INTO surveys_call (subject_id, survey_id, date, priority ) VALUE
 con:execute(query);
 freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 local cur = con:execute("SELECT LAST_INSERT_ID()");
-local callid = tostring(cur:fetch());
+callid = tostring(cur:fetch());
 cur:close();
 
 freeswitch.consoleLog("info", script_name .. " , num = " .. caller .. " , survey = " .. surveyid .. "\n");
