@@ -654,7 +654,6 @@ function get_prompts(surveyid)
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
-	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 	return rows(query);
 end
 
@@ -668,7 +667,6 @@ function get_option (promptid, number)
    query = query .. " WHERE prompt.id = " .. promptid;
    query = query .. " AND opt.prompt_id = prompt.id ";
    query = query .. " AND opt.number = '" .. number .. "' ";
-   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return row(query)
 end
 
@@ -681,7 +679,6 @@ function get_params (optionid)
    query = query .. " FROM surveys_option opt, surveys_param param ";
    query = query .. " WHERE opt.id = " .. optionid;
    query = query .. " AND param.option_id = opt.id ";
-   freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    local params = rows(query);
    local paramtbl = {};
    local current_param = params();
@@ -738,7 +735,6 @@ function play_prompts (prompts)
    	  	local query = "SELECT input FROM surveys_input ";
    	  	query = query .. " WHERE call_id = ".. callid;
    	  	query = query .. " AND prompt_id = ".. dependson;
-   	  	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 		result = row(query);
 		
 		if (result == nil) then
