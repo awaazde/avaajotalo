@@ -84,15 +84,16 @@ freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 local cur = con:execute(query);
 local subj = row(query);
 
+local subjectid = nil;
 if (subj == nil) then
 	query = "INSERT INTO surveys_subject (number) VALUES ('" ..caller.."')";
 	con:execute(query);
 	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	local cur = con:execute("SELECT LAST_INSERT_ID()");
-	local subjectid = tostring(cur:fetch());
+	subjectid = tostring(cur:fetch());
 	cur:close();
 else
-	local subjectid = subj[1];
+	subjectid = subj[1];
 end
 
 -- create the call
