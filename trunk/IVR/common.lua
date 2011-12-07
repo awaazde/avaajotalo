@@ -738,6 +738,7 @@ function play_prompts (prompts)
    	  	local query = "SELECT input FROM surveys_input ";
    	  	query = query .. " WHERE call_id = ".. callid;
    	  	query = query .. " AND prompt_id = ".. promptid;
+   	  	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 		result = row(query);
 		
 		if (result == nil) then
