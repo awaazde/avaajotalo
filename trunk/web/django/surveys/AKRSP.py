@@ -79,25 +79,25 @@ def survey(date):
     collection_opt2.save()
     order += 1
     
-    confirm_crop2 = Prompt(file=SUBDIR+"crops/", order=order, bargein=False, survey=s, delay=0, dependson=select_crop)
-    confirm_crop2.save()
-    confirm_crop2_opt = Option(number="", action=Option.NEXT, prompt=confirm_crop2)
-    confirm_crop2_opt.save()
-    order += 1
-    
-    collection_for_date = Prompt(file=SUBDIR+"collection_for_date"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
-    collection_for_date.save()
-    collection_for_date_opt = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=collection_for_date)
-    collection_for_date_opt.save()
-    collection_for_date_opt2 = Option(number="", action=Option.NEXT, prompt=collection_for_date)
-    collection_for_date_opt2.save()
-    order += 1
-    
-    for dt in range(1,NUM_DAYS+1):
-        date += timedelta(days=dt)
-        day_o_month = str(date.day)
-        month = MONTHS[date.month-1]
-        day_o_week = DAYS_OF_WEEK[date.weekday()]
+    for i in range(1,NUM_DAYS+1):
+        dt += date+ timedelta(days=i)
+        day_o_month = str(dt.day)
+        month = MONTHS[dt.month-1]
+        day_o_week = DAYS_OF_WEEK[dt.weekday()]
+        
+        confirm_crop2 = Prompt(file=SUBDIR+"crops/", order=order, bargein=False, survey=s, delay=0, dependson=select_crop)
+        confirm_crop2.save()
+        confirm_crop2_opt = Option(number="", action=Option.NEXT, prompt=confirm_crop2)
+        confirm_crop2_opt.save()
+        order += 1
+        
+        collection_for_date = Prompt(file=SUBDIR+"collection_for_date"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+        collection_for_date.save()
+        collection_for_date_opt = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=collection_for_date)
+        collection_for_date_opt.save()
+        collection_for_date_opt2 = Option(number="", action=Option.NEXT, prompt=collection_for_date)
+        collection_for_date_opt2.save()
+        order += 1
         
         date_prompt = Prompt(file=SUBDIR+"nums/"+day_o_month+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
         date_prompt.save()
@@ -136,7 +136,7 @@ def survey(date):
         day_prompt_opt10.save()
         day_prompt_optR = Option(number="", action=Option.GOTO, prompt=day_prompt)
         day_prompt_optR.save()
-        param = Param(option=day_prompt_optR, name=Param.IDX, value=collection_for_date.order)
+        param = Param(option=day_prompt_optR, name=Param.IDX, value=confirm_crop2.order)
         param.save()
         order+= 1
         
@@ -183,6 +183,7 @@ def survey(date):
         get input values with increasing IDs (to avoid picking up a digit from a longer overwritten entry)
         '''
         
+        # playback/confirm
         for dig in range(MAX_DIGITS-1):
             confirm_digit = Prompt(file=SUBDIR+"nums/", order=order, bargein=False, survey=s, delay=0, dependson=digit_prompts[dig])
             confirm_digit.save()
@@ -198,7 +199,7 @@ def survey(date):
         param.save()
         enter_post_opt2 = Option(number="2", action=Option.GOTO, prompt=enter_post)
         enter_post_opt2.save()
-        param2 = Param(option=enter_post_opt2, name=Param.IDX, value=day_prompt.order)
+        param2 = Param(option=enter_post_opt2, name=Param.IDX, value=confirm_crop2.order)
         param2.save()
         order += 1
         
@@ -210,7 +211,7 @@ def survey(date):
         dontknow_opt2.save()    
         order += 1
         
-        param = Param(option=day_prompt_opt10, name=Param.IDX, value=order)
+        param = Param(option=day_prompt_opt10, name=Param.IDX, value=dontknow.order)
         param.save()
     
     thankyou = Prompt(file=SUBDIR+"thankyou_survey"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
