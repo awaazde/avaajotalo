@@ -174,7 +174,7 @@ def survey(date):
         
         enter_pre = Prompt(file=SUBDIR+"enter_pre"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
         enter_pre.save()
-        enter_pre_opt = Option(number="", action=Option.GOTO, prompt=enter_pre)
+        enter_pre_opt = Option(number="", action=Option.NEXT, prompt=enter_pre)
         enter_pre_opt.save()
         order += 1
     
