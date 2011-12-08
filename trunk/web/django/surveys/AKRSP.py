@@ -216,8 +216,10 @@ def survey(date):
     
     thankyou = Prompt(file=SUBDIR+"thankyou_survey"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
     thankyou.save()
-    thankyou_opt = Option(number="", action=Option.NEXT, prompt=thankyou)
+    thankyou_opt = Option(number="", action=Option.GOTO, prompt=thankyou)
     thankyou_opt.save()
+    param = Param(option=thankyou_opt, name=Param.IDX, value=select_crop.order)
+    param.save()
     order += 1
     
     return s
