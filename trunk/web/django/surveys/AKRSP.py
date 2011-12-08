@@ -35,7 +35,7 @@ def survey(date):
     if bool(s):
         s[0].delete()
     
-    s = Survey(name='AKRSP_SURVEY_' + date_str(date), dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER, inbound=True)
+    s = Survey(name='AKRSP_SURVEY_' + date_str(date), dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER, inbound=True, callback=True)
     s.save()
     print('Survey created: '+str(s))
     
