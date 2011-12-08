@@ -190,7 +190,7 @@ def survey(date):
             confirm_digit_opt.save()
             order += 1
         
-        enter_post = Prompt(file=SUBDIR+"enter_post"+SOUND_EXT, order=order, bargein=False, survey=s, delay=4000)
+        enter_post = Prompt(file=SUBDIR+"enter_post"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
         enter_post.save()
         enter_post_opt = Option(number="1", action=Option.GOTO, prompt=enter_post)
         enter_post_opt.save()
