@@ -146,7 +146,7 @@ def survey(date):
             digit.save()
             digit_prompts.append(digit)
             # if user is done entering, move on to confirmation
-            digit_opt = Option(number="", action=Option.INPUT, prompt=digit)
+            digit_opt = Option(number="", action=Option.GOTO, prompt=digit)
             digit_opt.save()
             param = Param(option=digit_opt, name=Param.IDX, value=order+dig)
             param.save()
@@ -190,7 +190,7 @@ def survey(date):
             confirm_digit_opt.save()
             order += 1
         
-        enter_post = Prompt(file=SUBDIR+"enter_post"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+        enter_post = Prompt(file=SUBDIR+"enter_post"+SOUND_EXT, order=order, bargein=False, survey=s, delay=4000)
         enter_post.save()
         enter_post_opt = Option(number="1", action=Option.GOTO, prompt=enter_post)
         enter_post_opt.save()
