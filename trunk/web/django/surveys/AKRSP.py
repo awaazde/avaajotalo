@@ -80,7 +80,7 @@ def survey(date):
     order += 1
     
     for i in range(1,NUM_DAYS+1):
-        dt += date+ timedelta(days=i)
+        dt = date + timedelta(days=i)
         day_o_month = str(dt.day)
         month = MONTHS[dt.month-1]
         day_o_week = DAYS_OF_WEEK[dt.weekday()]
