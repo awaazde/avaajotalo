@@ -814,7 +814,11 @@ function play_prompts (prompts)
    		con:execute(query);
    		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
    		
-   		local goto_idx = tonumber(get_params(optionid)[OPARAM_IDX]);
+   		local goto_idx = nil;
+   		if (params ~= nil) then
+   			goto_idx = tonumber(params[OPARAM_IDX]);
+   		end
+   		
    		if (goto_idx == nil) then
    			goto_idx = current_prompt_idx + 1;
    		end
