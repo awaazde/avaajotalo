@@ -57,6 +57,8 @@ query = query .. " WHERE number LIKE '%" .. destination .. "%' ";
 -- This is legacy, moved to inbound field
 query = query .. " AND (name LIKE '%" .. INBOUND_DESIGNATOR .. "%' ";
 query = query .. " 		OR survey.inbound = 1) ";
+-- get most recent version of the survey
+query = query .. " ORDER BY survey.id DESC ";
 freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
 local res = row(query);
 local surveyid = res[1];
