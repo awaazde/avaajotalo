@@ -184,7 +184,7 @@ def survey(date):
         '''
         
         # playback/confirm
-        for dig in range(MAX_DIGITS-1):
+        for dig in range(MAX_DIGITS):
             confirm_digit = Prompt(file=SUBDIR+"nums/", order=order, bargein=False, survey=s, delay=0, dependson=digit_prompts[dig])
             confirm_digit.save()
             confirm_digit_opt = Option(number="", action=Option.NEXT, prompt=confirm_digit)
