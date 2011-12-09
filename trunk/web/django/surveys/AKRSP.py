@@ -141,13 +141,15 @@ def survey(date):
         order+= 1
         
         digit_prompts=[day_prompt]
-        for dig in range(MAX_DIGITS-1,0,-1):
+        for dig in range(MAX_DIGITS-1):
             digit = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000)
             digit.save()
             digit_prompts.append(digit)
             # take blank as input to zero out all possible digits
             digit_opt = Option(number="", action=Option.INPUT, prompt=digit)
             digit_opt.save()
+            param = Param(option=digit_opt, name=Param.NAME, value="blank")
+            param.save()
             digit_opt0 = Option(number="0", action=Option.INPUT, prompt=digit)
             digit_opt0.save()
             digit_opt1 = Option(number="1", action=Option.INPUT, prompt=digit)
@@ -209,6 +211,9 @@ def survey(date):
         dontknow_opt2.save()    
         order += 1
         
+        param = Param(option=day_prompt_opt10, name=Param.IDX, value=dontknow.order)
+        param.save()
+        
         confirm_dontknow = Prompt(file=SUBDIR+"enter_post"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
         confirm_dontknow.save()
         confirm_dontknow_opt = Option(number="1", action=Option.NEXT, prompt=confirm_dontknow)
@@ -218,9 +223,6 @@ def survey(date):
         param2 = Param(option=confirm_dontknow_opt2, name=Param.IDX, value=confirm_crop2.order)
         param2.save()
         order += 1
-        
-        param = Param(option=day_prompt_opt10, name=Param.IDX, value=dontknow.order)
-        param.save()
     
     thankyou = Prompt(file=SUBDIR+"thankyou_survey"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
     thankyou.save()
