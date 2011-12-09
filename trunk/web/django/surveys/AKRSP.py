@@ -114,6 +114,8 @@ def survey(date):
         # Have to capture digits seperately in this case because there are no digit prompts. But using input length works!
         day_prompt = Prompt(file=SUBDIR+"days/"+day_o_week+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
         day_prompt.save()
+        day_prompt_opt0 = Option(number="0", action=Option.INPUT, prompt=day_prompt)
+        day_prompt_opt0.save()
         day_prompt_opt1 = Option(number="1", action=Option.INPUT, prompt=day_prompt)
         day_prompt_opt1.save()
         day_prompt_opt2 = Option(number="2", action=Option.INPUT, prompt=day_prompt)
@@ -224,7 +226,7 @@ def survey(date):
         param2.save()
         order += 1
     
-    thankyou = Prompt(file=SUBDIR+"thankyou_survey"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    thankyou = Prompt(file=SUBDIR+"thankyou_survey"+SOUND_EXT, order=order, bargein=False, survey=s, delay=3000)
     thankyou.save()
     thankyou_opt = Option(number="", action=Option.GOTO, prompt=thankyou)
     thankyou_opt.save()
