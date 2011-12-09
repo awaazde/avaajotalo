@@ -859,7 +859,7 @@ function play_prompts (prompts)
 	  	local goto_idx = tonumber(get_params(optionid)[OPARAM_IDX]);
 		-- check to see if we are at the last msg in the list
 	 	if (goto_idx > #prevprompts) then
-		    for i=#prevprompts+1, goto_idx, goto_idx do
+		    for i=#prevprompts+1, goto_idx do
 			    current_prompt = prompts();
 			    if (current_prompt ~= nil) then
 			       table.insert(prevprompts, current_prompt);
