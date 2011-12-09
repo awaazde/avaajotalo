@@ -21,7 +21,7 @@ BARGEIN_KEY='1'
 CROP_NAMES = ['bhinda', 'karela', 'kela', 'keri', 'parwal', 'ringal', 'tameta']
 MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december']
 DAYS_OF_WEEK=['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
-MAX_DIGITS=5
+MAX_DIGITS=4
 NUM_DAYS=4
 
 '''
@@ -142,14 +142,12 @@ def survey(date):
         
         digit_prompts=[day_prompt]
         for dig in range(MAX_DIGITS-1,0,-1):
-            digit = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+            digit = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000)
             digit.save()
             digit_prompts.append(digit)
-            # if user is done entering, move on to confirmation
-            digit_opt = Option(number="", action=Option.GOTO, prompt=digit)
+            # take blank as input to zero out all possible digits
+            digit_opt = Option(number="", action=Option.INPUT, prompt=digit)
             digit_opt.save()
-            param = Param(option=digit_opt, name=Param.IDX, value=order+dig)
-            param.save()
             digit_opt0 = Option(number="0", action=Option.INPUT, prompt=digit)
             digit_opt0.save()
             digit_opt1 = Option(number="1", action=Option.INPUT, prompt=digit)
@@ -195,7 +193,7 @@ def survey(date):
         enter_post.save()
         enter_post_opt = Option(number="1", action=Option.GOTO, prompt=enter_post)
         enter_post_opt.save()
-        param = Param(option=enter_post_opt, name=Param.IDX, value=order+2)
+        param = Param(option=enter_post_opt, name=Param.IDX, value=order+3)
         param.save()
         enter_post_opt2 = Option(number="2", action=Option.GOTO, prompt=enter_post)
         enter_post_opt2.save()
@@ -209,6 +207,16 @@ def survey(date):
         dontknow_opt.save()        
         dontknow_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=dontknow)
         dontknow_opt2.save()    
+        order += 1
+        
+        confirm_dontknow = Prompt(file=SUBDIR+"enter_post"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+        confirm_dontknow.save()
+        confirm_dontknow_opt = Option(number="1", action=Option.NEXT, prompt=confirm_dontknow)
+        confirm_dontknow_opt.save()
+        confirm_dontknow_opt2 = Option(number="2", action=Option.GOTO, prompt=confirm_dontknow)
+        confirm_dontknow_opt2.save()
+        param2 = Param(option=confirm_dontknow_opt2, name=Param.IDX, value=confirm_crop2.order)
+        param2.save()
         order += 1
         
         param = Param(option=day_prompt_opt10, name=Param.IDX, value=dontknow.order)
