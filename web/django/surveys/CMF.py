@@ -6,8 +6,7 @@ from otalo.surveys.models import Survey, Prompt, Option, Call, Input
 import otalo_utils
 
 CMF_DESIGNATOR = '_CMF'
-#CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
-CMF_OUTPUT_DIR = ''
+CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
 
@@ -665,10 +664,10 @@ def main2():
     dt = startdate
     while (dt <= enddate):
         #get_features_within_call(features, inbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
-        get_broadcast_calls(outbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
+        #get_broadcast_calls(outbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
         #get_message_listens(inbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
         
         dt += timedelta(days=7)
         
-    get_survey_results()
+    get_survey_results(numbers)
 main2()
