@@ -662,7 +662,7 @@ def main2():
     
     features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
     dt = startdate
-    while (dt <= enddate):
+    while (dt < enddate):
         get_features_within_call(features, inbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
         get_broadcast_calls(outbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
         get_message_listens(inbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
