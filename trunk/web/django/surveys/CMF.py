@@ -274,7 +274,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
     received_nums = []
     
     f = open(filename)
-    '''
+
     while(True):
         line = f.readline()
         if not line:
@@ -375,7 +375,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
         except otalo_utils.PhoneNumException:
             #print("PhoneNumException: " + line)
             continue
-    '''    
+                
     header = ['number','treatment?','call try #','time','duration','last prompt','input']    
     if date_start:
         outfilename='outgoing_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
