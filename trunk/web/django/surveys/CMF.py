@@ -547,13 +547,13 @@ def get_survey_results(phone_num_filter, date_start=False, date_end=False):
         inputs = Input.objects.select_related(depth=1).filter(call=call)
         inputs = [input for input in inputs]
         result = [call.subject.number, time_str(call.date)]
-        q1 = filter(lambda: input, 'q1' in input.prompt.file, inputs)
+        q1 = filter(lambda input: 'q1' in input.prompt.file, inputs)
         if bool(q1):
             result.append(q1[0].input)
-        q2 = filter(lambda: input, 'q2' in input.prompt.file, inputs)
+        q2 = filter(lambda input: 'q2' in input.prompt.file, inputs)
         if bool(q2):
             result.append(q2[0].input)
-        q3 = filter(lambda: input, 'q3' in input.prompt.file, inputs)
+        q3 = filter(lambda input: 'q3' in input.prompt.file, inputs)
         if bool(q3):
             result.append(q3[0].input)
         results.append(result)
