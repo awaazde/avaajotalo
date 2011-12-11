@@ -30,7 +30,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     s.save()    
     
     order = 1
-    
+    subdir += '/'
     welcome = Prompt(file=subdir+"welcome_survey"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     welcome.save()
     welcome_opt = Option(number="1", action=Option.INPUT, prompt=welcome)
