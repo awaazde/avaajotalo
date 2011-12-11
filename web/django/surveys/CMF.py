@@ -387,9 +387,9 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
     output.writerows(all_calls)
     nocalls=[]
     for num in phone_num_filter:
-        print('number is ' + num)
+        #print('number is ' + num)
         calls = Call.objects.select_related().filter(subject__number=num, survey__broadcast=True)
-        print('got calls')
+        #print('got calls')
         calls_by_survey = {}
         for call in calls:
             if date_end and call.priority == 1 and call.date > date_end:
@@ -404,10 +404,10 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                 else:
                     calls_by_survey[s] = [call]
         for survey,calls in calls_by_survey.items():
-            print('processing survey ' + str(survey))
+            #print('processing survey ' + str(survey))
             complete = filter(lambda call: call.complete==True, calls)
             if not(bool(complete)):
-                print('getting first att call for survey ' + str(survey.id) + ' number '+ num)
+                #print('getting first att call for survey ' + str(survey.id) + ' number '+ num)
                 first_call = filter(lambda call: call.priority==1, calls)[0]
                 first_att = first_call.date
                 
@@ -568,9 +568,9 @@ def get_survey_results(phone_num_filter, date_start=False, date_end=False):
     output.writerows(results)
     nocalls = []
     for num in phone_num_filter:
-        print('number is ' + num)
+        #print('number is ' + num)
         calls = Call.objects.select_related().filter(subject__number=num, survey__in=surveys)
-        print('got calls')
+        #print('got calls')
         calls_by_survey = {}
         for call in calls:
             if date_end and call.priority == 1 and call.date > date_end:
@@ -585,10 +585,10 @@ def get_survey_results(phone_num_filter, date_start=False, date_end=False):
                 else:
                     calls_by_survey[s] = [call]
         for survey,calls in calls_by_survey.items():
-            print('processing survey ' + str(survey))
+            #print('processing survey ' + str(survey))
             complete = filter(lambda call: call.complete==True, calls)
             if not(bool(complete)):
-                print('getting first att call for survey ' + str(survey.id) + ' number '+ num)
+                #print('getting first att call for survey ' + str(survey.id) + ' number '+ num)
                 first_call = filter(lambda call: call.priority==1, calls)[0]
                 first_att = first_call.date
                 
