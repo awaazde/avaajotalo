@@ -151,7 +151,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
 ****************************************************************************
 '''
 def survey_results_legacy(filename, phone_num_filter=False, date_start=False, date_end=False):
-    header = ['UserNum', 'time', 'welcome', 'factory', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
+    header = ['UserNum', 'time', 'welcome_survey', 'factory', 'working_hours', 'minimum_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
     all_calls = []
     current_week_start = 0
     open_calls = {}
@@ -214,23 +214,30 @@ def survey_results_legacy(filename, phone_num_filter=False, date_start=False, da
                     call = open_calls[phone_num]    
                     call_info = [phone_num,time_str(call['start'])]
                     for prompt in header[2:]:
+                        #print('looking for prompt '+prompt+' in '+str(call))
                         if prompt in call:
+                            #print('prompt found')
                             call_info.append(call[prompt])
                         else:
                             call_info.append('')
                     
+                    #print('adding survey info ' + str(call_info))
                     all_calls.append(call_info)
                     del open_calls[phone_num]
             elif phone_num in open_calls:
                 call = open_calls[phone_num]
-                if not(otalo_utils.is_prompt(line)):
+                feature = line[line.rfind('/')+1:line.find('.wav')]
+                if not(otalo_utils.is_prompt(line)) and not('Abort call' in line):
                     if otalo_utils.is_record(line):
-                        last_prompt = call['last_prompt']
-                        call[last_prompt] = line[line.rfind('/')+1:]
+                        #print('record line '+ line)
+                        last_prompt = call['last_recording_prompt']
+                        call[last_prompt] = line[line.rfind('/')+1:].strip()
                     else:
-                        feature = line[line.rfind('/')+1:line.find('.wav')]
-                        call[feature] = line[-1:]
-                call['last_prompt'] = line
+                        #print('dtmf line '+ line)
+                        #print('feature is '+feature+' and val is '+line.strip()[-1:])
+                        call[feature.strip()] = line.strip()[-1:]
+                elif '.wav' in line and feature in header:                    
+                    call['last_recording_prompt'] = feature
                                       
         except KeyError as err:
             #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
@@ -245,9 +252,9 @@ def survey_results_legacy(filename, phone_num_filter=False, date_start=False, da
             continue
         
     if date_start:
-        outfilename='lv_survey_legacy_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        outfilename='lv_survey_legacy_'+destination+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
-        outfilename='lv_survey_legacy.csv'
+        outfilename='lv_survey_legacy_'+destination+'.csv'
     outfilename = OUTPUT_FILE_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
