@@ -111,3 +111,4 @@ SERIALIZATION_MODULES = {
 
 INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
 OUTBOUND_LOG_ROOT = '/Users/neil/Documents/outbound_'
+LOG_ROOT = '/Users/neil/Documents/'
