@@ -10,7 +10,7 @@ import otalo_utils
 ******************* CONSTANTS **********************************************
 ****************************************************************************
 '''
-OUTPUT_FILE_DIR=''
+OUTPUT_FILE_DIR='/home/laborvoices/reports/'
 PREFIX='freetdm/grp1/a/0'
 SUFFIX=''
 SOUND_EXT = ".wav"

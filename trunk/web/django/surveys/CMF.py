@@ -645,7 +645,7 @@ def main():
 
 def main2():
     if len(sys.argv) < 4:
-        print("args: lineid, startdate enddate")
+        print("args: lineid startdate enddate")
         sys.exit()
     else:
         lineid = sys.argv[1]
