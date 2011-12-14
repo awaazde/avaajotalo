@@ -253,7 +253,7 @@ def survey_results_legacy(f, date_start=False, date_end=False):
     output.writerow(header)
     output.writerows(all_calls)
     
-def survey_results(survey_numbers, date_start=false, date_end=false):
+def survey_results(survey_numbers, date_start=False, date_end=False):
     # get calls
     calls = Call.objects.filter(survey__numbers__in=survey_numbers, complete=True)
     
