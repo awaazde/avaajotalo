@@ -3,7 +3,7 @@ from openpyxl.reader.excel import load_workbook
 from datetime import datetime, timedelta
 from django.db.models import Q, Max
 from django.conf import settings
-from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call
+from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
 import otalo_utils
 
 '''
@@ -289,7 +289,17 @@ def collection_report(caller_info_file, date_start=False, date_end=False):
         
     if date_end:
         calls = calls.filter(date__lt=date_end)
-        
+    
+    # write out the data
+    header = ['number','name','village','time','crop','d1','d2','d3','d4']
+    if date_start:
+        outfilename='collection_report_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='collection_report.csv'
+    outfilename = OUTPUT_FILE_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+           
     for call in calls:
         subj = call.subject
         num = subj.number
@@ -314,23 +324,18 @@ def collection_report(caller_info_file, date_start=False, date_end=False):
             elif 'blank' in input.prompt.file:
                 if input.input != 'blank':
                     entry += str(input.input)
-        
-        # write out the data
-        header = ['number','name','village','time','crop','d1','d2','d3','d4']
-        if date_start:
-            outfilename='collection_report_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
-        else:
-            outfilename='collection_report.csv'
-        outfilename = OUTPUT_FILE_DIR+outfilename
-        output = csv.writer(open(outfilename, 'wb'))
-        output.writerow(header)
                
+        results=[]
         for cropname,values in crops.items():
-            cropwise_data = [num, subj.name, caller_info[num]['village'], time_str(call.date), cropname]  
+            village = ''
+            if num in caller_info:
+                village = caller_info[num]['village']
+            cropwise_data = [num, subj.name, village, time_str(call.date), cropname]  
             sorted_items = sorted(values.items())
             for order,val in sorted_items:
                 cropwise_data.append(val)
-            output.writerow(cropwise_data)
+            results.append(cropwise_data)
+        output.writerows(results)
 
 '''
 ****************************************************************************
@@ -385,7 +390,8 @@ def main():
        startdate = datetime(year=now.year, month=now.month, day=now.day)
    
     #survey(startdate)
-    data_coll_reminders()
-    blank_template(NUMBER,PREFIX,SUFFIX)
+    #data_coll_reminders()
+    #blank_template(NUMBER,PREFIX,SUFFIX)
+    collection_report("akrsp_collectors.csv")
 
 main()
