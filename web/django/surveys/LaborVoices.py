@@ -10,6 +10,7 @@ import otalo_utils
 ******************* CONSTANTS **********************************************
 ****************************************************************************
 '''
+OUTPUT_FILE_DIR=''
 PREFIX='freetdm/grp1/a/0'
 SUFFIX=''
 SOUND_EXT = ".wav"
@@ -146,6 +147,155 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
 
 '''
 ****************************************************************************
+******************* Reporting **********************************************
+****************************************************************************
+'''
+def survey_results_legacy(f, date_start=false, date_end=false):
+    header = ['UserNum', 'time', 'welcome', 'factory', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
+    all_calls = []
+    current_week_start = 0
+    open_calls = {}
+    destination = None
+    
+    f = open(filename)
+    
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            if not destination:
+                destination = get_destination(line)
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out current call
+                    call = open_calls[phone_num]    
+                    call_info = [phone_num,time_str(call['start'])]
+                    for prompt in header[2:]:
+                        if prompt in call:
+                            call_info.append(call[prompt])
+                        else:
+                            call_info.append('')
+                    
+                    all_calls.append(call_info)
+                    del open_calls[phone_num]
+
+                open_calls[phone_num] = {}
+                
+            elif line.find("End call") != -1:
+                if phone_num in open_calls:
+                     # close out current call
+                    call = open_calls[phone_num]    
+                    call_info = [phone_num,time_str(call['start'])]
+                    for prompt in header[2:]:
+                        if prompt in call:
+                            call_info.append(call[prompt])
+                        else:
+                            call_info.append('')
+                    
+                    all_calls.append(call_info)
+                    del open_calls[phone_num]
+            elif phone_num in open_calls:
+                call = open_calls[phone_num]
+                if not(otalo_utils.is_prompt(line)):
+                    if otalo_utils.is_record(line):
+                        last_prompt = call['last_prompt']
+                        call[last_prompt] = line[line.rfind('/')+1:]
+                    else:
+                        feature = line[line.rfind('/')+1:line.find('.wav')]
+                        call[feature] = line[-1:]
+                call[last_prompt] = line
+                                      
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+        
+    if date_start:
+        outfilename='lv_survey_legacy_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='lv_survey_legacy.csv'
+    outfilename = CMF_OUTPUT_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+    output.writerows(all_calls)
+    
+def survey_results(survey_numbers, date_start=false, date_end=false):
+    # get calls
+    calls = Call.objects.filter(survey__numbers__in=survey_numbers, complete=True)
+    
+    if date_start:
+        calls = calls.filter(date__gte=date_start)
+        
+    if date_end:
+        calls = calls.filter(date__lt=date_end)
+    
+    header = ['UserNum', 'SurveyNum', 'time', 'welcome', 'factory', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand']
+    results = [header]
+    for call in calls:
+        inputs = Input.objects.filter(call=call)
+        result = [call.subject.number, call.survey.number, time_str(call.date)]
+        for input in inputs:
+            result.append(input.input)
+        results.append(result)
+    
+    if date_start:
+        outfilename='lv_survey_'+destination+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='lv_survey_'+destination+'.csv'
+        
+    outfilename = OUTPUT_FILE_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerows(results)
+    
+'''
+****************************************************************************
+******************* UTILS **************************************************
+****************************************************************************
+'''
+def date_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%b-%d-%y')
+
+def time_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%m-%d-%y %H:%M')
+    
+'''
+****************************************************************************
 ******************* MAIN ***************************************************
 ****************************************************************************
 '''
@@ -162,13 +312,18 @@ def main():
     num = l.number
     if l.outbound_number:
         num = l.outbound_number
-    create_survey('kan',num,template=True)
-    create_survey('lveng',num,template=True)
+    #create_survey('kan',num,template=True)
+    #create_survey('lveng',num,template=True)
     
     # next create inbound surveys
-    create_survey('lveng','7961907780',callback=True, inbound=True)
-    create_survey('lveng','7961907781',inbound=True)
-    create_survey('kan','7961907782',callback=True, inbound=True)
-    create_survey('kan','7961907783',inbound=True)
+    #create_survey('lveng','7961907780',callback=True, inbound=True)
+    #create_survey('lveng','7961907781',inbound=True)
+    #create_survey('kan','7961907782',callback=True, inbound=True)
+    #create_survey('kan','7961907783',inbound=True)
+    
+    kan1 = settings.OUTBOUND_LOG_ROOT + '7961907777' + '.log'
+    survey_results_legacy(kan1)
+    kan2 = settings.OUTBOUND_LOG_ROOT + '7961907778' + '.log'
+    survey_results_legacy(kan2)
 
 main()
