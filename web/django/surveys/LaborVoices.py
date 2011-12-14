@@ -150,7 +150,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
 ******************* Reporting **********************************************
 ****************************************************************************
 '''
-def survey_results_legacy(filename, date_start=False, date_end=False):
+def survey_results_legacy(filename, phone_num_filter=False, date_start=False, date_end=False):
     header = ['UserNum', 'time', 'welcome', 'factory', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
     all_calls = []
     current_week_start = 0
@@ -176,7 +176,7 @@ def survey_results_legacy(filename, date_start=False, date_end=False):
         ##
         ################################################
             if not destination:
-                destination = get_destination(line)
+                destination = otalo_utils.get_destination(line)
             
             if phone_num_filter and not phone_num in phone_num_filter:
                 continue
@@ -206,7 +206,7 @@ def survey_results_legacy(filename, date_start=False, date_end=False):
                     all_calls.append(call_info)
                     del open_calls[phone_num]
 
-                open_calls[phone_num] = {}
+                open_calls[phone_num] = {'start':current_date}
                 
             elif line.find("End call") != -1:
                 if phone_num in open_calls:
@@ -230,7 +230,7 @@ def survey_results_legacy(filename, date_start=False, date_end=False):
                     else:
                         feature = line[line.rfind('/')+1:line.find('.wav')]
                         call[feature] = line[-1:]
-                call[last_prompt] = line
+                call['last_prompt'] = line
                                       
         except KeyError as err:
             #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
@@ -248,7 +248,7 @@ def survey_results_legacy(filename, date_start=False, date_end=False):
         outfilename='lv_survey_legacy_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
         outfilename='lv_survey_legacy.csv'
-    outfilename = CMF_OUTPUT_DIR+outfilename
+    outfilename = OUTPUT_FILE_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
     output.writerows(all_calls)
@@ -321,9 +321,9 @@ def main():
     #create_survey('kan','7961907782',callback=True, inbound=True)
     #create_survey('kan','7961907783',inbound=True)
     
-    kan1 = settings.OUTBOUND_LOG_ROOT + '7961907777' + '.log'
+    kan1 = settings.LOG_ROOT + 'survey_in_61907782.log'
     survey_results_legacy(kan1)
-    kan2 = settings.OUTBOUND_LOG_ROOT + '7961907778' + '.log'
+    kan2 = settings.LOG_ROOT + 'survey_in_61907783.log'
     survey_results_legacy(kan2)
 
 main()
