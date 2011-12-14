@@ -150,7 +150,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
 ******************* Reporting **********************************************
 ****************************************************************************
 '''
-def survey_results_legacy(f, date_start=False, date_end=False):
+def survey_results_legacy(filename, date_start=False, date_end=False):
     header = ['UserNum', 'time', 'welcome', 'factory', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
     all_calls = []
     current_week_start = 0
