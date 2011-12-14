@@ -11,7 +11,7 @@ import otalo_utils
 ******************* CONSTANTS **********************************************
 ****************************************************************************
 '''
-OUTPUT_FILE_DIR = ''
+OUTPUT_FILE_DIR = '/home/akrsp/reports/'
 PREFIX='freetdm/grp3/a/'
 SUFFIX=''
 NUMBER='7966044411'
@@ -363,9 +363,11 @@ def get_number(line):
     num = line[0][-10:]
     return num
 
+def get_name(line):
+    return line[1].strip()
+
 def get_village(line):
-    village = line[1]
-    return village.strip()
+    return line[2].strip()
 
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
