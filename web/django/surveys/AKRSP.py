@@ -144,7 +144,7 @@ def survey(date):
         
         digit_prompts=[day_prompt]
         for dig in range(MAX_DIGITS-1):
-            digit = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000)
+            digit = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000, name='d'+str(dig+2))
             digit.save()
             digit_prompts.append(digit)
             # take blank as input to zero out all possible digits
@@ -236,18 +236,131 @@ def survey(date):
     
     return s
 
+def data_coll_reminders():
+    reminders = Survey.objects.filter(name__contains='COLLECTION_REM', number=NUMBER, template=True)
+    if bool(reminders):
+        for s in reminders:
+            s.delete()
+    
+    s = Survey(name='COLLECTION_REM_DAY_PRIOR', dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER, template=True)
+    s.save()
+    print('Reminder template created: '+str(s))
+    
+    message = Prompt(file=SUBDIR+"collection_reminder_day_before"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
+    message.save()
+    message_opt = Option(number="", action=Option.NEXT, prompt=message)
+    message_opt.save()
+    
+    s = Survey(name='COLLECTION_REM_SAME_DAY', dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER, template=True)
+    s.save()
+    print('Reminder template created: '+str(s))
+    
+    message = Prompt(file=SUBDIR+"collection_reminder_same_day"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
+    message.save()
+    message_opt = Option(number="", action=Option.NEXT, prompt=message)
+    message_opt.save()
+
+def blank_template(num, prefix, suffix):
+    s = Survey.objects.filter(name__contains='BLANK', number=num, template=True)
+    if not bool(s):
+        s = Survey(name='BLANK', template=True, number=num, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0)
+        s.save()
+        print('Blank template created: '+str(s))
+        
+        blank = Prompt(file=SUBDIR+'blank.wav', order=1, bargein=False, survey=s, delay=0)
+        blank.save()
+        blank_opt = Option(number="", action=Option.NEXT, prompt=blank)
+        blank_opt.save()
+        
+        return s
 '''
 ****************************************************************************
 ******************* REPORTING **********************************************
 ****************************************************************************
 '''
-
+def collection_report(caller_info_file, date_start=False, date_end=False):
+    caller_info = load_caller_info(caller_info_file)
+    all_calls = []
+    # get calls
+    calls = Call.objects.select_related().filter(survey__number=NUMBER, complete=True)
+    
+    if date_start:
+        calls = calls.filter(date__gte=date_start)
+        
+    if date_end:
+        calls = calls.filter(date__lt=date_end)
+        
+    for call in calls:
+        subj = call.subject
+        num = subj.number
+        
+        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+        
+        crops = {}
+        crop = None
+        entry = None
+        for input in inputs:
+            if 'crop_options' in input.prompt.file:
+                crop = {}
+                crops[input.input] = crop
+            elif 'days' in input.prompt.file:
+                # pack up old entry
+                if entry:
+                    crop[str(day)] = entry
+                    
+                # new day entry
+                day = input.prompt.order
+                entry = str(input.input)
+            elif 'blank' in input.prompt.file:
+                if input.input != 'blank':
+                    entry += str(input.input)
+        
+        # write out the data
+        header = ['number','name','village','time','crop','d1','d2','d3','d4']
+        if date_start:
+            outfilename='collection_report_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        else:
+            outfilename='collection_report.csv'
+        outfilename = OUTPUT_FILE_DIR+outfilename
+        output = csv.writer(open(outfilename, 'wb'))
+        output.writerow(header)
+               
+        for cropname,values in crops.items():
+            cropwise_data = [num, subj.name, caller_info[num]['village'], time_str(call.date), cropname]  
+            sorted_items = sorted(values.items())
+            for order,val in sorted_items:
+                cropwise_data.append(val)
+            output.writerow(cropwise_data)
 
 '''
 ****************************************************************************
 ******************* UTILS **************************************************
 ****************************************************************************
 '''
+
+def load_caller_info(filename):
+    all_info = {}
+    
+    f = csv.reader(open(filename, "rU"))
+    
+    for line in f:        
+        num = get_number(line)
+        caller_info = {}
+
+        caller_info['village'] = get_village(line)
+        
+        all_info[num] = caller_info
+    
+    return all_info
+        
+def get_number(line):
+    # get last 10 digits only
+    num = line[0][-10:]
+    return num
+
+def get_village(line):
+    village = line[1]
+    return village.strip()
 
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
@@ -271,6 +384,8 @@ def main():
        now = datetime.now()
        startdate = datetime(year=now.year, month=now.month, day=now.day)
    
-    survey(startdate)
+    #survey(startdate)
+    data_coll_reminders()
+    blank_template(NUMBER,PREFIX,SUFFIX)
 
 main()
