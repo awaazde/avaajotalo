@@ -54,6 +54,16 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     factory.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=factory)
     record_opt.save()
+    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param.save()
+    order+=1
+    
+    jobtitle = Prompt(file=subdir+"jobtitle"+SOUND_EXT, order=order, survey=s, name="Job_title")
+    jobtitle.save()
+    record_opt = Option(number="", action=Option.RECORD, prompt=jobtitle)
+    record_opt.save()
+    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param.save()
     order+=1
     
     working_hours = Prompt(file=subdir+"working_hours"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
@@ -102,12 +112,16 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     harassment.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=harassment)
     record_opt.save()
+    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param.save()
     order+=1
     
     brand = Prompt(file=subdir+"brand"+SOUND_EXT, order=order, survey=s, name='Brand')
     brand.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=brand)
     record_opt.save()
+    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param.save()
     order+=1
     
     thankyou = Prompt(file=subdir+"thankyou_survey"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
@@ -151,7 +165,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
 ****************************************************************************
 '''
 def survey_results_legacy(filename, phone_num_filter=False, date_start=False, date_end=False):
-    header = ['UserNum', 'time', 'welcome_survey', 'factory', 'working_hours', 'minimum_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
+    header = ['UserNum', 'time', 'welcome_survey', 'factory', 'jobtitle', 'working_hours', 'minimum_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
     all_calls = []
     current_week_start = 0
     open_calls = {}
@@ -270,7 +284,7 @@ def survey_results(survey_numbers, date_start=False, date_end=False):
     if date_end:
         calls = calls.filter(date__lt=date_end)
     
-    header = ['UserNum', 'SurveyNum', 'time', 'welcome', 'factory', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand']
+    header = ['UserNum', 'SurveyNum', 'time', 'welcome', 'factory', 'jobtitle', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand']
     results = [header]
     for call in calls:
         inputs = Input.objects.filter(call=call)
@@ -328,9 +342,12 @@ def main():
     #create_survey('kan','7961907782',callback=True, inbound=True)
     #create_survey('kan','7961907783',inbound=True)
     
-    kan1 = settings.LOG_ROOT + 'survey_in_61907782.log'
-    survey_results_legacy(kan1)
-    kan2 = settings.LOG_ROOT + 'survey_in_61907783.log'
-    survey_results_legacy(kan2)
-
+    #kan1 = settings.LOG_ROOT + 'survey_in_61907782.log'
+    #survey_results_legacy(kan1)
+    #kan2 = settings.LOG_ROOT + 'survey_in_61907783.log'
+    #survey_results_legacy(kan2)
+    
+    # pilot
+    create_survey('kanpilot','7961907785',callback=True, inbound=True)
+    
 main()
