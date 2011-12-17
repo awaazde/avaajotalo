@@ -348,6 +348,6 @@ def main():
     #survey_results_legacy(kan2)
     
     # pilot
-    create_survey('kanpilot','7961907785',callback=True, inbound=True)
+    create_survey('lvpilot','7961907785',callback=True, inbound=True)
     
 main()
