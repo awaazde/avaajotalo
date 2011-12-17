@@ -16,6 +16,7 @@ SUFFIX=''
 SOUND_EXT = ".wav"
 BARGEIN_KEY='9'
 LV_ORIG_LINEID=1
+SUBDIR = 'lvpilot/'
 
 '''
 ****************************************************************************
