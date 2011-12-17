@@ -603,23 +603,24 @@ def main():
     #add_users(names, numbers, villages, treatment_group)
 
     if len(sys.argv) < 2:
-        print("args: lineid, <startdate> <enddate>")
+        print("args: lineid oldnumbersfile <startdate> <enddate>")
         sys.exit()
     else:
         lineid = sys.argv[1]
         line = Line.objects.get(pk=lineid)
-    
+        oldnumsfile = sys.argv[2]
+        
     now = datetime.now()
     today = datetime(year=now.year, month=now.month, day=now.day)
     
     startdate = None
     enddate = None
-    if len(sys.argv) > 2:
-        startdate = datetime.strptime(sys.argv[2], "%m-%d-%Y")
+    if len(sys.argv) > 3:
+        startdate = datetime.strptime(sys.argv[3], "%m-%d-%Y")
     else:
         startdate = today-timedelta(days=7)
-    if len(sys.argv) > 3:
-        enddate = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+    if len(sys.argv) > 4:
+        enddate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         
     inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
     out_num = line.outbound_number or line.number
@@ -627,6 +628,13 @@ def main():
     
     cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
     numbers = [u.number for u in cmf]
+    
+    f = open(oldnumsfile)
+    while(True):
+        num = f.readline()
+        if not num:
+            break
+        numbers.append(num.strip())
     
     features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
     #get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
@@ -645,13 +653,14 @@ def main():
 
 def main2():
     if len(sys.argv) < 4:
-        print("args: lineid startdate enddate")
+        print("args: lineid oldnumbersfile startdate enddate")
         sys.exit()
     else:
         lineid = sys.argv[1]
         line = Line.objects.get(pk=lineid)
-        startdate = datetime.strptime(sys.argv[2], "%m-%d-%Y")
-        enddate = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        oldnumsfile = sys.argv[2]
+        startdate = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        enddate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         
     inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
     out_num = line.outbound_number or line.number
@@ -659,6 +668,13 @@ def main2():
     
     cmf = User.objects.filter(name__contains=CMF_DESIGNATOR).distinct()
     numbers = [u.number for u in cmf]
+    
+    f = open(oldnumsfile)
+    while(True):
+        num = f.readline()
+        if not num:
+            break
+        numbers.append(num.strip())
     
     features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
     dt = startdate
