@@ -1,7 +1,7 @@
-import os, sys, csv
+import os, sys, csv, shutil
 from datetime import datetime, timedelta
 from django.conf import settings
-from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call
+from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
 from otalo.AO.models import Line
 import otalo_utils
 
@@ -182,6 +182,7 @@ def blank_template(num, prefix, suffix):
 def survey_results_legacy(filename, phone_num_filter=False, date_start=False, date_end=False):
     header = ['UserNum', 'time', 'welcome_survey', 'factory', 'jobtitle', 'working_hours', 'minimum_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand'] 
     all_calls = []
+    audiofiles = []
     current_week_start = 0
     open_calls = {}
     destination = None
@@ -260,7 +261,10 @@ def survey_results_legacy(filename, phone_num_filter=False, date_start=False, da
                     if otalo_utils.is_record(line):
                         #print('record line '+ line)
                         last_prompt = call['last_recording_prompt']
-                        call[last_prompt] = line[line.rfind('/')+1:].strip()
+                        audiofile = line[line.rfind('/')+1:].strip()
+                        call[last_prompt] = audiofile
+                        audiofiles.append(audiofile)
+                        
                     else:
                         #print('dtmf line '+ line)
                         #print('feature is '+feature+' and val is '+line.strip()[-1:])
@@ -282,16 +286,27 @@ def survey_results_legacy(filename, phone_num_filter=False, date_start=False, da
         
     if date_start:
         outfilename='lv_survey_legacy_'+destination+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        audiofile_dir = 'audio_'+destination+'_'+str(date_start.day)
     else:
         outfilename='lv_survey_legacy_'+destination+'.csv'
+        audiofile_dir = 'audio_'+destination
+        
     outfilename = OUTPUT_FILE_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
     output.writerows(all_calls)
     
-def survey_results(survey_numbers, date_start=False, date_end=False):
+    if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
+        os.removedirs(OUTPUT_FILE_DIR+audiofile_dir)
+    os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
+    
+    for f in audiofiles:   
+        shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir)
+    
+def survey_results(survey_number, date_start=False, date_end=False):
     # get calls
-    calls = Call.objects.filter(survey__numbers__in=survey_numbers, complete=True)
+    calls = Call.objects.filter(survey__number=survey_number, complete=True)
+    soundfiles = {}
     
     if date_start:
         calls = calls.filter(date__gte=date_start)
@@ -306,16 +321,33 @@ def survey_results(survey_numbers, date_start=False, date_end=False):
         result = [call.subject.number, call.survey.number, time_str(call.date)]
         for input in inputs:
             result.append(input.input)
+            if 'mp3' in input.input:
+                if str(call.id) in soundfiles:
+                    soundfiles[str(call.id)].append(input.input)                    
+                else:
+                    soundfiles[str(call.id)] = [input.input]
+                    
         results.append(result)
     
     if date_start:
-        outfilename='lv_survey_'+destination+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        outfilename='lv_survey_'+survey_number+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        audiofile_dir = 'audio_'+survey_number+'_'+str(date_start.day)
     else:
-        outfilename='lv_survey_'+destination+'.csv'
+        outfilename='lv_survey_'+survey_number+'.csv'
+        audiofile_dir = 'audio_'+survey_number
         
     outfilename = OUTPUT_FILE_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerows(results)
+    
+    if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
+        os.removedirs(OUTPUT_FILE_DIR+audiofile_dir)
+    os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
+    
+    for callid,files in soundfiles.items():
+        os.mkdir(OUTPUT_FILE_DIR+audiofile_dir+callid)
+        for f in files:   
+            shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir+callid)
     
 '''
 ****************************************************************************
@@ -357,14 +389,14 @@ def main():
     #create_survey('kan','7961907782',callback=True, inbound=True)
     #create_survey('kan','7961907783',inbound=True)
     
-    #kan1 = settings.LOG_ROOT + 'survey_in_61907782.log'
-    #survey_results_legacy(kan1)
-    #kan2 = settings.LOG_ROOT + 'survey_in_61907783.log'
-    #survey_results_legacy(kan2)
+    kan1 = settings.LOG_ROOT + 'survey_in_61907782.log'
+    survey_results_legacy(kan1)
+    kan2 = settings.LOG_ROOT + 'survey_in_61907783.log'
+    #survey_results('7961907782')
     
     # pilot
-    create_survey('lvpilot','7961907785',callback=True, inbound=True)
-    create_survey('lvpilot','7961907784',template=True)
-    blank_template('7961907784',PREFIX,SUFFIX)
+    #create_survey('lvpilot','7961907785',callback=True, inbound=True)
+    #create_survey('lvpilot','7961907784',template=True)
+    #blank_template('7961907784',PREFIX,SUFFIX)
     
 main()
