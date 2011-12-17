@@ -54,7 +54,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     factory.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=factory)
     record_opt.save()
-    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param = Param(option=record_opt, name=Param.CONFIRM_REC, value="1")
     param.save()
     order+=1
     
@@ -62,7 +62,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     jobtitle.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=jobtitle)
     record_opt.save()
-    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param = Param(option=record_opt, name=Param.CONFIRM_REC, value="1")
     param.save()
     order+=1
     
@@ -112,7 +112,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     harassment.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=harassment)
     record_opt.save()
-    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param = Param(option=record_opt, name=Param.CONFIRM_REC, value="1")
     param.save()
     order+=1
     
@@ -120,7 +120,7 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
     brand.save()
     record_opt = Option(number="", action=Option.RECORD, prompt=brand)
     record_opt.save()
-    param = Param(option=record_opt, name=Option.CONFIRM_REC, value="1")
+    param = Param(option=record_opt, name=Param.CONFIRM_REC, value="1")
     param.save()
     order+=1
     
