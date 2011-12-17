@@ -286,7 +286,7 @@ def survey_results_legacy(filename, phone_num_filter=False, date_start=False, da
         
     if date_start:
         outfilename='lv_survey_legacy_'+destination+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
-        audiofile_dir = 'audio_'+destination+'_'+str(date_start.day)
+        audiofile_dir = 'audio_'+destination+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     else:
         outfilename='lv_survey_legacy_'+destination+'.csv'
         audiofile_dir = 'audio_'+destination
@@ -331,7 +331,7 @@ def survey_results(survey_number, date_start=False, date_end=False):
     
     if date_start:
         outfilename='lv_survey_'+survey_number+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
-        audiofile_dir = 'audio_'+survey_number+'_'+str(date_start.day)
+        audiofile_dir = 'audio_'+survey_number+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     else:
         outfilename='lv_survey_'+survey_number+'.csv'
         audiofile_dir = 'audio_'+survey_number
