@@ -314,11 +314,11 @@ def survey_results(survey_number, date_start=False, date_end=False):
     if date_end:
         calls = calls.filter(date__lt=date_end)
     
-    header = ['UserNum', 'SurveyNum', 'time', 'welcome', 'factory', 'jobtitle', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand']
+    header = ['CallId', 'CallerNum', 'time', 'welcome', 'factory', 'jobtitle', 'working_hours', 'min_wage', 'overtime_hours', 'overtime_wages', 'harassment', 'brand']
     results = [header]
     for call in calls:
         inputs = Input.objects.filter(call=call)
-        result = [call.subject.number, call.survey.number, time_str(call.date)]
+        result = [str(call.id), call.subject.number, time_str(call.date)]
         for input in inputs:
             result.append(input.input)
             if 'mp3' in input.input:
@@ -399,4 +399,7 @@ def main():
     #create_survey('lvpilot','7961907784',template=True)
     #blank_template('7961907784',PREFIX,SUFFIX)
     
+    start = datetime(year=2011,month=12,day=15)
+    survey_results('7961907782', date_start=start)
+    survey_results('7961907783', date_start=start)
 main()
