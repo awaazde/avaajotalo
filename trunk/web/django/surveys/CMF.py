@@ -191,6 +191,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     treatment = 'N/A'
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
+                        u = u[0]
                         treatment = 'No'
                         if u.balance == -1:
                             treatment = 'Yes'
@@ -217,6 +218,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     treatment = 'N/A'
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
+                        u = u[0]
                         treatment = 'No'
                         if u.balance == -1:
                             treatment = 'Yes'
@@ -322,6 +324,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     treatment = 'N/A'
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
+                        u = u[0]
                         treatment = 'No'
                         if u.balance == -1:
                             treatment = 'Yes'
@@ -353,6 +356,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     treatment = 'N/A'
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
+                        u = u[0]
                         treatment = 'No'
                         if u.balance == -1:
                             treatment = 'Yes'
@@ -427,6 +431,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                 treatment = 'N/A'
                 u = User.objects.filter(number=phone_num)
                 if bool(u):
+                    u = u[0]
                     treatment = 'No'
                     if u.balance == -1:
                         treatment = 'Yes'
@@ -508,6 +513,7 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
                     uname = 'N/A'
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
+                        u = u[0]
                         uid = str(u.id)
                         uname = u.name
                         treatment = 'No'
