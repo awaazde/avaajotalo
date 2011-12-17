@@ -159,6 +159,20 @@ def create_survey(subdir, number, callback=False, inbound=False, template=False)
         
     return s
 
+def blank_template(num, prefix, suffix):
+    s = Survey.objects.filter(name__contains='BLANK', number=num, template=True)
+    if not bool(s):
+        s = Survey(name='BLANK', template=True, number=num, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0)
+        s.save()
+        print('Blank template created: '+str(s))
+        
+        blank = Prompt(file=SUBDIR+'blank.wav', order=1, bargein=False, survey=s, delay=0)
+        blank.save()
+        blank_opt = Option(number="", action=Option.NEXT, prompt=blank)
+        blank_opt.save()
+        
+        return s
+
 '''
 ****************************************************************************
 ******************* Reporting **********************************************
@@ -349,5 +363,7 @@ def main():
     
     # pilot
     create_survey('lvpilot','7961907785',callback=True, inbound=True)
+    create_survey('lvpilot','7961907784',template=True)
+    blank_template('7961907784',PREFIX,SUFFIX)
     
 main()
