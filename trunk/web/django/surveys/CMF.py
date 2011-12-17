@@ -187,10 +187,13 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     # close out current call
                     call = open_calls[phone_num]    
                     dur = current_date - call['start']
-                    u = User.objects.get(number=phone_num)
-                    treatment = 'No'
-                    if u.balance == -1:
-                        treatment = 'Yes'
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
                     call_info = [phone_num,treatment,date_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
@@ -210,10 +213,13 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     # close out call                
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
-                    u = User.objects.get(number=phone_num)
-                    treatment = 'No'
-                    if u.balance == -1:
-                        treatment = 'Yes'
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
                     call_info = [phone_num,treatment,date_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
@@ -312,10 +318,13 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     call = open_calls[phone_num]    
                     start = call['start']
                     dur = current_date - start
-                    u = User.objects.get(number=phone_num)
-                    treatment = 'No'
-                    if u.balance == -1:
-                        treatment = 'Yes'
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
                     last_prompt_file = call['last_prompt']
                     call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
                     if bool(call):
@@ -340,10 +349,13 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     call = open_calls[phone_num]    
                     start = call['start']
                     dur = current_date - start
-                    u = User.objects.get(number=phone_num)
-                    treatment = 'No'
-                    if u.balance == -1:
-                        treatment = 'Yes'
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
                     last_prompt_file = call['last_prompt']
                     call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
                     if bool(call):
@@ -411,10 +423,13 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                 first_call = filter(lambda call: call.priority==1, calls)[0]
                 first_att = first_call.date
                 
-                u = User.objects.get(number=num)
-                treatment='No'
-                if u.balance == -1:
-                    treatment = 'Yes'
+                # may not be there if it's an old number
+                treatment = 'N/A'
+                u = User.objects.filter(number=phone_num)
+                if bool(u):
+                    treatment = 'No'
+                    if u.balance == -1:
+                        treatment = 'Yes'
                 nocalls.append([num,treatment,'1',time_str(first_att),'N/A','N/A','N/A'])
     output.writerows(nocalls)
     
@@ -487,11 +502,17 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
                     fname = open_calls[phone_num][0]
                     listenstart = open_calls[phone_num][1]
                     sessid = otalo_utils.get_sessid(line)
-                    #print('fname is '+fname)
-                    u = User.objects.filter(number=phone_num)[0]
-                    treatment = 'No'
-                    if u.balance == -1:
-                        treatment = 'Yes'
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    uid = 'N/A'
+                    uname = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        uid = str(u.id)
+                        uname = u.name
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
                     mf = Message_forum.objects.get(message__content_file=fname)
                     crop=''
                     topic=''
@@ -502,7 +523,7 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
                         topic = mf.tags.get(type='agri-topic')
                         topic = topic.tag
                     dur = (current_date-listenstart).seconds
-                    all_calls.append([str(u.id),str(u.number),treatment,sessid,str(listenstart),u.name,str(mf.forum.id),str(mf.id),mf.message.user.number,crop,topic,str(mf.message.date),str(dur)])
+                    all_calls.append([uid,str(phone_num),treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),mf.message.user.number,crop,topic,str(mf.message.date),str(dur)])
                     
                     open_calls[phone_num] = False
                 
