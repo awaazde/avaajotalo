@@ -402,4 +402,12 @@ def main():
     start = datetime(year=2011,month=12,day=15)
     survey_results('7961907782', date_start=start)
     survey_results('7961907783', date_start=start)
-main()
+#main()
+
+def daily_survey_results():
+    now = datetime.now()
+    today = datetime(year=now.year, month=now.month, day=now.day)
+    survey_results('7961907782', date_start=today)
+    survey_results('7961907783', date_start=today)
+
+daily_survey_results()
