@@ -385,21 +385,17 @@ def time_str(date):
 '''
 
 def main():
-    if len(sys.argv) < 2:
-        print("args: collectors_file <start>")
-        sys.exit()
+    if '--report' in sys.argv:
+        collection_report(sys.argv[2])
     else:
-        collectors_file = sys.argv[1]
-        
-    if len(sys.argv) > 2:
-        startdate = datetime.strptime(sys.argv[2], "%m-%d-%Y")
-    else:
-        now = datetime.now()
-        startdate = datetime(year=now.year, month=now.month, day=now.day)
-   
-    #survey(startdate)
-    #data_coll_reminders()
-    #blank_template(NUMBER,PREFIX,SUFFIX)
-    collection_report(collectors_file)
+        if len(sys.argv) > 1:
+            startdate = datetime.strptime(sys.argv[1], "%m-%d-%Y")
+        else:
+            now = datetime.now()
+            startdate = datetime(year=now.year, month=now.month, day=now.day)
+       
+        survey(startdate)
+        #data_coll_reminders()
+        #blank_template(NUMBER,PREFIX,SUFFIX)
 
 main()
