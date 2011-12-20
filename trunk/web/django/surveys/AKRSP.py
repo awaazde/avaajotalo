@@ -291,7 +291,7 @@ def collection_report(caller_info_file, date_start=False, date_end=False):
         calls = calls.filter(date__lt=date_end)
     
     # write out the data
-    header = ['number','name','village','time','crop','d1','d2','d3','d4']
+    header = ['number','name','village','block','time','crop','d1','d2','d3','d4']
     if date_start:
         outfilename='collection_report_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -328,8 +328,10 @@ def collection_report(caller_info_file, date_start=False, date_end=False):
         results=[]
         for cropname,values in crops.items():
             village = ''
+            block = ''
             if num in caller_info:
                 village = caller_info[num]['village']
+                block = caller_info[num]['block']
             cropwise_data = [num, subj.name, village, time_str(call.date), cropname]  
             sorted_items = sorted(values.items())
             for order,val in sorted_items:
@@ -353,6 +355,7 @@ def load_caller_info(filename):
         caller_info = {}
 
         caller_info['village'] = get_village(line)
+        caller_info['block'] = get_block(line)
         
         all_info[num] = caller_info
     
@@ -368,6 +371,9 @@ def get_name(line):
 
 def get_village(line):
     return line[2].strip()
+
+def get_block(line):
+    return line[3].strip()
 
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
