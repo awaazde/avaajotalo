@@ -37,7 +37,7 @@ def survey(date):
     
     s = Survey(name='AKRSP_SURVEY_' + date_str(date), dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, number=NUMBER, inbound=True, callback=True)
     s.save()
-    print('Survey created: '+str(s))
+    #print('Survey created: '+str(s))
     
     order = 1
     welcome = Prompt(file=SUBDIR+"welcome_survey"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
