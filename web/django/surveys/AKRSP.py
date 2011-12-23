@@ -332,7 +332,7 @@ def collection_report(caller_info_file, date_start=False, date_end=False):
             if num in caller_info:
                 village = caller_info[num]['village']
                 block = caller_info[num]['block']
-            cropwise_data = [num, subj.name, village, time_str(call.date), cropname]  
+            cropwise_data = [num, subj.name, village, block, time_str(call.date), cropname]  
             sorted_items = sorted(values.items())
             for order,val in sorted_items:
                 cropwise_data.append(val)
