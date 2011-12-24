@@ -359,7 +359,7 @@ def subscription_results(line, date_start=False, date_end=False):
             if prompt in inputtbl:
                 result.append(inputtbl[prompt])
             else:
-                result.apppend('')
+                result.append('')
         results.append(result)
     
     if date_start:
@@ -370,6 +370,25 @@ def subscription_results(line, date_start=False, date_end=False):
     outfilename = OUTPUT_FILE_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerows(results)
+    
+'''
+****************************************************************************
+******************* UTILS **************************************************
+****************************************************************************
+'''
+def date_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%b-%d-%y')
+
+def time_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%m-%d-%y %H:%M')
+
+'''
+****************************************************************************
+******************* MAIN ***************************************************
+****************************************************************************
+'''
     
 def main():
     line = Line.objects.get(pk=3)
