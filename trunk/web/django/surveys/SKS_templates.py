@@ -336,8 +336,8 @@ def subscription(line):
 ******************* Reporting **********************************************
 ****************************************************************************
 '''
-def subscription_results(survey_number, date_start=False, date_end=False): 
-    calls = Call.objects.filter(survey__number=survey_number, survey__broadcast=True, complete=True)
+def subscription_results(line, date_start=False, date_end=False): 
+    calls = Call.objects.filter(survey__number=line.number, suvey__name__contains='Subscription_Survey_', complete=True)
     
     if date_start:
         calls = calls.filter(date__gte=date_start)
@@ -380,7 +380,7 @@ def main():
     #freecall_template(line, 'qna')
     #record_template(line, 'qna')
     #subscription(line)
-    subscription_results('111')
+    subscription_results(line)
         
 main()
 
