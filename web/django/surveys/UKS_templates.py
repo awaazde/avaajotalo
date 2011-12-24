@@ -15,6 +15,7 @@
 #===============================================================================
 import sys
 from datetime import datetime, timedelta
+import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.AO.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
@@ -145,6 +146,8 @@ def reports(f, line):
     thesis_data.topics(line)
     
     stats_by_phone_num.get_calls_by_number(f)
+    
+    call_duration.get_call_durations(f, line.number)
 
 def main():
     line = Line.objects.get(pk=2)
