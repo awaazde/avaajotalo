@@ -337,7 +337,7 @@ def subscription(line):
 ****************************************************************************
 '''
 def subscription_results(line, date_start=False, date_end=False): 
-    calls = Call.objects.filter(survey__number=line.number, suvey__name__contains='Subscription_Survey_', complete=True)
+    calls = Call.objects.filter(survey__number=line.number, survey__name__contains='Subscription_Survey_', complete=True)
     
     if date_start:
         calls = calls.filter(date__gte=date_start)
