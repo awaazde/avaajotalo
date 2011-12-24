@@ -139,7 +139,7 @@ def reports(f, line):
     num_calls.get_calls(filename=f, destnum=line.number)
     num_calls.get_features_within_call(filename=f, destnum=line.number)
     num_calls.get_calls_by_feature(f, line.number)
-    num_calls.get_listens_within_call(f)
+    num_calls.get_listens_within_call(f, line.number)
     num_calls.get_num_qna(f, line)
     
     num_calls.get_lurking_and_posting(f, line.number, line.forums)
