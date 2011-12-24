@@ -16,7 +16,7 @@
 import sys, csv
 from datetime import datetime, timedelta
 from otalo.AO.models import Line
-from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
+from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
 from random import shuffle
 
 '''
