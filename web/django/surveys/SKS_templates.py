@@ -354,7 +354,7 @@ def subscription_results(line, date_start=False, date_end=False):
             file = input.prompt.file
             key = file[file.rfind('/')+1:file.find(SOUND_EXT)]
             inputtbl[key] = input.input
-        result = [str(call.id), call.subject.number, time_str(call.date)]
+        result = [call.subject.number, time_str(call.date)]
         for prompt in header[2:]:
             if prompt in inputtbl:
                 result.append(inputtbl[prompt])
