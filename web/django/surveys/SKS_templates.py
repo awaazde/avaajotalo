@@ -13,15 +13,26 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import sys
+import sys, csv
 from datetime import datetime, timedelta
 from otalo.AO.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
 
+'''
+****************************************************************************
+******************* CONSTANTS **********************************************
+****************************************************************************
+'''
+OUTPUT_FILE_DIR = ''
 SOUND_EXT = ".wav"
 BARGEIN_KEY='9'
 
+'''
+****************************************************************************
+******************* SURVEY/TEMPLATE GENERATION *****************************
+****************************************************************************
+'''
 def standard_template(line, contenttype):
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
@@ -319,8 +330,47 @@ def subscription(line):
     order += 1
 
     return s
-    
 
+'''
+****************************************************************************
+******************* Reporting **********************************************
+****************************************************************************
+'''
+def subscription_results(survey_number, date_start=False, date_end=False): 
+    calls = Call.objects.filter(survey__number=survey_number, survey__broadcast=True, complete=True)
+    
+    if date_start:
+        calls = calls.filter(date__gte=date_start)
+        
+    if date_end:
+        calls = calls.filter(date__lt=date_end)
+    
+    header = ['CallerNum', 'time', 'buysell', 'sksystem', 'jaherat', 'blank']
+    results = [header]
+    for call in calls:
+        inputs = Input.objects.select_related(depth=1).filter(call=call)
+        inputtbl = {}
+        for input in inputs:
+            file = input.prompt.file
+            key = file[file.rfind('/')+1:file.find(SOUND_EXT)]
+            inputtbl[key] = input.input
+        result = [str(call.id), call.subject.number, time_str(call.date)]
+        for prompt in header[2:]:
+            if prompt in inputtbl:
+                result.append(inputtbl[prompt])
+            else:
+                result.apppend('')
+        results.append(result)
+    
+    if date_start:
+        outfilename='sks_survey_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='sks_survey.csv'
+        
+    outfilename = OUTPUT_FILE_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerows(results)
+    
 def main():
     line = Line.objects.get(pk=3)
     #Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
@@ -329,7 +379,8 @@ def main():
     #record_template(line, 'announcement')
     #freecall_template(line, 'qna')
     #record_template(line, 'qna')
-    subscription(line)
+    #subscription(line)
+    subscription_results('111')
         
 main()
 
