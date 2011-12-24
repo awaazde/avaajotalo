@@ -391,8 +391,19 @@ def time_str(date):
 '''
 
 def main():
-    if '--report' in sys.argv:
-        collection_report(sys.argv[2])
+    if '--report' in sys.argv:        
+        if len(sys.argv) > 3:
+            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        else:
+            now = datetime.now()
+            start = datetime(year=now.year, month=now.month, day=now.day)
+        
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+            
+        collection_report(sys.argv[2], start, end)
+        
     else:
         if len(sys.argv) > 1:
             startdate = datetime.strptime(sys.argv[1], "%m-%d-%Y")
