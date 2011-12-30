@@ -21,6 +21,7 @@ from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
 
 SOUND_EXT = ".wav"
+SUBDIR = "hin/"
 
 def standard_template(line, contenttype):
     prefix = line.dialstring_prefix
@@ -130,6 +131,21 @@ def motivation_template(line, contenttype, motivation):
         return s
     else:
         return s[0]
+    
+def blank_template(num, prefix, suffix):
+    s = Survey.objects.filter(name__contains='BLANK', number=num, template=True)
+    if not bool(s):
+        s = Survey(name='BLANK', template=True, number=num, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0)
+        s.save()
+        print('Blank template created: '+str(s))
+        
+        blank = Prompt(file=SUBDIR+'blank.wav', order=1, bargein=False, survey=s, delay=0)
+        blank.save()
+        blank_opt = Option(number="", action=Option.NEXT, prompt=blank)
+        blank_opt.save()
+        
+        return s
+    
 '''
 ****************************************************************************
 ******************* Reporting **********************************************
@@ -150,7 +166,8 @@ def reports(f, line):
     call_duration.get_call_durations(f, line.number)
 
 def main():
-    line = Line.objects.get(pk=2)
+    line = Line.objects.get(pk=3)
+    '''
     Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
     standard_template(line, 'qna')
     standard_template(line, 'announcement')
@@ -167,7 +184,7 @@ def main():
     motivation_template(line, 'qna', 'group')
     motivation_template(line, 'announcement', 'group')
     motivation_template(line, 'experience', 'group')
-    
-    
+    '''
+    blank_template(line.number, line.dialstring_prefix, line.dialstring_suffix)
 main()
 
