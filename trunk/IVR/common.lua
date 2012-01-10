@@ -211,7 +211,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local forumid = forumid or nil;
    local thread = thread or nil;
    local moderated = moderated or nil;
-   local maxlength = maxlength or 60;
+   local maxlength = maxlength; -- mandatory field, so no default
    local rgt = rgt or 1;
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local partfilename = os.time() .. ".mp3";
@@ -358,7 +358,7 @@ end
 -----------
 
 function get_responder_messages (userid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id ";
+   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id, forum.max_responder_len ";
    query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder, AO_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND forum.id = message_forum.forum_id ";
@@ -499,7 +499,6 @@ end
 -----------
 
 function play_responder_messages (userid, msgs, adminforums)
-	local maxlength = 180;
    -- get the first top-level message for this forum
    local current_msg = msgs();
    if (current_msg == nil) then
@@ -552,6 +551,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	    local moderated = current_msg[7];
 	    local adminmode = is_admin(forumid, adminforums);
 	    local okrecordedprompt = anssd .. "okrecorded.wav";
+	    local maxlength = current_msg[9] or MAX_RESPONDER_LEN_DEF;
 	    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, 1, okrecordedprompt);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	    	update_listens(prevmsgs, userid);
