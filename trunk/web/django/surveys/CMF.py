@@ -2,7 +2,7 @@ import sys, csv
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.AO.models import Line, User, Message_forum
-from otalo.surveys.models import Survey, Prompt, Option, Call, Input
+from otalo.surveys.models import Survey, Prompt, Option, Call, Input, Subject
 import otalo_utils
 
 CMF_DESIGNATOR = '_CMF'
@@ -760,7 +760,7 @@ def main():
     
     features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
     #get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
-    get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
+    #get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
     #get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
     get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
     
