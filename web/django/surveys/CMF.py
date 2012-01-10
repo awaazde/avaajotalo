@@ -6,7 +6,8 @@ from otalo.surveys.models import Survey, Prompt, Option, Call, Input
 import otalo_utils
 
 CMF_DESIGNATOR = '_CMF'
-CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
+#CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
+CMF_OUTPUT_DIR = ''
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
 
@@ -275,7 +276,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
     output.writerow(header)
     output.writerows(all_calls)
     
-def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
+def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
     current_week_start = 0
     open_calls = {}
@@ -344,7 +345,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     
                 # add new call
                 #print("adding new call: " + phone_num)
-                open_calls[phone_num] = {'order':'','feature_chosen':False,'start':current_date,'last':current_date}
+                open_calls[phone_num] = {'start':current_date, 'last_prompt':'Start Call'}
                 
             elif line.find("End call") != -1:
                 if phone_num in open_calls:
@@ -376,7 +377,6 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     
             elif phone_num in open_calls:
                 call = open_calls[phone_num]
-                call['last'] = current_date
                 prompt = line[line.rfind('/')+1:]
                 call['last_prompt'] = prompt.strip()
                     
@@ -621,6 +621,101 @@ def get_survey_results(phone_num_filter, date_start=False, date_end=False):
                 
                 nocalls.append([num,time_str(first_att),'N/A','N/A','N/A'])
     output.writerows(nocalls)
+
+def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, date_end=False):
+    all_surveys = {}
+    current_week_start = 0
+    open_calls = {}
+    
+    f = open(filename)
+
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out current call
+                    start = open_calls[phone_num]    
+                    dur = current_date - start
+                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
+                    if bool(call):
+                        call = call[0]
+                        survey = call.survey                                            
+                        if survey not in all_surveys:
+                            all_surveys[survey] = 0
+                        all_surveys[survey] += dur.seconds                 
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = current_date
+                
+            elif line.find("End call") != -1:
+                if phone_num in open_calls:
+                    # close out call                
+                    start = open_calls[phone_num]    
+                    dur = current_date - start
+                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
+                    if bool(call):
+                        call = call[0]
+                        survey = call.survey                                            
+                        if survey not in all_surveys:
+                            all_surveys[survey] = 0
+                        all_surveys[survey] += dur.seconds                 
+                    del open_calls[phone_num]
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+                
+    header = ['survey','attempts', 'completed','total mins']    
+    if date_start:
+        outfilename='bcast_minutes_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='bcast_minutes.csv'
+    outfilename = CMF_OUTPUT_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+    for survey,mins in all_surveys.items():
+        attempts = Subject.objects.filter(call__survey=survey).distinct().count()
+        completed = Call.objects.filter(survey=survey, completed=True).count()
+        output.writerow([survey.name,attempts,completed,mins])
     
 def main():
 #    current_cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
@@ -665,8 +760,9 @@ def main():
     
     features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
     #get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
-    #get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
+    get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
     #get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
+    get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
     
     num = line.outbound_number
     if not num:
@@ -674,9 +770,9 @@ def main():
     #num = '7930142011'
     #create_survey(num, line.dialstring_prefix, line.dialstring_suffix)
     #create_blank(num, line.dialstring_prefix, line.dialstring_suffix)
-    get_survey_results()
+    #get_survey_results()
     
-#main()
+main()
 
 def main2():
     if len(sys.argv) < 4:
@@ -713,4 +809,4 @@ def main2():
         dt += timedelta(days=7)
         
     #get_survey_results(numbers)
-main2()
+#main2()
