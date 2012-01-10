@@ -714,7 +714,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
     output.writerow(header)
     for survey,mins in all_surveys.items():
         attempts = Subject.objects.filter(call__survey=survey).distinct().count()
-        completed = Call.objects.filter(survey=survey, completed=True).count()
+        completed = Call.objects.filter(survey=survey, complete=True).count()
         output.writerow([survey.name,attempts,completed,mins])
     
 def main():
