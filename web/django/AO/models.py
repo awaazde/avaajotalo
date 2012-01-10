@@ -118,6 +118,11 @@ class Forum(models.Model):
     ########################################################################################
     
     maxlength = models.IntegerField()
+    max_responder_len = models.IntegerField(blank=True, null=True)
+    MAX_RESPONDER_LEN_DEF = 300
+    max_user_resp_len = models.IntegerField(blank=True, null=True)
+    MAX_USER_RESP_LEN_DEF = 60
+    
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
     bcast_template = models.ForeignKey(Survey, blank=True, null=True)
     confirm_recordings = models.BooleanField(default=True)

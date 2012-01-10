@@ -257,7 +257,8 @@ def thread(messageforum, template, responseprompt):
         record_opt.save()
         param = Param(option=record_opt, name=Param.MFID, value=messageforum.id)
         param.save()
-        param2 = Param(option=record_opt, name=Param.MAXLENGTH, value=str(messageforum.forum.maxlength))
+        maxlen = messageforum.forum.max_user_resp_len or Forum.MAX_USER_RESP_LEN_DEF
+        param2 = Param(option=record_opt, name=Param.MAXLENGTH, value=str(maxlen))
         param2.save()
         record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
         record_opt2.save()
