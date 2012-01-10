@@ -704,7 +704,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
             #print("PhoneNumException: " + line)
             continue
                 
-    header = ['survey','attempts', 'completed','total mins']    
+    header = ['survey','start','attempts','completed','total mins']    
     if date_start:
         outfilename='bcast_minutes_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -715,7 +715,8 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
     for survey,mins in all_surveys.items():
         attempts = Subject.objects.filter(call__survey=survey).distinct().count()
         completed = Call.objects.filter(survey=survey, complete=True).count()
-        output.writerow([survey.name,attempts,completed,mins])
+        start = Call.objects.filter(survey=survey).order_by('date')[0].date
+        output.writerow([survey.name,time_str(start),attempts,completed,mins])
     
 def main():
 #    current_cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
