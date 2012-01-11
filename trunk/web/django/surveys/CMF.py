@@ -669,9 +669,9 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
                     if bool(call):
                         call = call[0]
                         survey = call.survey                                            
-                        if survey not in all_surveys:
-                            all_surveys[survey] = 0
-                        all_surveys[survey] += dur.minutes                 
+                        if survey.id not in all_surveys:
+                            all_surveys[survey.id] = 0
+                        all_surveys[survey.id] += dur.minutes                 
                     del open_calls[phone_num]
                     
                 # add new call
@@ -687,9 +687,9 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
                     if bool(call):
                         call = call[0]
                         survey = call.survey                                            
-                        if survey not in all_surveys:
-                            all_surveys[survey] = 0
-                        all_surveys[survey] += dur.minutes                 
+                        if survey.id not in all_surveys:
+                            all_surveys[survey.id] = 0
+                        all_surveys[survey.id] += dur.minutes                     
                     del open_calls[phone_num]
                     
         except KeyError as err:
@@ -712,7 +712,8 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
     outfilename = CMF_OUTPUT_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
-    for survey,mins in all_surveys.items():
+    for surveyid,mins in all_surveys.items():
+        survey = Survey.objects.get(pk=surveyid)
         attempts = Subject.objects.filter(call__survey=survey).distinct().count()
         completed = Call.objects.filter(survey=survey, complete=True).count()
         start = Call.objects.filter(survey=survey).order_by('date')[0].date
