@@ -671,7 +671,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
                         survey = call.survey                                            
                         if survey not in all_surveys:
                             all_surveys[survey] = 0
-                        all_surveys[survey] += dur.seconds                 
+                        all_surveys[survey] += dur.minutes                 
                     del open_calls[phone_num]
                     
                 # add new call
@@ -689,7 +689,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
                         survey = call.survey                                            
                         if survey not in all_surveys:
                             all_surveys[survey] = 0
-                        all_surveys[survey] += dur.seconds                 
+                        all_surveys[survey] += dur.minutes                 
                     del open_calls[phone_num]
                     
         except KeyError as err:
