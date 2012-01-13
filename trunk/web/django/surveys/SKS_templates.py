@@ -253,7 +253,7 @@ def subscription(line):
     else:
         num = line.number
     
-    name = 'Subscription_Survey_' + Survey.TEMPLATE_DESIGNATOR
+    name = 'Subscription_Survey'
     
     s = Survey.objects.filter(name=name)
     if bool(s):
@@ -266,7 +266,7 @@ def subscription(line):
     order = 1
     
     # welcome
-    welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    welcome = Prompt(file=language+"/welcome_subsurvey"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     welcome.save()
     welcome_opt1 = Option(number="1", action=Option.NEXT, prompt=welcome)
     welcome_opt1.save()
@@ -308,7 +308,7 @@ def subscription(line):
     jaherat_opt2.save()
     order += 1
     
-    thankyou = Prompt(file=language+"/thankyou"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    thankyou = Prompt(file=language+"/thankyou_subsurvey"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
     thankyou.save()
     thankyou_opt1 = Option(number="", action=Option.GOTO, prompt=thankyou)
     thankyou_opt1.save()
