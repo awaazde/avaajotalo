@@ -255,7 +255,7 @@ def subscription(line):
     
     name = 'Subscription_Survey'
     
-    s = Survey.objects.filter(name=name)
+    s = Survey.objects.filter(name__contains=name)
     if bool(s):
         s = s[0]
         s.delete()
