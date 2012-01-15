@@ -671,7 +671,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
                         survey = call.survey                                            
                         if survey.id not in all_surveys:
                             all_surveys[survey.id] = 0
-                        all_surveys[survey.id] += dur.seconds/60                 
+                        all_surveys[survey.id] += dur.seconds                 
                     del open_calls[phone_num]
                     
                 # add new call
@@ -689,7 +689,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
                         survey = call.survey                                            
                         if survey.id not in all_surveys:
                             all_surveys[survey.id] = 0
-                        all_surveys[survey.id] += dur.seconds/60                     
+                        all_surveys[survey.id] += dur.seconds                     
                     del open_calls[phone_num]
                     
         except KeyError as err:
@@ -704,7 +704,7 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
             #print("PhoneNumException: " + line)
             continue
                 
-    header = ['surveyid','survey name','start','attempts','completed','total mins']    
+    header = ['surveyid','survey name','start','attempts','completed','total secs']    
     if date_start:
         outfilename='bcast_minutes_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
