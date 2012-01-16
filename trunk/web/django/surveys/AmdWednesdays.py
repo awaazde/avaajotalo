@@ -79,7 +79,7 @@ def create_survey(number, inbound=False, template=False):
     if not template:
         tow = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, survey=s)
         tow.save()
-        tow_opt = Option(number="", action=Option.GOTO, prompt=tow)
+        tow_opt = Option(number="", action=Option.NEXT, prompt=tow)
         tow_opt.save()
     
     param = Param(option=welcome_opt2, name=Param.IDX, value=order)
