@@ -2,7 +2,7 @@ import os, sys, csv, shutil
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
-from otalo.AO.models import Line
+from otalo.AO.models import Line, Forum, Message_forum
 import otalo_utils
 
 '''
@@ -77,7 +77,7 @@ def create_survey(number, inbound=False, template=False):
     
     # if not template, fill the gap for the TOW, but have the welcome prompt jump to the gap
     if not template:
-        tow = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, survey=s)
+        tow = Prompt(file=SUBDIR+"blank"+SOUND_EXT, order=order, survey=s, name="tow")
         tow.save()
         tow_opt = Option(number="", action=Option.NEXT, prompt=tow)
         tow_opt.save()
@@ -132,7 +132,7 @@ def blank_template(num, prefix, suffix):
 ****************************************************************************
 '''
     
-def survey_results(survey_number, date_start=False, date_end=False):
+def rsvp_results(survey_number, date_start=False, date_end=False):
     # get calls
     calls = Call.objects.filter(survey__number=survey_number, complete=True)
     
@@ -141,31 +141,51 @@ def survey_results(survey_number, date_start=False, date_end=False):
         
     if date_end:
         calls = calls.filter(date__lt=date_end)
+        
+    print("<html>")
+    # calls
+    print("<div><h4>RSVPs by phone number</h4></div>")
+    print("<table>")
+    
+    print("<tr>")
+    print("<td width='80px'>Callid</td>")
+    print("<td width='120px'>Phone Number</td>")
+    print("<td width='120px'>Call Time</td>")
+    print("<td width='100px'>RSVP count</td>")
+    print("</tr>")
     
     header = ['CallId', 'CallerNum', 'time', 'rsvp count']
     results = [header]
     for call in calls:
         inputs = Input.objects.filter(call=call)
-        result = [str(call.id), call.subject.number, time_str(call.date)]
-        for input in inputs:
-            result.append(input.input)
-                    
-        results.append(result)
-    
-    if date_start:
-        outfilename='weds_rsvps_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
-    else:
-        outfilename='weds_rsvps'+survey_number+'.csv'
-        
-    outfilename = OUTPUT_FILE_DIR+outfilename
-    output = csv.writer(open(outfilename, 'wb'))
-    output.writerows(results)
+        if bool(inputs):
+            input = inputs[0]
+            rsvpcnt = str(input.input)
+            print("<tr>")
+            print("<td>"+str(call.id)+"</td>")
+            print("<td>"+str(call.subject.number)+"</td>")
+            print("<td>"+time_str(call.date)+"</td>")
+            print("<td>"+rsvpcnt+"</td>")
+            print("</tr>")
+            
+    print("</table>")
+    print("</html>")
     
 '''
 ****************************************************************************
 ******************* UTILS **************************************************
 ****************************************************************************
 '''
+def update_tow(line):
+    f = Forum.objects.filter(line=line)[0]
+    # get latest message
+    mf = Message_forum.objects.filter(forum=f).order_by('-message__date')[0]
+    number = line.outbound_number or line.number
+    s = Survey.objects.get(number=number, inbound=True)
+    p = Prompt.objects.filter(survey=s, name='tow')
+    p.file = settings.MEDIA_ROOT + '/' + mf.message.content_file
+    p.save()
+    
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
     return date.strftime('%b-%d-%y')
@@ -181,12 +201,22 @@ def time_str(date):
 '''
 def main():
     if len(sys.argv) < 2:
-        print("arg1: lineid")
+        print("arg: lineid")
         sys.exit()
     else:
         lineid = sys.argv[1]
         line = Line.objects.get(pk=lineid)
         num = line.outbound_number or line.number
+    
+    if '--report' in sys.argv:
+        now = datetime.now()
+        today = datetime(year=now.year, month=now.month, day=now.day)
+        start = today-timedelta(days=7)
+        rsvp_results(num,date_start=start)
+        sys.exit()
+    elif '--update_tow' in sys.argv:
+        update_tow(line)
+        sys.exit()
         
     create_survey(num,template=True)
     create_survey(num,inbound=True)
