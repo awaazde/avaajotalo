@@ -394,7 +394,6 @@ function playmessage (msg, listenreplies)
   local moderated = tonumber(msg[8]);
   local status = tonumber(msg[9]);
   local adminmode = is_admin(forumid, adminforums);
-  local listened_to_replies = false;
 
   if (adminmode) then
      local status = tonumber(msg[9]);
@@ -437,7 +436,8 @@ function playmessage (msg, listenreplies)
      d = use();
 	 
      if (d == "1") then
-		read(aosd .. "okreplies.wav", 500);
+		-- quicken pace by getting rid of confirmation
+		-- read(aosd .. "okreplies.wav", 500);
 		d = use();
 		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
@@ -448,13 +448,11 @@ function playmessage (msg, listenreplies)
 		   return d;
 		end
 		
-		read(aosd .. "backtoforum.wav", 1000);
+		read(aosd .. "backtoforum.wav", 500);
 		d = use();
 		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
 		end
-		listened_to_replies = true;
-		
         -- dont catch RESPOND because it could also be NO
     elseif (d == GLOBAL_MENU_MAINMENU) then
   		return d;
@@ -464,7 +462,8 @@ function playmessage (msg, listenreplies)
   -- remind about the options, and
   -- give some time for users to compose themselves and
   -- potentially respond
-  if (listened_to_replies == false and responsesallowed == 'y') then
+  -- only between threads, not between replies
+  if (listenreplies == 'y' and responsesallowed == 'y') then
 	  	read(aosd .. "instructions_between.wav", 4000)
 	  	d = use();
 	  	
@@ -524,6 +523,10 @@ function playmessages (msgs, listenreplies)
 
       if (d == GLOBAL_MENU_RESPOND) then
 		 if (responsesallowed == 'y' or adminmode) then
+		 	-- only attach replies to the top-level post
+		 	if (listenreplies == 'n') then
+		 		return d;
+		 	end
 		    read(aosd .. "okrecordresponse.wav", 500);
 		    local thread = current_msg[5];		    
 		    if (thread == nil) then
@@ -562,6 +565,9 @@ function playmessages (msgs, listenreplies)
 		 if (current_msg_idx > #prevmsgs) then
 		    -- get next msg from the cursor
 		    current_msg = msgs();
+		    -- speed up by not giving 'last message' warning... 
+		    -- it's overkill for single answer case
+		    --[[ 
 		    if (current_msg == nil) then
 		       read(aosd .. "lastmessage.wav", 1000);
 		       d = use(); 
@@ -572,6 +578,10 @@ function playmessages (msgs, listenreplies)
 		    else
 		       table.insert(prevmsgs, current_msg);
 		    end
+			--]]
+			if (current_msg ~= nil) then
+				table.insert(prevmsgs, current_msg);
+			end
 		 else
 		    -- get msg from the prev list
 		    current_msg = prevmsgs[current_msg_idx];
