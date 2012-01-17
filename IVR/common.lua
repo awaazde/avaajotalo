@@ -1024,6 +1024,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   con:execute(query);
    end	
    
+   read(recordsd .. "okrecorded.wav",500);
    return d;
 end
 
