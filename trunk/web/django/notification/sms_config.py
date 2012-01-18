@@ -20,10 +20,10 @@
 '''
 
 def get_url():
-    return None
+    return "http://awaaz.de"
 
 def get_header():
-    return None
+    return {}
 
 def get_params(to, content):
     return {}
