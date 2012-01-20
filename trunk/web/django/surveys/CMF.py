@@ -1,3 +1,19 @@
+'''
+    Copyright (c) 2009 Regents of the University of California, Stanford University, and others
+ 
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+ 
+        http://www.apache.org/licenses/LICENSE-2.0
+ 
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+'''
+
 import sys, csv
 from datetime import datetime, timedelta
 from django.conf import settings
@@ -718,6 +734,35 @@ def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, da
         completed = Call.objects.filter(survey=survey, complete=True).count()
         start = Call.objects.filter(survey=survey).order_by('date')[0].date
         output.writerow([surveyid,survey.name,time_str(start),attempts,completed,mins])
+
+def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_end=False):
+    msgs = Message_forum.objects.filter(forum__in=forumids)
+    if phone_num_filter:
+        msgs = msgs.filter(message__user__number__in=phone_num_filter)
+    if date_start:
+        msgs = msgs.filter(message__date__gte=date_start) 
+    if date_end:
+        msgs = msgs.filter(message__date__lt=date_end)
+        
+    header = ['phone num','message time','forum','crop','topic']    
+    if date_start:
+        outfilename='message_topics_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='message_topics.csv'
+    outfilename = CMF_OUTPUT_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+    for mf in msgs:
+        crop = ''
+        topic = ''
+        for t in mf.tags.all():
+            if t.type == 'agri-crop':
+                crop = t.tag
+            elif t.type == 'agri-topic':
+                topic = t.tag
+                
+        output.writerow([mf.message.user.number, time_str(mf.message.date), mf.forum.name, crop, topic])
+    
     
 def main():
 #    current_cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
@@ -764,7 +809,8 @@ def main():
     #get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
     #get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
     #get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
-    get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
+    #get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
+    get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
     
     num = line.outbound_number
     if not num:
