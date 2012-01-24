@@ -326,7 +326,7 @@ end
 --]]
 
 -- App-specific GLOBALS
-GLOBAL_MENU_REPLAY = "6";
+GLOBAL_MENU_RESP_REPLAY = "6";
 GLOBAL_MENU_ASK_LATER = "7";
 GLOBAL_MENU_PASS = "8";
 GLOBAL_MENU_REFER = "9";
@@ -515,7 +515,7 @@ function play_responder_messages (userid, msgs, adminforums)
       if (d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
 		 read(aosd .. "backtomessage.wav", 1000);
-	  elseif (d == GLOBAL_MENU_REPLAY) then
+	  elseif (d == GLOBAL_MENU_RESP_REPLAY) then
 	     -- do nothing
       elseif (current_msg_idx == 1) then
       	 -- do this before prev check b/c 
@@ -599,7 +599,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	  	
 	  	-- go to next msg
 	  	d = GLOBAL_MENU_NEXT;
-      elseif (d == GLOBAL_MENU_REPLAY) then
+      elseif (d == GLOBAL_MENU_RESP_REPLAY) then
 		-- do nothing
 	  end
 	  
