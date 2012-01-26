@@ -151,7 +151,7 @@ def rsvp_results(num, date_start=False, date_end=False):
     
     print("<br/><div>")
     print("<b>Broadcast calls:</b> ")
-    nattempts = Subject.objects.filter(survey__broadcast=True, priority=1).count()
+    nattempts = calls.filter(survey__broadcast=True, priority=1).count()
     ncompleted = calls.filter(survey__broadcast=True, complete=True).count()
     print(str(ncompleted)+ ' completed of '+str(nattempts) + ' attempts')
     print("</div>")
