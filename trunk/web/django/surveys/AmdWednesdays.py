@@ -176,7 +176,7 @@ def rsvp_results(num, date_start=False, date_end=False):
         if bool(inputs):
             input = inputs[0]
             rsvpcnt = str(input.input)
-            total += rsvpcnt
+            total += int(rsvpcnt)
             print("<tr>")
             print("<td>"+str(call.id)+"</td>")
             print("<td>"+str(call.subject.number)+"</td>")
@@ -187,7 +187,7 @@ def rsvp_results(num, date_start=False, date_end=False):
     print("<td><b>Total</b></td>")
     print("<td></td>")
     print("<td></td>")
-    print("<td>"+total+"</td>")
+    print("<td>"+str(total)+"</td>")
     print("</tr>")      
     print("</table>")
     print("</html>")
