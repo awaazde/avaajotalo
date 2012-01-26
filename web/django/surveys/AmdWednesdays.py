@@ -170,18 +170,25 @@ def rsvp_results(num, date_start=False, date_end=False):
     
     header = ['CallId', 'CallerNum', 'time', 'rsvp count']
     results = [header]
+    total = 0
     for call in calls:
         inputs = Input.objects.filter(call=call)
         if bool(inputs):
             input = inputs[0]
             rsvpcnt = str(input.input)
+            total += rsvpcnt
             print("<tr>")
             print("<td>"+str(call.id)+"</td>")
             print("<td>"+str(call.subject.number)+"</td>")
             print("<td>"+time_str(call.date)+"</td>")
             print("<td>"+rsvpcnt+"</td>")
             print("</tr>")
-            
+    print("<tr>")
+    print("<td><b>Total</b></td>")
+    print("<td></td>")
+    print("<td></td>")
+    print("<td>"+total+"</td>")
+    print("</tr>")      
     print("</table>")
     print("</html>")
     
