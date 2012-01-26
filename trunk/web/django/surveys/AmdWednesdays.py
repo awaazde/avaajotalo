@@ -132,9 +132,9 @@ def blank_template(num, prefix, suffix):
 ****************************************************************************
 '''
     
-def rsvp_results(survey_number, date_start=False, date_end=False):
-    # get calls
-    calls = Call.objects.filter(survey__number=survey_number, complete=True)
+def rsvp_results(num, date_start=False, date_end=False):
+    # get all calls
+    calls = Call.objects.filter(survey__number=num)
     
     if date_start:
         calls = calls.filter(date__gte=date_start)
@@ -143,8 +143,22 @@ def rsvp_results(survey_number, date_start=False, date_end=False):
         calls = calls.filter(date__lt=date_end)
         
     print("<html>")
-    # calls
-    print("<div><h4>RSVPs by phone number</h4></div>")
+    print("<div>")
+    print("<b>Inbound calls:</b> ")
+    ninbound = calls.filter(survey__inbound=True).count()
+    print(str(ninbound))
+    print("</div>")
+    
+    print("<br/><div>")
+    print("<b>Broadcast calls:</b> ")
+    nattempts = Subject.objects.filter(survey__broadcast=True, priority=1).count()
+    ncompleted = calls.filter(survey__broadcast=True, complete=True).count()
+    print(str(ncompleted)+ ' completed of '+str(nattempts) + ' attempts')
+    print("</div>")
+    
+    # rsvps
+    calls = calls.filter(complete=True)
+    print("<br/><div><h4>RSVPs by phone number</h4></div>")
     print("<table>")
     
     print("<tr>")
@@ -212,7 +226,7 @@ def main():
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=7)
-        rsvp_results(num,date_start=start)
+        rsvp_results(line,date_start=start)
         sys.exit()
     elif '--update_tow' in sys.argv:
         update_tow(line)
