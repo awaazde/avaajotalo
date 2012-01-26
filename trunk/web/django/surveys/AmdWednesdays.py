@@ -31,7 +31,7 @@ def create_survey(number, inbound=False, template=False):
     s.save()    
     
     order = 1
-    welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    welcome = Prompt(file=SUBDIR+"welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
     welcome.save()
     welcome_opt = Option(number="1", action=Option.GOTO, prompt=welcome)
     welcome_opt.save()
@@ -41,7 +41,7 @@ def create_survey(number, inbound=False, template=False):
     welcome_opt3.save()
     order+=1
     
-    rsvp = Prompt(file=SUBDIR+"rsvp"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    rsvp = Prompt(file=SUBDIR+"rsvp"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
     rsvp.save()
     rsvp_opt1 = Option(number="1", action=Option.INPUT, prompt=rsvp)
     rsvp_opt1.save()
