@@ -27,7 +27,7 @@ def send_sms(from_line, recipients, content, date=None):
     if bool(sender):
         sender = sender[0]
     else:
-        sender = User(number=line.number, allowed='y')
+        sender = User(number=from_line.number, allowed='y')
         sender.save()
     if date:
         msg = SMSMessage(sender=sender,sent_on=date,text=content)
