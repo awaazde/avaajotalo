@@ -16,17 +16,12 @@
  */
 package org.otalo.ao.client;
 
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.GwtEvent;
+import org.otalo.ao.client.model.SMSConfig;
+
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratedStackPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -39,11 +34,12 @@ import com.google.gwt.user.client.ui.Widget;
 public class Shortcuts extends Composite {
 
 	/**
-	 * An image bundle specifying the images for this Widget and aggragating
+	 * An image bundle specifying the images for this Widget and agregating
 	 * images needed in child widgets.
 	 */
 	public interface Images extends Fora.Images {
 		ImageResource forum();
+		ImageResource messagesgroup();
 	}
 	
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
@@ -55,12 +51,14 @@ public class Shortcuts extends Composite {
 	 * @param images
 	 *            a bundle that provides the images for this widget
 	 */
-	public Shortcuts(Images images, Fora fora, Broadcasts bcasts) {
+	public Shortcuts(Images images, Fora fora, Broadcasts bcasts, SMSs sms) {
 		this.fora = fora;
 		this.bcasts = bcasts;
 		
 		add(fora, images.forum(), "Forums");
 		add(bcasts, images.broadcast(), "Broadcasts");
+		if (sms != null)
+			add(sms, images.messagesgroup(), "SMS");
 		initWidget(stackPanel);
 	}
 

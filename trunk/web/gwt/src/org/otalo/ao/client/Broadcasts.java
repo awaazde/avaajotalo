@@ -18,14 +18,9 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.htmlunit.corejs.javascript.ast.ParenthesizedExpression;
-
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Prompt;
 import org.otalo.ao.client.model.Survey;
-import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -33,12 +28,9 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Tree;
-import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -126,12 +118,10 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
 	public void dataReceived(List<JSOModel> models) {
 		Survey s;
 		SurveyWidget w;
-		List<Survey> surveys = new ArrayList<Survey>();
 		
 		for (JSOModel model : models)
 	  {
 				s = new Survey(model);
-				surveys.add(s);
 				w = new SurveyWidget(s, images, this);
 				
 				p.insert(w.getWidget(), p.getWidgetCount()-1);

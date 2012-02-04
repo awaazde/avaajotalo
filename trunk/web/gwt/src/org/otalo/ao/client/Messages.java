@@ -19,7 +19,7 @@ package org.otalo.ao.client;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.model.BaseModel;
+import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
@@ -31,15 +31,10 @@ import org.otalo.ao.client.model.User;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -62,7 +57,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images {
   }
 
   /**
@@ -76,10 +71,13 @@ public class Messages implements EntryPoint, ResizeHandler {
   private VerticalPanel rightPanel = new VerticalPanel();
   private MessageList messageList;
   private MessageDetail messageDetail;
+  private SMSList smsList;
   private Fora fora;
   private Broadcasts bcasts;
+  private SMSs smss = null;
   private Shortcuts shortcuts;
   private BroadcastInterface broadcastIface;
+  private SMSInterface smsIface;
   private User moderator;
   private Line line;
 
@@ -153,6 +151,8 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
 		broadcastIface.setVisible(true);
+		smsList.setVisible(false);
+		smsIface.setVisible(false);
   }
   
   public void loadBroadcasts(int start)
@@ -165,6 +165,8 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.setVisible(true);
   	messageDetail.setVisible(false);
 		broadcastIface.setVisible(false);
+		//smsList.setVisible(false);
+		smsIface.setVisible(false);
 		// you can get rid of this once there
 		// is a clickevent attached to a stackpanel header
 		shortcuts.showStack(1);
@@ -175,7 +177,33 @@ public class Messages implements EntryPoint, ResizeHandler {
   	broadcastIface.setVisible(false);
   	messageList.setVisible(true);
 		messageDetail.setVisible(true);
+		smsList.setVisible(false);
+		smsIface.setVisible(false);
 		shortcuts.showStack(0);
+  }
+  
+  public void displaySMS(SMSListType type, int start)
+  {
+  	smsList.reset(type);
+  	smsList.setVisible(true);
+  	broadcastIface.setVisible(false);
+  	messageList.setVisible(false);
+		messageDetail.setVisible(false);
+		smsIface.setVisible(false);
+		shortcuts.showStack(2);
+		
+		smsList.getMessages(type, start);
+  }
+  
+  public void displaySMSInterface()
+  {
+  	smsIface.reset();
+  	smsIface.setVisible(true);
+  	broadcastIface.setVisible(false);
+  	messageList.setVisible(false);
+		messageDetail.setVisible(false);
+		smsList.setVisible(false);
+		shortcuts.showStack(2);
   }
   
   public void displaySurveyInput(Prompt p, int start)
@@ -190,12 +218,6 @@ public class Messages implements EntryPoint, ResizeHandler {
 	  	messageList.displaySurveyInput(p, start);
   	}
   }
-  
-//  public void broadcastSomething()
-//  {
-//  	broadcastIface.loadSurveys();
-//  	displayBroadcastPanel(null);
-//  }
   
   public void forwardThread(MessageForum thread)
   {
@@ -232,14 +254,23 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
+    smsList = new SMSList(images);
+    smsList.setWidth("100%");
+    
     broadcastIface = new BroadcastInterface(images);
+    smsIface = new SMSInterface(images);
     bcasts = new Broadcasts(images);
-    shortcuts = new Shortcuts(images, fora, bcasts);
+    if (line.hasSMSConfig())
+    	smss = new SMSs(images);
+    
+    shortcuts = new Shortcuts(images, fora, bcasts, smss);
 
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
     rightPanel.add(messageDetail);
     rightPanel.add(broadcastIface);
+    rightPanel.add(smsIface);
+    rightPanel.add(smsList);
     rightPanel.setWidth("100%");
     messageDetail.setWidth("100%");
     shortcuts.setWidth("100%");

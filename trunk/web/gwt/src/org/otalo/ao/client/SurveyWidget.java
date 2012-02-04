@@ -15,18 +15,15 @@
  */
 package org.otalo.ao.client;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.otalo.ao.client.Broadcasts.Images;
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Prompt;
 import org.otalo.ao.client.model.Survey;
-import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Survey.SurveyStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;

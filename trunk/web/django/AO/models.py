@@ -43,6 +43,7 @@ class Line(models.Model):
     name_file = models.CharField(max_length=24, blank=True, null=True)
     logo_file = models.CharField(max_length=24, blank=True, null=True)
     forums = models.ManyToManyField('Forum', blank=True, null=True)
+    sms_config = models.ForeignKey('sms.Config', blank=True, null=True)
     
     def __unicode__(self):
         return self.name + '-' + self.number
