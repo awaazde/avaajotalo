@@ -20,12 +20,15 @@ from django.shortcuts import render_to_response, get_object_or_404, get_list_or_
 from django.contrib.auth.decorators import login_required
 from otalo.AO.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
+from otalo.sms.models import SMSMessage
+from otalo.sms import sms_utils
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts, broadcast
+import otalo_utils, stats_by_phone_num
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -47,6 +50,11 @@ NO_CONTENT = "2"
 
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
+
+SMS_LENGTH = 140
+# corresponds to enum in SMSList.java
+SMSListType_IN = 0
+SMSListType_SENT = 1
 
 @login_required
 def index(request):
@@ -729,7 +737,166 @@ def download(request, model, model_id):
     fname = settings.MEDIA_ROOT + '/' + fname
     return send_file(fname,'application/octet-stream')
 
-from django.utils.encoding import smart_str
+def sms(request, line_id):
+    params = request.GET
+    start = int(params['start'])
+    type = int(params['type'])
+    
+    line = get_object_or_404(Line, pk=int(line_id))
+    line_user = User.objects.filter(number=line.number)[0]
+    
+    if type == SMSListType_SENT:  
+        msgs = SMSMessage.objects.filter(sender=line_user).order_by('-id')
+    elif type == SMSListType_IN:
+        msgs = SMSMessage.objects.filter(recipients__in=[line_user]).order_by('-id')
+        
+    msgs = msgs[start:start+BCAST_PAGE_SIZE]
+    count = msgs.count()  
+   
+    # fell off the page
+    if start >= count and start > 0:
+        start -= VISIBLE_MESSAGE_COUNT
+    msgs = msgs[start:min(count,start+VISIBLE_MESSAGE_COUNT)]
+        
+    resp = send_response(msgs, relations=('sender',))
+    
+    if count > 0:
+        # append some meta info about the messages
+        # remove end bracket
+        json = resp.content[:-1]
+        json += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+', "type":'+str(type)+'}]'
+        resp.content = json
+        
+    return resp
+
+def smsrecipients(request, smsmsg_id):
+    msg = get_object_or_404(SMSMessage, pk=smsmsg_id)
+    recipients = msg.recipients.all()
+    
+    return send_response(recipients)
+    
+def sendsms(request):
+    params = request.POST
+    line = get_object_or_404(Line, pk=int(params['lineid']))
+        
+    
+    recipients = []
+    # Get recipients
+    if params.__contains__('bynumbers'):
+        numsRaw = params['numbersarea']
+        if ',' in numsRaw:
+            numbers = numsRaw.split(',')
+        elif '\n' in numsRaw:
+            numbers = numsRaw.split('\n')
+        else:
+            numbers = [numsRaw]
+        
+        for number in numbers:
+            number = number.strip()
+            number = number[-10:]
+            if number == '':
+                continue
+            u = User.objects.filter(number=number)
+            if bool(u):
+                if u[0].allowed == 'n':
+                    continue
+                else:
+                    u = u[0]
+            else:
+                u = User(number=number,allowed='y')
+                u.save()
+            recipients.append(u)  
+    
+    if params.__contains__('bytag'):
+        tagids = params.getlist('tag')
+        tags = Tag.objects.filter(pk__in=tagids)
+        users = User.objects.filter(Q(message__message_forum__tags__in=tags, message__message_forum__forum__line=line) | Q(tags__in=tags)).distinct()
+        users = users.filter(allowed='y', indirect_bcasts_allowed=True)
+        
+        for u in users:
+            recipients.append(u)
+    
+    if params.__contains__('bylog'):
+        lastncallers = params['lastncallers']
+        since = params['since']
+        
+        if lastncallers == 'ALL':
+            lastncallers = 0
+        else:
+            lastncallers = int(lastncallers)
+        
+        if since:
+            since = datetime.strptime(since, '%b-%d-%Y')
+        else:
+            # in case no date is selected, get no recipients
+            since = datetime.now()
+               
+        filename = settings.INBOUND_LOG_ROOT+str(line.id)+'.log'
+        calls = stats_by_phone_num.get_numbers_by_date(filename=filename, destnum=str(line.number), date_start=since, quiet=True)
+        numbers = calls.keys()
+        
+        if lastn:
+            numbers = numbers[:lastn]
+            
+        for number in numbers:
+            u = User.objects.filter(number=number, allowed='y', indirect_bcasts_allowed=True)
+            if bool(u):
+                u = u[0]
+            else:
+                u = User(number=number,allowed='y')
+                u.save()
+            recipients.append(u) 
+    
+    # remove dups
+    recipients = list(set(recipients))
+    
+    # Get msg
+    smstext = params['txt'][:SMS_LENGTH]
+     
+    # Get schedule
+    when = params['when']
+    # now by default
+    send_date = None
+    if when == 'date':
+        hour = timedelta()
+        bcastday = params['smsday']
+        send_date = datetime.strptime(bcastdate, '%b-%d-%Y')
+        send_date = send_date + timedelta(hours=int(params['hour']), minutes=int(params['min']))
+        
+    sms_utils.send_sms(line, recipients, smstext, send_date)
+    
+    return HttpResponseRedirect(reverse('otalo.AO.views.forum'))
+
+def smsin(request):
+    params = request.GET
+    '''
+    The below post params are hardcoded, since you need to get the keyword
+    and dest in order to get the right config. For your own inbound SMS,
+    you will have to alter or create seperate
+    post locations for different service providers
+    '''
+    sender = params['msisdn'][-10:]
+    message = params['message']
+    dest = params['shortcode'][-10:]
+    
+    # get the keyword
+    keyword = message.split(' ')[0]
+    
+    line = Line.objects.filter(sms_config__keyword=keyword, sms_config__inbound_number=dest)
+    if bool(line):
+        line = line[0]
+        dest = User.objects.get(number=dest)
+        u = User.objects.filter(number=sender)
+        if bool(u):
+            u = u[0]
+        else:
+            u = User(number=sender, allowed='y')
+            u.save()
+        msg = SMSMessage(sender=u, text=message)
+        msg.save()
+        msg.recipients.add(dest)
+    
+    return send_data('ok') 
 
 def send_file(filename, content_type):
     """                                                                         

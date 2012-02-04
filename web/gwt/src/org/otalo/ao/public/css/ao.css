@@ -16,3 +16,11 @@
 .selectedThreadMessage {
   color: red;
 }
+
+.sms_under {
+  color: green;
+}
+
+.sms_over {
+  color: red;
+}

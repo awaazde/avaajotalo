@@ -16,10 +16,7 @@
  */
 package org.otalo.ao.client;
 
-import java.util.List;
-
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.User;
 

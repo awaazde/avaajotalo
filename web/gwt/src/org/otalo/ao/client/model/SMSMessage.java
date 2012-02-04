@@ -16,26 +16,24 @@
 package org.otalo.ao.client.model;
 
 
-public class Line extends BaseModel {
-	
-	public Line(JSOModel data) {
+public class SMSMessage extends BaseModel {
+	public SMSMessage(JSOModel data) {
 		super(data);
 	}
 	
-	public String getLogoFile() {
-		return getField("logo_file");
+	public String getSentOn()
+	{
+		return getObject("fields").get("sent_on");
 	}
 	
-	public String[] getForumIds() {
-		
-		String lst = getField("forums");
-		lst = lst.replace("[","");
-		return lst.split(",");
-
+	public String getText()
+	{
+		return getObject("fields").get("text");
 	}
 	
-	public boolean hasSMSConfig() {
-		return !getField("sms_config").equals("");
+	public User getSender()
+	{
+		return new User(getObject("fields").getObject("sender"));
 	}
 
 }

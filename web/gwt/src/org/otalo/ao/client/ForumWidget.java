@@ -21,8 +21,8 @@ import java.util.List;
 import org.otalo.ao.client.Fora.Images;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Message.MessageStatus;
+import org.otalo.ao.client.model.MessageForum;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

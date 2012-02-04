@@ -97,7 +97,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
 	'otalo.AO',
     'otalo.surveys',
-    'otalo.notification',
+    'otalo.sms',
     'django.contrib.admin',
     'south',
     'django_extensions',

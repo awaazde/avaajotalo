@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Message.MessageStatus;
@@ -11,10 +12,16 @@ import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Survey;
 import org.otalo.ao.client.model.Tag;
 
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -27,6 +34,7 @@ import com.google.gwt.user.client.ui.DecoratedStackPanel;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -38,20 +46,21 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
-public class BroadcastInterface extends Composite {
-	private FormPanel bcastForm;
+public class SMSInterface extends Composite {
+	private FormPanel smsForm;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
 	private VerticalPanel outer, who, what, when;
 	private HorizontalPanel controls = new HorizontalPanel();
-	private Button sendButton, cancelButton;
-	private TextBox sinceField, bcastDateField;
-	private DatePicker since, bcastDate;
-	private ListBox tags, lastNCallers, templates, from, till, duration, blockSize, interval;
-	private Hidden messageforumid, lineid;
+	private Button sendButton;
+	private TextBox sinceField, smsDateField;
+	private TextArea txtArea;
+	private DatePicker since, smsDate;
+	private ListBox tags, lastNCallers, hour, min;
+	private Hidden lineid;
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
+	private Label remainingCharsLabel;
 	//private FileUpload fileUpload;
-	private MessageForum thread;
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -59,15 +68,15 @@ public class BroadcastInterface extends Composite {
 		ImageResource calendar();
 	}
 	
-	public BroadcastInterface(Images images) {
+	public SMSInterface(Images images) {
 		outer = new VerticalPanel();
 		outer.setSize("100%","100%");
-		bcastForm = new FormPanel();
-		bcastForm.setWidget(outer);
-		bcastForm.setMethod(FormPanel.METHOD_POST);
-		bcastForm.setEncoding(FormPanel.ENCODING_MULTIPART);
+		smsForm = new FormPanel();
+		smsForm.setWidget(outer);
+		smsForm.setMethod(FormPanel.METHOD_POST);
+		smsForm.setEncoding(FormPanel.ENCODING_MULTIPART);
 		
-		bcastForm.addSubmitCompleteHandler(new BroadcastComplete());
+		smsForm.addSubmitCompleteHandler(new SMSComplete());
 		
 		stackPanel.setSize("100%", "100%");
 		who = new VerticalPanel();
@@ -163,128 +172,92 @@ public class BroadcastInterface extends Composite {
 		
 		who.add(whoPanel);
 		
-		Label tempLbl = new Label("Template: ");
-		CheckBox response = new CheckBox("Allow response");
-		response.setName("response");
+		txtArea = new TextArea();
+		txtArea.setName("txt");
+		txtArea.setSize("350px", "100px");
 		
-  	templates = new ListBox();
-  	templates.setName("survey");
+		HorizontalPanel remainCharsPanel = new HorizontalPanel();
+		remainCharsPanel.setSpacing(5);
+		remainCharsPanel.add(new Label("You have"));
+		remainingCharsLabel = new Label("140");
+		remainCharsPanel.add(remainingCharsLabel);
+		remainCharsPanel.add(new Label("characters left."));
+		
+		txtArea.addKeyUpHandler(new KeyUpHandler() {
+			public void onKeyUp(KeyUpEvent event) {
+				onTextAreaContentChanged(remainingCharsLabel);
+			}
+		});
   	
-  	HorizontalPanel surveyPanel = new HorizontalPanel();
-  	surveyPanel.setSpacing(10);
-  	surveyPanel.add(tempLbl);
-  	surveyPanel.add(templates);
-  	surveyPanel.add(response);
-  	
-  	what.add(surveyPanel);
+  	what.setSpacing(10);
+  	what.add(txtArea);
+  	what.add(remainCharsPanel);
   	
   	HorizontalPanel whenPanel = new HorizontalPanel();
   	whenPanel.setSpacing(10);
   	now = new RadioButton("when","Start now");
   	now.setFormValue("now");
-  	now.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				from.setEnabled(false);
-				from.insertItem("NOW", "-1", 0);
-				from.setSelectedIndex(0);
-			}
-		});
 		date = new RadioButton("when","Date:");
 		date.setFormValue("date");
-		date.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				from.setEnabled(true);
-				from.clear();
-				for(int i=1; i < 24; i++)
-				{
-					String time = String.valueOf(i) + ":00";
-					from.addItem(time, String.valueOf(i));
-				}
-				from.setSelectedIndex(7);
-			}
-		});
 		
-		bcastDateField = new TextBox();
-		bcastDateField.setName("bcastdate");
-		bcastDate = new DatePicker();
-		bcastDate.addValueChangeHandler(new ValueChangeHandler<Date>() {
+		smsDateField = new TextBox();
+		smsDateField.setName("smsday");
+		smsDate = new DatePicker();
+		smsDate.addValueChangeHandler(new ValueChangeHandler<Date>() {
 
 			public void onValueChange(ValueChangeEvent<Date> event) {
 				Date d = event.getValue();
-				bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
-				bcastDate.setVisible(false);
+				smsDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
+				smsDate.setVisible(false);
 				now.setValue(false);
 				date.setValue(true);
 				
 			}
 		});
 		
-		bcastDateField.addFocusHandler(new FocusHandler() {
+		smsDateField.addFocusHandler(new FocusHandler() {
 			
 			public void onFocus(FocusEvent event) {
-				bcastDate.setVisible(true);
+				smsDate.setVisible(true);
 				now.setValue(false);
 				date.setValue(true);
 			}
 		});
   	
-		Label fromLbl = new Label("From");
-		from = new ListBox();
-		from.setName("fromtime");	
-		Label tillLbl = new Label("till");
-		till = new ListBox();
-		till.setName("tilltime");
+		Label timeLbl = new Label("Time: ");
+		hour = new ListBox();
+		hour.setName("hour");
+		min = new ListBox();
+		min.setName("min");
 		for(int i=1; i < 24; i++)
 		{
-			String time = String.valueOf(i) + ":00";
-			from.addItem(time, String.valueOf(i));
-			till.addItem(time, String.valueOf(i));
+			hour.addItem(String.valueOf(i));
 		}
-		
-		Label makeLbl = new Label("Make");
-		blockSize = new ListBox();
-		blockSize.setName("blocksize");
-		blockSize.addItem("5");
-		blockSize.addItem("10");
-		blockSize.addItem("15");
-		blockSize.addItem("20");
-		blockSize.addItem("25");
-		blockSize.addItem("30");
-		Label everyLbl = new Label("calls at a time, every");
-		interval = new ListBox();
-		interval.setName("interval");
-		interval.addItem("2");
-		interval.addItem("3");
-		interval.addItem("4");
-		interval.addItem("5");
-		interval.addItem("6");
-		interval.addItem("7");
-		interval.addItem("8");
-		interval.addItem("9");
-		interval.addItem("10");
-		Label minLbl = new Label("minutes");
-		
-		Label durationLbl = new Label("Duration (days):");
-		duration = new ListBox();
-		duration.setName("duration");
-		for(int i=1; i < 7; i++)
+		for (int i=0; i < 60; i+=5)
 		{
-			duration.addItem(String.valueOf(i), String.valueOf(i));
+			String minStr = String.valueOf(i);
+			if (i < 10)
+				minStr = "0"+minStr;
+			min.addItem(minStr, String.valueOf(i));
 		}
-		HorizontalPanel fromTillPanel = new HorizontalPanel();
-		fromTillPanel.setSpacing(10);
-		fromTillPanel.add(fromLbl);
-		fromTillPanel.add(from);
-		fromTillPanel.add(tillLbl);
-		fromTillPanel.add(till);
 		
-		HorizontalPanel blockPanel = new HorizontalPanel();
-		blockPanel.setSpacing(10);
-		blockPanel.add(makeLbl);
-		blockPanel.add(blockSize);
-		blockPanel.add(everyLbl);
-		blockPanel.add(interval);
-		blockPanel.add(minLbl);
+		hour.addFocusHandler(new FocusHandler() {
+			
+			public void onFocus(FocusEvent event) {
+				now.setValue(false);
+				date.setValue(true);
+				
+			}
+		});
+		
+		min.addFocusHandler(new FocusHandler() {
+			
+			public void onFocus(FocusEvent event) {
+				now.setValue(false);
+				date.setValue(true);
+				
+			}
+		});
 		
 		CheckBox backups = new CheckBox("Backup Calls");
 		backups.setName("backups");
@@ -296,29 +269,19 @@ public class BroadcastInterface extends Composite {
 		HorizontalPanel datePanel = new HorizontalPanel();
 		datePanel.setSpacing(10);
 		datePanel.add(date);
-		datePanel.add(bcastDateField);
-		bcastDate.setVisible(false);
-		datePanel.add(bcastDate);
-		
-		HorizontalPanel ftBlockPanel = new HorizontalPanel();
-		ftBlockPanel.setWidth("65%");
-		ftBlockPanel.add(fromTillPanel);
-		ftBlockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		ftBlockPanel.add(blockPanel);
-		
-		HorizontalPanel durationPanel = new HorizontalPanel();
-		durationPanel.setSpacing(10);
-		durationPanel.add(durationLbl);
-		durationPanel.add(duration);
-		durationPanel.add(backups);
+		datePanel.add(smsDateField);
+		smsDate.setVisible(false);
+		datePanel.add(smsDate);
+		datePanel.add(timeLbl);
+		datePanel.add(hour);
+		datePanel.add(new Label(":"));
+		datePanel.add(min);
 		
 		when.add(nowPanel);
 		when.add(datePanel);
-		when.add(ftBlockPanel);
-		when.add(durationPanel);
 		
 		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
-		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Template"), true);
+		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Message"), true);
 		stackPanel.add(when, createHeaderHTML(images.calendar(), "Schedule"), true);
 		
 		controls = new HorizontalPanel();
@@ -326,34 +289,25 @@ public class BroadcastInterface extends Composite {
 		sendButton = new Button("Send", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	setClickedButton();
-    		templates.setEnabled(true);
-      	bcastForm.setAction(JSONRequest.BASE_URL + AoAPI.BCAST_MESSAGE);
-        bcastForm.submit();
+      	smsForm.setAction(JSONRequest.BASE_URL + AoAPI.SEND_SMS);
+        smsForm.submit();
       }
     });
-		cancelButton = new Button("Cancel");
-		cancelButton.addClickHandler(new ClickHandler(){
-			public void onClick(ClickEvent event) {
-				Messages.get().displayMessages(thread);
-			}
-			
-		});
 		
 		controls.setSpacing(10);
 		controls.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		controls.add(cancelButton);
 		controls.add(sendButton);
 		
 		outer.add(stackPanel);
 		outer.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		outer.add(controls);
-		messageforumid = new Hidden("messageforumid");
-		outer.add(messageforumid);
 		lineid = new Hidden("lineid");
 		lineid.setValue(Messages.get().getLine().getId());
 		outer.add(lineid);
 		
-		initWidget(bcastForm);
+		initWidget(smsForm);
+		
+		loadTags();
 	}
 	
 	public void loadTags()
@@ -366,10 +320,7 @@ public class BroadcastInterface extends Composite {
 		if (tags.getItemCount() < 2)
 		{
 			JSONRequest request = new JSONRequest();		
-			if (thread != null)
-				request.doFetchURL(AoAPI.TAGS + thread.getForum().getId() + "/", new TagRequestor());
-			else
-				request.doFetchURL(AoAPI.TAGS_BY_LINE + Messages.get().getLine().getId() + "/", new TagRequestor());
+			request.doFetchURL(AoAPI.TAGS_BY_LINE + Messages.get().getLine().getId() + "/", new TagRequestor());
 		}
 	}
 	
@@ -387,117 +338,57 @@ public class BroadcastInterface extends Composite {
 		}
 	 }
 	 
-	 public void broadcastThread(MessageForum thread)
+	 public void newSMS()
 	 { 
-		 this.thread = thread;
-		 JSONRequest request = new JSONRequest();
-		 // in case it's a bcast without a thread
-		 // to insert (holeless template)
-		 if (thread != null)
-		 {
-			 messageforumid.setValue(thread.getId());
-			 request.doFetchURL(AoAPI.FORWARD_THREAD + thread.getId() + "/", new BroadcastRequestor());
-		 }
-		 else
-		 {
-			 messageforumid.setValue(null);
-			 request.doFetchURL(AoAPI.REGULAR_BCAST + Messages.get().getLine().getId() + "/", new BroadcastRequestor());
-		 }
-			 
-		 
 		 loadTags();
 	 }
 	 
-	 private class BroadcastRequestor implements JSONRequester {
-		 
-			public void dataReceived(List<JSOModel> models) {
-				Survey s;
-				templates.clear();
-				
-				for (JSOModel model : models)
-			  	{
-						s = new Survey(model);
-						templates.addItem(s.getName(), s.getId());
-			  	}
-				
-				Messages.get().displayBroadcastPanel(thread);
-				if (templates.getItemCount() == 1)
-				{
-					templates.setEnabled(false);
-				}
-				
-			}
-	 }
-	 
-	 private class BroadcastComplete implements SubmitCompleteHandler {
+	 private class SMSComplete implements SubmitCompleteHandler {
 			
 			public void onSubmitComplete(SubmitCompleteEvent event) {
-				ConfirmDialog sent = new ConfirmDialog("Broadcast Scheduled!");
+				ConfirmDialog sent = new ConfirmDialog("SMS Scheduled!");
 				sent.show();
 				sent.center();
 				
 				sendComplete();
-				Messages.get().loadBroadcasts(0);
-				
-				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
-				/*
-				 * Why not check for Prompt (bcast interface) here?
-				 * Because in the bcast panel there may or may not be a prompt
-				 * selected, so you don't know what to reload (we are not sending
-				 * The selected prompt (if any) to the server on bcast post
-				 * from New Broadcast link
-				 */
-				if (Forum.isForum(model))
-				{
-					// get the first forum for this moderator
-					Forum f = new Forum(model);
-					MessageStatus status;
-					if (f.moderated())
-						status = MessageStatus.PENDING;
-					else
-						status = MessageStatus.APPROVED;
-					
-					Messages.get().displayMessages(f, status, 0);
-				}
-				else if (MessageForum.isMessageForum(model))
-				{
-					MessageForum messageForum = new MessageForum(model);
-					Messages.get().displayMessages(messageForum);
-				}
+				Messages.get().displaySMS(SMSListType.SENT, 0);
 		}
 	 }
-	 
-	 public void reset(MessageForum mf)
+
+	 private void onTextAreaContentChanged(final Label remainingCharsLabel)
 	 {
-		 bcastForm.reset();
+		 int counter = new Integer(txtArea.getText().length()).intValue();
+	
+		 int charsRemaining = 140 - counter;
+		 remainingCharsLabel.setText("" + charsRemaining);
+		 if (charsRemaining >= 0)
+			 remainingCharsLabel.setStyleName("sms_under");
+		 else
+			 remainingCharsLabel.setStyleName("sms_over");
+	 }
+	 
+	 public void reset()
+	 {
+		 smsForm.reset();
 		 // need to be explicit since these
 		 // are activated indirectly (kinda weird)
 		 numbers.setValue(false);
 		 usersByTag.setValue(false);
 		 usersByLog.setValue(false);
-		 thread = mf;
-		 // Select 7am-7pm by default
-		 from.setEnabled(true);
-		 from.clear();
-		 for(int i=1; i < 24; i++)
-			{
-				String time = String.valueOf(i) + ":00";
-				from.addItem(time, String.valueOf(i));
-			}
-		 from.setItemSelected(6, true);
-		 till.setItemSelected(18, true);
-		 blockSize.setSelectedIndex(1);
-		 interval.setSelectedIndex(8);
+		 // Select 10am by default
+		 hour.setItemSelected(9, true);
 		 lastNCallers.setItemSelected(3, true);
-		 duration.setItemSelected(1,true);
+		 
+		 remainingCharsLabel.setText("140");
+		 remainingCharsLabel.setStyleName("sms_under");
 		 
 		 Date today = new Date();
 		 since.setValue(today);
 		 since.setVisible(false);
 		 today.setDate(today.getDate() + 1);
-		 bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(today));
-		 bcastDate.setValue(today);
-		 bcastDate.setVisible(false);
+		 smsDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(today));
+		 smsDate.setValue(today);
+		 smsDate.setVisible(false);
 
 		 date.setValue(true);
 		 
@@ -507,13 +398,11 @@ public class BroadcastInterface extends Composite {
 	private void setClickedButton()
 	{
 		sendButton.setEnabled(false);
-		cancelButton.setEnabled(false);
 	}
 		
 	private void sendComplete()
 	{
 		sendButton.setEnabled(true);
-		cancelButton.setEnabled(true);
 	}
 	
 	private String createHeaderHTML(ImageResource resource,

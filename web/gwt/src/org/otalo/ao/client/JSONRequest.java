@@ -67,6 +67,9 @@ public final class JSONRequest {
 		public static final String CANCEL_SURVEY = "cancelsurvey/";
 		public static final String SURVEY_DETAILS = "surveydetails/";
 		public static final String REGULAR_BCAST = "regularbcast/";
+		public static final String SMS = "sms/";
+		public static final String SMS_RECIPIENTS = "smsrecipients/";
+		public static final String SEND_SMS = "sendsms/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";

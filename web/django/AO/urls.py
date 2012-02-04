@@ -48,6 +48,10 @@ urlpatterns = patterns('',
     (r'^cancelsurvey/(?P<survey_id>\d+)/$', 'otalo.AO.views.cancelsurvey'),
     (r'^surveydetails/(?P<survey_id>\d+)/$', 'otalo.AO.views.surveydetails'),
     (r'^regularbcast/(?P<line_id>\d+)/$', 'otalo.AO.views.regularbcast'),
+    (r'^sms/(?P<line_id>\d+)/$', 'otalo.AO.views.sms'),
+    (r'^smsrecipients/(?P<smsmsg_id>\d+)/$', 'otalo.AO.views.smsrecipients'),
+    (r'^sendsms/$', 'otalo.AO.views.sendsms'),
+    (r'^smsin/$', 'otalo.AO.views.smsin'),
 )
 
 if settings.DEVELOPMENT:
