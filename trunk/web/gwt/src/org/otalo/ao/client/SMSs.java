@@ -43,7 +43,6 @@ import com.google.gwt.user.client.ui.Widget;
  * A panel of SMSs, each presented as a tree.
  */
 public class SMSs extends Composite {
-  private ArrayList<SMSWidget> widgets = new ArrayList<SMSWidget>();
 	
 	/**
    * Specifies the images that will be bundled for this Composite and specify
