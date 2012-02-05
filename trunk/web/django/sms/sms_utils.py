@@ -37,7 +37,7 @@ def send_sms(from_line, recipients, content, date=None):
     recipients_str = ''
     for u in recipients:
         msg.recipients.add(u)
-        recipients_str += u.number +','
+        recipients_str += (config.country_code or '')+ u.number +','
     recipients_str = recipients_str[:-1]
     data = {config.to_param_name:recipients_str, config.text_param_name:content}
     if date and config.date_param_format:
@@ -56,8 +56,9 @@ def send_sms(from_line, recipients, content, date=None):
 
 if __name__=="__main__":
     line = Line.objects.get(pk=1)
-
-    send_sms(line,['919586550654'],"Test from Neil/Awaaz.De. Thanks!!")
+    users = User.objects.filter(pk__in=[1,2])
+    print(str(users))
+    send_sms(line,users,"Testing again from Neil/Awaaz.De. Thanks!!")
     
     
     

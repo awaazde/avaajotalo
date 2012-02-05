@@ -214,9 +214,9 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
    
     if (count > 0)
     {
-	    BaseModel message = messages.get(0);
-	    newButtonReg = newerButton.addClickHandler(new PageOverHandler("newer", message));
-	    oldButtonReg = olderButton.addClickHandler(new PageOverHandler("older", message));
+	    SMSMessage message = messages.get(0);
+	    newButtonReg = newerButton.addClickHandler(new PageOverHandler("newer", message, type));
+	    oldButtonReg = olderButton.addClickHandler(new PageOverHandler("older", message, type));
 
     }
 
@@ -365,11 +365,13 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
 	
 	public class PageOverHandler implements ClickHandler {
   	private String direction;
-		private BaseModel message;
+		private SMSMessage message;
+		private SMSListType type;
   	
-  	public PageOverHandler(String direction, BaseModel message) {
+  	public PageOverHandler(String direction, SMSMessage message, SMSListType type) {
   		this.direction = direction;
   		this.message = message;
+  		this.type = type;
   	}
 		public void onClick(ClickEvent event) {
 			 if (direction.equals("older")) {
@@ -389,19 +391,7 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
 			 
 			 styleRow(selectedRow, false);
 		   selectedRow = -1;
-		   if (MessageForum.isMessageForum(message))
-		   {
-			   MessageForum mf = new MessageForum(message);
-		  	 if (mf.isResponse() && mf.getStatus() != MessageStatus.PENDING)
-			  	 Messages.get().displayResponses(mf.getForum(), startIndex);
-			   else
-			  	 Messages.get().displayMessages(mf.getForum(), mf.getStatus(), startIndex);
-		   }
-		   else if (SurveyInput.isSurveyInput(message))
-		   {
-		  	 SurveyInput input = new SurveyInput(message);
-		  	 Messages.get().displaySurveyInput(input.getPrompt(), startIndex);
-		   }
+		   Messages.get().displaySMS(type, startIndex);
 		}
   	
   }
