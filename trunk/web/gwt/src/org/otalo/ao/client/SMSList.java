@@ -167,9 +167,6 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
     if (messages.size() <= row || messages.get(row) == null) {
       return;
     }
-    
-    styleRow(selectedRow, false);
-    styleRow(row, true);
 
     // TODO
     //message.read = true;
@@ -178,16 +175,6 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
     BaseModel message = messages.get(row);
     if (MessageForum.isMessageForum(message))
     	Messages.get().setItem(new MessageForum(message));
-  }
-
-  private void styleRow(int row, boolean selected) {
-    if (row != -1) {
-      if (selected) {
-        table.getRowFormatter().addStyleName(row + 1, "mail-SelectedRow");
-      } else {
-        table.getRowFormatter().removeStyleName(row + 1, "mail-SelectedRow");
-      }
-    }
   }
 
   private void update(SMSListType type) {
@@ -303,21 +290,13 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
 		messages.clear();
 		startIndex = 0;
 		count = 0;
-		styleRow(selectedRow, false);
 		update(type);
   }
-	public void displaySurveyInput(Prompt p, int start)
-	{
-		styleRow(selectedRow, false);
-		JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.PROMPT_RESPONSES + p.getId() + "/?start=" + String.valueOf(start), this);
-	}
 
   
   
   public void getMessages(SMSListType type, int start)
   {
-  	styleRow(selectedRow, false);
   	String lineId = Messages.get().getLine().getId();
   	String filterParams = "/?type="+String.valueOf(type.ordinal())+"&start=" + String.valueOf(start);
   	JSONRequest request = new JSONRequest();
@@ -389,7 +368,6 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
 		     }
 			 }
 			 
-			 styleRow(selectedRow, false);
 		   selectedRow = -1;
 		   Messages.get().displaySMS(type, startIndex);
 		}
