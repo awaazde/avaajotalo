@@ -27,6 +27,7 @@ class Config(models.Model):
     text_param_name = models.CharField(max_length=24)
     date_param_name = models.CharField(max_length=24, blank=True, null=True)
     date_param_format = models.CharField(max_length=24, blank=True, null=True)
+    country_code = models.CharField(max_length=2, blank=True, null=True)
     '''
         For incoming messages
     '''
