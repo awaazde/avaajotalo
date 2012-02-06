@@ -748,7 +748,7 @@ def sms(request, line_id):
     if type == SMSListType_SENT:  
         msgs = SMSMessage.objects.filter(sender=line_user).order_by('-id')
     elif type == SMSListType_IN:
-        msgs = SMSMessage.objects.filter(recipients__number__in=[line.sms_config.inbound_number], text__contains=line.sms_config.keyword).order_by('-id')
+        msgs = SMSMessage.objects.filter(recipients__number__in=[line.number]).order_by('-id')
     
     count = msgs.count()      
    
@@ -884,7 +884,7 @@ def smsin(request):
     line = Line.objects.filter(sms_config__keyword=keyword, sms_config__inbound_number=dest)
     if bool(line):
         line = line[0]
-        dest = User.objects.get(number=dest)
+        dest = User.objects.get(number=line.number)
         u = User.objects.filter(number=sender)
         if bool(u):
             u = u[0]
