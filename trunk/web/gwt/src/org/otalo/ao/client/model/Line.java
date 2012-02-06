@@ -35,7 +35,7 @@ public class Line extends BaseModel {
 	}
 	
 	public boolean hasSMSConfig() {
-		return !getField("sms_config").equals("");
+		return !getField("sms_config").equals("null");
 	}
 
 }
