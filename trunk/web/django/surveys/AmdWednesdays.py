@@ -162,7 +162,7 @@ def rsvp_results(num, date_start=False, date_end=False):
     print("<table>")
     
     print("<tr>")
-    print("<td width='80px'><b>Callid</b>/td>")
+    print("<td width='80px'><b>Callid</b></td>")
     print("<td width='120px'><b>Name</b></td>")
     print("<td width='120px'><b>Phone Number</b></td>")
     print("<td width='120px'><b>Call Time</b></td>")
