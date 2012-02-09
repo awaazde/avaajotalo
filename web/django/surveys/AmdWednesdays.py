@@ -191,6 +191,7 @@ def rsvp_results(num, date_start=False, date_end=False):
     print("<td><b>Total</b></td>")
     print("<td></td>")
     print("<td></td>")
+    print("<td></td>")
     print("<td><b>"+str(total)+"</b></td>")
     print("</tr>")      
     print("</table>")
