@@ -13,7 +13,7 @@ import otalo_utils
 OUTPUT_FILE_DIR='/home/wednesdays/reports/'
 PREFIX='freetdm/grp1/a/0'
 SUFFIX=''
-SOUND_EXT = ".wav"
+SOUND_EXT = ".mp3"
 BARGEIN_KEY='9'
 SUBDIR = 'weds/'
 
@@ -162,13 +162,14 @@ def rsvp_results(num, date_start=False, date_end=False):
     print("<table>")
     
     print("<tr>")
-    print("<td width='80px'>Callid</td>")
-    print("<td width='120px'>Phone Number</td>")
-    print("<td width='120px'>Call Time</td>")
-    print("<td width='100px'>RSVP count</td>")
+    print("<td width='80px'><b>Callid</b>/td>")
+    print("<td width='120px'><b>Name</b></td>")
+    print("<td width='120px'><b>Phone Number</b></td>")
+    print("<td width='120px'><b>Call Time</b></td>")
+    print("<td width='100px'><b>RSVP count</b></td>")
     print("</tr>")
     
-    header = ['CallId', 'CallerNum', 'time', 'rsvp count']
+    header = ['CallId', 'Name', 'CallerNum', 'time', 'rsvp count']
     results = [header]
     total = 0
     for call in calls:
@@ -177,8 +178,10 @@ def rsvp_results(num, date_start=False, date_end=False):
             input = inputs[0]
             rsvpcnt = str(input.input)
             total += int(rsvpcnt)
+            name = call.subject.name or ''
             print("<tr>")
             print("<td>"+str(call.id)+"</td>")
+            print("<td>"+name+"</td>")
             print("<td>"+str(call.subject.number)+"</td>")
             print("<td>"+time_str(call.date)+"</td>")
             print("<td>"+rsvpcnt+"</td>")
