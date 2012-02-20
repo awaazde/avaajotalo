@@ -186,7 +186,7 @@ def survey_results(number, date_start=False, date_end=False):
     header = ['number','time']
     qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
     for i in range(1,qcount+1):
-        header.append('q'+str(1))
+        header.append('q'+str(i))
     outputfilename='survey_results_'+number
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
