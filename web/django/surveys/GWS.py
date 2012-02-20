@@ -195,7 +195,7 @@ def survey_results(number, date_start=False, date_end=False):
     output.writerow(header)
            
     for call in calls:
-        results = [call.subj.number, time_str(call.date)]
+        results = [call.subject.number, time_str(call.date)]
         
         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
         for input in inputs:
