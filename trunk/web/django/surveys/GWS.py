@@ -1,7 +1,7 @@
 import os, sys, csv
 from datetime import datetime, timedelta
 from django.conf import settings
-from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call
+from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
 import otalo_utils
 
 '''
