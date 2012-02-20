@@ -219,19 +219,34 @@ def time_str(date):
 ****************************************************************************
 '''
 def main():
-    create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
-    create_survey('ppi', 'hin', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555078', callback=True, inbound=True)
-    create_survey('ppi', 'kan', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555095', callback=True, inbound=True)
-    create_survey('ppi', 'tam', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555097', callback=True, inbound=True)
-    
-    create_survey('ef', 'eng', ['2','*1','4','2','3','3','3','3','2','3','6'], '7961555000', callback=True, inbound=True)
-    
-    create_survey('sa', 'hin', ['2','*1','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=True, inbound=True)
-    create_survey('sa', 'eng', ['2','*1','3','3','3','2','3','3','2','2','2','2','2'], '7961555002', callback=True, inbound=True)
-    
-    create_survey('lw', 'tam', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555004', callback=True, inbound=True)
-    create_survey('lw', 'eng', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=True, inbound=True)
-    
-    create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
+    if '--report' in sys.argv:
+        number = sys.argv[2]      
+        if len(sys.argv) > 3:
+            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        else:
+            now = datetime.now()
+            start = datetime(year=now.year, month=now.month, day=now.day)
+        
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+            
+        survey_results(number, start, end)
+        
+    else:
+        create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
+        create_survey('ppi', 'hin', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555078', callback=True, inbound=True)
+        create_survey('ppi', 'kan', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555095', callback=True, inbound=True)
+        create_survey('ppi', 'tam', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555097', callback=True, inbound=True)
+        
+        create_survey('ef', 'eng', ['2','*1','4','2','3','3','3','3','2','3','6'], '7961555000', callback=True, inbound=True)
+        
+        create_survey('sa', 'hin', ['2','*1','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=True, inbound=True)
+        create_survey('sa', 'eng', ['2','*1','3','3','3','2','3','3','2','2','2','2','2'], '7961555002', callback=True, inbound=True)
+        
+        create_survey('lw', 'tam', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555004', callback=True, inbound=True)
+        create_survey('lw', 'eng', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=True, inbound=True)
+        
+        create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
     
 main()
