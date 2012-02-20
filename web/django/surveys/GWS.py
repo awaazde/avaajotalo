@@ -189,7 +189,7 @@ def survey_results(number, date_start=False, date_end=False):
         header.append('q'+str(1))
     outputfilename='survey_results_'+number
     if date_start:
-        outfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+        outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)
@@ -220,13 +220,10 @@ def time_str(date):
 '''
 def main():
     if '--report' in sys.argv:
-        number = sys.argv[2]      
+        number = sys.argv[2]    
+        start=None  
         if len(sys.argv) > 3:
             start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
-        else:
-            now = datetime.now()
-            start = datetime(year=now.year, month=now.month, day=now.day)
-        
         end = None    
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
