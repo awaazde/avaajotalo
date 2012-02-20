@@ -134,8 +134,10 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     
     intro = Prompt(file=SUBDIR+language+'/'+prefix+"intro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
     intro.save()
-    intro_opt = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=intro)
+    intro_opt = Option(number="", action=Option.NEXT, prompt=intro)
     intro_opt.save()
+    intro_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=intro)
+    intro_opt2.save()
     order += 1
     
     for i in range(len(options)):
@@ -157,8 +159,10 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     
     outro = Prompt(file=SUBDIR+language+'/'+prefix+"outro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000)
     outro.save()
-    outro_opt = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=outro)
+    outro_opt = Option(number="", action=Option.NEXT, prompt=outro)
     outro_opt.save()
+    outro_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=outro)
+    outro_opt2.save()
     order += 1
     
     return s
