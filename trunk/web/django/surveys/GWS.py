@@ -190,8 +190,8 @@ def survey_results(number, date_start=False, date_end=False):
     outputfilename='survey_results_'+number
     if date_start:
         outfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
-    outfilename = OUTPUT_FILE_DIR+outfilename+'.csv'
-    output = csv.writer(open(outfilename, 'wb'))
+    outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
+    output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)
            
     for call in calls:
