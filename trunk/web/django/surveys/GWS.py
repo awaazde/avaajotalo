@@ -201,7 +201,7 @@ def survey_results(number, date_start=False, date_end=False):
         for input in inputs:
             results.append(input.input)
                
-        output.writerows(results)
+        output.writerow(results)
 
 '''
 ****************************************************************************
