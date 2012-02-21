@@ -226,13 +226,8 @@ def time_str(date):
 ****************************************************************************
 '''
 def main():
-    if len(sys.argv) < 2:
-        print("arg: lineid")
-        sys.exit()
-    else:
-        lineid = sys.argv[1]
-        line = Line.objects.get(pk=lineid)
-        num = line.outbound_number or line.number
+    line = Line.objects.get(pk=14)
+    num = line.outbound_number or line.number
     
     if '--report' in sys.argv:
         now = datetime.now()
