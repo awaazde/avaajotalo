@@ -234,12 +234,10 @@ def main():
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=7)
         rsvp_results(num,date_start=start)
-        sys.exit()
     elif '--update_tow' in sys.argv:
         update_tow(line)
-        sys.exit()
-        
-    create_survey(num,template=True)
-    create_survey(num,inbound=True)
+    else:   
+        create_survey(num,template=True)
+        create_survey(num,inbound=True)
    
 main()
