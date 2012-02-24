@@ -10,7 +10,7 @@ import otalo_utils
 ****************************************************************************
 '''
 OUTPUT_FILE_DIR='/home/gws/reports/'
-PREFIX='freetdm/grp5/a/'
+PREFIX='freetdm/grp5/a/0'
 SUFFIX=''
 SUBDIR = 'gws/'
 SOUND_EXT = ".wav"
