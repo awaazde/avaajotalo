@@ -232,7 +232,7 @@ def main():
     if '--report' in sys.argv:
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
-        start = today-timedelta(days=7)
+        start = today-timedelta(days=6)
         rsvp_results(num,date_start=start)
     elif '--update_tow' in sys.argv:
         update_tow(line)
