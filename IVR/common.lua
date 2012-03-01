@@ -777,8 +777,11 @@ function play_prompts (prompts)
    	  if (option ~= nil) then
    	  	optionid = option[1];
    	  	action = option[2];
-   	  elseif (inputlen ~= nil and inputlen > 0 and inputlen >= string.len(tostring(input))) then
+   	  elseif (input ~= "" and inputlen ~= nil and inputlen > 0 and inputlen >= string.len(tostring(input))) then
    	  	-- there is no specific option, it is a range
+   	  	-- The check for input being non-empty means that on no input the prompt will
+   	  	-- always repeat on a multiple-digit input prompt. This is actually correct. To
+   	  	-- get it to go forward on no-input, simply add the Option (since we check for options first).
    	  	optionid = nil;
    	  	action = OPTION_INPUT;
    	  else
