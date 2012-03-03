@@ -217,14 +217,6 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        treatment = 'No'
-                        if u.balance == -1:
-                            treatment = 'Yes'
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=3), date__lte=start+timedelta(seconds=3), complete=True)
                     if bool(call):
                         if call.count()>1:
@@ -250,14 +242,6 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        treatment = 'No'
-                        if u.balance == -1:
-                            treatment = 'Yes'
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=3), date__lte=start+timedelta(seconds=3), complete=True)
                     if bool(call):
                         if call.count()>1:
