@@ -163,7 +163,6 @@ def create_blank(num, prefix, suffix):
 
 def get_features_within_call(feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
     all_calls = []
-    current_week_start = 0
     open_calls = {}
     
     f = open(filename)
@@ -294,9 +293,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
     
 def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
-    current_week_start = 0
     open_calls = {}
-    received_nums = []
     
     f = open(filename)
 
@@ -640,7 +637,6 @@ def get_survey_results(phone_num_filter, date_start=False, date_end=False):
 
 def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, date_end=False):
     all_surveys = {}
-    current_week_start = 0
     open_calls = {}
     
     f = open(filename)
