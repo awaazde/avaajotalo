@@ -229,7 +229,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                             result.append(input.input)                         
                         all_calls.append(result)
                     else:
-                        print("no call found: num=" +phone_num+ " ;start="+time_str(start))
+                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+time_str(start))
                     del open_calls[phone_num]
                     
                 # add new call
@@ -254,7 +254,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                             result.append(input.input)                         
                         all_calls.append(result)
                     else:
-                        print("no call found: num=" +phone_num+ " ;start="+time_str(start))
+                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+time_str(start))
                     del open_calls[phone_num]
                     
             elif phone_num in open_calls:
