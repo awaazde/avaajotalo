@@ -236,7 +236,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                 #print("adding new call: " + phone_num)
                 open_calls[phone_num] = {'start':current_date}
                 
-            elif line.find("End call") != -1:
+            elif line.find("End call") != -1 or line.find("Abort call") != -1:
                 if phone_num in open_calls:
                     # close out call                
                     open_call = open_calls[phone_num]    
