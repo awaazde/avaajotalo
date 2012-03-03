@@ -188,8 +188,7 @@ logfile:write(sessid, "\t", caller, "\t", destination,
 -- play prompts
 play_prompts(prompts);
 
-logfile:write(sessid, "\t", caller, "\t", destination,
-"\t", os.time(), "\t", "End call", "\n");
+hangup();
 
 
 
