@@ -172,18 +172,123 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
 ******************* REPORTING **********************************************
 ****************************************************************************
 '''
-def survey_results(number, date_start=False, date_end=False):
-    survey = Survey.objects.filter(number=number, inbound=True)[0]
-    # get calls
-    calls = Call.objects.select_related().filter(survey=survey, complete=True)
-    
-    if date_start:
-        calls = calls.filter(date__gte=date_start)
         
-    if date_end:
-        calls = calls.filter(date__lt=date_end)
+def survey_results(number, filename, phone_num_filter=False, date_start=False, date_end=False):
+    all_calls = []
+    open_calls = {}
+    survey = Survey.objects.filter(number=number, inbound=True)[0]
     
-    header = ['number','time']
+    f = open(filename)
+
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out call                
+                    open_call = open_calls[phone_num]    
+                    start = open_call['start']
+                    dur = current_date - start
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        u = u[0]
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=3), date__lte=start+timedelta(seconds=3), complete=True)
+                    if bool(call):
+                        if call.count()>1:
+                            print("more than one call found: " + str(call))
+                        call = call[0]
+                        result = [call.subject.number, time_str(call.date), str(dur.seconds)]
+        
+                        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+                        for input in inputs:
+                            result.append(input.input)                         
+                        all_calls.append(result)
+                    else:
+                        print("no call found: num=" +phone_num+ " ;start="+time_str(start))
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = {'start':current_date}
+                
+            elif line.find("End call") != -1:
+                if phone_num in open_calls:
+                    # close out call                
+                    open_call = open_calls[phone_num]    
+                    start = open_call['start']
+                    dur = current_date - start
+                    # may not be there if it's an old number
+                    treatment = 'N/A'
+                    u = User.objects.filter(number=phone_num)
+                    if bool(u):
+                        u = u[0]
+                        treatment = 'No'
+                        if u.balance == -1:
+                            treatment = 'Yes'
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=3), date__lte=start+timedelta(seconds=3), complete=True)
+                    if bool(call):
+                        if call.count()>1:
+                            print("more than one call found: " + str(call))
+                        call = call[0]
+                        result = [call.subject.number, time_str(call.date), str(dur.seconds)]
+        
+                        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+                        for input in inputs:
+                            result.append(input.input)                         
+                        all_calls.append(result)
+                    else:
+                        print("no call found: num=" +phone_num+ " ;start="+time_str(start))
+                    del open_calls[phone_num]
+                    
+            elif phone_num in open_calls:
+                call = open_calls[phone_num]
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+    
+    header = ['number','start','duration (s)']
     qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
     for i in range(1,qcount+1):
         header.append('q'+str(i))
@@ -192,16 +297,8 @@ def survey_results(number, date_start=False, date_end=False):
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
     output = csv.writer(open(outputfilename, 'wb'))
-    output.writerow(header)
-           
-    for call in calls:
-        results = [call.subject.number, time_str(call.date)]
-        
-        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
-        for input in inputs:
-            results.append(input.input)
-               
-        output.writerow(results)
+    output.writerow(header)            
+    output.writerows(all_calls)
 
 '''
 ****************************************************************************
@@ -221,6 +318,7 @@ def time_str(date):
 def main():
     if '--report' in sys.argv:
         number = sys.argv[2]    
+        outbound = settings.OUTBOUND_LOG_ROOT + number + '.log'
         start=None  
         if len(sys.argv) > 3:
             start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
@@ -228,7 +326,7 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
             
-        survey_results(number, start, end)
+        survey_results(number, outbound, date_start=start, date_end=end)
         
     else:
         create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
@@ -236,13 +334,13 @@ def main():
         create_survey('ppi', 'kan', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555095', callback=True, inbound=True)
         create_survey('ppi', 'tam', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555097', callback=True, inbound=True)
         
-        create_survey('ef', 'eng', ['2','*1','4','2','3','3','3','3','2','3','6'], '7961555000', callback=True, inbound=True)
+        create_survey('ef', 'eng', ['2','*2','4','2','3','3','3','3','2','3','6'], '7961555000', callback=True, inbound=True)
         
-        create_survey('sa', 'hin', ['2','*1','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=True, inbound=True)
-        create_survey('sa', 'eng', ['2','*1','3','3','3','2','3','3','2','2','2','2','2'], '7961555002', callback=True, inbound=True)
+        create_survey('sa', 'hin', ['2','*2','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=True, inbound=True)
+        create_survey('sa', 'eng', ['2','*2','3','3','3','2','3','3','2','2','2','2','2'], '7961555002', callback=True, inbound=True)
         
-        create_survey('lw', 'tam', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555004', callback=True, inbound=True)
-        create_survey('lw', 'eng', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=True, inbound=True)
+        create_survey('lw', 'tam', ['*2','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555004', callback=True, inbound=True)
+        create_survey('lw', 'eng', ['*2','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=True, inbound=True)
         
         create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
     
