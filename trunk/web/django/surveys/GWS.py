@@ -318,7 +318,7 @@ def time_str(date):
 def main():
     if '--report' in sys.argv:
         number = sys.argv[2]    
-        outbound = settings.OUTBOUND_LOG_ROOT + number + '.log'
+        filename = settings.LOG_ROOT + 'survey_in_'+ number[-8:] + '.log'
         start=None  
         if len(sys.argv) > 3:
             start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
@@ -326,7 +326,7 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
             
-        survey_results(number, outbound, date_start=start, date_end=end)
+        survey_results(number, filename, date_start=start, date_end=end)
         
     else:
         create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
