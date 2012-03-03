@@ -217,7 +217,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=30), date__lte=start+timedelta(seconds=30), complete=True)
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
                     if bool(call):
                         if call.count()>1:
                             print("more than one call found: " + str(call))
@@ -242,7 +242,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=30), date__lte=start+timedelta(seconds=30), complete=True)
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
                     if bool(call):
                         if call.count()>1:
                             print("more than one call found: " + str(call))
