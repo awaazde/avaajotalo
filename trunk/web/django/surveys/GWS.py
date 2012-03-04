@@ -398,7 +398,7 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)
     for prompt in repeat_counts:                    
-        output.writerow([prompt]+all_calls[prompt])
+        output.writerow([prompt]+repeat_counts[prompt])
     
 
 '''
