@@ -397,8 +397,9 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)
-    repeat_counts.sort()
-    for prompt in repeat_counts:                    
+    prompts = repeat_counts.keys()
+    prompts.sort()
+    for prompt in prompts:                    
         output.writerow([prompt]+repeat_counts[prompt])
     
 
