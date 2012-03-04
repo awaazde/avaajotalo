@@ -391,12 +391,13 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
             continue
     
     header = ['prompt','star presses', 'no input']
-    outputfilename='repeats_79'+filename[filename.rfind('_')+1:]
+    outputfilename='repeats_79'+filename[filename.rfind('_')+1:filename.find('.log')]
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)
+    repeat_counts.sort()
     for prompt in repeat_counts:                    
         output.writerow([prompt]+repeat_counts[prompt])
     
