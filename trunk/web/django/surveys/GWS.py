@@ -398,7 +398,7 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)
     prompts = repeat_counts.keys()
-    prompts.sort()
+    prompts = natural_sorted(prompts)
     for prompt in prompts:                    
         output.writerow([prompt]+repeat_counts[prompt])
     
@@ -411,6 +411,12 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
 def time_str(date):
     #return date.strftime('%Y-%m-%d')
     return date.strftime('%m-%d-%y %H:%M')
+
+def natural_sorted( l ): 
+    """ Sort the given iterable in the way that humans expect.""" 
+    convert = lambda text: int(text) if text.isdigit() else text 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
 
 
 '''
