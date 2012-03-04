@@ -219,8 +219,8 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                     dur = current_date - start
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
                     if bool(call):
-                        if call.count()>1:
-                            print("more than one call found: " + str(call))
+                        #if call.count()>1:
+                            #print("more than one call found: " + str(call))
                         call = call[0]
                         result = [call.subject.number, time_str(call.date), str(dur.seconds)]
         
@@ -228,8 +228,8 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                         for input in inputs:
                             result.append(input.input)                         
                         all_calls.append(result)
-                    else:
-                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    #else:
+                        #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
                     del open_calls[phone_num]
                     
                 # add new call
@@ -244,8 +244,8 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                     dur = current_date - start
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
                     if bool(call):
-                        if call.count()>1:
-                            print("more than one call found: " + str(call))
+                        #if call.count()>1:
+                            #print("more than one call found: " + str(call))
                         call = call[0]
                         result = [call.subject.number, time_str(call.date), str(dur.seconds)]
         
@@ -253,8 +253,8 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                         for input in inputs:
                             result.append(input.input)                         
                         all_calls.append(result)
-                    else:
-                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    #else:
+                        #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
                     del open_calls[phone_num]
                     
             elif phone_num in open_calls:
@@ -283,6 +283,123 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)            
     output.writerows(all_calls)
+    
+def repeats_requests(filename, phone_num_filter=False, date_start=False, date_end=False):
+    repeat_counts = {}
+    open_calls = {}
+    
+    f = open(filename)
+
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out call                
+                    totcounts = open_calls[phone_num]['total']  
+                    starcounts = open_calls[phone_num]['*']
+                    for prompt in totcounts:
+                        tot = totcounts[prompt]
+                        stars = 0
+                        if prompt in starcounts:
+                            stars = starcounts[prompt]
+                        
+                        if prompt not in repeat_counts:
+                            repeat_counts[prompt] = [stars, tot-stars]
+                        else:
+                            repeat_counts[prompt][0] += stars
+                            repeat_counts[prompt][1] += tot-stars
+                    
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = {'total':{}, '*':{}}
+                
+            elif line.find("End call") != -1 or line.find("Abort call") != -1:
+                if phone_num in open_calls:
+                    # close out call                
+                    totcounts = open_calls[phone_num]['total']  
+                    starcounts = open_calls[phone_num]['*']
+                    for prompt in totcounts:
+                        tot = totcounts[prompt]
+                        stars = 0
+                        if prompt in starcounts:
+                            stars = starcounts[prompt]
+                        
+                        if prompt not in repeat_counts:
+                            repeat_counts[prompt] = [stars, tot-stars]
+                        else:
+                            repeat_counts[prompt][0] += stars
+                            repeat_counts[prompt][1] += tot-stars
+                    
+                    del open_calls[phone_num]
+                    
+            if line.find("dtmf") != -1 and line.find("*") != -1:
+                counts = open_calls[phone_num]['*']
+                prompt = line[line.rfind('/')+1:line.find('.wav')]
+                if prompt not in counts:
+                    counts[prompt] = 1
+                else:
+                    counts[prompt] += 1
+            elif phone_num in open_calls and otalo_utils.is_prompt(line):
+                counts = open_calls[phone_num]['total']
+                prompt = line[line.rfind('/')+1:line.find('.wav')]
+                if prompt not in counts:
+                    counts[prompt] = 0
+                else:
+                    counts[prompt] += 1
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+    
+    header = ['prompt','star presses', 'no input']
+    outputfilename='repeats_79'+filename[filename.rfind('_')+1:]
+    if date_start:
+        outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+    outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
+    output = csv.writer(open(outputfilename, 'wb'))
+    output.writerow(header)
+    for prompt in repeat_counts:                    
+        output.writerow([prompt]+all_calls[prompt])
+    
 
 '''
 ****************************************************************************
@@ -300,7 +417,7 @@ def time_str(date):
 ****************************************************************************
 '''
 def main():
-    if '--report' in sys.argv:
+    if '--report' in sys.argv or '--repeats' in sys.argv:
         number = sys.argv[2]    
         filename = settings.LOG_ROOT + 'survey_in_'+ number[-8:] + '.log'
         start=None  
@@ -309,9 +426,11 @@ def main():
         end = None    
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
-            
-        survey_results(number, filename, date_start=start, date_end=end)
-        
+        if '--report' in sys.argv:
+            survey_results(number, filename, date_start=start, date_end=end)
+        else:
+            repeats_requests(filename, date_start=start, date_end=end)
+              
     else:
         create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
         create_survey('ppi', 'hin', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555078', callback=True, inbound=True)
