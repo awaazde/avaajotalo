@@ -425,7 +425,15 @@ def natural_sorted( l ):
 ****************************************************************************
 '''
 def main():
-    if '--report' in sys.argv or '--repeats' in sys.argv:
+    if '--weeklyreports' in sys.argv:
+        number = sys.argv[2]    
+        filename = settings.LOG_ROOT + 'survey_in_'+ number[-8:] + '.log'
+        now = datetime.now()
+        today = datetime(year=now.year, month=now.month, day=now.day)
+        start = today-timedelta(days=6)
+        survey_results(number, filename, date_start=start)
+        repeats_requests(filename, date_start=start)
+    elif '--report' in sys.argv or '--repeats' in sys.argv:
         number = sys.argv[2]    
         filename = settings.LOG_ROOT + 'survey_in_'+ number[-8:] + '.log'
         start=None  
