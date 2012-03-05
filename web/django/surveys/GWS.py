@@ -390,7 +390,7 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
             #print("PhoneNumException: " + line)
             continue
     
-    header = ['prompt','star presses', 'no input']
+    header = ['prompt','star presses', 'no/invalid input']
     outputfilename='repeats_79'+filename[filename.rfind('_')+1:filename.find('.log')]
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
