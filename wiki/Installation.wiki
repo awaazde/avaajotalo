@@ -20,7 +20,7 @@ _This are high-level instructions. The links below should provide you with info 
 
 == Web Server ==
   # Setup web components above
-  # Checkout trunk/web and place the code in a place you are comfortable with web server accessing it (a good place is /var/www). You can place the gwt and django_templates folders in /html subdirectory; the django folder can stay at the same level and renamed to 'otalo' for specificity.
+  # Checkout trunk/web and place the code in a place you are comfortable with web server accessing it (a good place is /home/<userid>/otalo). You can place the gwt and django_templates folders in /var/www/html.
   # In the django (or 'otalo') directory, run 'python manage.py syncdb' to setup the mysql tables. Run 'python manage.py loaddata production.json' and 'python manage.py loaddata tags.json' to seed the tables.
   # Install and configure mod_wsgi for your apache server
   # setup django project to interface with wsgi using these instructions
