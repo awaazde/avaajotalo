@@ -15,7 +15,12 @@
  */
 package org.otalo.ao.client.model;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 import org.otalo.ao.client.model.Message.MessageStatus;
+
+import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class MessageForum extends BaseModel {
 	private Message m;
@@ -105,5 +110,22 @@ public class MessageForum extends BaseModel {
 	public static boolean isMessageForum(BaseModel model)
 	{
 		return model != null && isMessageForum(model.getData());
+	}
+	
+	/**
+	 * Follow how it's generated in broadcast.py[thread]
+	 * 
+	 * "2012-03-02 16:13:54"
+	 */
+	public String getName()
+	{
+		DateTimeFormat df = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss");
+		Date d = df.parse(getDate());
+		String dString = DateTimeFormat.getFormat("MMM-dd-yyyy").format(d);
+		User u = getAuthor();
+		String username = u.getName().equals("null") ? u.getNumber() : u.getName();
+		String nameStr = dString + "_" + username + "_" + getForum().getName() + "_(" + getId() + ")";
+		
+		return nameStr.substring(0,Math.min(nameStr.length(), 128));
 	}
 }
