@@ -571,11 +571,17 @@ def bcast(request):
     # Get template
     surveyid = params['survey']
     template = get_object_or_404(Survey, pk=surveyid)
+    
+    # Get name
+    bcastname = params['bcastname']
+    
     if mf is not None:
         responseprompt = params.__contains__('response')
-        survey = broadcast.thread(mf, template, responseprompt)
+        survey = broadcast.thread(mf, template, responseprompt, bcastname)
     else:
-        survey = broadcast.regular_bcast(line,template)
+        survey = broadcast.regular_bcast(line,template,bcastname)
+        
+   
         
      
     # Get schedule

@@ -18,6 +18,10 @@ package org.otalo.ao.client.model;
 
 
 public class Survey extends BaseModel {
+	/*
+	 * Should mirror the constant in models.py in surveys
+	 */
+	public static final String TEMPLATE_DESIGNATOR = "TEMPLATE";
 	
 	/* Order matters. The constants are mirrored in 
 	 * server side code. The ordinal value of the first declared

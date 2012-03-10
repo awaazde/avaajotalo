@@ -168,7 +168,7 @@ def create_bcast_survey(line, filenames, surveyname):
 
 # Assumes the messageforum is a top-level message
 # and you want to bcast the whole thread (flattened)
-def thread(messageforum, template, responseprompt):
+def thread(messageforum, template, responseprompt, bcastname=None):
     line = messageforum.forum.line_set.all()[0]
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
@@ -193,7 +193,9 @@ def thread(messageforum, template, responseprompt):
     responses = Message_forum.objects.filter(status = Message_forum.STATUS_APPROVED, message__thread=messageforum.message, message__lft__gt=1).order_by('message__lft')
     
     # create a clone from the template
-    newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
+    newname = bcastname
+    if not newname or newname == '':
+        newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
     newname = newname[:128]
     bcast = clone_template(template, newname)
     
@@ -269,7 +271,7 @@ def thread(messageforum, template, responseprompt):
     
     return bcast
 
-def regular_bcast(line, template):
+def regular_bcast(line, template, bcastname=None):
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
     language = line.language
@@ -280,7 +282,9 @@ def regular_bcast(line, template):
         
     # create a clone from the template
     now = datetime.now()
-    newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + datetime.strftime(now, '%b-%d-%Y')
+    newname = bcastname
+    if not newname or newname=='':
+        newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + datetime.strftime(now, '%b-%d-%Y')
     newname = newname[:128]
     return clone_template(template, newname)
 

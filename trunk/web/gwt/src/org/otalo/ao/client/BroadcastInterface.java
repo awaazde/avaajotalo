@@ -1,5 +1,6 @@
 package org.otalo.ao.client;
 
+import java.awt.TextField;
 import java.util.Date;
 import java.util.List;
 
@@ -12,6 +13,8 @@ import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Survey;
 import org.otalo.ao.client.model.Tag;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -45,7 +48,7 @@ public class BroadcastInterface extends Composite {
 	private VerticalPanel outer, who, what, when;
 	private HorizontalPanel controls = new HorizontalPanel();
 	private Button sendButton, cancelButton;
-	private TextBox sinceField, bcastDateField;
+	private TextBox sinceField, bcastDateField, bcastNameField;
 	private DatePicker since, bcastDate;
 	private ListBox tags, lastNCallers, templates, from, till, duration, blockSize, interval;
 	private Hidden messageforumid, lineid;
@@ -177,7 +180,24 @@ public class BroadcastInterface extends Composite {
   	surveyPanel.add(templates);
   	surveyPanel.add(response);
   	
+  	Label bcastNameLbl = new Label("Broadcast Name: ");
+  	bcastNameField = new TextBox();
+  	bcastNameField.setName("bcastname");
+  	bcastNameField.setWidth("500px");
+  	HorizontalPanel bcastNamePanel = new HorizontalPanel();
+  	bcastNamePanel.setSpacing(10);
+  	bcastNamePanel.add(bcastNameLbl);
+  	bcastNamePanel.add(bcastNameField);
+  	
+  	templates.addChangeHandler(new ChangeHandler() {
+			
+			public void onChange(ChangeEvent event) {
+				bcastNameField.setText(getDefaultBcastName());
+			}
+		});
+  	
   	what.add(surveyPanel);
+  	what.add(bcastNamePanel);
   	
   	HorizontalPanel whenPanel = new HorizontalPanel();
   	whenPanel.setSpacing(10);
@@ -477,6 +497,7 @@ public class BroadcastInterface extends Composite {
 		 usersByTag.setValue(false);
 		 usersByLog.setValue(false);
 		 thread = mf;
+		 bcastNameField.setText(getDefaultBcastName());
 		 // Select 7am-7pm by default
 		 from.setEnabled(true);
 		 from.clear();
@@ -528,5 +549,22 @@ public class BroadcastInterface extends Composite {
 		return captionHTML;
 	}
 	
+	private String getDefaultBcastName()
+	{
+		String templateName = templates.getItemText(templates.getSelectedIndex());
+		// start with the template name
+		String bcastName = templateName.replace("_"+Survey.TEMPLATE_DESIGNATOR, "");
+		
+		if (thread != null)
+		{
+			bcastName += "_" + thread.getName();
+		}
+		else 
+		{
+			Date today = new Date();
+			bcastName += "_" + DateTimeFormat.getFormat("MMM-dd-yyyy").format(today);
+		}
+		return bcastName;
+	}
 
 }
