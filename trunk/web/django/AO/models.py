@@ -45,6 +45,16 @@ class Line(models.Model):
     forums = models.ManyToManyField('Forum', blank=True, null=True)
     sms_config = models.ForeignKey('sms.Config', blank=True, null=True)
     
+    '''
+        max_call_block and min_interval_mins are used to restrict how much broadcasting
+        this line can do. Useful when you are sharing a physical phone line amongst many
+        line applications
+    '''
+    # max number of calls you can make simultaneously
+    max_call_block = models.IntegerField(blank=True, null=True)
+    # minimum period between blocks of calls
+    min_interval_mins = models.IntegerField(blank=True, null=True)
+    
     def __unicode__(self):
         return self.name + '-' + self.number
 

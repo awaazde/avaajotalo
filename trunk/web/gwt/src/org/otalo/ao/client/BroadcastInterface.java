@@ -6,6 +6,7 @@ import java.util.List;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Survey;
@@ -244,24 +245,27 @@ public class BroadcastInterface extends Composite {
 		Label makeLbl = new Label("Make");
 		blockSize = new ListBox();
 		blockSize.setName("blocksize");
-		blockSize.addItem("5");
-		blockSize.addItem("10");
-		blockSize.addItem("15");
-		blockSize.addItem("20");
-		blockSize.addItem("25");
-		blockSize.addItem("30");
+		int maxBlockSize = 30;
+		// check to see if need to restrict
+		// broadcast intensity
+		Line line = Messages.get().getLine();
+		if (line.getMaxBlocksize() != null)
+		{
+			maxBlockSize = line.getMaxBlocksize().intValue();
+			for (int size=5; size<=maxBlockSize; size+=5)
+				blockSize.addItem(String.valueOf(size));
+		}
 		Label everyLbl = new Label("calls at a time, every");
 		interval = new ListBox();
 		interval.setName("interval");
-		interval.addItem("2");
-		interval.addItem("3");
-		interval.addItem("4");
-		interval.addItem("5");
-		interval.addItem("6");
-		interval.addItem("7");
-		interval.addItem("8");
-		interval.addItem("9");
-		interval.addItem("10");
+		int minInterval = 2;
+		if (line.getMinInterval() != null)
+		{
+			minInterval = line.getMaxBlocksize().intValue();
+			for (int inter=minInterval; inter<=10; inter++)
+				interval.addItem(String.valueOf(inter));
+		}
+		
 		Label minLbl = new Label("minutes");
 		
 		Label durationLbl = new Label("Duration (days):");
