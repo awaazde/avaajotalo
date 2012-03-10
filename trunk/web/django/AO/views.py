@@ -13,7 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import os, stat
+import os, stat, re
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
@@ -303,15 +303,22 @@ def uploadmessage(request):
         summary = False
         if 'summary' in request.FILES:
             summary = request.FILES['summary']
-
-        author = User.objects.filter(number=request.POST['number'].strip())
+        
+        number = request.POST['number'].strip()
+        author = User.objects.filter(number=number)
         if author:
             author = author[0]
         else:
-            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
-            response['Pragma'] = "no cache"
-            response['Cache-Control'] = "no-cache, must-revalidate"
-            return response
+            # try to get a 10-digit number
+            number = get_phone_number(number)
+            if number:
+                author = User(number=number, allowed='y')
+                author.save()
+            else:
+                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
+                response['Pragma'] = "no cache"
+                response['Cache-Control'] = "no-cache, must-revalidate"
+                return response
         
         parent = False
         if request.POST['messageforumid']:
@@ -897,6 +904,17 @@ def smsin(request):
     
     return send_data('ok') 
 
+def get_phone_number(number):
+    # strip non-numerics and see if we have
+    # a ten-digit number left.
+    # Not full-proof, but accomodates all standard
+    # number entry styles
+    re.sub(r'[^\d]+','',number)
+    if len(number) >= 10:
+        return number[-10:]
+    else:
+        return None
+    
 def send_file(filename, content_type):
     """                                                                         
     Send a file through Django without loading the whole file into              
