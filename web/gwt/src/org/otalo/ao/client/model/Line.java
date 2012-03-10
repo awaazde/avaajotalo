@@ -37,5 +37,12 @@ public class Line extends BaseModel {
 	public boolean hasSMSConfig() {
 		return !getField("sms_config").equals("null");
 	}
+	
+	public Integer getMaxBlocksize() {
+		return new Integer(getField("max_call_block"));
+	}
 
+	public Integer getMinInterval() {
+		return new Integer(getField("min_interval_mins"));
+	}
 }
