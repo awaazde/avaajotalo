@@ -909,7 +909,7 @@ def get_phone_number(number):
     # a ten-digit number left.
     # Not full-proof, but accomodates all standard
     # number entry styles
-    re.sub(r'[^\d]+','',number)
+    number = re.sub(r'[^\d]+','',number)
     if len(number) >= 10:
         return number[-10:]
     else:
