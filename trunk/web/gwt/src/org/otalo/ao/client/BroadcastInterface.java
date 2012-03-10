@@ -250,21 +250,18 @@ public class BroadcastInterface extends Composite {
 		// broadcast intensity
 		Line line = Messages.get().getLine();
 		if (line.getMaxBlocksize() != null)
-		{
-			maxBlockSize = line.getMaxBlocksize().intValue();
-			for (int size=5; size<=maxBlockSize; size+=5)
-				blockSize.addItem(String.valueOf(size));
-		}
+			maxBlockSize = line.getMaxBlocksize().intValue();		
+		for (int size=5; size<=maxBlockSize; size+=5)
+			blockSize.addItem(String.valueOf(size));
+		
 		Label everyLbl = new Label("calls at a time, every");
 		interval = new ListBox();
 		interval.setName("interval");
 		int minInterval = 2;
 		if (line.getMinInterval() != null)
-		{
-			minInterval = line.getMaxBlocksize().intValue();
-			for (int inter=minInterval; inter<=10; inter++)
-				interval.addItem(String.valueOf(inter));
-		}
+			minInterval = line.getMinInterval().intValue();			
+		for (int inter=minInterval; inter<=10; inter++)
+			interval.addItem(String.valueOf(inter));
 		
 		Label minLbl = new Label("minutes");
 		
@@ -490,8 +487,8 @@ public class BroadcastInterface extends Composite {
 			}
 		 from.setItemSelected(6, true);
 		 till.setItemSelected(18, true);
-		 blockSize.setSelectedIndex(1);
-		 interval.setSelectedIndex(8);
+		 blockSize.setSelectedIndex(Math.min(1, blockSize.getItemCount()-1));
+		 interval.setSelectedIndex(interval.getItemCount()-1);
 		 lastNCallers.setItemSelected(3, true);
 		 duration.setItemSelected(1,true);
 		 
