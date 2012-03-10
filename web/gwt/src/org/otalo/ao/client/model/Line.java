@@ -39,10 +39,18 @@ public class Line extends BaseModel {
 	}
 	
 	public Integer getMaxBlocksize() {
-		return new Integer(getField("max_call_block"));
+		String blockSize = getField("max_call_block");
+		if (!blockSize.equals("null"))
+			return new Integer(blockSize);
+		else
+			return null;
 	}
 
 	public Integer getMinInterval() {
-		return new Integer(getField("min_interval_mins"));
+		String interval = getField("min_interval_mins");
+		if (!interval.equals("null"))
+			return new Integer(interval);
+		else
+			return null;
 	}
 }
