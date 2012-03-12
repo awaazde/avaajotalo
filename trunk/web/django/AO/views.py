@@ -589,8 +589,8 @@ def bcast(request):
     if when == 'now':
         now = datetime.now()
         start_date = datetime(year=now.year, month=now.month, day=now.day)
-        nextten = now.minute - (now.minute % 10) + 10
-        fromtime = timedelta(hours=now.hour, minutes = nextten)
+        nexttwo = now.minute + 2
+        fromtime = timedelta(hours=now.hour, minutes = nexttwo)
     elif when == 'date':
         fromtime = timedelta(hours=int(params['fromtime']))
         bcastdate = params['bcastdate']
