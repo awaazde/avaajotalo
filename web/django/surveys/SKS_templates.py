@@ -50,24 +50,30 @@ def standard_template(line, contenttype):
         print ("adding template " + str(s))
         s.save()
     
+        order = 1
         # welcome
-        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=True, survey=s)
+        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=order, bargein=True, survey=s)
         welcome.save()
         welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
         welcome_opt1.save()
         welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
         welcome_opt2.save()
+        order += 1
         
         # content
-        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
+        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=order, bargein=True, survey=s)
         content.save()
         content_opt = Option(number="", action=Option.NEXT, prompt=content)
         content_opt.save()
         content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
         content_opt2.save()
+        order += 1
+        
+        # make room for content
+        order += 1
         
         # repeat
-        repeat = Prompt(file=language+"/repeat"+SOUND_EXT, order=4, bargein=True, delay=3000, survey=s)
+        repeat = Prompt(file=language+"/repeat"+SOUND_EXT, order=order, bargein=True, delay=3000, survey=s)
         repeat.save()
         repeat_opt = Option(number="", action=Option.NEXT, prompt=repeat)
         repeat_opt.save()
@@ -77,14 +83,16 @@ def standard_template(line, contenttype):
         repeat_opt3.save()
         param = Param(option=repeat_opt2, name=Param.IDX, value=3)
         param.save()
+        order += 1
         
         # thanks
-        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=5, bargein=True, survey=s)
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=order, bargein=True, survey=s)
         thanks.save()
         thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
         thanks_opt1.save()
         thanks_opt2 = Option(number="1", action=Option.NEXT, prompt=thanks)
         thanks_opt2.save()
+        order += 1
         
         return s
     else:
