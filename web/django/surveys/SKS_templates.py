@@ -352,6 +352,48 @@ def blank_template(num, subdir, prefix, suffix):
         blank_opt.save()
         
         return s
+    
+def lokmitra_rsvp_template(line):
+    phone_num = line.outbound_number or line.number
+    s = Survey.objects.filter(name='RSVP_TEMPLATE', number=phone_num, template=True)
+    if bool(s):        
+        s = s[0]
+        s.delete()
+        print('deleting template')
+    s = Survey(name='RSVP_TEMPLATE', number=phone_num, template=True, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
+    s.save()
+    print('creating new template '+str(s))
+    
+    order = 2
+    
+    rsvp = Prompt(file=line.language+"/rsvp"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000)
+    rsvp.save()
+    rsvp_opt1 = Option(number="1", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt1.save()
+    rsvp_opt2 = Option(number="2", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt2.save()
+    rsvp_opt3 = Option(number="3", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt3.save()
+    rsvp_opt4 = Option(number="4", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt4.save()
+    rsvp_opt5 = Option(number="5", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt5.save()
+    rsvp_opt6 = Option(number="6", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt6.save()
+    rsvp_opt7 = Option(number="7", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt7.save()
+    rsvp_opt8 = Option(number="8", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt8.save()
+    rsvp_opt9 = Option(number="9", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt9.save()
+    rsvp_opt0 = Option(number="0", action=Option.INPUT, prompt=rsvp)
+    rsvp_opt0.save()
+    order+= 1
+    
+    rsvp_thankyou = Prompt(file=line.language+"/rsvp_thankyou"+SOUND_EXT, order=order, survey=s)
+    rsvp_thankyou.save()
+    rsvp_thankyou_opt = Option(number="", action=Option.NEXT, prompt=rsvp_thankyou)
+    rsvp_thankyou_opt.save()
 
 '''
 ****************************************************************************
@@ -425,7 +467,8 @@ def main():
     #record_template(line, 'qna')
     #subscription(line)
     #subscription_results(line)
-    blank_template('7961907707', 'lokmitra','freetdm/grp1/a/','')
+    #blank_template('7961907707', 'lokmitra','freetdm/grp1/a/','')
+    lokmitra_rsvp_template(line)
         
 main()
 
