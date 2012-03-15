@@ -438,6 +438,34 @@ def subscription_results(line, date_start=False, date_end=False):
     output = csv.writer(open(outfilename, 'wb'))
     output.writerows(results)
     
+def rsvp_results(line, date_start=False, date_end=False): 
+    calls = Call.objects.filter(survey__number=line.number, survey__broadcast=True, complete=True)
+    
+    if date_start:
+        calls = calls.filter(date__gte=date_start)
+        
+    if date_end:
+        calls = calls.filter(date__lt=date_end)
+    
+    header = ['CallerNum', 'SurveyName', 'time', 'rsvp number']
+    results = [header]
+    for call in calls:
+        result = [call.subject.number, call.survey.name, time_str(call.date)]
+        input = Input.objects.filter(call=call) 
+        if bool(input):
+            input = input[0]
+            result.append(input.input)
+        results.append(result)
+    
+    if date_start:
+        outfilename='rsvp_results_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='rsvp_results.csv'
+        
+    outfilename = OUTPUT_FILE_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerows(results)
+    
 '''
 ****************************************************************************
 ******************* UTILS **************************************************
