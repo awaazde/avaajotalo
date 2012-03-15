@@ -439,7 +439,7 @@ def subscription_results(line, date_start=False, date_end=False):
     output.writerows(results)
     
 def rsvp_results(line, date_start=False, date_end=False): 
-    calls = Call.objects.filter(survey__number=line.number, survey__broadcast=True, complete=True)
+    calls = Call.objects.filter(survey__number=line.number, survey__name__contains='RSVP', survey__broadcast=True, complete=True)
     
     if date_start:
         calls = calls.filter(date__gte=date_start)
