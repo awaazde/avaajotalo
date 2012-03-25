@@ -13,3 +13,8 @@
   # Improved reporting for moderators (daily digest, more feedback between moderators)
   # Source repository refactoring (fork off private AD build, etc.)
   # APIs for usage data, content, and scheduling of broadcasts
+  # Create private AD code branch (migrate to Git?)
+  # Handle/truncate media folder
+  # truncate logs based on size
+  # improve security/encryption on servers
+  # hunting across PRIs
