@@ -18,14 +18,6 @@ _Below are high-level instructions. The links below should provide you with info
   # Checkout trunk/web/django into a new project ao_server. Optionally use [http://pydev.org/download.html python project plugin]
   # Checkout trunk/IVR into a new project ao_IVR. Optionally use [http://luaeclipse.luaforge.net/manual.html#installation lua plugin], v.1.1 works on Helios
 
-== Web Server ==
-  # Setup web components above
-  # Checkout trunk/web and place the code in a place you are comfortable with web server accessing it (a good place is /home/<userid>/otalo). You can place the gwt and django_templates folders in /var/www/html.
-  # In the django (or 'otalo') directory, run 'python manage.py syncdb' to setup the mysql tables. Run 'python manage.py loaddata production.json' and 'python manage.py loaddata tags.json' to seed the tables.
-  # Install and configure mod_wsgi for your apache server
-  # setup django project to interface with wsgi using [http://code.google.com/p/modwsgi/wiki/IntegrationWithDjango these instructions]
-  # Be sure that the paths in django.wsgi, settings.py, and the paths in your apache config file are all matched up
-
 == IVR ==
   # Download and install FreeSWITCH, with mod_shout enabled
   # Download and install lua and luasql
@@ -42,3 +34,11 @@ _Below are high-level instructions. The links below should provide you with info
 }}}
 
 The 'expression' attribute should correspond to your inbound PRI number or SIP extension (i.e. '5000', but make sure no other app is taking that extension (including in /dialplan/default.xml)). Default user ids are 1000, 1001, 1002, all with password 1234
+
+== Web Server ==
+  # Setup web components above
+  # Checkout trunk/web and place the code in a place you are comfortable with web server accessing it (a good place is /home/<userid>/otalo). You can place the gwt and django_templates folders in /var/www/html.
+  # In the django (or 'otalo') directory, run 'python manage.py syncdb' to setup the mysql tables. Run 'python manage.py loaddata production.json' and 'python manage.py loaddata tags.json' to seed the tables.
+  # Install and configure mod_wsgi for your apache server
+  # setup django project to interface with wsgi using [http://code.google.com/p/modwsgi/wiki/IntegrationWithDjango these instructions]
+  # Be sure that the paths in django.wsgi, settings.py, and the paths in your apache config file are all matched up
