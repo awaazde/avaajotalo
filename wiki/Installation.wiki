@@ -1,6 +1,6 @@
 #summary High-level setup instructions for AO
 
-_This are high-level instructions. The links below should provide you with info to get started, but setting up many of these items is platform-specific, so google around and if you still are stuck email me._
+_Below are high-level instructions. The links below should provide you with info to forge ahead. Some of this setup is platform-specific, so google around and if you still are stuck email me. If you are setting up on Ubuntu 10.04 LTS (recommended), then you may benefit from these ill-formatted by quite detailed install guides: [http://awaaz.de/docs/AD_IVR_install_guide.pdf IVR] and [http://awaaz.de/docs/AD_web_app_install_guide.pdf AD Web App] (thanks to Jigar for creating these)_
 
 == Web Components ==
   # Install Python, Java SDK, MySQL
