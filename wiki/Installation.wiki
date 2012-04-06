@@ -1,4 +1,4 @@
-#summary High-level setup instructions for AO
+#summary Setup instructions for AO
 
 _Below are high-level instructions. The links below should provide you with info to forge ahead. Some of this setup is platform-specific, so google around and if you still are stuck email me. If you are setting up on Ubuntu 10.04 LTS (recommended), then you may benefit from these ill-formatted by quite detailed install guides: [http://awaaz.de/docs/AD_IVR_install_guide.pdf IVR] and [http://awaaz.de/docs/AD_web_app_install_guide.pdf Web App] (thanks to Jigar for creating these)_
 
