@@ -17,6 +17,6 @@
   # Handle/truncate media folder
   # Truncate logs based on size
   # Improve security/encryption on servers
-  # Hunting across PRIs
+  # SIP/VoIP/Hunting across PRIs
   # DND support
   # Billing
