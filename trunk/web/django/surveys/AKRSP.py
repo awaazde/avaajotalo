@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q, Max
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
+from otalo.AO.models import Forum
 import otalo_utils
 
 '''
@@ -273,6 +274,24 @@ def blank_template(num, prefix, suffix):
         blank_opt.save()
         
         return s
+
+def tags(forum, crops, topics):
+    for crop in crops:
+	t = Tag.options.filter(tag=crop,type='agri-crop')
+	if bool(t):
+		t = t[0]
+	else:
+		t = Tag(tag=crop, type='agri-crop')
+	forum.tags.add(t)
+
+    for topic in topics:
+	t = Tag.options.filter(tag=crop,type='agri-topic')
+	if bool(t):
+		t = t[0]
+	else:
+		t = Tag(tag=crop, type='agri-topic')
+	forum.tags.add(t)
+
 '''
 ****************************************************************************
 ******************* REPORTING **********************************************
@@ -411,8 +430,15 @@ def main():
             now = datetime.now()
             startdate = datetime(year=now.year, month=now.month, day=now.day)
        
-        survey(startdate)
+        #survey(startdate)
         #data_coll_reminders()
         #blank_template(NUMBER,PREFIX,SUFFIX)
+	crops='Mango,Paddy,Wheat,Tuver,Cotton,Parval,Karela,Tindola,Dudhi,Banana,Cashew,Watermelon,Papdi,Maize,Castor,Mustard,Brinjal,Tomato,Okra'
+	crops = crops.split(',')
+	topics='Pre sowing,Weather,Soil,Seeds,Watering,Pesticide,Harvesting,Sukaro,Marketing,Yellow'
+	topics = topics.split(',')
+
+	forum = Forum.objects.get(pk=20)
+	tags(forum,crops,topics)
 
 main()
