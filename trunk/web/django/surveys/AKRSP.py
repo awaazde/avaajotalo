@@ -282,6 +282,7 @@ def tags(forum, crops, topics):
 		t = t[0]
 	else:
 		t = Tag(tag=crop, type='agri-crop')
+		t.save()
 	ft = Forum_tag(tag=t, forum=forum)
 	ft.save()
 
@@ -291,6 +292,7 @@ def tags(forum, crops, topics):
 		t = t[0]
 	else:
 		t = Tag(tag=crop, type='agri-topic')
+		t.save()
 	ft = Forum_tag(tag=t, forum=forum)
 	ft.save()
 
