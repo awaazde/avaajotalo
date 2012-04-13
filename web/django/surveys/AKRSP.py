@@ -277,20 +277,22 @@ def blank_template(num, prefix, suffix):
 
 def tags(forum, crops, topics):
     for crop in crops:
-	t = Tag.options.filter(tag=crop,type='agri-crop')
+	t = Tag.objects.filter(tag=crop,type='agri-crop')
 	if bool(t):
 		t = t[0]
 	else:
 		t = Tag(tag=crop, type='agri-crop')
-	forum.tags.add(t)
+	ft = Forum_tag(tag=t, forum=forum)
+	ft.save()
 
     for topic in topics:
-	t = Tag.options.filter(tag=crop,type='agri-topic')
+	t = Tag.objects.filter(tag=crop,type='agri-topic')
 	if bool(t):
 		t = t[0]
 	else:
 		t = Tag(tag=crop, type='agri-topic')
-	forum.tags.add(t)
+	ft = Forum_tag(tag=t, forum=forum)
+	ft.save()
 
 '''
 ****************************************************************************
