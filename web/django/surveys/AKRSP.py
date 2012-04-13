@@ -287,11 +287,11 @@ def tags(forum, crops, topics):
 	ft.save()
 
     for topic in topics:
-	t = Tag.objects.filter(tag=crop,type='agri-topic')
+	t = Tag.objects.filter(tag=topic,type='agri-topic')
 	if bool(t):
 		t = t[0]
 	else:
-		t = Tag(tag=crop, type='agri-topic')
+		t = Tag(tag=topic, type='agri-topic')
 		t.save()
 	ft = Forum_tag(tag=t, forum=forum)
 	ft.save()
