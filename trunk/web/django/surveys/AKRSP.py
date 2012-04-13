@@ -19,7 +19,7 @@ NUMBER='7966044411'
 SUBDIR = 'akrsp/'
 SOUND_EXT = ".wav"
 BARGEIN_KEY='1'
-CROP_NAMES = ['bhinda', 'karela', 'kela', 'keri', 'parwal', 'ringal', 'tameta']
+CROP_NAMES = ['kesar', 'rajapuri', 'langdo', 'deshi', 'totapuri']
 MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december']
 DAYS_OF_WEEK=['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
 MAX_DIGITS=4
@@ -49,7 +49,7 @@ def survey(date):
     welcome_opt2.save()
     order += 1
     
-    select_crop = Prompt(file=SUBDIR+"crop_options"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    select_crop = Prompt(file=SUBDIR+"crop_options_mango"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     select_crop.save()
     number = 1
     for crop in CROP_NAMES:
@@ -434,15 +434,15 @@ def main():
             now = datetime.now()
             startdate = datetime(year=now.year, month=now.month, day=now.day)
        
-        #survey(startdate)
+        survey(startdate)
         #data_coll_reminders()
         #blank_template(NUMBER,PREFIX,SUFFIX)
-	crops='Mango,Paddy,Wheat,Tuver,Cotton,Parval,Karela,Tindola,Dudhi,Banana,Cashew,Watermelon,Papdi,Maize,Castor,Mustard,Brinjal,Tomato,Okra'
-	crops = crops.split(',')
-	topics='Pre sowing,Weather,Soil,Seeds,Watering,Pesticide,Harvesting,Sukaro,Marketing,Yellow'
-	topics = topics.split(',')
+	#crops='Mango,Paddy,Wheat,Tuver,Cotton,Parval,Karela,Tindola,Dudhi,Banana,Cashew,Watermelon,Papdi,Maize,Castor,Mustard,Brinjal,Tomato,Okra'
+	#crops = crops.split(',')
+	#topics='Pre sowing,Weather,Soil,Seeds,Watering,Pesticide,Harvesting,Sukaro,Marketing,Yellow'
+	#topics = topics.split(',')
 
-	forum = Forum.objects.get(pk=20)
-	tags(forum,crops,topics)
+	#forum = Forum.objects.get(pk=20)
+	#tags(forum,crops,topics)
 
 main()
