@@ -197,24 +197,31 @@ d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. "}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std);
-number = tostring(response);
-freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
--- playback number
-repeat_cnt = 0;
--- loop up to default repeat times (make it an actual number just as a failsafe)
-repeat
-	promptfile = "numberis.wav";
+if (response ~= nil) then
+	number = tostring(response);
+	freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
+	-- playback number
+	repeat_cnt = 0;
+	-- loop up to default repeat times (make it an actual number just as a failsafe)
+	repeat
+		promptfile = "numberis.wav";
+		freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
+		read_no_bargein(bsd .. lang .. promptfile, 1000);
+		local i = 1;
+		local digit = "";
+		while (i <= 10) do
+			digit = number:sub(i,i);
+			freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav' .. "\n");
+			read_no_bargein(bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav', 0);
+			i = i + 1;
+		end
+		repeat_cnt = repeat_cnt + 1;
+		promptfile = "repeat.wav";
+		read(bsd .. lang .. promptfile);
+	until (repeat_cnt > DEF_NUM_REPEATS);
+else
+	promptfile = "nomatch.wav";
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
-	read_no_bargein(bsd .. lang .. promptfile, 1000);
-	local i = 1;
-	local digit = "";
-	while (i <= 10) do
-		digit = number:sub(i,i);
-		freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav' .. "\n");
-		read_no_bargein(bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav', 1000);
-		i = i + 1;
-	end
-	repeat_cnt = repeat_cnt + 1;
-until (repeat_cnt > DEF_NUM_REPEATS);
-
+	read(bsd .. lang .. promptfile);
+end
 hangup();
