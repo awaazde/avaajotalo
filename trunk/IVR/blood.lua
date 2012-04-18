@@ -161,9 +161,9 @@ end
 -- default
 local lang = LANG_ENG;
 
-if (d == LANG_ENG) then
+if (d == "1") then
 	lang = LANG_ENG .. "/";
-elseif (d == LANG_HIN) then
+elseif (d == "2") then
 	lang = LANG_HIN .. "/";
 end
 freeswitch.consoleLog("info", script_name .. " : language is " .. lang .. "\n");
