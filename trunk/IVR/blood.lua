@@ -53,8 +53,8 @@ logfile:setvbuf("line");
 
 local DIALSTRING_PREFIX = "freetdm/grp1/a/0";
 local DIALSTRING_SUFFIX = "";
-local LANG_ENG = 'eng';
-local LANG_HIN = 'hin';
+local LANG_ENG = 'eng/';
+local LANG_HIN = 'hin/';
 local MIN_STD_LEN = 3;
 local MAX_STD_LEN = 5;
 local DEF_NUM_REPEATS = 3;
@@ -149,7 +149,7 @@ local promptfile = "welcome.wav";
 local repeat_cnt = 0
 local d = "";
 while (d ~= "1" and d ~= "2") do
-	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. promptfile .. "\n");
 	read(bsd .. promptfile, delay);
 	d = use();
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
@@ -166,7 +166,7 @@ if (d == LANG_ENG) then
 elseif (d == LANG_HIN) then
 	lang = LANG_HIN .. "/";
 end
-	
+freeswitch.consoleLog("info", script_name .. " : language is " .. lang .. "\n");
 ---------------------------
 ------ get std code -------
 ---------------------------
@@ -174,6 +174,7 @@ promptfile = "std.wav";
 repeat_cnt = 0;
 d = "";
 while (string.len(tostring(d)) < MIN_STD_LEN) do
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read(bsd .. lang .. promptfile, delay, MAX_STD_LEN);
 	d = use();
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
@@ -186,6 +187,7 @@ promptfile = "bloodgroup.wav";
 repeat_cnt = 0;
 d = "0";
 while (tonumber(d) < MIN_BGROUP_ID or tonumber(d) > MAX_BGROUP_ID) do
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read(bsd .. lang .. promptfile, delay);
 	d = use();
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
@@ -193,19 +195,23 @@ end
 local bgroupid = d;
 d = "";
 -- send request
+freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. "}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std);
 number = tostring(number);
+freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
 -- playback number
 repeat_cnt = 0;
 -- loop up to default repeat times (make it an actual number just as a failsafe)
 repeat
 	promptfile = "numberis.wav";
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read_no_bargein(bsd .. lang .. promptfile, 1000);
 	local i = 1;
 	local digit = "";
 	while (i <= 10) do
 		digit = number:sub(i,i);
-		read_no_bargein(bsd .. 'digits/' .. tostring(digit) .. '.wav', 1000);
+		freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav' .. "\n");
+		read_no_bargein(bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav', 1000);
 	end
 	repeat_cnt = repeat_cnt + 1;
 until (repeat_cnt > DEF_NUM_REPEATS);
