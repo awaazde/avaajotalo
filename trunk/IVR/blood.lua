@@ -53,8 +53,8 @@ logfile:setvbuf("line");
 
 local DIALSTRING_PREFIX = "freetdm/grp1/a/0";
 local DIALSTRING_SUFFIX = "";
-local LANG_ENG = 'eng/';
-local LANG_HIN = 'hin/';
+local LANG_ENG = 'eng';
+local LANG_HIN = 'hin';
 local MIN_STD_LEN = 3;
 local MAX_STD_LEN = 5;
 local DEF_NUM_REPEATS = 3;
@@ -217,7 +217,7 @@ if (response ~= nil) then
 		end
 		repeat_cnt = repeat_cnt + 1;
 		promptfile = "repeat.wav";
-		read(bsd .. lang .. promptfile);
+		read(bsd .. lang .. promptfile, 0);
 	until (repeat_cnt > DEF_NUM_REPEATS);
 else
 	promptfile = "nomatch.wav";
