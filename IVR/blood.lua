@@ -61,7 +61,7 @@ local DEF_NUM_REPEATS = 3;
 local MIN_BGROUP_ID = 1;
 local MAX_BGROUP_ID = 8;
 local IBD_URL = 'http://indianblooddonors.com/fetch_donor.php?';
-local IBD_PIN = 'std=';
+local IBD_STD = 'std=';
 local IBD_BGROUP = 'bgid=';
 
 -- hard-coded for now
@@ -197,7 +197,7 @@ d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. "}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std);
-number = tostring(number);
+number = tostring(response);
 freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
 -- playback number
 repeat_cnt = 0;
@@ -212,6 +212,7 @@ repeat
 		digit = number:sub(i,i);
 		freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav' .. "\n");
 		read_no_bargein(bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav', 1000);
+		i = i + 1;
 	end
 	repeat_cnt = repeat_cnt + 1;
 until (repeat_cnt > DEF_NUM_REPEATS);
