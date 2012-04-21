@@ -168,9 +168,7 @@ def rsvp_results(num, date_start=False, date_end=False):
     print("<td width='120px'><b>Call Time</b></td>")
     print("<td width='100px'><b>RSVP count</b></td>")
     print("</tr>")
-    
-    header = ['CallId', 'Name', 'CallerNum', 'time', 'rsvp count']
-    results = [header]
+
     total = 0
     for call in calls:
         inputs = Input.objects.filter(call=call)
