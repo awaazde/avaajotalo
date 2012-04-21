@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
 from otalo.AO.models import Line, Forum, Message_forum
-import otalo_utils
+import otalo_utils, num_calls, stats_by_phone_num, call_duration
 
 '''
 ****************************************************************************
 ******************* CONSTANTS **********************************************
 ****************************************************************************
 '''
+NUMBER='7961907766'
 BLOOD_OUTPUT_DIR = ''
 PREFIX='freetdm/grp1/a/0'
 SUFFIX=''
@@ -21,15 +22,13 @@ SUFFIX=''
 '''
     
 def daily_digest(number):
-    
-    f = settings.LOG_ROOT + 'blood_'+number+'.log'
-    
+     
+    f = settings.LOG_ROOT + 'blood_'+NUMBER[-8:]+'.log'
     now = datetime.now()
     # reset to beginning of day
     today = datetime(year=now.year, month=now.month, day=now.day)
     oneday = timedelta(days=1)
     #today = today - oneday
-    line = Line.objects.get(pk=int(lineid))
     
     print("<html>")
     print("<div> Below are basic usage statistics for IBD PhoneBank over the last four days, starting with today. </div>")
@@ -96,7 +95,7 @@ def daily_digest(number):
           
     print("</html>")
     
-def get_callinfo(filename, phone_num_filter=False, date_start=False, date_end=False, quiet=False):
+def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=False, quiet=False):
     all_calls = []
     open_calls = {}
     
@@ -146,7 +145,8 @@ def get_callinfo(filename, phone_num_filter=False, date_start=False, date_end=Fa
                     
                 # add new call
                 #print("adding new call: " + phone_num)
-                open_calls[phone_num] = {'std':'','bgid':'', 'start':current_date,'std_repeats':0,'bg_repeats':0}
+		# start repeat counts 1 back in order to not count the first play as a repeat
+                open_calls[phone_num] = {'std':'','bgid':'', 'start':current_date,'std_repeats':-1,'bg_repeats':-1}
                 
             elif line.find("End call") != -1:
                 if phone_num in open_calls:
@@ -217,12 +217,8 @@ def time_str(date):
 '''
 def main():
     if '--report' in sys.argv:
-        if len(sys.argv) < 1:
-            print("Wrong")
-        else:
-            number = sys.argv[1]
-            f = settings.LOG_ROOT + 'blood_'+number+'.log'
-            get_callinfo(f)
-            daily_digest(number)
+        f = settings.LOG_ROOT + 'blood_'+NUMBER[-8:]+'.log'
+        #get_call_info(f)
+        daily_digest(NUMBER)
    
 main()
