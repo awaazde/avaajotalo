@@ -765,12 +765,16 @@ def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=F
     cmfinbound = 0
     for date in inbound:
         cmfinbound += inbound[date]
+    if cmfinbound:
+        cmfinbound = cmfinbound / 60
         
     # broadcast
     outbound = call_duration.get_online_time(outboundf, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True, transfer_calls=True)
     cmfoutbound = 0
     for date in outbound:
         cmfoutbound += outbound[date]
+    if cmfoutbound:
+        cmfoutbound = cmfoutbound / 60
         
     # Get total minutes used
     # inbound
@@ -778,19 +782,26 @@ def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=F
     totinbound = 0
     for date in inbound:
         totinbound += inbound[date]
+    if totinbound:
+        totinbound = totinbound / 60
         
     # broadcast
     outbound = call_duration.get_online_time(outboundf, date_start=date_start, date_end=date_end, quiet=True, transfer_calls=True)
     totoutbound = 0
     for date in outbound:
         totoutbound += outbound[date]
+    if totoutbound:
+        totoutbound = totoutbound / 60
     
     if not date_start:
         date_start = inbound[0]
+        
+    if not date_end:
+        date_end = datetime.now()
          
     # prepare email
     print("<html>")
-    print("<div> Below are minutes used on AO since " + date_str(date_start) + ". </div>")
+    print("<div> Below are minutes used on AO between " + date_str(date_start) + " and " + date_str(date_end) + "</div>")
     print("<br/><div>")
     print("<b>DSC minutes:</b> ")
     print(str(totinbound-cmfinbound))
