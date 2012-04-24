@@ -767,7 +767,7 @@ def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=F
         cmfinbound += inbound[date]
         
     # broadcast
-    outbound = call_duration.get_online_time(outboundf, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True)
+    outbound = call_duration.get_online_time(outboundf, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True, transfer_calls=True)
     cmfoutbound = 0
     for date in outbound:
         cmfoutbound += outbound[date]
@@ -780,7 +780,7 @@ def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=F
         totinbound += inbound[date]
         
     # broadcast
-    outbound = call_duration.get_online_time(outboundf, date_start=date_start, date_end=date_end, quiet=True)
+    outbound = call_duration.get_online_time(outboundf, date_start=date_start, date_end=date_end, quiet=True, transfer_calls=True)
     totoutbound = 0
     for date in outbound:
         totoutbound += outbound[date]
