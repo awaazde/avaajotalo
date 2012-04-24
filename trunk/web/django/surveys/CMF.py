@@ -761,26 +761,26 @@ def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_
     
 def get_minutes_used(inbound, outbound, cmf_nums, date_start=False, date_end=False):
     # Get CMF minutes used
-    inbound = call_duration.get_online_time(inbound, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end)
+    inbound = call_duration.get_online_time(inbound, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True)
     cmfinbound = 0
     for date in inbound:
         cmfinbound += inbound[date]
         
     # broadcast
-    outbound = call_duration.get_online_time(outbound, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end)
+    outbound = call_duration.get_online_time(outbound, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True)
     cmfoutbound = 0
     for date in outbound:
         cmfoutbound += outbound[date]
         
     # Get total minutes used
     # inbound
-    inbound = call_duration.get_online_time(inbound, date_start=date_start, date_end=date_end)
+    inbound = call_duration.get_online_time(inbound, date_start=date_start, date_end=date_end, quiet=True)
     totinbound = 0
     for date in inbound:
         totinbound += inbound[date]
         
     # broadcast
-    outbound = call_duration.get_online_time(outbound, date_start=date_start, date_end=date_end)
+    outbound = call_duration.get_online_time(outbound, date_start=date_start, date_end=date_end, quiet=True)
     totoutbound = 0
     for date in outbound:
         totoutbound += outbound[date]
