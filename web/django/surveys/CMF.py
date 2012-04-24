@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.AO.models import Line, User, Message_forum
 from otalo.surveys.models import Survey, Prompt, Option, Call, Input, Subject
-import otalo_utils
+import otalo_utils, call_duration
 
 CMF_DESIGNATOR = '_CMF'
 #CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
@@ -759,6 +759,64 @@ def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_
                 
         output.writerow([mf.message.user.number, time_str(mf.message.date), mf.forum.name, crop, topic])
     
+def get_minutes_used(inbound, outbound, cmf_nums, date_start=False, date_end=False):
+    # Get CMF minutes used
+    inbound = call_duration.get_online_time(inbound, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end)
+    cmfinbound = 0
+    for date in inbound:
+        cmfinbound += inbound[date]
+        
+    # broadcast
+    outbound = call_duration.get_online_time(outbound, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end)
+    cmfoutbound = 0
+    for date in outbound:
+        cmfoutbound += outbound[date]
+        
+    # Get total minutes used
+    # inbound
+    inbound = call_duration.get_online_time(inbound, date_start=date_start, date_end=date_end)
+    totinbound = 0
+    for date in inbound:
+        totinbound += inbound[date]
+        
+    # broadcast
+    outbound = call_duration.get_online_time(outbound, date_start=date_start, date_end=date_end)
+    totoutbound = 0
+    for date in outbound:
+        totoutbound += outbound[date]
+    
+    if not date_start:
+        date_start = inbound[0]
+         
+    # prepare email
+    print("<html>")
+    print("<div> Below are minutes used on AO since " + date_str(date_start) + ". </div>")
+    print("<br/><div>")
+    print("<b>DSC minutes:</b> ")
+    print(str(totinbound-cmfinbound))
+    print(" inbound; ")
+    print(str(totoutbound-cmfoutbound))
+    print(" outbound")
+    print("</div>")
+    
+    print("<br/><div>")
+    print("<b>CMF minutes:</b> ")
+    print(str(cmfinbound))
+    print(" inbound; ")
+    print(str(cmfoutbound))
+    print(" outbound")
+    print("</div>")
+    
+    print("</html>")
+    
+'''
+****************************************************************************
+******************* UTILS **************************************************
+****************************************************************************
+''' 
+def date_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%b-%d-%y')
     
 def main():
 #    current_cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
@@ -802,11 +860,11 @@ def main():
         numbers.append(num.strip())
     
     features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
-    #get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
-    #get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
-    #get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
-    #get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
-    get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
+    get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
+    get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
+    get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
+    get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
+    #get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
     
     num = line.outbound_number
     if not num:
