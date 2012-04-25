@@ -836,25 +836,25 @@ def main():
 #        u.save()
     #add_users(names, numbers, villages, treatment_group)
 
-    if len(sys.argv) < 2:
-        print("args: lineid oldnumbersfile <startdate> <enddate>")
+    if len(sys.argv) < 3:
+        print("args: op lineid oldnumbersfile <startdate> <enddate>")
         sys.exit()
     else:
-        lineid = sys.argv[1]
+        lineid = sys.argv[2]
         line = Line.objects.get(pk=lineid)
-        oldnumsfile = sys.argv[2]
+        oldnumsfile = sys.argv[3]
         
     now = datetime.now()
     today = datetime(year=now.year, month=now.month, day=now.day)
     
     startdate = None
     enddate = None
-    if len(sys.argv) > 3:
-        startdate = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+    if len(sys.argv) > 4:
+        startdate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
     else:
         startdate = today-timedelta(days=7)
-    if len(sys.argv) > 4:
-        enddate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+    if len(sys.argv) > 5:
+        enddate = datetime.strptime(sys.argv[5], "%m-%d-%Y")
         
     inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
     out_num = line.outbound_number or line.number
@@ -870,16 +870,19 @@ def main():
             break
         numbers.append(num.strip())
     
-    features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
-    get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
-    get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
-    get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
-    get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
+    if '--report' in sys.argv:
+        features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
+        get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
+        get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
+        get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
+        get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
+    elif '--usageemail' in sys.argv:
+        get_minutes_used(inbound, outbound, numbers, date_start=startdate, date_end=enddate)
+
     #get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
-    
-    num = line.outbound_number
-    if not num:
-       num = line.number
+    #num = line.outbound_number
+    #if not num:
+    #   num = line.number
     #num = '7930142011'
     #create_survey(num, line.dialstring_prefix, line.dialstring_suffix)
     #create_blank(num, line.dialstring_prefix, line.dialstring_suffix)
