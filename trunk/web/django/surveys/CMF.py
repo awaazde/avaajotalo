@@ -849,12 +849,16 @@ def main():
     
     startdate = None
     enddate = None
+    usagestart = None
+    usageend = None
     if len(sys.argv) > 4:
         startdate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        usagestart = startdate
     else:
         startdate = today-timedelta(days=7)
     if len(sys.argv) > 5:
         enddate = datetime.strptime(sys.argv[5], "%m-%d-%Y")
+        usageend = enddate
         
     inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
     out_num = line.outbound_number or line.number
@@ -877,7 +881,18 @@ def main():
         get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
         get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
     elif '--usageemail' in sys.argv:
-        get_minutes_used(inbound, outbound, numbers, date_start=startdate, date_end=enddate)
+        if not usagestart:
+            # set to last 15th
+            if today.day > 15:
+                usagestart = datetime(year=today.year, month=today.month, day=15)
+            else:
+                year = today.year
+                month = today.month - 1
+                if today.month == 1:
+                    year = today.year - 1
+                    month = 12
+                usagestart = datetime(year=year, month=month, day=15)
+        get_minutes_used(inbound, outbound, numbers, date_start=usagestart, date_end=usageend)
 
     #get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
     #num = line.outbound_number
