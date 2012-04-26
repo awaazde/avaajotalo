@@ -23,8 +23,8 @@ BARGEIN_KEY='9'
 ****************************************************************************
 '''
 
-def create_intl_test_survey(phone_num):
-    s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=False, inbound=True, template=False)
+def create_intl_test_survey(phone_num, callback=False, inbound=False, template=False):
+    s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
     if bool(s):
         s = s[0]
         s.delete()
@@ -447,5 +447,6 @@ def main():
         #create_survey('lw', 'eng', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=True, inbound=True)
         
         #create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
-	create_intl_test_survey('7961555006')
+        create_intl_test_survey('7961555006')
+        create_intl_test_survey('7961555007', inbound=True, callback=True)
 main()
