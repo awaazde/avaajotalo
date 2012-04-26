@@ -29,7 +29,7 @@ def create_intl_test_survey(phone_num, callback=False, inbound=False, template=F
         s = s[0]
         s.delete()
         print('deleting survey')
-    s = Survey(name='GWS_INTL', number=phone_num, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=1, callback=False, inbound=True, template=False)
+    s = Survey(name='GWS_INTL', number=phone_num, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=1, callback=callback, inbound=inbound, template=template)
     s.save()
     print('creating new survey '+str(s))
 
