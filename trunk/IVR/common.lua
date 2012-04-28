@@ -1057,7 +1057,12 @@ end
 
 function is_admin(forumid, forums) 
 	if (forumid == nil) then
-		return #forums > 0;
+		local numItems = 0;
+		for k,v in pairs(forums) do
+		    numItems = numItems + 1;
+		end
+		
+		return numItems > 0;
 	else
 		return forums[forumid] == true;
 	end
