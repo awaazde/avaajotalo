@@ -22,6 +22,78 @@ BARGEIN_KEY='9'
 ******************* SURVEY GENERATION ****************************************
 ****************************************************************************
 '''
+def create_survey(prefix, language, options, phone_num, callback, inbound, template=False, includeid=False):
+    s = Survey.objects.filter(name='GWS_'+prefix+'_'+language, number=phone_num, callback=callback, inbound=inbound, template=template)
+    if bool(s):        
+        s = s[0]
+        s.delete()
+        print('deleting survey')
+    s = Survey(name='GWS_'+prefix+'_'+language, number=phone_num, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template)
+    s.save()
+    print('creating new survey '+str(s))
+    
+    order = 1
+    if includeid:
+        id = Prompt(file=SUBDIR+language+'/'+prefix+"id"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+        id.save()
+        id_opt = Option(number="", action=Option.NEXT, prompt=id)
+        id_opt.save()
+        id_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=id)
+        id_opt2.save()
+        order += 1
+    
+    intro = Prompt(file=SUBDIR+language+'/'+prefix+"intro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+    intro.save()
+    intro_opt = Option(number="", action=Option.NEXT, prompt=intro)
+    intro_opt.save()
+    intro_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=intro)
+    intro_opt2.save()
+    order += 1
+    
+    for i in range(len(options)):
+        p = Prompt(file=SUBDIR+language+'/'+prefix+str(i+1)+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+        p.save()
+        opts = options[i]
+        if '*' in opts:
+            # input length (assume single digit)
+            p.inputlen = int(opts[1:2])
+            p.save()
+        elif 'rec' in opts:
+            p.name = opt[opt.find('rec')+3:]
+            p.delay = 2000
+            p.bargein=False
+            p.save()
+            record_opt = Option(number="", action=Option.RECORD, prompt=p)
+            record_opt.save()
+            param = Param(option=record_opt, name=Param.CONFIRM_REC, value="0")
+            param.save()
+            param2 = Param(option=record_opt, name=Param.MAXLENGTH, value="15")
+            param2.save()
+        else:
+            maxopt = int(opts)
+            for j in range(1,maxopt+1):
+                p_opt = Option(number=str(j), action=Option.INPUT, prompt=p)
+                p_opt.save()
+        if 'd' in opts:
+            dependson = opts[opts.find('d')+1:]
+            # assume it depends on an earlier prompt
+            p.dependson = Prompt.objects.get(survey=s,order=int(dependson))
+            # remove the SOUND_EXT and add hyphen
+            p.file = p.file[:p.find(SOUND_EXT)-1] + '-'
+            p.save()
+        repeat = Option(number=REPEAT_KEY, action=Option.REPLAY, prompt=p)
+        repeat.save()
+        order+=1
+    
+    outro = Prompt(file=SUBDIR+language+'/'+prefix+"outro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000)
+    outro.save()
+    outro_opt = Option(number="", action=Option.NEXT, prompt=outro)
+    outro_opt.save()
+    outro_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=outro)
+    outro_opt2.save()
+    order += 1
+    
+    return s
 
 def create_intl_test_survey(phone_num, callback=False, inbound=False, template=False):
     s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
@@ -101,53 +173,6 @@ def create_intl_test_survey(phone_num, callback=False, inbound=False, template=F
     outro_opt2.save()
     order += 1
         
-    return s
-
-def create_survey(prefix, language, options, phone_num, callback, inbound, template=False):
-    s = Survey.objects.filter(name='GWS_'+prefix+'_'+language, number=phone_num, callback=callback, inbound=inbound, template=template)
-    if bool(s):        
-        s = s[0]
-        s.delete()
-        print('deleting survey')
-    s = Survey(name='GWS_'+prefix+'_'+language, number=phone_num, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template)
-    s.save()
-    print('creating new survey '+str(s))
-    
-    order = 1
-    
-    intro = Prompt(file=SUBDIR+language+'/'+prefix+"intro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
-    intro.save()
-    intro_opt = Option(number="", action=Option.NEXT, prompt=intro)
-    intro_opt.save()
-    intro_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=intro)
-    intro_opt2.save()
-    order += 1
-    
-    for i in range(len(options)):
-        p = Prompt(file=SUBDIR+language+'/'+prefix+str(i+1)+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
-        p.save()
-        opts = options[i]
-        if '*' in opts:
-            # input length
-            p.inputlen = int(opts[1:])
-            p.save()
-        else:
-            maxopt = int(opts)
-            for j in range(1,maxopt+1):
-                p_opt = Option(number=str(j), action=Option.INPUT, prompt=p)
-                p_opt.save()
-        repeat = Option(number=REPEAT_KEY, action=Option.REPLAY, prompt=p)
-        repeat.save()
-        order+=1
-    
-    outro = Prompt(file=SUBDIR+language+'/'+prefix+"outro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=2000)
-    outro.save()
-    outro_opt = Option(number="", action=Option.NEXT, prompt=outro)
-    outro_opt.save()
-    outro_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=outro)
-    outro_opt2.save()
-    order += 1
-    
     return s
 
 '''
@@ -440,13 +465,17 @@ def main():
         
         #create_survey('ef', 'eng', ['2','*1','4','2','3','3','3','3','2','3','6'], '7961555000', callback=True, inbound=True)
         
-	#create_survey('sa', 'hin', ['2','*2','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=True, inbound=True)
+	    #create_survey('sa', 'hin', ['2','*2','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=True, inbound=True)
         #create_survey('sa', 'eng', ['2','*2','3','3','3','2','3','3','2','2','2','2','2'], '7961555002', callback=True, inbound=True)
         
         #create_survey('lw', 'tam', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555004', callback=True, inbound=True)
         #create_survey('lw', 'eng', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=True, inbound=True)
         
         #create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
-        create_intl_test_survey('7961555006')
-        create_intl_test_survey('7961555007', inbound=True, callback=True)
+        #create_intl_test_survey('7961555006')
+        #create_intl_test_survey('7961555007', inbound=True, callback=True)
+        create_survey('', 'tiru/hinA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3d12'], '7961555032', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3d12'], '7961555034', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3d12'], '7961555021', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3d12'], '7961555023', callback=True, inbound=True, includesid=True)
 main()
