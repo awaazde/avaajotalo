@@ -34,12 +34,8 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     
     order = 1
     if includeid:
-        id = Prompt(file=SUBDIR+language+'/'+prefix+"id"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
+        id = Prompt(file=SUBDIR+language+'/'+prefix+"id"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000, inputlen=4)
         id.save()
-        id_opt = Option(number="", action=Option.NEXT, prompt=id)
-        id_opt.save()
-        id_opt2 = Option(number=BARGEIN_KEY, action=Option.NEXT, prompt=id)
-        id_opt2.save()
         order += 1
     
     intro = Prompt(file=SUBDIR+language+'/'+prefix+"intro"+SOUND_EXT, order=order, bargein=True, survey=s, delay=0)
