@@ -72,8 +72,12 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
                 p_opt.save()
         if 'd' in opts:
             dependson = opts[opts.find('d')+1:]
+            # assume it is index for a question number
+            dependson = int(dependson)+1
+            if includeid:
+                dependson += 1
             # assume it depends on an earlier prompt
-            p.dependson = Prompt.objects.get(survey=s,order=int(dependson))
+            p.dependson = Prompt.objects.get(survey=s,order=dependson)
             # remove the SOUND_EXT and add hyphen
             p.file = p.file[:p.find(SOUND_EXT)-1] + '-'
             p.save()
