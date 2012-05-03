@@ -70,8 +70,8 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
             for j in range(1,maxopt+1):
                 p_opt = Option(number=str(j), action=Option.INPUT, prompt=p)
                 p_opt.save()
-        if 'd' in opts:
-            dependson = opts[opts.find('d')+1:]
+        if 'dep' in opts:
+            dependson = opts[opts.find('d')+3:]
             # assume it is index for a question number
             dependson = int(dependson)+1
             if includeid:
@@ -474,8 +474,8 @@ def main():
         #create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
         #create_intl_test_survey('7961555006')
         #create_intl_test_survey('7961555007', inbound=True, callback=True)
-        create_survey('', 'tiru/hinA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3d12'], '7961555032', callback=True, inbound=True, includesid=True)
-        create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3d12'], '7961555034', callback=True, inbound=True, includesid=True)
-        create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3d12'], '7961555021', callback=True, inbound=True, includesid=True)
-        create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3d12'], '7961555023', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/hinA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555032', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555034', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555021', callback=True, inbound=True, includesid=True)
+        create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555023', callback=True, inbound=True, includesid=True)
 main()
