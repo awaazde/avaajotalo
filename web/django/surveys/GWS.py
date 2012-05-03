@@ -79,7 +79,7 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
             # assume it depends on an earlier prompt
             p.dependson = Prompt.objects.get(survey=s,order=dependson)
             # remove the SOUND_EXT and add hyphen
-            p.file = p.file[:p.find(SOUND_EXT)-1] + '-'
+            p.file = p.file[:p.find(SOUND_EXT)] + '-'
             p.save()
         repeat = Option(number=REPEAT_KEY, action=Option.REPLAY, prompt=p)
         repeat.save()
