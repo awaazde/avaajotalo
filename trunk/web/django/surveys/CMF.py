@@ -820,6 +820,23 @@ def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=F
     
     print("</html>")
     
+def responder_report(userid, forumids, date_start=False, date_end=False, ):
+    responder = User.objects.get(pk=userid)
+    responses = Message_forum.objects.filter(message__user=responder, forum__in=forumids, status=Message_forum.STATUS_APPROVED, message__rgt__gt=1)
+    if date_start:
+        responses = responses.filter(message__date__gte=date_start)
+    if date_end:
+        responses = responses.filter(message__date__lt=date_end)
+    
+    print("Responses for " + responder.name)
+    print("Message ID\tMessage Date\tForum")
+    messagecnt = 0
+    for response in responses:
+        print(str(response.id)+"\t"+date_str(response.message.date)+"\t"+response.forum.name)
+        messagecnt += 1
+    print("Total: "+ str(messagecnt))
+    
+    
 '''
 ****************************************************************************
 ******************* UTILS **************************************************
@@ -903,6 +920,8 @@ def main():
     #create_blank(num, line.dialstring_prefix, line.dialstring_suffix)
     #get_survey_results()
     
+    responder_report(48, [1], date_start=datetime(year=2012, month=1, day=1))
+    
 main()
 
 def main2():
@@ -940,4 +959,5 @@ def main2():
         dt += timedelta(days=7)
         
     #get_survey_results(numbers)
+        
 #main2()
