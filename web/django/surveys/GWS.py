@@ -55,7 +55,7 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
             p.inputlen = int(opts[1:2])
             p.save()
         elif 'rec' in opts:
-            p.name = opt[opt.find('rec')+3:]
+            p.name = opts[opts.find('rec')+3:]
             p.delay = 2000
             p.bargein=False
             p.save()
@@ -79,7 +79,7 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
             # assume it depends on an earlier prompt
             p.dependson = Prompt.objects.get(survey=s,order=dependson)
             # remove the SOUND_EXT and add hyphen
-            p.file = p.file[:p.find(SOUND_EXT)] + '-'
+            p.file = p.file[:p.file.find(SOUND_EXT)] + '-'
             p.save()
         repeat = Option(number=REPEAT_KEY, action=Option.REPLAY, prompt=p)
         repeat.save()
