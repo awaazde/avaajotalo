@@ -234,11 +234,6 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
       --sleep(1000);
       d = use();
       
-      if (d == GLOBAL_MENU_MAINMENU) then
-		 os.remove(filename);
-		 return d;
-      end
-      
       if (confirm == 1) then
 	      local review_cnt = 0;
 	      while (d ~= GLOBAL_MENU_MAINMENU and d ~= "1" and d ~= "2" and d ~= "3") do
