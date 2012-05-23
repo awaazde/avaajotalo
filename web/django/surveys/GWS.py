@@ -1,4 +1,4 @@
-import os, sys, csv, re
+import os, sys, csv, re, shutil
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
@@ -184,6 +184,7 @@ def create_intl_test_survey(phone_num, callback=False, inbound=False, template=F
 def survey_results(number, filename, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
     open_calls = {}
+    soundfiles = {}
     survey = Survey.objects.filter(number=number, inbound=True)[0]
     
     f = open(filename)
@@ -233,8 +234,27 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                         result = [call.subject.number, time_str(call.date), str(dur.seconds)]
         
                         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+                        callerid = inputs.filter(prompt__file__contains="id"+SOUND_EXT)
+                        if bool(callerid):
+                            callerid = callerid[0].input
+                        
                         for input in inputs:
-                            result.append(input.input)                         
+                            if '.mp3' in input.input:
+                                if callerid:
+                                    if callerid in soundfiles:
+                                        soundfiles[callerid].append(input.input)
+                                        fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
+                                        result.append(caller)
+                                    else:
+                                        soundfiles[callerid] = [input.input]
+                                        result.append(callerid + ".mp3")
+                                else:
+                                    # complicated in order to keep file copy 
+                                    # code consistent down below.
+                                    soundfiles[input.input[:-4]] = [input.input]
+                                    result.append(input.input)
+                            else:
+                                result.append(input.input)                         
                         all_calls.append(result)
                     #else:
                         #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
@@ -285,12 +305,26 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
     for i in range(1,qcount+1):
         header.append('q'+str(i))
     outputfilename='survey_results_'+number
+    audiofile_dir = 'audio_'+number
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+        audiofile_dir+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+    audiofile_dir += "/"
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
     output = csv.writer(open(outputfilename, 'wb'))
     output.writerow(header)            
     output.writerows(all_calls)
+    
+    if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
+        os.removedirs(OUTPUT_FILE_DIR+audiofile_dir)
+    os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
+    for callid,files in soundfiles.items():
+        for i in range(len(files)):
+            f = files[i]
+            fname = callid + '.mp3'
+            if i > 0:
+                fname = callid + "-" + str(i+1) + '.mp3'
+            shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir+fname)
     
 def repeats_requests(filename, phone_num_filter=False, date_start=False, date_end=False):
     repeat_counts = {}
@@ -457,7 +491,7 @@ def main():
         else:
             repeats_requests(filename, date_start=start, date_end=end)
               
-    else:
+    #else:
         #create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
         #create_survey('ppi', 'hin', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555078', callback=True, inbound=True)
         #create_survey('ppi', 'kan', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555095', callback=True, inbound=True)
@@ -474,8 +508,8 @@ def main():
         #create_survey('artisan', 'eng', ['2','*1','3','4','3','3','5','3','3','3','3'], '7961555003', callback=True, inbound=True)
         #create_intl_test_survey('7961555006')
         #create_intl_test_survey('7961555007', inbound=True, callback=True)
-        create_survey('', 'tiru/hinA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555032', callback=True, inbound=True, includesid=True)
-        create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555034', callback=True, inbound=True, includesid=True)
-        create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555021', callback=True, inbound=True, includesid=True)
-        create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555023', callback=True, inbound=True, includesid=True)
+        #create_survey('', 'tiru/hinA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555032', callback=True, inbound=True, includesid=True)
+        #create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555034', callback=True, inbound=True, includesid=True)
+        #create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555021', callback=True, inbound=True, includesid=True)
+        #create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555023', callback=True, inbound=True, includesid=True)
 main()
