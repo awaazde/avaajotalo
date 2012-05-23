@@ -315,16 +315,17 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
     output.writerow(header)            
     output.writerows(all_calls)
     
-    if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
-        os.removedirs(OUTPUT_FILE_DIR+audiofile_dir)
-    os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
-    for callid,files in soundfiles.items():
-        for i in range(len(files)):
-            f = files[i]
-            fname = callid + '.mp3'
-            if i > 0:
-                fname = callid + "-" + str(i+1) + '.mp3'
-            shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir+fname)
+    if len(soundfiles) > 0:
+        if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
+            os.removedirs(OUTPUT_FILE_DIR+audiofile_dir)
+        os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
+        for callid,files in soundfiles.items():
+            for i in range(len(files)):
+                f = files[i]
+                fname = callid + '.mp3'
+                if i > 0:
+                    fname = callid + "-" + str(i+1) + '.mp3'
+                shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir+fname)
     
 def repeats_requests(filename, phone_num_filter=False, date_start=False, date_end=False):
     repeat_counts = {}
