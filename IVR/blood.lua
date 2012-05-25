@@ -159,12 +159,12 @@ end
 ------ set language -------
 ---------------------------
 -- default
-local lang = LANG_ENG;
+local lang = LANG_HIN;
 
 if (d == "1") then
-	lang = LANG_ENG .. "/";
-elseif (d == "2") then
 	lang = LANG_HIN .. "/";
+elseif (d == "2") then
+	lang = LANG_ENG .. "/";
 end
 freeswitch.consoleLog("info", script_name .. " : language is " .. lang .. "\n");
 ---------------------------
