@@ -231,7 +231,7 @@ def monitoring_template(line, questionname):
     s.save()
     print('creating new survey '+str(s))
       
-    question = Prompt(file=language+"/"+questionfile+SOUND_EXT, order=1, bargein=True, survey=s, delay=4000)
+    question = Prompt(file=language+"/"+questionname+SOUND_EXT, order=1, bargein=True, survey=s, delay=4000)
     question.save()
     question_opt1 = Option(number="1", action=Option.INPUT, prompt=question)
     question_opt1.save()
