@@ -213,6 +213,37 @@ def standard_template(line, contenttype):
         
     return s
     
+def monitoring_template(line, questionname):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    if line.outbound_number:
+        number = line.outbound_number
+    else:
+        number = line.number
+    
+    s = Survey.objects.filter(name=questionname, number=number, template=True)
+    if bool(s):
+        s = s[0]
+        s.delete()
+        print('deleting survey')
+    s = Survey(name=questionname, number=number, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, template=True)
+    s.save()
+    print('creating new survey '+str(s))
+      
+    question = Prompt(file=language+"/"+questionfile+SOUND_EXT, order=1, bargein=True, survey=s, delay=4000)
+    question.save()
+    question_opt1 = Option(number="1", action=Option.INPUT, prompt=question)
+    question_opt1.save()
+    question_opt2 = Option(number="2", action=Option.INPUT, prompt=question)
+    question_opt2.save()
+    question_opt3 = Option(number="3", action=Option.INPUT, prompt=question)
+    question_opt3.save()
+    question_opt3 = Option(number="4", action=Option.INPUT, prompt=question)
+    question_opt3.save()
+        
+    return s
+        
 def main():
     # get the forum
     '''
@@ -249,8 +280,9 @@ def main():
     '''
     line = Line.objects.get(pk=2)
     #Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
-    standard_template(line, 'aow')
+    #standard_template(line, 'aow')
     #standard_template(line, 'announcement')
-    
+    monitoring_template(line, 'mqfp1')
+    monitoring_template(line, 'mqfp2')
 main()
 
