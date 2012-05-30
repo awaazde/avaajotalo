@@ -23,11 +23,6 @@ BARGEIN_KEY='9'
 ****************************************************************************
 '''
 def create_survey(prefix, language, options, phone_num, callback, inbound, template=False, includeid=False):
-    s = Survey.objects.filter(name='GWS_'+prefix+'_'+language, number=phone_num, callback=callback, inbound=inbound, template=template)
-    if bool(s):        
-        s = s[0]
-        s.delete()
-        print('deleting survey')
     s = Survey(name='GWS_'+prefix+'_'+language, number=phone_num, dialstring_prefix=PREFIX, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template)
     s.save()
     print('creating new survey '+str(s))
