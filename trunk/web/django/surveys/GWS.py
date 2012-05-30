@@ -261,27 +261,40 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                 
             elif line.find("End call") != -1 or line.find("Abort call") != -1:
                 if phone_num in open_calls:
-                    # close out call                
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
                     if bool(call):
-                        #if call.count()>1:
-                            #print("more than one call found: " + str(call))
                         call = call[0]
                         result = [call.subject.number, time_str(call.date), str(dur.seconds)]
         
                         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+                        callerid = inputs.filter(prompt__file__contains="id"+SOUND_EXT)
+                        if bool(callerid):
+                            callerid = callerid[0].input
+                        
                         for input in inputs:
-                            result.append(input.input)                         
+                            if '.mp3' in input.input:
+                                if callerid:
+                                    if callerid in soundfiles:
+                                        soundfiles[callerid].append(input.input)
+                                        fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
+                                        result.append(caller)
+                                    else:
+                                        soundfiles[callerid] = [input.input]
+                                        result.append(callerid + ".mp3")
+                                else:
+                                    # complicated in order to keep file copy 
+                                    # code consistent down below.
+                                    soundfiles[input.input[:-4]] = [input.input]
+                                    result.append(input.input)
+                            else:
+                                result.append(input.input)                         
                         all_calls.append(result)
                     #else:
                         #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
                     del open_calls[phone_num]
-                    
-            elif phone_num in open_calls:
-                call = open_calls[phone_num]
                     
         except KeyError as err:
             #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
