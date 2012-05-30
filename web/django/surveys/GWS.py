@@ -239,7 +239,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                                     if callerid in soundfiles:
                                         soundfiles[callerid].append(input.input)
                                         fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
-                                        result.append(caller)
+                                        result.append(fname)
                                     else:
                                         soundfiles[callerid] = [input.input]
                                         result.append(callerid + ".mp3")
@@ -280,7 +280,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                                     if callerid in soundfiles:
                                         soundfiles[callerid].append(input.input)
                                         fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
-                                        result.append(caller)
+                                        result.append(fname)
                                     else:
                                         soundfiles[callerid] = [input.input]
                                         result.append(callerid + ".mp3")
