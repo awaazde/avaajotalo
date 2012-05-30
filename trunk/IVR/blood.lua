@@ -63,6 +63,7 @@ local MAX_BGROUP_ID = 8;
 local IBD_URL = 'http://indianblooddonors.com/fetch_donor.php?';
 local IBD_STD = 'std=';
 local IBD_BGROUP = 'bgid=';
+local IBD_CALLER = 'number=';
 
 -- hard-coded for now
 local callback_allowed = 0;
@@ -195,8 +196,8 @@ end
 local bgroupid = d;
 d = "";
 -- send request
-freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. "}\n");
-response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std);
+freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
+response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
 if (response ~= nil) then
 	number = tostring(response);
 	freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
