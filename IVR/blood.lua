@@ -63,7 +63,7 @@ local MAX_BGROUP_ID = 8;
 local IBD_URL = 'http://indianblooddonors.com/fetch_donor.php?';
 local IBD_STD = 'std=';
 local IBD_BGROUP = 'bgid=';
-local IBD_CALLER = 'number=';
+local IBD_CALLER = 'caller=';
 
 -- hard-coded for now
 local callback_allowed = 0;
