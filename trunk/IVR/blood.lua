@@ -187,7 +187,7 @@ d = "";
 promptfile = "bloodgroup.wav";
 repeat_cnt = 0;
 d = "0";
-while (d == nil or tonumber(d) < MIN_BGROUP_ID or tonumber(d) > MAX_BGROUP_ID) do
+while (d == "" or tonumber(d) < MIN_BGROUP_ID or tonumber(d) > MAX_BGROUP_ID) do
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read(bsd .. lang .. promptfile, delay);
 	d = use();
