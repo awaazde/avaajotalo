@@ -1062,3 +1062,10 @@ function is_admin(forumid, forums)
 		return forums[forumid] == true;
 	end
 end
+
+-----------
+-- trim (string) 
+-----------
+function trim (s)
+	return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
+end
