@@ -230,8 +230,13 @@ def monitoring_template(line, questionname):
     s = Survey(name=questionname, number=number, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, template=True)
     s.save()
     print('creating new survey '+str(s))
+    
+    welcome = Prompt(file=language+"/MFQw"+SOUND_EXT, order=1, bargein=True, survey=s)
+    welcome.save()
+    welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
+    welcome_opt1.save()
       
-    question = Prompt(file=language+"/"+questionname+SOUND_EXT, order=1, bargein=True, survey=s, delay=4000)
+    question = Prompt(file=language+"/"+questionname+SOUND_EXT, order=2, bargein=True, survey=s, delay=4000)
     question.save()
     question_opt1 = Option(number="1", action=Option.INPUT, prompt=question)
     question_opt1.save()
@@ -242,6 +247,11 @@ def monitoring_template(line, questionname):
     question_opt3 = Option(number="4", action=Option.INPUT, prompt=question)
     question_opt3.save()
         
+    thanks = Prompt(file=language+"/MFQe"+SOUND_EXT, order=3, bargein=True, survey=s)
+    thanks.save()
+    thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
+    thanks_opt1.save()
+    
     return s
         
 def main():
@@ -282,7 +292,11 @@ def main():
     #Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
     #standard_template(line, 'aow')
     #standard_template(line, 'announcement')
-    monitoring_template(line, 'mqfp1')
-    monitoring_template(line, 'mqfp2')
+    #monitoring_template(line, 'mqfp1')
+    #monitoring_template(line, 'mqfp2')
+    questions=['10_pmq5_2508', '11_cmq6_0109', '12_pmq6_0809', '1_bkcmq1', '1_mqfp1', '1_pmq1_1606', '2_bkcmq2', '2_cmq1_2306', '2_mqfp2', '3_bkcmq3', '3_pmq2_3006', '4_bkcmq4', '4_cmq2_0707', '5_bkcmq5', '5_cmq3_1407', '6_bkcmq6', '6_cmq4_2107', '7_pmq3_2807', '8_cmq5_0408', '9_pmq4_1108']
+    for q in questions:
+        monitoring_template(line,q)
+        
 main()
 
