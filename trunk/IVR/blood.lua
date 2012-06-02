@@ -199,7 +199,7 @@ d = "";
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
 if (response ~= nil) then
-	number = tostring(response);
+	number = trim(tostring(response));
 	freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
 	-- playback number
 	repeat_cnt = 0;
