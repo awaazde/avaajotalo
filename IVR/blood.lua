@@ -198,9 +198,13 @@ d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
-if (response ~= nil or trim(tostring(response)) == "0") then
+freeswitch.consoleLog("info", script_name .. " : response is " .. tostring(response) .. "\n");
+if (response == nil or trim(tostring(response)) == "0") then
+	promptfile = "nomatch.wav";
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
+	read(bsd .. lang .. promptfile);
+else
 	number = trim(tostring(response));
-	freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
 	-- playback number
 	repeat_cnt = 0;
 	-- loop up to default repeat times (make it an actual number just as a failsafe)
@@ -220,9 +224,5 @@ if (response ~= nil or trim(tostring(response)) == "0") then
 		promptfile = "repeat.wav";
 		read(bsd .. lang .. promptfile, 0);
 	until (repeat_cnt > DEF_NUM_REPEATS);
-else
-	promptfile = "nomatch.wav";
-	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
-	read(bsd .. lang .. promptfile);
 end
 hangup();
