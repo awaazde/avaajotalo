@@ -198,7 +198,7 @@ d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
-if (response ~= nil) then
+if (response ~= nil or trim(tostring(response)) == "0") then
 	number = trim(tostring(response));
 	freeswitch.consoleLog("info", script_name .. " : response is " .. number .. "\n");
 	-- playback number
