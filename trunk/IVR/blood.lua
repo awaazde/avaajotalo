@@ -202,7 +202,7 @@ freeswitch.consoleLog("info", script_name .. " : response is " .. tostring(respo
 if (response == nil or trim(tostring(response)) == "0") then
 	promptfile = "nomatch.wav";
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
-	read(bsd .. lang .. promptfile);
+	read(bsd .. lang .. promptfile, 0);
 else
 	number = trim(tostring(response));
 	-- playback number
