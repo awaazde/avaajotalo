@@ -15,158 +15,24 @@
 #===============================================================================
 import sys
 from datetime import datetime, timedelta
+from django.conf import settings
 from otalo.AO.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
-from random import shuffle
 
-# These should be consistent with the constants
-# in survey.lua
-OPTION_NEXT = 1
-OPTION_PREV = 2
-OPTION_REPLAY = 3
-OPTION_GOTO = 4
-
+'''
+****************************************************************************
+******************* CONSTANTS **********************************************
+****************************************************************************
+'''
+LINEID=16
+OUTPUT_FILE_DIR='/home/galli/reports/'
 SOUND_EXT = ".wav"
 
-ACTIVITY_DURATION_DAYS = 2
-ACTIVITY_START = timedelta(hours=11)
-ACTIVITY_END = timedelta(hours=19)
-
-CALL_BLOCK_SIZE = 10
-# should match INTERVAL_MINS in survey.py and the frequency of the cron
-CALL_BLOCK_INTERVAL_MINUTES = timedelta(minutes=10)
-
-def subjects(numbers):
-    count = 0
-    subjs = []
-    
-    for number in numbers:
-        if number != '':
-            s = Subject.objects.filter(number = number)
-            if not bool(s):
-                s = Subject(number=str(number))
-                print ("adding subject " + str(s))
-                s.save()
-                subjs.append(s)
-                count += 1
-            else:
-                subjs.append(s[0])
-            
-    print(str(count) + " new subjects added.")
-    print(str(len(subjs)) + " total subjects.")
-    return subjs
-
-def activity(activityfilename, line):
-    prefix = line.dialstring_prefix
-    suffix = line.dialstring_suffix
-    language = line.language
-    if line.outbound_number:
-        num = line.outbound_number
-    else:
-        num = line.number
-    
-    name = line.name + '_' + activityfilename
-    
-    s = Survey.objects.filter(name=name)
-    if not bool(s):
-        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num)
-        print ("adding activity of the week " + str(s))
-        s.save()
-    
-        # welcome
-        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
-        welcome.save()
-        welcome_opt = Option(number="", action=OPTION_NEXT, prompt=welcome)
-        welcome_opt.save()
-        
-        # activity
-        a = Prompt(file=language+"/"+activityfilename+SOUND_EXT, order=2, bargein=False, survey=s)
-        a.save()
-        a_opt = Option(number="", action=OPTION_NEXT, prompt=a)
-        a_opt.save()
-        
-        # thanks
-        thanks = Prompt(file=language+"/signoff"+SOUND_EXT, order=3, bargein=True, delay=5000, survey=s)
-        thanks.save()
-        thanks_opt1 = Option(number="9", action=OPTION_GOTO, action_param1=2, prompt=thanks)
-        thanks_opt1.save()
-        thanks_opt2 = Option(number="", action=OPTION_NEXT, prompt=thanks)
-        thanks_opt2.save()
-        
-        return s
-    else:
-        return s[0]  
-
-def calls(activity, subjects, start_date):
-    count = 0
-    # This is the only survey to send, so the
-    # block is the entire duration period
-    survey_block_days = ACTIVITY_DURATION_DAYS
-    
-    survey_start_day = start_date
-    assigned_p1s = []
-    for survey_block_day in range(survey_block_days):
-        survey_day = survey_start_day + timedelta(days=survey_block_day)
-        call_time = survey_day + ACTIVITY_START
-        
-        if len(assigned_p1s) < len(subjects):
-            pending_p1s = [subj for subj in subjects if subj not in assigned_p1s]
-            i = 0
-            while i < len(pending_p1s):
-                subj_block = pending_p1s[i:i+CALL_BLOCK_SIZE]
-                for subject in subj_block:
-                    call = Call.objects.filter(survey=activity, subject=subject, priority=1)
-                    if not bool(call):
-                        call = Call(survey=activity, subject=subject, date=call_time, priority=1)
-                        print ("adding call " + str(call))
-                        call.save()
-                        count += 1
-                        assigned_p1s.append(subject)
-                    
-                i += CALL_BLOCK_SIZE
-                call_time += CALL_BLOCK_INTERVAL_MINUTES
-                
-                if call_time > survey_day + ACTIVITY_END:
-                    break
-        
-        # end P1 assignments
-        # with any remaining time left, assign P2's
-        backup_calls(activity, subjects, survey_day + ACTIVITY_START, survey_day + ACTIVITY_END)   
-
-# keep adding, as many times as possible,
-# backup phone calls in the given range
-def backup_calls(survey, subjects, start_time, end_time):
-    scheduled_calls = []
-    count = 0
-    call_time = start_time
-    i = 0
-    while i < len(subjects):
-        scheduled_cnt = Call.objects.filter(date=call_time).count()
-        if scheduled_cnt < CALL_BLOCK_SIZE:
-            # get a block of numbers to call
-            subj_block = subjects[i:i+CALL_BLOCK_SIZE]
-            for subject in subj_block:
-                call = Call.objects.filter(survey=survey, subject=subject, date=call_time, priority=2)
-                if not bool(call):
-                    call = Call(survey=survey, subject=subject, date=call_time, priority=2)
-                    print ("adding call " + str(call))
-                    call.save()
-                    count += 1
-                    scheduled_calls.append(subject)
-            
-            i += CALL_BLOCK_SIZE
-            # keep adding the numbers over and over
-            if i >= len(subjects):
-                i = 0
-                
-        call_time += CALL_BLOCK_INTERVAL_MINUTES
-        
-        if call_time > end_time:
-            break
-    
-    print(str(count) + " new backup calls added.")   
-    
-    return scheduled_calls
+'''
+****************************************************************************
+******************* SURVEY GENERATION **************************************
+****************************************************************************
+'''
 
 def standard_template(line, contenttype):
     prefix = line.dialstring_prefix
@@ -253,50 +119,203 @@ def monitoring_template(line, questionname):
     thanks_opt1.save()
     
     return s
+
+'''
+****************************************************************************
+******************* REPORTING **********************************************
+****************************************************************************
+'''
         
-def main():
-    # get the forum
-    '''
-    if len(sys.argv) < 4:
-        print("args: activityfilename, phonenumsfilename, lineid, <startdate>")
-        sys.exit()
-    else:
-        activityfilename = sys.argv[1]
-        numberfilename = sys.argv[2]
-        lineid = sys.argv[3]
+def monitoring_results(number, filename, callees_info, phone_num_filter=False, date_start=False, date_end=False):
+    all_calls = []
+    open_calls = {}
+    questions = set()
     
-    now = datetime.now()
-    today = datetime(year=now.year, month=now.month, day=now.day)
-    tomorrow = today + timedelta(days=1)  
-        
-    if len(sys.argv) > 4:
-        launch = datetime.strptime(sys.argv[4], "%m-%d-%Y")
-    else:
-        launch = tomorrow
-        
-    f = open(numberfilename)
-    numbers = []
+    f = open(filename)
+
     while(True):
-        num = f.readline()
-        if not num:
+        line = f.readline()
+        if not line:
             break
-        numbers.append(num.strip())
+        try:
         
-    line = Line.objects.get(pk=int(lineid))
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
     
-    subjs = subjects(numbers)
-    act = activity(activityfilename, line)
-    calls(act, subjs, launch)
-    '''
-    line = Line.objects.get(pk=2)
-    #Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
-    #standard_template(line, 'aow')
-    #standard_template(line, 'announcement')
-    #monitoring_template(line, 'mqfp1')
-    #monitoring_template(line, 'mqfp2')
-    questions=['10_pmq5_2508', '11_cmq6_0109', '12_pmq6_0809', '1_bkcmq1', '1_mqfp1', '1_pmq1_1606', '2_bkcmq2', '2_cmq1_2306', '2_mqfp2', '3_bkcmq3', '3_pmq2_3006', '4_bkcmq4', '4_cmq2_0707', '5_bkcmq5', '5_cmq3_1407', '6_bkcmq6', '6_cmq4_2107', '7_pmq3_2807', '8_cmq5_0408', '9_pmq4_1108']
-    for q in questions:
-        monitoring_template(line,q)
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out call                
+                    open_call = open_calls[phone_num]    
+                    start = open_call['start']
+                    dur = current_date - start
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
+                    if bool(call):
+                        if call.count()>1:
+                            print("more than one call found: " + str(call))
+                        call = call[0]
+                        groupid = get_groupid(phone_num, callees_info)
+                        result = [call.subject.number, call.subject.name or '', groupid, time_str(call.date), str(dur.seconds)]
+        
+                        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+                        
+                        for input in inputs:
+                            result.append(input.input)
+                            prompt = input.prompt
+                            questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                        
+                        all_calls.append(result)
+                    else:
+                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = {'start':current_date}
+                
+            elif line.find("End call") != -1 or line.find("Abort call") != -1:
+                if phone_num in open_calls:
+                    open_call = open_calls[phone_num]    
+                    start = open_call['start']
+                    dur = current_date - start
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
+                    if bool(call):
+                        if call.count()>1:
+                            print("more than one call found: " + str(call))
+                        call = call[0]
+                        groupid = get_groupid(phone_num, callees_info)
+                        result = [call.subject.number, call.subject.name or '', groupid, time_str(call.date), str(dur.seconds)]
+        
+                        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+                        
+                        for input in inputs:
+                            result.append(input.input)
+                            prompt = input.prompt
+                            questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                       
+                        all_calls.append(result)
+                    else:
+                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    del open_calls[phone_num]
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+    
+    header = ['number','name','groupid','start','duration (s)']
+    question = 'Response'
+    if len(questions) == 1:
+        question = list(questions)[0]
+    header.append(question)
+    outputfilename='survey_results_'+number
+    if date_start:
+        outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+    outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
+    output = csv.writer(open(outputfilename, 'wb'))
+    output.writerow(header)            
+    output.writerows(all_calls)
+
+'''
+****************************************************************************
+******************* UTILS **************************************************
+****************************************************************************
+'''
+def time_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%m-%d-%y %H:%M')
+
+def get_callees_info(callee_filename):
+    info = {}
+    
+    f = csv.reader(open(callee_filename, "rU"))
+    
+    for line in f:        
+        try:
+            num = get_number(line)
+            info[num] = line[1:]
+            
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+    
+    #print(info)
+    return info
+        
+def get_number(line):
+    # get last 10 digits only
+    num = line[0][-10:]
+    return num
+
+def get_name(number, callees_info):
+    name = ''
+    if number in callees_info:
+        name = callees_info[number][1].strip()
+    return name
+
+def get_groupid(number, callees_info):
+    groupid = ''
+    if number in callees_info:
+        groupid = callees_info[number][2].strip()
+    return groupid
+    
+
+'''
+****************************************************************************
+******************* MAIN ***************************************************
+****************************************************************************
+'''
+def main():
+    line = Line.objects.get(pk=LINEID)
+    if '--report' in sys.argv:
+        if len(sys.argv) < 3:
+            print("report args: calleesfname <startdate> <enddate>")
+            sys.exit()
+        
+        inbound = settings.INBOUND_LOG_ROOT + str(LINEID) + '.log'
+        out_num = line.outbound_number or line.number
+        outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
+        
+        start=None  
+        callees_fname = sys.argv[2]
+        
+        if len(sys.argv) > 3:
+            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        
+        callees_info = {}
+        #callees_info = get_callees_info(callees_fname)
+        
+        monitoring_results(out_num, outbound, callees_info, date_start=start, date_end=end)
+    
         
 main()
 
