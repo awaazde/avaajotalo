@@ -173,8 +173,8 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                     dur = current_date - start
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
                     if bool(call):
-                        if call.count()>1:
-                            print("more than one call found: " + str(call))
+                        #if call.count()>1:
+                            #print("more than one call found: " + str(call))
                         call = call[0]
                         groupid = get_groupid(phone_num, callees_info)
                         result = [call.subject.number, call.subject.name or '', groupid, time_str(call.date), str(dur.seconds)]
@@ -186,8 +186,8 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                             prompt = input.prompt
                             questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                        
                         all_calls.append(result)
-                    else:
-                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    #else:
+                        #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
                     del open_calls[phone_num]
                     
                 # add new call
@@ -201,8 +201,8 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                     dur = current_date - start
                     call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
                     if bool(call):
-                        if call.count()>1:
-                            print("more than one call found: " + str(call))
+                        #if call.count()>1:
+                            #print("more than one call found: " + str(call))
                         call = call[0]
                         groupid = get_groupid(phone_num, callees_info)
                         result = [call.subject.number, call.subject.name or '', groupid, time_str(call.date), str(dur.seconds)]
@@ -214,8 +214,8 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                             prompt = input.prompt
                             questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                       
                         all_calls.append(result)
-                    else:
-                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    #else:
+                        #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
                     del open_calls[phone_num]
                     
         except KeyError as err:
