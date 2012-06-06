@@ -13,11 +13,12 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import sys
+import sys, os, csv
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.AO.models import Line
-from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
+from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
+import otalo_utils
 
 '''
 ****************************************************************************
@@ -170,7 +171,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
                     if bool(call):
                         if call.count()>1:
                             print("more than one call found: " + str(call))
@@ -198,7 +199,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                     open_call = open_calls[phone_num]    
                     start = open_call['start']
                     dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(seconds=40), date__lte=start+timedelta(seconds=40), complete=True)
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
                     if bool(call):
                         if call.count()>1:
                             print("more than one call found: " + str(call))
@@ -327,4 +328,3 @@ def main():
     
         
 main()
-
