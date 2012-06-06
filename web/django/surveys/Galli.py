@@ -235,7 +235,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
     if len(questions) == 1:
         question = list(questions)[0]
     header.append(question)
-    outputfilename='survey_results_'+number
+    outputfilename='monitoring_results_'+number
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
@@ -302,7 +302,7 @@ def main():
     out_num = line.outbound_number or line.number
     outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
         
-    if '--weeklyreports' in sys.argv:
+    if '--weeklyreport' in sys.argv:
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=6)
