@@ -217,7 +217,7 @@ else
 		while (i <= 10) do
 			digit = number:sub(i,i);
 			freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav' .. "\n");
-			read_no_bargein(bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav', 0);
+			read_no_bargein(bsd .. lang .. 'digits/' .. tostring(digit) .. '.wav', 1000);
 			i = i + 1;
 		end
 		repeat_cnt = repeat_cnt + 1;
