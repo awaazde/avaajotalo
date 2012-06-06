@@ -49,7 +49,7 @@ def standard_template(line, contenttype):
         s = s[0]
         s.delete()
         print('deleting survey')
-    s = Survey(name=name, number=number, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, template=True)
+    s = Survey(name=name, number=number, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, template=True)
     s.save()
     print('creating new survey '+str(s))
     
@@ -93,7 +93,7 @@ def monitoring_template(line, questionname):
         s = s[0]
         s.delete()
         print('deleting survey')
-    s = Survey(name=questionname, number=number, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, template=True)
+    s = Survey(name=questionname, number=number, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, template=True)
     s.save()
     print('creating new survey '+str(s))
     
@@ -293,15 +293,24 @@ def get_groupid(number, callees_info):
 '''
 def main():
     line = Line.objects.get(pk=LINEID)
-    if '--report' in sys.argv:
-        if len(sys.argv) < 3:
+    if len(sys.argv) < 3:
             print("report args: calleesfname <startdate> <enddate>")
             sys.exit()
         
-        inbound = settings.INBOUND_LOG_ROOT + str(LINEID) + '.log'
-        out_num = line.outbound_number or line.number
-        outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
+    inbound = settings.INBOUND_LOG_ROOT + str(LINEID) + '.log'
+    out_num = line.outbound_number or line.number
+    outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
         
+    if '--weeklyreports' in sys.argv:
+        now = datetime.now()
+        today = datetime(year=now.year, month=now.month, day=now.day)
+        start = today-timedelta(days=6)
+        
+        callees_info = {}
+        #callees_info = get_callees_info(callees_fname)
+        
+        monitoring_results(out_num, outbound, callees_info, date_start=start)
+    elif '--report' in sys.argv:
         start=None  
         callees_fname = sys.argv[2]
         
