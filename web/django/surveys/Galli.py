@@ -178,7 +178,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                         call = call[0]
                         codenum = get_codenum(phone_num, callees_info)
                         village = get_village(phone_num, callees_info)
-                        result = [call.subject.name or '', codenum, call.subject.number, village, time_str(call.date), str(dur.seconds)]
+                        result = [call.subject.name or '', call.subject.number, codenum, village, time_str(call.date), str(dur.seconds)]
         
                         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
                         
@@ -207,7 +207,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                         call = call[0]
                         codenum = get_codenum(phone_num, callees_info)
                         village = get_village(phone_num, callees_info)
-                        result = [call.subject.name or '', codenum, call.subject.number, village, time_str(call.date), str(dur.seconds)]
+                        result = [call.subject.name or '', call.subject.number, codenum, village, time_str(call.date), str(dur.seconds)]
         
                         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
                         
@@ -232,7 +232,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
             #print("PhoneNumException: " + line)
             continue
     
-    header = ['Name','Mobile Number', 'Code No','Call start','Duration (s)']
+    header = ['Name','Mobile Number', 'Code No', 'Village', 'Call start','Duration (s)']
     question = 'Response'
     if len(questions) == 1:
         question = list(questions)[0]
