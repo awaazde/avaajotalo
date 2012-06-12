@@ -845,7 +845,12 @@ def responder_report(userid, forumids, date_start=False, date_end=False, ):
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
     return date.strftime('%b-%d-%y')
-    
+
+'''
+****************************************************************************
+******************* MAIN ***************************************************
+****************************************************************************
+''' 
 def main():
 #    current_cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
 #    for u in current_cmf:
