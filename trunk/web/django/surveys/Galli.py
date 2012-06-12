@@ -263,7 +263,7 @@ def get_callees_info(callee_filename):
         try:
             num = get_number(line)
             info[num] = line
-            print('loading info ' + str(line) + ' for number '+num)
+            #print('loading info ' + str(line) + ' for number '+num)
         except ValueError as err:
             #print("ValueError: " + line)
             continue
