@@ -176,8 +176,9 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                         #if call.count()>1:
                             #print("more than one call found: " + str(call))
                         call = call[0]
-                        groupid = get_groupid(phone_num, callees_info)
-                        result = [call.subject.number, call.subject.name or '', groupid, time_str(call.date), str(dur.seconds)]
+                        codenum = get_codenum(phone_num, callees_info)
+                        village = get_village(phone_num, callees_info)
+                        result = [call.subject.name or '', codenum, call.subject.number, village, time_str(call.date), str(dur.seconds)]
         
                         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
                         
@@ -204,8 +205,9 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
                         #if call.count()>1:
                             #print("more than one call found: " + str(call))
                         call = call[0]
-                        groupid = get_groupid(phone_num, callees_info)
-                        result = [call.subject.number, call.subject.name or '', groupid, time_str(call.date), str(dur.seconds)]
+                        codenum = get_codenum(phone_num, callees_info)
+                        village = get_village(phone_num, callees_info)
+                        result = [call.subject.name or '', codenum, call.subject.number, village, time_str(call.date), str(dur.seconds)]
         
                         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
                         
@@ -230,7 +232,7 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
             #print("PhoneNumException: " + line)
             continue
     
-    header = ['number','name','groupid','start','duration (s)']
+    header = ['Name','Mobile Number', 'Code No','Call start','Duration (s)']
     question = 'Response'
     if len(questions) == 1:
         question = list(questions)[0]
@@ -280,13 +282,44 @@ def get_name(number, callees_info):
         name = callees_info[number][1].strip()
     return name
 
-def get_groupid(number, callees_info):
+def get_codenum(number, callees_info):
     groupid = ''
     if number in callees_info:
         groupid = callees_info[number][2].strip()
     return groupid
-    
 
+def get_village(number, callees_info):
+    village = ''
+    if number in callees_info:
+        village = callees_info[number][3].strip()
+    return village
+    
+def add_users(callee_filename):
+    added = 0
+    modified = 0
+    f = csv.reader(open(callee_filename, "rU"))
+    
+    for line in f:    
+        number = line[0]
+        user = User.objects.filter(number=number)
+        if bool(user):
+            user = user[0]
+            user.allowed = 'y'
+            user.indirect_bcasts_allowed = False
+            if user.name is None:
+                user.name = line[1]
+            user.village = line[3]
+            user.save()
+            print("modified "+ str(user))
+            modified += 1
+        else:
+            user = User(number=number, name=line[1], village=line[3], allowed='y', indirect_bcasts_allowed=False)
+            user.save()
+            print("added "+ str(user))
+            added += 1
+            
+    print(str(added)+" users added; "+str(modified)+" users modified")
+    
 '''
 ****************************************************************************
 ******************* MAIN ***************************************************
@@ -303,17 +336,17 @@ def main():
     outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
         
     if '--weeklyreport' in sys.argv:
+        calleesfname = sys.argv[2]
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=6)
         
-        callees_info = {}
-        #callees_info = get_callees_info(callees_fname)
+        callees_info = get_callees_info(calleesfname)
         
         monitoring_results(out_num, outbound, callees_info, date_start=start)
     elif '--report' in sys.argv:
         start=None  
-        callees_fname = sys.argv[2]
+        calleesfname = sys.argv[2]
         
         if len(sys.argv) > 3:
             start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
@@ -321,10 +354,11 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         
-        callees_info = {}
-        #callees_info = get_callees_info(callees_fname)
+        callees_info = get_callees_info(calleesfname)
         
         monitoring_results(out_num, outbound, callees_info, date_start=start, date_end=end)
-    
+    else:
+        calleesfname = sys.argv[1]
+        add_users(calleesfname)
         
 main()
