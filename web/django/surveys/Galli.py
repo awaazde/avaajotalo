@@ -357,8 +357,8 @@ def main():
         callees_info = get_callees_info(calleesfname)
         
         monitoring_results(out_num, outbound, callees_info, date_start=start, date_end=end)
-    else:
-        calleesfname = sys.argv[1]
+    elif '--userinfo' in sys.argv:
+        calleesfname = sys.argv[2]
         add_users(calleesfname)
         
 main()
