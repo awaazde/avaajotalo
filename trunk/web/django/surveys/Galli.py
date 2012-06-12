@@ -262,8 +262,8 @@ def get_callees_info(callee_filename):
     for line in f:        
         try:
             num = get_number(line)
-            info[num] = line[1:]
-            
+            info[num] = line
+            print('loading info ' + str(line) + ' for number '+num)
         except ValueError as err:
             #print("ValueError: " + line)
             continue
