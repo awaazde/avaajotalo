@@ -31,7 +31,6 @@ def daily_digest(number):
     #today = today - oneday
     
     print("<html>")
-    print("<head><STYLE TYPE='text/css'> .smalltable TD, .smalltable TR {font-family: Arial; font-size: 10pt;} </STYLE></head>")
     print("<div> Below are basic usage statistics for IBD PhoneBank over the last four days, starting with today. </div>")
     # calls
     print("<div><h4>Number of Incoming Calls</h4></div>")
@@ -61,16 +60,16 @@ def daily_digest(number):
     
     # detailed info by call
     print("<div><h4>Detailed call info</h4></div>")
-    print("<table class='smalltable'>")
+    print("<table>")
     print("<tr>")
-    print("<td width='110px'><b>Number</b></td>")
-    print("<td width='110px'><b>Call Time</b></td>")
-    print("<td width='70px'><b>Language</b></td>")
-    print("<td width='90px'><b>Duration (s)</b></td>")
-    print("<td width='70px'><b>STD</b></td>")
-    print("<td width='70px'><b>Blood Group</b></td>")
-    print("<td width='70px'><b>STD repeats</b></td>")
-    print("<td width='70px'><b>BG repeats</b></td>")
+    print("<td width='100px'><b>Number</b></td>")
+    print("<td width='120px'><b>Time</b></td>")
+    print("<td width='60px'><b>Dur (s)</b></td>")
+    print("<td width='60px'><b>Lang</b></td>")
+    print("<td width='60px'><b>STD</b></td>")
+    print("<td width='60px'><b>Blood Grp</b></td>")
+    print("<td width='60px'><b>STD reps</b></td>")
+    print("<td width='60px'><b>BG reps</b></td>")
     print("</tr>")
     calls = get_call_info(f, date_start=today, date_end=today+oneday, quiet=True)
     for call in calls:
