@@ -89,7 +89,7 @@ def daily_digest(number):
     for call in calls:
         print("<tr>")
         for elt in call:
-            print("<td>"+elt+"</td>")
+            print("<td>"+str(elt)+"</td>")
         print("</tr>")
     print("</table>")
           
