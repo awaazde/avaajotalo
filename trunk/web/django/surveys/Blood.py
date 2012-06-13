@@ -124,8 +124,8 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
                     # may not be there if it's an old number
-                    stdrepeats = call['std_repeats'] if call['std_repeats'] > 0 else 'N/A'
-                    bgrepeats = call['std_repeats'] if call['bg_repeats'] > 0 else 'N/A'
+                    stdrepeats = call['std_repeats'] if call['std_repeats'] > -1 else 'N/A'
+                    bgrepeats = call['std_repeats'] if call['bg_repeats'] > -1 else 'N/A'
                     call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
                     
                     all_calls.append(call_info)
