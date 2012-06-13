@@ -44,7 +44,9 @@ def daily_digest(number):
         # since a single day's calls can only be bucketed into a single week
         print("<td>"+str(ncalls)+"</td>")
         print("</tr>")
-        
+    
+    print("</table>")
+    
     # call duration
     durations = call_duration.get_call_durations(filename=f, destnum=number, date_start=today, date_end=today+oneday, quiet=True, transfer_calls='INBOUND_ONLY')
     durs_by_call = durations[durations.keys()[0]] if durations else {}
