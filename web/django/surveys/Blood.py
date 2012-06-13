@@ -60,16 +60,16 @@ def daily_digest(number):
     
     # detailed info by call
     print("<div><h4>Detailed call info</h4></div>")
-    print("<table>")
+    print("<table width='700px'>")
     print("<tr>")
     print("<td width='100px'><b>Number</b></td>")
-    print("<td width='120px'><b>Time</b></td>")
-    print("<td width='60px'><b>Dur (s)</b></td>")
-    print("<td width='60px'><b>Lang</b></td>")
-    print("<td width='30px'><b>STD</b></td>")
-    print("<td width='30px'><b>Blood Grp</b></td>")
-    print("<td width='30px'><b>STD reps</b></td>")
-    print("<td width='30px'><b>BG reps</b></td>")
+    print("<td width='100px'><b>Call Time</b></td>")
+    print("<td width='80px'><b>Duration (s)</b></td>")
+    print("<td width='80px'><b>Language</b></td>")
+    print("<td width='80px'><b>STD</b></td>")
+    print("<td width='80px'><b>Blood Group</b></td>")
+    print("<td width='80px'><b>STD repeats</b></td>")
+    print("<td width='80px'><b>BG repeats</b></td>")
     print("</tr>")
     calls = get_call_info(f, date_start=today, date_end=today+oneday, quiet=True)
     for call in calls:
@@ -133,7 +133,7 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                     
                 # add new call
                 #print("adding new call: " + phone_num)
-		# start repeat counts 1 back in order to not count the first play as a repeat
+        # start repeat counts 1 back in order to not count the first play as a repeat
                 open_calls[phone_num] = {'std':'','bgid':'', 'start':current_date,'std_repeats':-1,'bg_repeats':-1, 'lang':''}
                 
             elif line.find("End call") != -1:
@@ -159,10 +159,12 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                         call['bgid'] = input
                     elif line.find("welcome.wav") != -1:
                         call['lang'] = 'hin' if input == '1' else 'eng'
-                elif line.find("Prompt") != -1:
+                elif otalo_utils.is_prompt(line) != -1:
                     if line.find("std.wav") != -1:
+                        print('found std prompt')
                         call['std_repeats'] += 1
                     elif line.find("bloodgroup.wav") != -1:
+                        print('found bg prompt')
                         call['bg_repeats'] += 1
                     
         except KeyError as err:
