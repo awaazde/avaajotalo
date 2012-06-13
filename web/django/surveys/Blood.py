@@ -31,7 +31,7 @@ def daily_digest(number):
     #today = today - oneday
     
     print("<html>")
-    print("<head><STYLE TYPE='text/css'> .smalltable{font-family: Arial; font-size: 10pt;} </STYLE></head>")
+    print("<head><STYLE TYPE='text/css'> .smalltable TD, .smalltable TR {font-family: Arial; font-size: 10pt;} </STYLE></head>")
     print("<div> Below are basic usage statistics for IBD PhoneBank over the last four days, starting with today. </div>")
     # calls
     print("<div><h4>Number of Incoming Calls</h4></div>")
