@@ -161,10 +161,8 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                         call['lang'] = 'hin' if input == '1' else 'eng'
                 elif otalo_utils.is_prompt(line) != -1:
                     if line.find("std.wav") != -1:
-                        print('found std prompt')
                         call['std_repeats'] += 1
                     elif line.find("bloodgroup.wav") != -1:
-                        print('found bg prompt')
                         call['bg_repeats'] += 1
                     
         except KeyError as err:
