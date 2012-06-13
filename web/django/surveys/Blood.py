@@ -44,21 +44,6 @@ def daily_digest(number):
         # since a single day's calls can only be bucketed into a single week
         print("<td>"+str(ncalls)+"</td>")
         print("</tr>")
-    
-    print("</table>")
-    
-    # calls by caller
-    print("<div><h4>Who called today?</h4></div>")
-    print("<table>")
-    
-    calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=number, date_start=today, date_end=today+oneday, quiet=True,transfer_calls='INBOUND_ONLY')
-    for num, tot in calls:
-        print("<tr>")
-        print("<td width='100px'>"+num+"</td>")
-        print("<td>"+str(tot)+"</td>")
-        print("</tr>")
-    
-    print("</table>")
         
     # call duration
     durations = call_duration.get_call_durations(filename=f, destnum=number, date_start=today, date_end=today+oneday, quiet=True, transfer_calls='INBOUND_ONLY')
@@ -79,10 +64,11 @@ def daily_digest(number):
     print("<tr>")
     print("<td width='120px'><b>Number</b></td>")
     print("<td width='120px'><b>Call Time</b></td>")
+    print("<td width='80px'><b>Language</b></td>")
     print("<td width='100px'><b>Duration</b></td>")
     print("<td width='80px'><b>STD</b></td>")
-    print("<td width='80px'><b>STD repeats</b></td>")
     print("<td width='80px'><b>Blood Group</b></td>")
+    print("<td width='80px'><b>STD repeats</b></td>")
     print("<td width='80px'><b>BG repeats</b></td>")
     print("</tr>")
     calls = get_call_info(f, date_start=today, date_end=today+oneday, quiet=True)
@@ -138,7 +124,9 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
                     # may not be there if it's an old number
-                    call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['std'],call['std_repeats'],call['bgid'],call['bg_repeats']]
+                    stdrepeats = call['std_repeats'] if call['std_repeats'] > 0 else 'N/A'
+                    bgrepeats = call['std_repeats'] if call['bg_repeats'] > 0 else 'N/A'
+                    call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
                     
                     all_calls.append(call_info)
                     del open_calls[phone_num]
@@ -146,7 +134,7 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                 # add new call
                 #print("adding new call: " + phone_num)
 		# start repeat counts 1 back in order to not count the first play as a repeat
-                open_calls[phone_num] = {'std':'','bgid':'', 'start':current_date,'std_repeats':-1,'bg_repeats':-1}
+                open_calls[phone_num] = {'std':'','bgid':'', 'start':current_date,'std_repeats':-1,'bg_repeats':-1, 'lang':''}
                 
             elif line.find("End call") != -1:
                 if phone_num in open_calls:
@@ -154,7 +142,10 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
                     # may not be there if it's an old number
-                    call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['std'],call['std_repeats'],call['bgid'],call['bg_repeats']]
+                    stdrepeats = call['std_repeats'] if call['std_repeats'] > 0 else 'N/A'
+                    bgrepeats = call['std_repeats'] if call['bg_repeats'] > 0 else 'N/A'
+                    call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
+
                     
                     all_calls.append(call_info)
                     del open_calls[phone_num]
@@ -166,6 +157,8 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                         call['std'] = input
                     elif line.find("bloodgroup.wav") != -1:
                         call['bgid'] = input
+                    elif line.find("welcome.wav") != -1:
+                        call['lang'] = 'hin' if input == '1' else 'eng'
                 elif line.find("Prompt") != -1:
                     if line.find("std.wav") != -1:
                         call['std_repeats'] += 1
