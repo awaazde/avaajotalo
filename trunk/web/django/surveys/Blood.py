@@ -2,7 +2,7 @@ import os, sys, csv, shutil
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
-from otalo.AO.models import Line, Forum, Message_forum
+from otalo.ao.models import Line, Forum, Message_forum
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
 
 '''
@@ -128,7 +128,7 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                     # may not be there if it's an old number
                     stdrepeats = call['std_repeats'] if call['std_repeats'] > -1 else 'N/A'
                     bgrepeats = call['std_repeats'] if call['bg_repeats'] > -1 else 'N/A'
-                    call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
+                    call_info = [phone_num,time_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
                     
                     all_calls.append(call_info)
                     del open_calls[phone_num]
@@ -146,7 +146,7 @@ def get_call_info(filename, phone_num_filter=False, date_start=False, date_end=F
                     # may not be there if it's an old number
                     stdrepeats = call['std_repeats'] if call['std_repeats'] > -1 else 'N/A'
                     bgrepeats = call['std_repeats'] if call['bg_repeats'] > -1 else 'N/A'
-                    call_info = [phone_num,date_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
+                    call_info = [phone_num,time_str(call['start']),str(dur.seconds),call['lang'],call['std'],call['bgid'], stdrepeats,bgrepeats]
 
                     
                     all_calls.append(call_info)
@@ -203,7 +203,7 @@ def date_str(date):
 
 def time_str(date):
     #return date.strftime('%Y-%m-%d')
-    return date.strftime('%m-%d-%y %H:%M')
+    return date.strftime('%H:%M')
     
 '''
 ****************************************************************************
