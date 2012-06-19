@@ -414,7 +414,7 @@ def repeats_requests(filename, phone_num_filter=False, date_start=False, date_en
                     
                     del open_calls[phone_num]
                     
-            if line.find("dtmf") != -1 and line.find("*") != -1:
+            if phone_num in open_calls and line.find("dtmf") != -1 and line.find("*") != -1:
                 counts = open_calls[phone_num]['*']
                 prompt = line[line.rfind('/')+1:line.find('.wav')]
                 if prompt not in counts:
