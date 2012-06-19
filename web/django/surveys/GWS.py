@@ -325,7 +325,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
     
     if len(soundfiles) > 0:
         if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
-            os.removedirs(OUTPUT_FILE_DIR+audiofile_dir)
+            shutil.rmtree(OUTPUT_FILE_DIR+audiofile_dir)
         os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
         for callid,files in soundfiles.items():
             for i in range(len(files)):
