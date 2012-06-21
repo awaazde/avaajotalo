@@ -414,7 +414,7 @@ def ciie_survey(line, outbound_num):
     welcome_opt2 = Option(number="9", action=Option.NEXT, prompt=welcome)
     welcome_opt2.save()
     
-    options = Prompt(file=line.language+"/ciie_options"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000)
+    options = Prompt(file=line.language+"/ciie_options"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     options.save()
     options_opt1 = Option(number="1", action=Option.INPUT, prompt=options)
     options_opt1.save()
