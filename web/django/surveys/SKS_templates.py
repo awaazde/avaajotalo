@@ -15,7 +15,7 @@
 #===============================================================================
 import sys, csv
 from datetime import datetime, timedelta
-from otalo.AO.models import Line
+from otalo.ao.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
 from random import shuffle
 
@@ -394,6 +394,37 @@ def lokmitra_rsvp_template(line):
     rsvp_thankyou.save()
     rsvp_thankyou_opt = Option(number="", action=Option.NEXT, prompt=rsvp_thankyou)
     rsvp_thankyou_opt.save()
+    
+def ciie_survey(line, outbound_num):
+    s = Survey.objects.filter(name='CIIE_survey', number=outbound_num, template=True)
+    if bool(s):        
+        s = s[0]
+        s.delete()
+        print('deleting template')
+    s = Survey(name='CIIE_survey', number=outbound_num, template=True, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
+    s.save()
+    print('creating new template '+str(s))
+    
+    order = 1
+    
+    welcome = Prompt(file=line.language+"/ciie_welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000)
+    welcome.save()
+    welcome_opt1 = Option(number="1", action=Option.INPUT, prompt=welcome)
+    welcome_opt1.save()
+    welcome_opt2 = Option(number="2", action=Option.INPUT, prompt=welcome)
+    welcome_opt2.save()
+    welcome_opt3 = Option(number="3", action=Option.INPUT, prompt=welcome)
+    welcome_opt3.save()
+    welcome_opt4 = Option(number="4", action=Option.INPUT, prompt=welcome)
+    welcome_opt4.save()
+    welcome_opt5 = Option(number="5", action=Option.INPUT, prompt=welcome)
+    welcome_opt5.save()
+    order+= 1
+    
+    thankyou = Prompt(file=line.language+"/ciie_thankyou"+SOUND_EXT, order=order, survey=s)
+    thankyou.save()
+    thankyou_opt = Option(number="", action=Option.NEXT, prompt=thankyou)
+    thankyou_opt.save()
 
 '''
 ****************************************************************************
@@ -496,7 +527,8 @@ def main():
     #subscription(line)
     #subscription_results(line)
     #blank_template('7961907707', 'lokmitra','freetdm/grp1/a/','')
-    lokmitra_rsvp_template(line)
+    #lokmitra_rsvp_template(line)
+    ciie_survey(line, outbound_num)
         
 main()
 
