@@ -401,7 +401,7 @@ def ciie_survey(line, outbound_num):
         s = s[0]
         s.delete()
         print('deleting template')
-    s = Survey(name='CIIE_survey', number=outbound_num, template=True, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
+    s = Survey(name='CIIE_survey', number=outbound_num, template=True, inbound=True, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
     s.save()
     print('creating new template '+str(s))
     
