@@ -407,18 +407,23 @@ def ciie_survey(line, outbound_num):
     
     order = 1
     
-    welcome = Prompt(file=line.language+"/ciie_welcome"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000)
+    welcome = Prompt(file=line.language+"/ciie_welcome"+SOUND_EXT, order=order, bargein=True, survey=s)
     welcome.save()
-    welcome_opt1 = Option(number="1", action=Option.INPUT, prompt=welcome)
+    welcome_opt1 = Option(number="", action=Option.INPUT, prompt=welcome)
     welcome_opt1.save()
-    welcome_opt2 = Option(number="2", action=Option.INPUT, prompt=welcome)
-    welcome_opt2.save()
-    welcome_opt3 = Option(number="3", action=Option.INPUT, prompt=welcome)
-    welcome_opt3.save()
-    welcome_opt4 = Option(number="4", action=Option.INPUT, prompt=welcome)
-    welcome_opt4.save()
-    welcome_opt5 = Option(number="5", action=Option.INPUT, prompt=welcome)
-    welcome_opt5.save()
+    
+    options = Prompt(file=line.language+"/ciie_options"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000)
+    options.save()
+    options_opt1 = Option(number="1", action=Option.INPUT, prompt=options)
+    options_opt1.save()
+    options_opt2 = Option(number="2", action=Option.INPUT, prompt=options)
+    options_opt2.save()
+    options_opt3 = Option(number="3", action=Option.INPUT, prompt=options)
+    options_opt3.save()
+    options_opt4 = Option(number="4", action=Option.INPUT, prompt=options)
+    options_opt4.save()
+    options_opt5 = Option(number="5", action=Option.INPUT, prompt=options)
+    options_opt5.save()
     order+= 1
     
     thankyou = Prompt(file=line.language+"/ciie_thankyou"+SOUND_EXT, order=order, survey=s)
