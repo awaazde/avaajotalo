@@ -396,7 +396,7 @@ def lokmitra_rsvp_template(line):
     rsvp_thankyou_opt.save()
     
 def ciie_survey(line, outbound_num):
-    s = Survey.objects.filter(name='CIIE_survey', number=outbound_num, template=True)
+    s = Survey.objects.filter(name='CIIE_survey', number=outbound_num, template=True, inbound=True)
     if bool(s):        
         s = s[0]
         s.delete()
