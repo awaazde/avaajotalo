@@ -15,6 +15,8 @@
 #===============================================================================
 import sys, csv
 from datetime import datetime, timedelta
+from django.conf import settings
+import otalo_utils
 from otalo.ao.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
 from random import shuffle
@@ -555,8 +557,10 @@ def ciie_survey_results(filename, phone_num_filter=False, date_start=False, date
                         call = call[0]
                         result = [call.subject.number, time_str(call.date), str(dur.seconds)]
         
-                        inputs = Input.objects.get(call=call)
-                        result.append(str(input.input))                    
+                        input = Input.objects.filter(call=call)
+                        if bool(input):
+                            input = input[0]
+                            result.append(str(input.input))                    
                         all_calls.append(result)
                     else:
                         print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
@@ -578,8 +582,10 @@ def ciie_survey_results(filename, phone_num_filter=False, date_start=False, date
                         call = call[0]
                         result = [call.subject.number, time_str(call.date), str(dur.seconds)]
         
-                        inputs = Input.objects.get(call=call)
-                        result.append(str(input.input))                    
+                        input = Input.objects.filter(call=call)
+                        if bool(input):
+                            input = input[0]
+                            result.append(str(input.input))                    
                         all_calls.append(result)
                     else:
                         print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
