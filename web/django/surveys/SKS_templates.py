@@ -346,7 +346,7 @@ def blank_template(num, subdir, prefix, suffix):
         s.save()
         print('Blank template created: '+str(s))
         
-        blank = Prompt(file=subdir+'blank.wav', order=1, bargein=False, survey=s, delay=0)
+        blank = Prompt(file=subdir+'\blank.wav', order=1, bargein=False, survey=s, delay=0)
         blank.save()
         blank_opt = Option(number="", action=Option.NEXT, prompt=blank)
         blank_opt.save()
