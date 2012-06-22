@@ -504,6 +504,112 @@ def rsvp_results(line, date_start=False, date_end=False):
     outfilename = OUTPUT_FILE_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerows(results)
+
+def ciie_survey_results(filename, phone_num_filter=False, date_start=False, date_end=False, quiet=False):
+    all_calls = []
+    open_calls = {}
+    
+    f = open(filename)
+
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out call                
+                    open_call = open_calls[phone_num]    
+                    start = open_call['start']
+                    dur = current_date - start
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
+                    if bool(call):
+                        if call.count()>1:
+                            print("more than one call found: " + str(call))
+                        call = call[0]
+                        result = [call.subject.number, time_str(call.date), str(dur.seconds)]
+        
+                        inputs = Input.objects.get(call=call)
+                        result.append(str(input.input))                    
+                        all_calls.append(result)
+                    else:
+                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = {'start':current_date}
+                
+            elif line.find("End call") != -1 or line.find("Abort call") != -1:
+                if phone_num in open_calls:
+                    open_call = open_calls[phone_num]    
+                    start = open_call['start']
+                    dur = current_date - start
+                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
+                    if bool(call):
+                        if call.count()>1:
+                            print("more than one call found: " + str(call))
+                        call = call[0]
+                        result = [call.subject.number, time_str(call.date), str(dur.seconds)]
+        
+                        inputs = Input.objects.get(call=call)
+                        result.append(str(input.input))                    
+                        all_calls.append(result)
+                    else:
+                        print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
+                    del open_calls[phone_num]
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+     
+    if quiet:
+        header = ['Mobile Number','Call start','Duration (s)','Input']
+        outputfilename='ciie_results'
+        if date_start:
+            outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+        outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
+        output = csv.writer(open(outputfilename, 'wb'))
+        output.writerow(header)            
+        output.writerows(all_calls)
+    else:
+        print('Mobile No\tCall start\tDuration(s)\tInput')
+        for call in all_calls:
+            print('\t'.join(call))
     
 '''
 ****************************************************************************
