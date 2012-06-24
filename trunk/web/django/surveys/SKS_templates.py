@@ -397,13 +397,13 @@ def lokmitra_rsvp_template(line):
     rsvp_thankyou_opt = Option(number="", action=Option.NEXT, prompt=rsvp_thankyou)
     rsvp_thankyou_opt.save()
     
-def ciie_survey(line, outbound_num):
-    s = Survey.objects.filter(name='CIIE_survey', number=outbound_num, template=True, inbound=True)
-    if bool(s):        
+def ciie_survey(line, outbound_num, template, inbound):
+    s = Survey.objects.filter(name='CIIE_survey', number=outbound_num, template=template, inbound=inbound)
+    if bool(s) and template:        
         s = s[0]
         s.delete()
         print('deleting template')
-    s = Survey(name='CIIE_survey', number=outbound_num, template=True, inbound=True, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
+    s = Survey(name='CIIE_survey', number=outbound_num, template=template, inbound=inbound, dialstring_prefix=line.dialstring_prefix, dialstring_suffix=line.dialstring_suffix, complete_after=0)
     s.save()
     print('creating new template '+str(s))
     
@@ -648,7 +648,7 @@ def main():
     #subscription_results(line)
     #blank_template('7961907707', 'lokmitra','freetdm/grp1/a/','')
     #lokmitra_rsvp_template(line)
-    ciie_survey(line, outbound_num)
+    ciie_survey(line, outbound_num, template=False, inbound=True)
         
 main()
 
