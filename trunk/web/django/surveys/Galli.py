@@ -245,38 +245,37 @@ def monitoring_results(number, filename, callees_info, phone_num_filter=False, d
     output.writerow(header)            
     output.writerows(all_calls)
 
-def results_by_callee(number, callees, date_start=None, date_end=None):
+def results_by_callee(linenumber, callees, date_start=None, date_end=None):
     # get calls
-    calls = Call.objects.select_related().filter(survey__number=number, complete=True)
+    calls = Call.objects.select_related().filter(survey__number=linenumber, complete=True, survey__broadcast=True, survey__prompt__file__contains="MFQw")
     
     if date_start:
         calls = calls.filter(date__gte=date_start)
         
     if date_end:
         calls = calls.filter(date__lt=date_end)
-    
-    survey_names = Survey.objects.filter(call__in=calls, template=True).values('name').distinct()
-    survey_names = [pair.values()[0] for pair in survey_names]
+
+    prompt_names = Prompt.objects.filter(survey__call__in=calls).exclude(file__contains='MFQw').exclude(file__contains='MFQe').values('file').distinct()
+    prompt_names = [pair.values()[0] for pair in prompt_names]
     header = ['Name', 'Mobile Number', 'Code No']
-    for name in survey_names:
-        header.append(name)
+    for pname in prompt_names:
+        header.append(pname[pname.rfind('/')+1:pname.rfind(SOUND_EXT)])
     
     all_callees = [header]
-    for callee in callees:
-        number = get_number(callee)
-        inputs = Input.objects.select_related().filter(call__subject__number=number,call__survey__name__in=survey_names)
+    for number in callees.keys():
+        inputs = Input.objects.select_related().filter(call__subject__number=number,prompt__file__in=prompt_names)
         input_map = {}
-        if input in inputs:
-            input_map[input.call.survey.name]=input.input
-        row = [get_name(callee), number, get_codenum(calee)]
-        for sname in survey_names:
-            if sname in input_map:
-                row.append(input_map[sname])
+        for input in inputs:
+            input_map[input.prompt.file]=input.input
+        row = [get_name(number,callees), number, get_codenum(number,callees)]
+        for pname in prompt_names:
+            if pname in input_map:
+                row.append(input_map[pname])
             else:
                 row.append('')
         all_callees.append(row)
         
-    outputfilename='results_by_callee_'+number
+    outputfilename='results_by_callee_'+linenumber
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
@@ -386,11 +385,11 @@ def main():
     elif '--monthlyreport' in sys.argv:
         calleesfname = sys.argv[2]
         now = datetime.now()
-        start = datetime(year=now.year, month=now.month, day=1)
+        start = datetime(year=now.year, month=now.month-1, day=1)
         
         callees_info = get_callees_info(calleesfname)
         
-        monitoring_results(out_num, outbound, callees_info, date_start=start)
+        results_by_callee(out_num, callees_info, date_start=start)
     elif '--report' in sys.argv:
         start=None  
         calleesfname = sys.argv[2]
@@ -403,7 +402,7 @@ def main():
         
         callees_info = get_callees_info(calleesfname)
         
-        results_by_callee(out_num, callees_info, date_start=start)
+        monitoring_results(out_num, outbound, callees_info, date_start=start, date_end=end)
     elif '--userinfo' in sys.argv:
         calleesfname = sys.argv[2]
         add_users(calleesfname)
