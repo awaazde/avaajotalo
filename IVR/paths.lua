@@ -30,6 +30,10 @@ FILTER_CODE_NO_ALL = 2;
 FILTER_CODE_ALL_LAST = 3;
 MAX_RESPONDER_LEN_DEF = 180;
 MAX_USER_RESP_LEN_DEF = 60;
+FORUM_STATUS_BCAST_CALL = 1;
+FORUM_STATUS_BCAST_SMS = 2;
+FORUM_STATUS_BCAST_BOTH = 3;
+FORUM_STATUS_INACTIVE = 4;
 
 -- Sh be consistent with Survey model constants
 TEMPLATE_DESIGNATOR = "TEMPLATE";
@@ -67,8 +71,8 @@ GLOBAL_JUMP_MESSAGE=9;
 basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 
-sd = "/home/dsc/media/";
-logfileroot = "/home/dsc/Documents/Log/AO/"
+sd = "/Users/neil/Development/media/";
+logfileroot = "/Users/neil/Documents/"
 
 --[[
 aosd = basedir .. "/scripts/AO/sounds/eng/";
@@ -78,6 +82,7 @@ logfilename = sd .. "ao.log";
 
 env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
+assert (con:execute ("use otalo"));
 
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )

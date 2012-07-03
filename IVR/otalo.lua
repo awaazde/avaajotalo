@@ -35,7 +35,7 @@ opencursors = {};
 
 -- set the language, check if line is restricted
 destination = session:getVariable("destination_number");
-line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota, id FROM AO_line WHERE number LIKE '%" .. destination .. "%'");
+line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota, id, checkpendingmsgs FROM ao_line WHERE number LIKE '%" .. destination .. "%'");
 aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		
 
 -- responder section-specific sounds
@@ -51,6 +51,7 @@ local callback_allowed = line_info[5];
 local personal_inbox = line_info[6];
 local quota_imposed = line_info[7];
 local lineid = line_info[8];
+local checkpendingmsgs = line_info[9];
 
 logfilename = logfileroot .. "inbound_" .. lineid .. ".log";
 logfile = io.open(logfilename, "a");
@@ -59,7 +60,7 @@ logfile:setvbuf("line");
 caller = session:getVariable("caller_id_number");
 caller = caller:sub(-10);
 freeswitch.consoleLog("info", script_name .. " : caller id = " .. caller .. "\n");
-uid = row("SELECT id, allowed, balance FROM AO_user WHERE number = " .. caller);
+uid = row("SELECT id, allowed, balance FROM ao_user WHERE number = " .. caller);
 local balance = nil;
 
 if (uid ~= nil) then
@@ -74,7 +75,7 @@ if (uid ~= nil) then
 else
 	if (open == 1) then
 	   -- first time caller
-	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..caller.."','y')";
+	   query = "INSERT INTO ao_user (number, allowed) VALUES ('" ..caller.."','y')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
@@ -182,12 +183,12 @@ end
 
 function getmessages (forumid, tagid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.max_user_resp_len ";
-   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_forum forum ";
    query = query .. " WHERE forum.id = " .. forumid .. " AND message_forum.forum_id = " .. forumid .. " AND message.id = message_forum.message_id AND message.lft = 1";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED;
    if (tagid ~= nil) then
    		query = query .. " AND EXISTS (SELECT 1 ";
-   		query = query .. " 				FROM AO_message_forum_tags mf_tags ";
+   		query = query .. " 				FROM ao_message_forum_tags mf_tags ";
    		query = query .. " 				WHERE mf_tags.message_forum_id = message_forum.id AND mf_tags.tag_id = " .. tagid .. ") ";
    end
    -- Sort first by position AND then date
@@ -203,7 +204,7 @@ end
 
 function getreplies (thread)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.max_user_resp_len ";
-   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_forum forum ";
    query = query .. " WHERE message.thread_id = " .. thread .. " AND message_forum.message_id = message.id ";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_APPROVED .. " AND message_forum.forum_id = forum.id ";
    query = query .. " ORDER BY message.lft";
@@ -218,7 +219,7 @@ end
 
 function getusermessages ()
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.max_user_resp_len ";
-   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
    query = query .. " AND message_forum.forum_id = forum.id";
    query = query .. " ORDER BY message.date DESC";
@@ -233,7 +234,7 @@ end
 
 function getpendingmessages (lineid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.max_user_resp_len ";
-   query = query .. "FROM AO_message message, AO_message_forum message_forum, AO_forum forum, AO_line_forums line_forum ";
+   query = query .. "FROM ao_message message, ao_message_forum message_forum, ao_forum forum, ao_line_forums line_forum ";
    query = query .. "WHERE message.id = message_forum.message_id";
    query = query .. " AND message_forum.status = " .. MESSAGE_STATUS_PENDING .. " AND message_forum.forum_id = forum.id AND line_forum.forum_id = forum.id AND line_forum.line_id = " .. lineid;
    query = query .. " ORDER BY message.date DESC";
@@ -247,7 +248,7 @@ end
 
 function isresponder (userid, linenum)
    local query = "SELECT 1 ";
-   query = query .. "FROM AO_forum_responders fr, AO_line line, AO_line_forums lf, AO_forum forum ";
+   query = query .. "FROM ao_forum_responders fr, ao_line line, ao_line_forums lf, ao_forum forum ";
    query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
    query = query .. " AND line.id = lf.line_id and lf.forum_id = forum.id AND forum.id = fr.forum_id and fr.user_id = " .. userid;
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
@@ -264,7 +265,7 @@ end
 
 function hasreplies (msgid)
    local query = "SELECT 1 ";
-   query = query .. "FROM AO_message m, AO_message_forum mf ";
+   query = query .. "FROM ao_message m, ao_message_forum mf ";
    query = query .. " WHERE mf.message_id = m.id ";
    query = query .. " AND m.thread_id = " .. msgid;
    query = query .. " AND m.lft > 1 "
@@ -284,7 +285,6 @@ end
 -----------
 
 function mainmenu ()
-  
    read(aosd .. "welcome.wav", 500);
    
    local forumids = {};
@@ -292,11 +292,12 @@ function mainmenu ()
    local lineid = nil;
    local i = 0;
    local adminmode = is_admin(nil, adminforums);
-
+   
    local query = "SELECT forum.id, forum.name_file, line.id ";
-   query = query .. "FROM AO_forum forum, AO_line line, AO_line_forums line_forum ";
+   query = query .. "FROM ao_forum forum, ao_line line, ao_line_forums line_forum ";
    query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
-   query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id";
+   query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id ";
+   query = query .. " AND forum.status <> " .. FORUM_STATUS_INACTIVE;
    query = query .. " ORDER BY forum.id ASC";
    
    for row in rows (query) do
@@ -308,13 +309,18 @@ function mainmenu ()
    local numforums = i;
    
    local responder = isresponder(userid, destination);
-   if (numforums == 1 and personal_inbox == 0 and not adminmode and not responder) then
+   if (numforums == 1 and personal_inbox == 0 and checkpendingmsgs == 0 and not responder) then
    		-- go to the one and only forum straight away
    		playforum(forumids[1]);
    else
 	   for i,fname in ipairs(forumnames) do
 	      read(aosd .. "listento_pre.wav", 0);
-	      read(aosd .. fname, 0);
+	      if io.open(aosd .. fname,"rb") ~= nil then
+	      	read(aosd .. fname, 0);
+	      else
+	      	local forumname = fname:sub(1,-5)
+	      	speak(forumname);
+	      end
 	      read(aosd .. "listento_post.wav", 0);
 	      read(aosd .. "digits/" .. i .. ".wav", 500);
 	   end
@@ -329,7 +335,7 @@ function mainmenu ()
    end
 
    local chkpendingidx = -1;
-   if (adminmode) then
+   if (adminmode and checkpendingmsgs == 1) then
    	  i = i + 1;
    	  chkpendingidx = i;
       read(aosd .. "checkpending.wav", 0);
@@ -349,7 +355,12 @@ function mainmenu ()
    if (d ~= nil and d > 0 and d <= numforums) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
       read(aosd .. "okyouwant_pre.wav", 0);
-      read(aosd .. forumnames[d], 0);
+      if io.open(aosd .. forumnames[d],"rb") ~= nil then
+      	read(aosd .. forumnames[d], 0);
+      else
+      	local forumname = forumnames[d]:sub(1,-5)
+      	session:speak(forumname);
+      end
       read(aosd .. "okyouwant_post.wav", 0);
       playforum(forumids[d]);
    elseif (d == chkrepliesidx and personal_inbox == 1) then
@@ -410,19 +421,19 @@ function playmessage (msg, listenreplies)
      d = use();
      if (d == "1") then
      	local position = 'null';
-     	local cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
+     	local cur = con:execute("SELECT MAX(mf.position) from ao_message_forum mf, ao_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
 	    -- only set position if we have to
 	    local pos = cur:fetch()
 	    cur:close();
 	    if (pos ~= nil) then 
 	       position = tonumber(pos) + 1;
 	    end
-	    local query = "UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_APPROVED .. ", position = " .. position .. " WHERE message_id = " .. id .. " AND forum_id = " .. forumid;
+	    local query = "UPDATE ao_message_forum SET status = " .. MESSAGE_STATUS_APPROVED .. ", position = " .. position .. " WHERE message_id = " .. id .. " AND forum_id = " .. forumid;
 		con:execute(query);
 		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 		read(aosd .. "messageapproved.wav", 0);
      elseif (d == "2") then
-     	local query = "UPDATE AO_message_forum SET status = " .. MESSAGE_STATUS_REJECTED .. " WHERE message_id = " .. id .. " AND forum_id = " .. forumid; 
+     	local query = "UPDATE ao_message_forum SET status = " .. MESSAGE_STATUS_REJECTED .. " WHERE message_id = " .. id .. " AND forum_id = " .. forumid; 
 		con:execute(query);
 		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 		read(aosd .. "messagerejected.wav", 0);
@@ -600,7 +611,7 @@ end
 
 function playforum (forumid)
    local forum = {};
-   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code, confirm_recordings, listening_allowed FROM AO_forum WHERE id = " .. forumid);
+   cur = con:execute("SELECT name_file, moderated, posting_allowed, responses_allowed, maxlength, filter_code, confirm_recordings, listening_allowed FROM ao_forum WHERE id = " .. forumid);
    cur:fetch(forum);
    cur:close();
    local forumname = forum[1];
@@ -644,7 +655,7 @@ function playforum (forumid)
 			 end
 			 
 			 local query = "SELECT tag.id, tag.tag_file ";
-			 query = query .. "FROM AO_tag tag, AO_forum forum, AO_forum_tag forum_tag ";
+			 query = query .. "FROM ao_tag tag, ao_forum forum, ao_forum_tag forum_tag ";
 			 query = query .. " WHERE forum.id = " .. forumid; 
 			 query = query .. " AND forum_tag.forum_id = forum.id AND forum_tag.tag_id = tag.id ";
 			 query = query .. " AND forum_tag.filtering_allowed = 1 ";
@@ -770,7 +781,7 @@ function jumptomessage()
 	      id_msg = tonumber(d);
 	      id_msg = id_msg % 100000;
 	      local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status ";
-	      query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_forum forum ";
+	      query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_forum forum ";
 	      query = query .. " WHERE forum.id = " .. tostring(id_forum) .. " AND message_forum.forum_id = " .. tostring(id_forum) ;
 	      query = query .. " AND message.id = " .. tostring(id_msg) .. " AND message_forum.message_id = "	.. tostring(id_msg);
 	      freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
@@ -784,7 +795,14 @@ end
 -- MAIN 
 -----------
 -- get admin permissions
-adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
+local query = "SELECT admin.forum_id FROM ao_admin admin, ao_forum forum, ao_line line, ao_line_forums line_forum "; 
+query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
+query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id ";
+query = query .. " AND forum.status <> " .. FORUM_STATUS_INACTIVE;
+query = query .. " AND user_id =  " .. userid;
+query = query .. " AND admin.forum_id =  forum.id ";
+
+adminrows = rows(query);
 adminforum = adminrows();
 while (adminforum ~= nil) do
 	-- use the table as a set to make lookup faster
@@ -807,7 +825,7 @@ if (callback_allowed == 1 and (quota_imposed == 0 or (balance ~= nil and balance
 	
 	-- decrease the caller's balance if necessary
 	if (quota_imposed == 1 and balance > 0) then
-		local query = " UPDATE AO_user ";
+		local query = " UPDATE ao_user ";
 	   	query = query .. " SET balance = balance - 1 ";
 	   	query = query .. " WHERE id = " .. userid;
 	   	con:execute(query);
@@ -840,6 +858,7 @@ end
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 session:setInputCallback("my_cb", "arg");
+session:set_tts_parms("flite", "awb");
 
 logfile:write(sessid, "\t", caller, "\t", destination,
 "\t", os.time(), "\t", "Start call", "\n");
@@ -851,7 +870,7 @@ local mm_cnt = 0;
 while (1) do
    -- choose a forum
    mainmenu();
-
+	
    -- go back to the main menu
    read(aosd .. "mainmenu.wav", 1000);
    

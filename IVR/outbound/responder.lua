@@ -39,7 +39,7 @@ opencursors = {};
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 
 -- Get phone number to call out
-local num = row("SELECT number FROM AO_user where id = ".. userid);
+local num = row("SELECT number FROM ao_user where id = ".. userid);
 
 caller = tostring(num[1]);
 
@@ -149,7 +149,7 @@ if (msg ~= nil) then
 	local lineid = "";
 	-- set the language
 	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix, line.number, line.outbound_number, line.id ";
-	query = query .. " FROM AO_line line, AO_line_forums line_forum, AO_forum forum, AO_message_forum message_forum ";
+	query = query .. " FROM ao_line line, ao_line_forums line_forum, ao_forum forum, ao_message_forum message_forum ";
 	query = query .. " WHERE line.id = line_forum.line_id ";
 	query = query .. " AND  line_forum.forum_id = forum.id ";
 	query = query .. " AND  message_forum.forum_id = forum.id ";
@@ -174,7 +174,7 @@ if (msg ~= nil) then
 	logfile:setvbuf("line");
 
 	-- get admin permissions
-	adminrows = rows("SELECT forum_id FROM AO_admin where user_id =  " .. userid);
+	adminrows = rows("SELECT forum_id FROM ao_admin where user_id =  " .. userid);
 	adminforum = adminrows();
 	while (adminforum ~= nil) do
 		-- use the table as a set to make lookup faster

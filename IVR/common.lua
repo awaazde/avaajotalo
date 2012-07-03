@@ -118,7 +118,7 @@ end
 -----------
 
 function read(file, delay, len)
-   local len = len or 1
+   local len = len or 1;
    if (digits == "") then
       logfile:write(sessid, "\t",
 		    caller, "\t", destination, "\t",
@@ -155,6 +155,18 @@ function use()
    -- doesn't carry over to the next
    session:flushDigits();
    return d;
+end
+
+-----------
+-- speak
+-----------
+function speak(phrase)
+   if (digits == "") then
+      logfile:write(sessid, "\t",
+		    caller, "\t", destination, "\t",
+		    os.time(), "\t", "Speak", "\t", phrase, "\n");
+      session:speak(phrase);
+   end
 end
 
 -----------
@@ -259,14 +271,14 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 	  end
    until (d == "1");
    
-   query1 = "INSERT INTO AO_message (user_id, content_file, date";
+   query1 = "INSERT INTO ao_message (user_id, content_file, date";
    query2 = " VALUES ("..userid..",'"..partfilename.."',".."now()";
    
    if (thread ~= nil) then -- this is a response
-      query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+      query = "UPDATE ao_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-      query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+      query = "UPDATE ao_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
       con:execute(query);
       freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
       query1 = query1 .. ", thread_id, lft, rgt)";
@@ -285,7 +297,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    cur:close();
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
-   query1 = "INSERT INTO AO_message_forum (message_id, forum_id";
+   query1 = "INSERT INTO ao_message_forum (message_id, forum_id";
    query2 = " VALUES ("..id[1]..","..forumid;
       
    local position = "null";
@@ -294,7 +306,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    else
 	 status = MESSAGE_STATUS_APPROVED; 
 	 if (thread == nil) then
-		    cur = con:execute("SELECT MAX(mf.position) from AO_message_forum mf, AO_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
+		    cur = con:execute("SELECT MAX(mf.position) from ao_message_forum mf, ao_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
 		    -- only set position if we have to
 		    pos = cur:fetch();
 		    cur:close();
@@ -312,6 +324,45 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 
    read(okrecordedprompt, 500);
    return use();
+end
+
+
+-----------
+-- check_abort
+-----------
+
+function check_abort(counter, threshold)
+	counter = counter + 1;
+	if (counter >= threshold) then
+		logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "Abort call", "\n");
+		hangup();
+	else
+		return counter;
+	end
+end
+
+-----------
+-- is_admin 
+-----------
+
+function is_admin(forumid, forums) 
+	if (forumid == nil) then
+		local numItems = 0;
+		for k,v in pairs(forums) do
+		    numItems = numItems + 1;
+		end
+		
+		return numItems > 0;
+	else
+		return forums[forumid] == true;
+	end
+end
+
+-----------
+-- trim (string) 
+-----------
+function trim (s)
+	return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
 end
 
 --[[ 
@@ -354,7 +405,7 @@ end
 
 function get_responder_messages (userid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id, forum.max_responder_len ";
-   query = query .. " FROM AO_message message, AO_message_forum message_forum, AO_message_responder message_responder, AO_forum forum ";
+   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_message_responder message_responder, ao_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND forum.id = message_forum.forum_id ";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
@@ -363,11 +414,11 @@ function get_responder_messages (userid)
    -- for response if this user hasn't already
    -- responded to it message
    query = query .. " AND NOT EXISTS (SELECT 1 ";
-   query = query .. "			  FROM AO_message msg ";
+   query = query .. "			  FROM ao_message msg ";
    query = query .. "			  WHERE ( (message.thread_id IS NULL AND msg.thread_id = message.id) OR ";
    query = query .. "			  		  (message.thread_id IS NOT NULL AND msg.thread_id = message.thread_id) )";
    query = query .. "			  AND msg.lft BETWEEN message.lft AND message.rgt AND NOT EXISTS (SELECT 1";
-   query = query .. "			   														FROM AO_message msg2 ";
+   query = query .. "			   														FROM ao_message msg2 ";
    query = query .. "			   														WHERE msg2.thread_id = msg.thread_id ";
    query = query .. "			   														AND msg2.lft > message.lft AND msg2.lft < message.rgt ";
    query = query .. "			   														AND msg.lft > msg2.lft AND msg.rgt < msg2.rgt ) ";
@@ -387,7 +438,7 @@ end
 -----------
 
 function ask_later (userid, messageforumid)
-   local query = "UPDATE AO_message_responder ";
+   local query = "UPDATE ao_message_responder ";
    query = query .. " SET reserved_by_id = " .. userid .. " , reserved_until = now() + INTERVAL " .. RESERVE_PERIOD .. " DAY ";
    query = query .. " WHERE message_forum_id = " .. messageforumid;
    con:execute(query);
@@ -399,7 +450,7 @@ end
 -----------
 
 function pass_question (userid, messageforumid)
-   local query = "UPDATE AO_message_responder ";
+   local query = "UPDATE ao_message_responder ";
    query = query .. " SET passed_date = now() ";
    query = query .. " WHERE message_forum_id = " .. messageforumid .. " AND user_id = " .. userid;
    con:execute(query);
@@ -410,7 +461,7 @@ end
 -- refer_question
 -----------
 function refer_question(ph_num, messageforumid)
-	query = "SELECT id FROM AO_user where number = ".. ph_num;
+	query = "SELECT id FROM ao_user where number = ".. ph_num;
 	cur = con:execute(query);
 	row = {};
 	result = cur:fetch(row);
@@ -418,7 +469,7 @@ function refer_question(ph_num, messageforumid)
 	
 	if (result == nil) then
 	   -- unregistered number
-	   query = "INSERT INTO AO_user (number, allowed) VALUES ('" .. ph_num .."','y')";
+	   query = "INSERT INTO ao_user (number, allowed) VALUES ('" .. ph_num .."','y')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   cur = con:execute("SELECT LAST_INSERT_ID()");
@@ -429,7 +480,7 @@ function refer_question(ph_num, messageforumid)
 	end	
 	
 	-- create referal
-	query = "INSERT INTO AO_message_responder (message_forum_id, user_id) VALUES (" ..messageforumid..", " .. uid ..")";
+	query = "INSERT INTO ao_message_responder (message_forum_id, user_id) VALUES (" ..messageforumid..", " .. uid ..")";
 	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	con:execute(query);
 	
@@ -452,7 +503,7 @@ function update_listens (msgs, userid)
 	-- close list
 	msg_forum_id_list = msg_forum_id_list .. ")";
 	
-   local query = "UPDATE AO_message_responder ";
+   local query = "UPDATE ao_message_responder ";
    query = query .. "SET listens = listens + 1 ";
    query = query .. "WHERE message_forum_id in " .. msg_forum_id_list .. " AND user_id = " .. userid;
    con:execute(query);
@@ -879,7 +930,13 @@ function play_prompts (prompts)
 	    -- to the Survey model. Get the survey lang subdir
 	    -- by stripping the promptfile name. Assumes they are
 	    -- in the home sounds directory of the lang bundle of the same name
-	    local lang = promptfile:sub(1,promptfile:find('/')-1);
+	    if (promptfile:sub(0,1) == '/') then
+	    	-- get the full path with trailing slash
+	    	local pathend = promptfile:find("[a-zA-Z-_]+\.wav") - 1;
+	    	local lang = promptfile:sub(1,pathend);
+	    else
+	    	local lang = promptfile:sub(1,promptfile:find('/')-1);
+	    end
 	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid, confirm);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
@@ -969,7 +1026,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	  end 
    until (d == "1");
    
-   local query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
+   local query = 	"INSERT INTO surveys_input (call_id, prompt_id, input) ";
    query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..partfilename.."')";
    con:execute(query);
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
@@ -977,7 +1034,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    -- check if this sh be attached as a response to an existing msg
    if (mfid ~= nil) then
    	   -- get rgt, forumid
-   	   query = "SELECT mf.forum_id, m.rgt, m.thread_id, m.id FROM AO_message_forum mf, AO_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
+   	   query = "SELECT mf.forum_id, m.rgt, m.thread_id, m.id FROM ao_message_forum mf, ao_message m WHERE mf.message_id = m.id and mf.id = " .. mfid;
 	   local cur = con:execute(query);
 	   local result = {};
 	   result = cur:fetch(result);
@@ -988,26 +1045,26 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   local thread = result[3] or result[4];
 
 		-- get userid
-		uid = row("SELECT u.id, u.allowed FROM AO_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid);
+		uid = row("SELECT u.id, u.allowed FROM ao_user u, surveys_subject sub, surveys_call c WHERE sub.id = c.subject_id and sub.number = u.number and c.id = " .. callid);
 		local userid = '';
 		if (uid ~= nil) then
 			userid = tostring(uid[1]);
 		else
-		   query = "INSERT INTO AO_user (number, allowed) VALUES ('" ..caller.."','y')";
+		   query = "INSERT INTO ao_user (number, allowed) VALUES ('" ..caller.."','y')";
 		   con:execute(query);
 		   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 		   cur = con:execute("SELECT LAST_INSERT_ID()");
 		   userid = tostring(cur:fetch());
 		   cur:close();
 		end  
-       query = "UPDATE AO_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+       query = "UPDATE ao_message SET rgt=rgt+2 WHERE rgt >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
        con:execute(query);
        freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
-       query = "UPDATE AO_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
+       query = "UPDATE ao_message SET lft=lft+2 WHERE lft >=" .. rgt .. " AND (thread_id = " .. thread .. " OR id = " .. thread .. ")";
        con:execute(query);
        freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
        
-       query = "INSERT INTO AO_message (user_id, content_file, date, thread_id, lft, rgt)";
+       query = "INSERT INTO ao_message (user_id, content_file, date, thread_id, lft, rgt)";
 	   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
@@ -1017,7 +1074,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   cur:close();
 	   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
 	   
-	   query = "INSERT INTO AO_message_forum (message_id, forum_id, status) ";
+	   query = "INSERT INTO ao_message_forum (message_id, forum_id, status) ";
 	   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
 	   con:execute(query);
    end	
@@ -1031,41 +1088,3 @@ end
 ********* END COMMON SURVEY FUNCTIONS
 **********************************************************
 --]]
-
------------
--- check_abort
------------
-
-function check_abort(counter, threshold)
-	counter = counter + 1;
-	if (counter >= threshold) then
-		logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "Abort call", "\n");
-		hangup();
-	else
-		return counter;
-	end
-end
-
------------
--- is_admin 
------------
-
-function is_admin(forumid, forums) 
-	if (forumid == nil) then
-		local numItems = 0;
-		for k,v in pairs(forums) do
-		    numItems = numItems + 1;
-		end
-		
-		return numItems > 0;
-	else
-		return forums[forumid] == true;
-	end
-end
-
------------
--- trim (string) 
------------
-function trim (s)
-	return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
-end
