@@ -33,6 +33,7 @@ class StreamitTest(TestCase):
     def setUp(self):
         streamit.PROFILES = {'user/':{'basenum':5002, 'maxnums':2, 'maxparallel':4}, 'user2/':{'basenum':6000, 'maxnums':1, 'maxparallel':4}, 'user3/':{'basenum':7000, 'maxnums':10, 'maxparallel':40}}
         streamit.INTERVAL_MINS = 10
+        foo= 1
         streamit.SMS_CONFIG_FILE='/Users/neil/Development/otalo/ao/sms.conf'
         
         streamit.STREAMIT_FILE_DIR = '/Users/neil/Development/'
