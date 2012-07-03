@@ -1,7 +1,7 @@
 import otalo_utils
 import sys
 from datetime import datetime,timedelta
-from otalo.AO.models import User, Message, 	Message_forum, Forum, Line
+from otalo.ao.models import User, Message, 	Message_forum, Forum, Line
 from otalo.surveys.models import Input
 from django.db.models import Min,Max,Q
 
@@ -1116,7 +1116,7 @@ def main():
 			lineid = sys.argv[2]
 			line = Line.objects.get(pk=lineid)
 		
-		date_start= datetime(year=2011, month=1, day=1)
+		date_start= datetime(year=2010, month=1, day=1)
 		get_calls(filename=f, destnum=line.number, date_start=date_start)
 		#get_calls_by_feature(f, line.number)
 		#get_calls_by_feature(f, line.number, date_start=date_start)
@@ -1135,4 +1135,4 @@ def main():
 #		destnums=['7961907777']
 #		print_log_for_nums(f, destnums, lang="kan/")
 		
-#main()
+main()

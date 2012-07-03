@@ -1,9 +1,9 @@
-import sys
+import sys, csv
 from datetime import datetime, timedelta
 from django.db.models import Count
 import otalo_utils, num_calls, stats_by_phone_num, call_duration
 from otalo.surveys.models import Survey, Call, Subject, Input
-from otalo.AO.models import User, Line, Forum, Message_forum
+from otalo.ao.models import User, Line, Forum, Message_forum
 
 def calls_by_caller(f, line, min=False, max=False, date_start=None, date_end=None):
 	calls = stats_by_phone_num.get_calls_by_number(filename=f, destnum=str(line.number), date_start=date_start, date_end=date_end, quiet=True)
@@ -324,6 +324,118 @@ def topics(line, date_start=False, date_end=False):
 	srted = sorted(topiccounts.iteritems(), key=lambda(k,v): (v,k), reverse=True)
 	for tag, count in srted:
 		print(tag+'\t'+str(count))
+		
+def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date_end=False):
+    all_calls = []
+    current_week_start = 0
+    open_calls = {}
+    received_nums = []
+    
+    f = open(filename)
+    
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out current call
+                    call = open_calls[phone_num]    
+                    start = call['start']
+                    dur = current_date - start     
+                    last_prompt_file = call['last_prompt']
+                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
+                    if bool(call):
+                        call = call[0]
+                        priority = str(call.priority)
+                        input = Input.objects.filter(call=call)
+                        if input:
+                            input = input[0].input
+                        else:
+                            input = 'N/A'                          
+                        #all_calls += phone_num+delim+priority+delim+time_str(start)+delim+str(dur.seconds)+"\n"
+                        all_calls.append([phone_num,priority,time_str(start),str(dur.seconds), last_prompt_file, input])
+                        received_nums.append(phone_num)
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = {'order':'','feature_chosen':False,'start':current_date,'last':current_date}
+                
+            elif line.find("End call") != -1:
+                if phone_num in open_calls:
+                    # close out call                
+                    call = open_calls[phone_num]    
+                    start = call['start']
+                    dur = current_date - start                 
+                    last_prompt_file = call['last_prompt']
+                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
+                    if bool(call):
+                        call = call[0]
+                        priority = str(call.priority)
+                        input = Input.objects.filter(call=call)
+                        if input:
+                            input = input[0].input
+                        else:
+                            input = 'N/A'                         
+                        #all_calls += phone_num+delim+priority+delim+time_str(start)+delim+str(dur.seconds)+"\n"
+                        all_calls.append([phone_num,priority,time_str(start),str(dur.seconds), last_prompt_file, input])
+                        received_nums.append(phone_num)
+                    del open_calls[phone_num]
+                    
+            elif phone_num in open_calls:
+                call = open_calls[phone_num]
+                call['last'] = current_date
+                prompt = line[line.rfind('/')+1:]
+                call['last_prompt'] = prompt.strip()
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+        
+    header = ['number','call try #','time','duration','last prompt','input']    
+    if date_start:
+        outfilename='outgoing_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='outgoing.csv'
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+    output.writerows(all_calls)
 
 def main():
 	if len(sys.argv) < 3:
@@ -334,14 +446,14 @@ def main():
 		line = Line.objects.get(pk=int(lineid))
 	#calls_by_caller(f,line)
 	#posts_by_caller(line)
-	start = datetime(year=2011, month=1, day=1)
+	start = datetime(year=2011, month=4, day=1)
 	window_end = datetime(year=2011, month=3, day=1)
 	end = datetime(year=2011, month=5, day=20)
 	#repeat_callers(f, line, start, end, end, timedelta(days=30), min=1)
 	#regular_callers(f,line,start,timedelta(days=30),start+timedelta(90),min=4)
-	num_calls.get_calls(f, line.number)
+	#num_calls.get_calls(f, line.number, date_start=start)
 	#num_calls.get_calls(f, line.number, legacy_log=True)
-	#call_duration.get_call_durations(f, line.number)
+	#call_duration.get_call_durations(f, line.number, date_start=start)
 	#num_calls.get_calls_by_feature(f, line.number, date_start=start)
 	#num_calls.get_features_within_call(f, line.number)
 	#num_calls.get_listens_within_call(f, line.number)
@@ -518,5 +630,10 @@ def main():
 	
 	#num_calls.get_lurking_and_posting(f, line.number, line.forums, phone_num_filter=ao_call,date_start=exp_start, date_end=exp_end, transfer_calls=True)
 	#topics(line, start)
+	get_broadcast_calls(f, date_start=start)
 	
+def time_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%m-%d-%y %H:%M')
+
 main()
