@@ -297,7 +297,7 @@ function mainmenu ()
    query = query .. "FROM ao_forum forum, ao_line line, ao_line_forums line_forum ";
    query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
    query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id ";
-   query = query .. " AND forum.status <> " .. FORUM_STATUS_INACTIVE;
+   query = query .. " AND (forum.status IS NULL OR forum.status <> " .. FORUM_STATUS_INACTIVE .. ") ";
    query = query .. " ORDER BY forum.id ASC";
    
    for row in rows (query) do
@@ -798,7 +798,7 @@ end
 local query = "SELECT admin.forum_id FROM ao_admin admin, ao_forum forum, ao_line line, ao_line_forums line_forum "; 
 query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
 query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id ";
-query = query .. " AND forum.status <> " .. FORUM_STATUS_INACTIVE;
+query = query .. " AND (forum.status IS NULL OR forum.status <> " .. FORUM_STATUS_INACTIVE .. ") ";
 query = query .. " AND user_id =  " .. userid;
 query = query .. " AND admin.forum_id =  forum.id ";
 
