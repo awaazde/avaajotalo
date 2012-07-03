@@ -16,7 +16,7 @@
 import sys
 import time
 from datetime import datetime
-#from ESL import *
+from ESL import *
 
 SCRIPT = 'router.lua: '
 MAX_CHANNELS = 10
