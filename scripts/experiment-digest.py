@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.db.models import Min, Max
 import num_calls, stats_by_phone_num
 from otalo.surveys.models import Subject, Survey, Prompt, Call, Input
-from otalo.AO.models import Line, Message_forum
+from otalo.ao.models import Line, Message_forum
 
 # only start calling after free call bug fix
 BANG_START = datetime(year=2011, month=3, day=9)

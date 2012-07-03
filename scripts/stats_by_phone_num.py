@@ -1,7 +1,7 @@
 import otalo_utils
 import sys
 from datetime import datetime
-from otalo.AO.models import Line, Forum, User, Message
+from otalo.ao.models import Line, Forum, User, Message
 
 def get_calls_by_number(filename, destnum=False, log="Start call", phone_num_filter=False, date_start=False, date_end=False, quiet=False, legacy_log=False, transfer_calls=False):
 	calls = {}
