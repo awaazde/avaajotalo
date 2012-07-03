@@ -15,8 +15,8 @@
 #===============================================================================
 import sys
 from datetime import datetime, timedelta
-from otalo.AO.models import Forum, Line, Message_forum, User
-from otalo.AO.views import MESSAGE_STATUS_APPROVED
+from otalo.ao.models import Forum, Line, Message_forum, User
+from otalo.ao.views import MESSAGE_STATUS_APPROVED
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option
 import otalo_utils, stats_by_phone_num
 
