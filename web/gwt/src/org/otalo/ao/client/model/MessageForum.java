@@ -24,7 +24,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class MessageForum extends BaseModel {
 	private Message m;
-	private static final String MODEL_TYPE = "AO.message_forum";
+	private static final String MODEL_TYPE = "ao.message_forum";
 	
 	public MessageForum(JSOModel data) {
 		super(data);

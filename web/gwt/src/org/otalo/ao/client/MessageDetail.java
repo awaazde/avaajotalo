@@ -191,8 +191,11 @@ public class MessageDetail extends Composite {
   	moveButtons.add(moveDownButton);
   	moveButtons.setSpacing(5);
   	VerticalPanel linksPanel = new VerticalPanel();
-  	broadcastLink = new Anchor("Broadcast");
-  	linksPanel.add(broadcastLink);
+  	if (Messages.get().getLine().bcasting_allowed())
+  	{
+	  	broadcastLink = new Anchor("Broadcast");
+	  	linksPanel.add(broadcastLink);
+  	}
   	downloadLink = new Anchor("Download", AoAPI.DOWNLOAD);
   	linksPanel.add(downloadLink);
   	buttons.add(linksPanel);
@@ -281,20 +284,23 @@ public class MessageDetail extends Composite {
   	routing.loadResponders(messageForum);
   	
   	downloadLink.setHref(AoAPI.DOWNLOAD + messageForum.getId() + "/");
-  	if (forwardHandler != null) 
+  	if (Messages.get().getLine().bcasting_allowed())
   	{
-  		forwardHandler.removeHandler();
-  		forwardHandler = null;
-  	}
-  	
-  	if (messageForum.isResponse())
-  	{
-  		broadcastLink.setVisible(false);
-  	}
-  	else
-  	{
-  		broadcastLink.setVisible(true);
-  		forwardHandler = broadcastLink.addClickHandler(new ForwardClickHandler(messageForum));
+	  	if (forwardHandler != null) 
+	  	{
+	  		forwardHandler.removeHandler();
+	  		forwardHandler = null;
+	  	}
+	  	
+	  	if (messageForum.isResponse())
+	  	{
+	  		broadcastLink.setVisible(false);
+	  	}
+	  	else
+	  	{
+	  		broadcastLink.setVisible(true);
+	  		forwardHandler = broadcastLink.addClickHandler(new ForwardClickHandler(messageForum));
+	  	}
   	}
   	
     // Populate details pane with caller info.

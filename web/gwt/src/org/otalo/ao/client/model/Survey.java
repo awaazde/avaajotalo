@@ -60,19 +60,5 @@ public class Survey extends BaseModel {
 		// This should never happen
 		return null;
 	}
-	
-//	public List<Prompt> getPrompts()
-//	{
-//		List<Prompt> prompts = new ArrayList<Prompt>();
-//		
-//		JsArray<JSOModel> promptsJSON = getArray("prompts");
-//		for (int i=0; i < promptsJSON.length(); i++)
-//		{
-//			Prompt p = new Prompt(promptsJSON.get(i));
-//			prompts.add(p);
-//		}
-//		
-//		return prompts;
-//	}
 
 }

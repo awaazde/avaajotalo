@@ -53,4 +53,8 @@ public class Line extends BaseModel {
 		else
 			return null;
 	}
+	
+	public boolean bcasting_allowed() {
+		return Boolean.valueOf(getField("bcasting_allowed"));
+	}
 }
