@@ -56,7 +56,8 @@ public class Shortcuts extends Composite {
 		this.bcasts = bcasts;
 		
 		add(fora, images.forum(), "Forums");
-		add(bcasts, images.broadcast(), "Broadcasts");
+		if (bcasts != null)
+			add(bcasts, images.broadcast(), "Broadcasts");
 		if (sms != null)
 			add(sms, images.messagesgroup(), "SMS");
 		initWidget(stackPanel);

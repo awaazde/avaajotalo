@@ -60,6 +60,7 @@ public class SMSInterface extends Composite {
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
 	private Label remainingCharsLabel;
+	private final int SMS_MAX_LENGTH = 160;
 	//private FileUpload fileUpload;
 	
 	public interface Images extends Fora.Images {
@@ -179,7 +180,7 @@ public class SMSInterface extends Composite {
 		HorizontalPanel remainCharsPanel = new HorizontalPanel();
 		remainCharsPanel.setSpacing(5);
 		remainCharsPanel.add(new Label("You have"));
-		remainingCharsLabel = new Label("140");
+		remainingCharsLabel = new Label(Integer.toString(SMS_MAX_LENGTH));
 		remainCharsPanel.add(remainingCharsLabel);
 		remainCharsPanel.add(new Label("characters left."));
 		
@@ -359,7 +360,7 @@ public class SMSInterface extends Composite {
 	 {
 		 int counter = new Integer(txtArea.getText().length()).intValue();
 	
-		 int charsRemaining = 140 - counter;
+		 int charsRemaining = SMS_MAX_LENGTH - counter;
 		 remainingCharsLabel.setText("" + charsRemaining);
 		 if (charsRemaining >= 0)
 			 remainingCharsLabel.setStyleName("sms_under");
@@ -379,7 +380,7 @@ public class SMSInterface extends Composite {
 		 hour.setItemSelected(9, true);
 		 lastNCallers.setItemSelected(3, true);
 		 
-		 remainingCharsLabel.setText("140");
+		 remainingCharsLabel.setText(Integer.toString(SMS_MAX_LENGTH));
 		 remainingCharsLabel.setStyleName("sms_under");
 		 
 		 Date today = new Date();

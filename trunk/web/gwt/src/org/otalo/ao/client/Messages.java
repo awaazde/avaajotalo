@@ -73,7 +73,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   private MessageDetail messageDetail;
   private SMSList smsList;
   private Fora fora;
-  private Broadcasts bcasts;
+  private Broadcasts bcasts = null;
   private SMSs smss = null;
   private Shortcuts shortcuts;
   private BroadcastInterface broadcastIface;
@@ -259,7 +259,8 @@ public class Messages implements EntryPoint, ResizeHandler {
     
     broadcastIface = new BroadcastInterface(images);
     smsIface = new SMSInterface(images);
-    bcasts = new Broadcasts(images);
+    if (line.bcasting_allowed())
+    	bcasts = new Broadcasts(images);
     if (line.hasSMSConfig())
     	smss = new SMSs(images);
     
