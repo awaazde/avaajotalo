@@ -18,7 +18,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.contrib.auth.decorators import login_required
-from otalo.AO.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
+from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
@@ -66,7 +66,7 @@ def forum(request):
     
     if not auth_user.is_superuser:
         # get all forums that this user has access to
-        fora = Forum.objects.filter(admin__auth_user=auth_user).distinct()
+        fora = Forum.objects.filter(admin__auth_user=auth_user).exclude(status=Forum.STATUS_INACTIVE).distinct()
     else:
         fora = Forum.objects.all()
         
@@ -202,7 +202,7 @@ def updatemessage(request):
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
     # user hits the Back button.
-    return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
+    return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(m.id),)))
 
 def movemessage(request):
     params = request.POST
@@ -295,7 +295,7 @@ def movemessage(request):
                 below.save()
                 m.save()
             
-    return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
+    return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
         
 def uploadmessage(request):
     if 'main' in request.FILES:
@@ -329,7 +329,7 @@ def uploadmessage(request):
         
         m = createmessage(request, f, main, author, summary, parent)
 
-        return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(m.id,)))
+        return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
     else:
         response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
         response['Pragma'] = "no cache"
@@ -439,7 +439,7 @@ def updatestatus(request, action):
 
     m.save()
     
-    return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(m.id),)))
+    return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(m.id),)))
 
 def tags(request, forum_id):
     params = request.GET
@@ -605,9 +605,9 @@ def bcast(request):
     broadcast.broadcast_calls(survey, subjects, start_date, fromtime, tilltime, blocksize, interval, duration, backups)
     
     if params['messageforumid']:
-        return HttpResponseRedirect(reverse('otalo.AO.views.messageforum', args=(int(params['messageforumid']),)))
+        return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(params['messageforumid']),)))
     else:
-        return HttpResponseRedirect(reverse('otalo.AO.views.forum'))
+        return HttpResponseRedirect(reverse('otalo.ao.views.forum'))
 
 def forwardthread(request, message_forum_id):
     mf = get_object_or_404(Message_forum, pk=message_forum_id)
@@ -877,7 +877,7 @@ def sendsms(request):
         
     sms_utils.send_sms(line, recipients, smstext, send_date)
     
-    return HttpResponseRedirect(reverse('otalo.AO.views.forum'))
+    return HttpResponseRedirect(reverse('otalo.ao.views.forum'))
 
 def smsin(request):
     params = request.GET

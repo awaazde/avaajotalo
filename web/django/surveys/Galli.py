@@ -111,8 +111,8 @@ def monitoring_template(line, questionname):
     question_opt2.save()
     question_opt3 = Option(number="3", action=Option.INPUT, prompt=question)
     question_opt3.save()
-    question_opt3 = Option(number="4", action=Option.INPUT, prompt=question)
-    question_opt3.save()
+    question_opt4 = Option(number="4", action=Option.INPUT, prompt=question)
+    question_opt4.save()
         
     thanks = Prompt(file=language+"/MFQe"+SOUND_EXT, order=3, bargein=True, survey=s)
     thanks.save()
