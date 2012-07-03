@@ -15,7 +15,7 @@
 #===============================================================================
 import sys
 from datetime import datetime, timedelta
-from otalo.AO.models import Line
+from otalo.ao.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
 

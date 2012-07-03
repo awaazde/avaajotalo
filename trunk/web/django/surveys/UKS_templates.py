@@ -16,7 +16,7 @@
 import sys
 from datetime import datetime, timedelta
 import otalo_utils, num_calls, stats_by_phone_num, call_duration, thesis_data
-from otalo.AO.models import Line
+from otalo.ao.models import Line
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 from random import shuffle
 

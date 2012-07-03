@@ -14,7 +14,7 @@
     limitations under the License.
 '''
 from django.db import models
-from otalo.AO.models import User
+from otalo.ao.models import User
 from datetime import datetime
 
 class Config(models.Model):
@@ -56,7 +56,7 @@ class SMSMessage(models.Model):
     recipients =    models.ManyToManyField(User, related_name='smsrecipients')
     # date of creation of this object
     created_on =        models.DateTimeField(auto_now_add=True)
-    # date at which the notification was sent(or attempted to be sent)
+    # date at which the notification was sent (or attempted to be sent)
     sent_on =           models.DateTimeField(default=datetime.now)
 
     text =      models.CharField(max_length=255, null=True, blank=True)
