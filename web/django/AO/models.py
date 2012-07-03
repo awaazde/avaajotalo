@@ -40,10 +40,12 @@ class Line(models.Model):
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     # for personal inbox in the main menu
     personalinbox = models.BooleanField(default=True)
+    checkpendingmsgs = models.BooleanField(default=True)
     name_file = models.CharField(max_length=24, blank=True, null=True)
     logo_file = models.CharField(max_length=24, blank=True, null=True)
     forums = models.ManyToManyField('Forum', blank=True, null=True)
     sms_config = models.ForeignKey('sms.Config', blank=True, null=True)
+    bcasting_allowed = models.BooleanField(default=True)
     
     '''
         max_call_block and min_interval_mins are used to restrict how much broadcasting
@@ -74,7 +76,6 @@ class User(models.Model):
     # from indirect sources (log, based on tags, etc.)
     indirect_bcasts_allowed = models.BooleanField(default=True)
     tags = models.ManyToManyField('Tag', blank=True, null=True)
-
 
     def __unicode__(self):
         if self.name and self.name != '':
@@ -137,6 +138,22 @@ class Forum(models.Model):
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
     bcast_template = models.ForeignKey(Survey, blank=True, null=True)
     confirm_recordings = models.BooleanField(default=True)
+    
+    '''
+    StreamIt related additions
+    '''
+    STATUS_BCAST_CALL_SMS = 1
+    STATUS_BCAST_SMS = 2
+    STATUS_INACTIVE = 3
+    status = models.IntegerField(blank=True, null=True)
+    
+    members = models.ManyToManyField(User, through='Membership', related_name='members', blank=True, null=True)
+    
+    '''
+    end StreamIt related additions
+    '''
+    
+    
 
     def __unicode__(self):
         return self.name
@@ -194,5 +211,53 @@ class Admin(models.Model):
     
     def __unicode__(self):
         return unicode(self.user) + '_' + unicode(self.forum)
-
     
+class Membership(models.Model):
+    '''
+        UNCONFIRMED is when a member is added by owner but member
+        has not taken an action
+        SUSCRIBED and UNSUCBSCRIBED are actions taken by the member
+        If an unconfirmed member subscribes, they are automatically
+        SUBSCRIBED.
+        If an unsubscribed member subscribes, they are automatically
+        SUBSCRIBED.
+        If totally new member subscribes, they are REQUESTED.
+        DELETED is an action taken by the group owner. If the member
+        is DELETED and subscribes, they are REQUESTED. 
+    '''
+    STATUS_SUBSCRIBED = 0
+    STATUS_UNSUBSCRIBED = 1
+    STATUS_REQUESTED = 2
+    STATUS_UNCONFIRMED = 3
+    STATUS_DELETED = 4
+    STATUS_DNC = 5
+    
+    STATUS = (
+    (STATUS_SUBSCRIBED, 'Subscribed'),
+    (STATUS_UNSUBSCRIBED, 'Unsubscribed'),
+    (STATUS_REQUESTED, 'Requested'),
+    (STATUS_UNCONFIRMED, 'Unconfirmed'),
+    (STATUS_DELETED, 'Deleted'),
+    (STATUS_DNC, 'Do not call'),
+    )
+
+    user = models.ForeignKey(User)
+    group = models.ForeignKey(Forum)
+    status = models.IntegerField(choices=STATUS)
+    added = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    def __unicode__(self):
+        return "MEMBERSHIP_"+unicode(self.user) + '_' + unicode(self.group)
+    
+#class DoNotCall(models.Model):
+#    user = models.ForeignKey(User)
+#    call = models.BooleanField()
+#    # Categorical SMS
+#    banking = models.NullBooleanField()
+#    realestate = models.NullBooleanField()
+#    education = models.NullBooleanField()
+#    health = models.NullBooleanField()
+#    consumergoods = models.NullBooleanField()
+#    tourism = models.NullBooleanField()
+#    communication = models.NullBooleanField()
