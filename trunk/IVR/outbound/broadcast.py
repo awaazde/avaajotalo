@@ -17,7 +17,7 @@ import sys, os
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.db.models import Q
-from otalo.AO.models import Forum, Line, Message_forum, Message, User, Tag
+from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
 

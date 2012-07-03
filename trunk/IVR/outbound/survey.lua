@@ -112,7 +112,6 @@ session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALST
 session:setVariable("caller_id_number", caller)
 session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
---session:setInputCallback("my_cb", "arg");
 
 -- wait a while before testing
 session:sleep(2000);

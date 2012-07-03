@@ -16,7 +16,7 @@
 import sys
 import router
 from datetime import datetime
-from otalo.AO.models import Message_responder
+from otalo.ao.models import Message_responder
 
 IVR_SCRIPT = 'AO/outbound/responder.lua'
 CALLID_VAR_VAL = 'ao_survey true';
