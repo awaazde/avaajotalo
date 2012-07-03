@@ -15,7 +15,7 @@
 #===============================================================================
 
 from django.db import models
-from django.db.models.query import CollectedObjects
+from django.db.models.deletion import Collector
 from django.db.models.fields.related import ForeignKey
 from datetime import datetime
 
@@ -71,37 +71,55 @@ class Survey(models.Model):
         else:
             return str(self.id)
     
-    def deepcopy(self, newname):
+    def deepcopy(self, newname, value=None, field=None, duplicate_order=None):
         """
-        Duplicate all related objects of `obj` setting
-        `field` to `value`. If one of the duplicate
+        Duplicate all related objects of obj setting
+        field to value. If one of the duplicate
         objects has an FK to another duplicate object
         update that as well. Return the duplicate copy
-        of `obj`.  
+        of obj.
+        duplicate_order is a list of models which specify how
+        the duplicate objects are saved. For complex objects
+        this can matter. Check to save if objects are being
+        saved correctly and if not just pass in related objects
+        in the order that they should be saved.
         """
         obj = self
-        collected_objs = CollectedObjects()
-        obj._collect_sub_objects(collected_objs)
-        related_models = collected_objs.keys()
+        collector = Collector({})
+        collector.collect([obj])
+        collector.sort()
+        related_models = collector.data.keys()
+        data_snapshot =  {}
+        for key in collector.data.keys():
+            data_snapshot.update({ key: dict(zip([item.pk for item in collector.data[key]], [item for item in collector.data[key]])) })
         root_obj = None
-        # Traverse the related models in reverse deletion order.    
-        for model in reversed(related_models):
-            # Find all FKs on `model` that point to a `related_model`.
+    
+        # Sometimes it's good enough just to save in reverse deletion order.
+        if duplicate_order is None:
+            duplicate_order = reversed(related_models)
+    
+        for model in duplicate_order:
+            # Find all FKs on model that point to a related_model.
             fks = []
             for f in model._meta.fields:
                 if isinstance(f, ForeignKey) and f.rel.to in related_models:
                     fks.append(f)
             # Replace each `sub_obj` with a duplicate.
-            sub_obj = collected_objs[model]
-            for pk_val, obj in sub_obj.iteritems():
+            if model not in collector.data:
+                continue
+            sub_objects = collector.data[model]
+            for obj in sub_objects:
                 for fk in fks:
                     fk_value = getattr(obj, "%s_id" % fk.name)
                     # If this FK has been duplicated then point to the duplicate.
-                    if fk_value in collected_objs[fk.rel.to]:
-                        dupe_obj = collected_objs[fk.rel.to][fk_value]
+                    fk_rel_to = data_snapshot[fk.rel.to]
+                    if fk_value in fk_rel_to:
+                        dupe_obj = fk_rel_to[fk_value]
                         setattr(obj, fk.name, dupe_obj)
                 # Duplicate the object and save it.
                 obj.id = None
+                if field is not None:
+                    setattr(obj, field, value)
                 obj.save()
                 if root_obj is None:
                     root_obj = obj
