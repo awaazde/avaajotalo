@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts, broadcast
 import otalo_utils, stats_by_phone_num
+from django.views.decorators.csrf import csrf_exempt
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -139,6 +140,7 @@ def user(request, user_id):
     user = get_list_or_404(User, pk=user_id)
     return send_response(user)
 
+@csrf_exempt
 def updatemessage(request):
     params = request.POST
     
@@ -204,6 +206,7 @@ def updatemessage(request):
     # user hits the Back button.
     return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(m.id),)))
 
+@csrf_exempt
 def movemessage(request):
     params = request.POST
     direction = params['direction']    
@@ -296,7 +299,8 @@ def movemessage(request):
                 m.save()
             
     return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
-        
+    
+@csrf_exempt    
 def uploadmessage(request):
     if 'main' in request.FILES:
         main = request.FILES['main']
@@ -391,6 +395,7 @@ def thread(request, message_forum_id):
     thread_msg_forums = (Message_forum.objects.filter(message__thread=top) | Message_forum.objects.filter(message=top)).order_by('message__lft')
     return send_response (thread_msg_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('pk')}})
 
+@csrf_exempt
 def updatestatus(request, action):
     params = request.POST 
 
@@ -519,6 +524,7 @@ def survey(request):
         
     return send_response(surveys)
 
+@csrf_exempt
 def bcast(request):
     params = request.POST
     if params['messageforumid']:
@@ -786,7 +792,8 @@ def smsrecipients(request, smsmsg_id):
     recipients = msg.recipients.all()
     
     return send_response(recipients)
-    
+
+@csrf_exempt
 def sendsms(request):
     params = request.POST
     line = get_object_or_404(Line, pk=int(params['lineid']))
