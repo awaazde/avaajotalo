@@ -119,7 +119,7 @@ public class MessageForum extends BaseModel {
 	 */
 	public String getName()
 	{
-		DateTimeFormat df = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss");
+		DateTimeFormat df = DateTimeFormat.getFormat("yyyy-MM-dd'T'HH:mm:ss");
 		Date d = df.parse(getDate());
 		String dString = DateTimeFormat.getFormat("MMM-dd-yyyy").format(d);
 		User u = getAuthor();
