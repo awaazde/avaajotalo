@@ -34,7 +34,9 @@ public class Message extends BaseModel {
 	
 	public String getDate()
 	{
-		return getObject("fields").get("date");
+		String s = getObject("fields").get("date");
+		s = s.replace("T", " ");
+		return s;
 	}
 	
 	public User getAuthor()
