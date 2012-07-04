@@ -17,13 +17,15 @@
 from otalo.surveys.models import Subject, Survey, Call, Prompt, Option, Input
 from django.contrib import admin
 
-class NameSearchAdmin(admin.ModelAdmin):
+class OrderingAdmin(admin.ModelAdmin):
+    ordering = ('-id',)
+    
+class NameSearchAdmin(OrderingAdmin):
    search_fields = ['name', 'number']
-   ordering = (-'id',)
+   
 
-class DateDisplayAdmin(admin.ModelAdmin):
+class DateDisplayAdmin(OrderingAdmin):
     list_display = ('call', 'date', 'subject')
-    ordering = (-'id',)
     
     def call(self, obj):
         return unicode(obj)
@@ -31,7 +33,7 @@ class DateDisplayAdmin(admin.ModelAdmin):
 admin.site.register(Survey, NameSearchAdmin)
 admin.site.register(Subject, NameSearchAdmin)
 admin.site.register(Call, DateDisplayAdmin)
-admin.site.register(Prompt)
-admin.site.register(Option)
-admin.site.register(Input)
+admin.site.register(Prompt, OrderingAdmin)
+admin.site.register(Option, OrderingAdmin)
+admin.site.register(Input, OrderingAdmin)
 
