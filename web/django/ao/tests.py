@@ -23,7 +23,7 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 from datetime import datetime, timedelta
-from otalo.ao import streamit
+from awaazde.streamit import streamit
 from otalo.ao.models import *
 from otalo.surveys.models import *
 from otalo.sms.models import *
@@ -33,7 +33,6 @@ class StreamitTest(TestCase):
     def setUp(self):
         streamit.PROFILES = {'user/':{'basenum':5002, 'maxnums':2, 'maxparallel':2}, 'user2/':{'basenum':6000, 'maxnums':1, 'maxparallel':2}, 'user3/':{'basenum':7000, 'maxnums':10, 'maxparallel':0}}
         streamit.INTERVAL_MINS = 10
-        streamit.SMS_DEFAULT_CONFIG_FILE='/Users/neil/Development/otalo/ao/sms.conf'
         
         streamit.STREAMIT_FILE_DIR = '/Users/neil/Development/'
         streamit.STREAMIT_GROUP_LIST_FILENAME = 'groups_test.xlsx'
@@ -418,19 +417,18 @@ class StreamitTest(TestCase):
         
         d = datetime(year=2012, month=1, day=1, hour=10, minute=40)
         
-        streamit.create_and_schedule_bcast(mf, d)
-        streamit.create_and_schedule_bcast(mf2, d)
         # 2 invite SMSs
         self.assertEqual(SMSMessage.objects.all().count(), 2)
+        streamit.create_and_schedule_bcast(mf, d)
+        streamit.create_and_schedule_bcast(mf2, d)
+        self.assertEqual(SMSMessage.objects.filter(sent_on=d).count(), 2)
         # invite + single bcast
         self.assertEqual(SMSMessage.objects.filter(sender=u2).count(), 2)
-        
         self.assertEqual(Survey.objects.filter(number__in=[g1.line_set.all()[0].number, g2.line_set.all()[0].number]).count(), 1)
         
         streamit.update_group('g2', u2, 'eng', status=Forum.STATUS_BCAST_CALL_SMS)
         mf2 = Message_forum.objects.get(pk=mf2.id)
         streamit.create_and_schedule_bcast(mf2, d)
-        
         self.assertEqual(Survey.objects.all().count(), 2)
         b2 = Survey.objects.get(number = g2.line_set.all()[0].number)
 
@@ -456,4 +454,3 @@ class StreamitTest(TestCase):
         
          # invite SMS plus 3 blasts
         self.assertEqual(SMSMessage.objects.filter(sender=u1).count(), 4)
-        self.assertEqual(SMSMessage.objects.filter(sent_on=d).count(), 1)
