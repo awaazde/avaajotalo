@@ -31,9 +31,9 @@ from django.contrib.auth.models import User as AuthUser
 
 class StreamitTest(TestCase):
     def setUp(self):
-        streamit.PROFILES = {'user/':{'basenum':5002, 'maxnums':2, 'maxparallel':4}, 'user2/':{'basenum':6000, 'maxnums':1, 'maxparallel':4}, 'user3/':{'basenum':7000, 'maxnums':10, 'maxparallel':40}}
+        streamit.PROFILES = {'user/':{'basenum':5002, 'maxnums':2, 'maxparallel':2}, 'user2/':{'basenum':6000, 'maxnums':1, 'maxparallel':2}, 'user3/':{'basenum':7000, 'maxnums':10, 'maxparallel':0}}
         streamit.INTERVAL_MINS = 10
-        streamit.SMS_CONFIG_FILE='/Users/neil/Development/otalo/ao/sms.conf'
+        streamit.SMS_DEFAULT_CONFIG_FILE='/Users/neil/Development/otalo/ao/sms.conf'
         
         streamit.STREAMIT_FILE_DIR = '/Users/neil/Development/'
         streamit.STREAMIT_GROUP_LIST_FILENAME = 'groups_test.xlsx'
@@ -166,7 +166,7 @@ class StreamitTest(TestCase):
         self.assertEqual(sms.recipients.all().count(), 10)
         
         line = Line.objects.get(forums__admin__user=u1)
-        smstext = "u1 invites you to join the g1 group. Call "+line.number+" to subscribe. This service is called StreamIt. Call "+streamit.STREAMIT_SIGNUP_INFO+" to sign up."
+        smstext = "u1 invites you to join the g1 group. Call "+line.number+" to subscribe. Send your voice to your own groups: "+streamit.STREAMIT_SIGNUP_INFO
         
         self.assertEqual(smstext, sms.text)
         
@@ -253,7 +253,7 @@ class StreamitTest(TestCase):
         self.assertEqual(Forum.objects.filter(admin__user=u1).count(),1)   
         
         members = []
-        for i in range(10):
+        for i in range(11):
             m = User(number=str(i), allowed='y')
             m.save()
             members.append(m)
@@ -271,62 +271,75 @@ class StreamitTest(TestCase):
         
         streamit.update_members(g3, members, status=Membership.STATUS_SUBSCRIBED)
         
-        m = Message(date=datetime.now(), content_file='foo.mp3', user=u1)
+        d = datetime(year=2012, month=1, day=1, hour=10, minute=40)
+        
+        m = Message(date=d, content_file='foo.mp3', user=u1)
         m.save()
         mf = Message_forum(message=m, forum=g1, status=Message_forum.STATUS_APPROVED)
         mf.save()
         
-        m2 = Message(date=datetime.now(), content_file='foo2.mp3', user=u3)
-        m2.save()
-        mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
-        mf2.save()
-        
-        d = datetime(year=2012, month=1, day=1, hour=10, minute=30)
-        b1 = streamit.create_bcast_survey(mf)
+        streamit.create_bcasts(d)
+        b1 = Survey.objects.get(name=str(mf))
         self.assertEqual(Prompt.objects.filter(survey=b1, file__contains='chooserecord').count(), 1)
         g1.responses_allowed = 'n'
         g1.save()
         b2 = streamit.create_bcast_survey(mf)
         self.assertEqual(Prompt.objects.filter(survey=b2, file__contains='chooserecord').count(), 0)
         
-        b3 = streamit.create_bcast_survey(mf2)
-        
-        streamit.schedule_bcast(b1, g1, d)
-        calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.BUFFER_MINS))
+        streamit.schedule_bcasts(d)
+        calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d)
         self.assertEqual(calls.count(), 4)
         
-        calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.BUFFER_MINS+streamit.INTERVAL_MINS*1))
+        streamit.schedule_bcasts(d+timedelta(minutes=streamit.INTERVAL_MINS*1))
+        calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.INTERVAL_MINS*1))
         self.assertEqual(calls.count(), 4)
         
         nextd = datetime(year=2012, month=1, day=1, hour=11, minute=0)
-        self.assertEqual(nextd, d+timedelta(minutes=streamit.BUFFER_MINS+streamit.INTERVAL_MINS*2))
-        calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.BUFFER_MINS+streamit.INTERVAL_MINS*2))
+        streamit.schedule_bcasts(nextd)
+        self.assertEqual(nextd, d+timedelta(minutes=streamit.INTERVAL_MINS*2))
+        calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.INTERVAL_MINS*2))
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 2)
         
-        streamit.schedule_bcast(b2, g1, d)
-        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        m2 = Message(date=nextd, content_file='foo2.mp3', user=u2)
+        m2.save()
+        mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
+        mf2.save()
+        b3 = streamit.create_bcast_survey(mf2)
+        streamit.schedule_bcasts(nextd)
+        
+        calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
-        self.assertEqual(calls.count(), 4)
-        
-        streamit.schedule_bcast(b3, g2, nextd)
-        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b3.dialstring_prefix, date=nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b3.dialstring_prefix, date=nextd)
-        self.assertEqual(calls.count(), 4)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 1)
         
-        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b3.dialstring_prefix, date=nextd)
-        self.assertEqual(calls.count(), 2)
     
     def test_sms(self):
         u1 = streamit.update_user('u1','1001')
@@ -365,14 +378,14 @@ class StreamitTest(TestCase):
         d = datetime(year=2012, month=1, day=1, hour=10, minute=30)
         b1 = streamit.create_bcast_survey(mf)
         
-        streamit.schedule_bcast(b1, g1, d)
-        calls = Call.objects.filter(survey=b1, date=d+timedelta(minutes=streamit.BUFFER_MINS))
-        sms = SMSMessage.objects.get(sender=u1, sent_on=d+timedelta(minutes=streamit.BUFFER_MINS+streamit.SMS_DELAY_MINS))
+        streamit.schedule_bcasts(d)
+        calls = Call.objects.filter(survey=b1, date=d)
+        sms = SMSMessage.objects.get(sender=u1, sent_on=d+timedelta(minutes=streamit.SMS_DELAY_MINS))
         self.assertEqual(calls.count(), 4)
         self.assertEqual(sms.recipients.all().count(), 4)
         
         line = Line.objects.get(forums__admin__user=u1)
-        smstext = "u1 sent you a message through the group g1. Call "+line.number+" to listen. This voice SMS was brought to you by StreamIt. Call "+streamit.STREAMIT_SIGNUP_INFO+" to sign up."
+        smstext = "New message from u1 (g1)! Call "+line.number+" to listen. Send your voice to your own groups: "+streamit.STREAMIT_SIGNUP_INFO
         
         self.assertEqual(smstext, sms.text)
     
@@ -403,17 +416,14 @@ class StreamitTest(TestCase):
         mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
         mf2.save()
         
-        d = datetime(year=2012, month=1, day=1, hour=10, minute=30)
+        d = datetime(year=2012, month=1, day=1, hour=10, minute=40)
         
-        # 2 invite SMSs
-        self.assertEqual(SMSMessage.objects.all().count(), 2)
         streamit.create_and_schedule_bcast(mf, d)
         streamit.create_and_schedule_bcast(mf2, d)
-        # invite SMS plus 3 blasts
-        self.assertEqual(SMSMessage.objects.filter(sender=u1).count(), 4)
+        # 2 invite SMSs
+        self.assertEqual(SMSMessage.objects.all().count(), 2)
         # invite + single bcast
         self.assertEqual(SMSMessage.objects.filter(sender=u2).count(), 2)
-        self.assertEqual(SMSMessage.objects.filter(sent_on=d).count(), 1)
         
         self.assertEqual(Survey.objects.filter(number__in=[g1.line_set.all()[0].number, g2.line_set.all()[0].number]).count(), 1)
         
@@ -424,14 +434,26 @@ class StreamitTest(TestCase):
         self.assertEqual(Survey.objects.all().count(), 2)
         b2 = Survey.objects.get(number = g2.line_set.all()[0].number)
 
-        nextd = datetime(year=2012, month=1, day=1, hour=11, minute=0)
-        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        nextd = datetime(year=2012, month=1, day=1, hour=10, minute=50)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
-        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+         # invite SMS plus 3 blasts
+        self.assertEqual(SMSMessage.objects.filter(sender=u1).count(), 4)
+        self.assertEqual(SMSMessage.objects.filter(sent_on=d).count(), 1)
