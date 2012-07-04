@@ -930,13 +930,17 @@ function play_prompts (prompts)
 	    -- to the Survey model. Get the survey lang subdir
 	    -- by stripping the promptfile name. Assumes they are
 	    -- in the home sounds directory of the lang bundle of the same name
+	    local lang = "";
 	    if (promptfile:sub(0,1) == '/') then
 	    	-- get the full path with trailing slash
+	    	freeswitch.consoleLog("info", script_name .. " found abs path: " .. promptfile .. "\n")
 	    	local pathend = promptfile:find("[a-zA-Z-_]+\.wav") - 1;
-	    	local lang = promptfile:sub(1,pathend);
+	    	lang = promptfile:sub(1,pathend);
 	    else
-	    	local lang = promptfile:sub(1,promptfile:find('/')-1);
+	    	freeswitch.consoleLog("info", script_name .. " found reg path: " .. promptfile .. "\n")
+	    	lang = promptfile:sub(1,promptfile:find('/')-1);
 	    end
+	    freeswitch.consoleLog("info", script_name .. " lang is: " .. lang .. "\n")
 	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid, confirm);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
@@ -986,7 +990,12 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    local lang = lang or 'eng';
    local confirm = confirm or 1;
    
-   recordsd = aosd .. lang .. '/';
+   if (lang:sub(0,1) == '/') then
+   	  recordsd = lang .. '/';
+   else
+   	  recordsd = aosd .. lang .. '/';
+   end
+   
    repeat
       local d = use();
 

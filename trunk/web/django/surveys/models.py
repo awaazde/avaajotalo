@@ -133,6 +133,13 @@ class Call(models.Model):
     priority = models.IntegerField()
     complete = models.NullBooleanField(default=False)
     
+    '''
+        Added in order to decouple bcasts from the underlying line their calls are sent
+        through. These are used as second order after survey values are checked
+    '''
+    dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
+    dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
+    
     def __unicode__(self):
         return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
     

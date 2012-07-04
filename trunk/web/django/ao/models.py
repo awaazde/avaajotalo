@@ -248,7 +248,7 @@ class Membership(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
-        return "MEMBERSHIP_"+unicode(self.user) + '_' + unicode(self.group)
+        return unicode(self.user) + '_' + unicode(self.group) +"-" + unicode(self.status)
     
 #class DoNotCall(models.Model):
 #    user = models.ForeignKey(User)
