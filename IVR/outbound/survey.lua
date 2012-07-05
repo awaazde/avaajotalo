@@ -70,6 +70,22 @@ end
 
 complete_after_idx = tonumber(res[6]);
 
+if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
+	-- get line from the call itself
+	query = 		"SELECT dialstring_prefix, dialstring_suffix ";
+	query = query .. " FROM surveys_call c ";
+	query = query .. " WHERE c.id = " .. callid;
+	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+	res = row(query);
+	if (res[1] ~= nil) then
+		DIALSTRING_PREFIX = res[1];
+	end
+	if (res[2] ~= nil) then
+		DIALSTRING_SUFFIX = res[2];
+	end
+end
+
+
 freeswitch.consoleLog("info", script_name .. " : subject id = " .. subjectid .. " , num = " .. caller .. " , survey = " .. surveyid .. ", complete_after = " .. complete_after_idx .. "\n");
 
 -----------
