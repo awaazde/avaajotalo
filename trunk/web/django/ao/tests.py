@@ -43,8 +43,8 @@ class StreamitTest(TestCase):
         self.assertEqual(u1.name, 'u1')
         self.assertEqual(u2.name, 'u2')
         
-        streamit.update_group("g1", u1, 'eng')
-        streamit.update_group("g2", u2, 'eng')
+        g1 = streamit.update_group("g1", u1, 'eng')
+        g2 = streamit.update_group("g2", u2, 'eng')
         
         lines = Line.objects.all()
         self.assertEqual(lines.count(),2)
@@ -52,6 +52,9 @@ class StreamitTest(TestCase):
         self.assertEqual(line1.count(), 1)
         line2 = lines.filter(name__contains=u2.name)
         self.assertEqual(line2.count(), 1)
+        
+        self.assertEqual(g1.name_file, "1.wav")
+        self.assertEqual(g2.name_file, "2.wav")
         
         line1 = line1[0]
         line2 = line2[0]
@@ -364,10 +367,10 @@ class StreamitTest(TestCase):
         sms1 = SMSMessage.objects.get(sender=u1)
         
         m11 = User.objects.create(number='11', allowed='y')
-        members.append(m11)
-        streamit.update_members(g1,members,status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_member(g1, m11.number, status=Membership.STATUS_SUBSCRIBED)
         self.assertEqual(SMSMessage.objects.all().count(), 2)
         self.assertEqual(SMSMessage.objects.filter(sender=u1,recipients=m11).count(),1)
+        self.assertEqual(g1.members.filter(number=m11.number).count(), 1)
         
         m = Message(date=datetime.now(), content_file='foo.mp3', user=u1)
         m.save()
