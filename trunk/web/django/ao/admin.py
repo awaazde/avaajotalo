@@ -17,27 +17,31 @@
 from otalo.ao.models import Forum, Message, User, Tag, Admin, Line, Message_forum, Forum_tag, Membership
 from django.contrib import admin
 
-class MessageAdmin(admin.ModelAdmin):
+class OrderingAdmin(admin.ModelAdmin):
+    ordering = ('-id',)
+
+class MessageAdmin(OrderingAdmin):
     list_display = ('date', 'user')
     list_filter = ['date', 'user']
     search_fields = ['user__name', 'user__number']   
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(OrderingAdmin):
    search_fields = ['name', 'number']
    
 class ForumTagInline(admin.TabularInline):
+    ordering = ('-id',)
     model = Forum_tag
     extra = 1
     
-class ForumAdmin(admin.ModelAdmin):
+class ForumAdmin(OrderingAdmin):
     inlines = (ForumTagInline,)
 
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Message, MessageAdmin)
-admin.site.register(Tag)
-admin.site.register(Admin)
-admin.site.register(Line)
-admin.site.register(Message_forum)
-admin.site.register(Membership)
+admin.site.register(Tag, OrderingAdmin)
+admin.site.register(Admin, OrderingAdmin)
+admin.site.register(Line, OrderingAdmin)
+admin.site.register(Message_forum, OrderingAdmin)
+admin.site.register(Membership, OrderingAdmin)
 
