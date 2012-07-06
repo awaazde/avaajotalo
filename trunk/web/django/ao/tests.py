@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 from awaazde.streamit import streamit
 from otalo.ao.models import *
 from otalo.surveys.models import *
-from otalo.sms.models import *
+from otalo.sms.models import Config as SMSConfig, ConfigParam, SMSMessage
 from django.contrib.auth.models import User as AuthUser
 
 class StreamitTest(TestCase):
@@ -36,6 +36,18 @@ class StreamitTest(TestCase):
         
         streamit.STREAMIT_FILE_DIR = '/Users/neil/Development/'
         streamit.STREAMIT_GROUP_LIST_FILENAME = 'groups_test.xlsx'
+        
+        info = streamit.load_sms_config_info()
+        config = SMSConfig.objects.filter(url=info['url'])
+        if bool(config):
+            config = config[0]
+        else:
+            config = SMSConfig.objects.create(url=info['url'], to_param_name=info['to'], text_param_name=info['text'], date_param_name=info['date'], date_param_format=info['dateformat'], country_code=info['countrycode'])
+            ConfigParam.objects.create(name='feedid', value=info['feedid'], config=config)
+            ConfigParam.objects.create(name='username', value=info['username'], config=config)
+            ConfigParam.objects.create(name='password', value=info['password'], config=config)
+            
+        Line.objects.create(name="SMS", number="N/A", language="N/A", sms_config=config)
         
     def test_create_users(self):
         u1 = streamit.update_user('u1','1001')
@@ -47,7 +59,7 @@ class StreamitTest(TestCase):
         g2 = streamit.update_group("g2", u2, 'eng')
         
         self.assertEqual(Forum.objects.all().count(), 2)
-        lines = Line.objects.all()
+        lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
         self.assertEqual(lines.count(),2)
         line1 = lines.filter(name__contains=u1.name)
         self.assertEqual(line1.count(), 1)
@@ -63,25 +75,9 @@ class StreamitTest(TestCase):
         self.assertEqual(line1.number, '5002')
         self.assertEqual(line2.number, '5003')
         
-        sms_config = line1.sms_config
-        self.assertEqual(sms_config.id, line2.sms_config.id)
-        
-        info = streamit.load_sms_config_info()
-        self.assertEqual(sms_config.url, info['url'])
-        self.assertEqual(sms_config.to_param_name, info['to'])
-        self.assertEqual(sms_config.text_param_name, info['text'])
-        self.assertEqual(sms_config.date_param_name, info['date'])
-        self.assertEqual(sms_config.date_param_format, info['dateformat'])
-        param = ConfigParam.objects.get(config=sms_config, name='feedid')
-        self.assertEqual(param.value, info['feedid'])
-        param = ConfigParam.objects.get(config=sms_config, name='username')
-        self.assertEqual(param.value, info['username'])
-        param = ConfigParam.objects.get(config=sms_config, name='password')
-        self.assertEqual(param.value, info['password'])
-        
         u3 = streamit.update_user('u2', '1003')
         streamit.update_group('g3', u3, 'eng')
-        lines = Line.objects.all()
+        lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
         self.assertEqual(lines.count(),3,"Failed to add a new line with overlapping name")
         line3 = Line.objects.get(forums__admin__user=u3)     
         self.assertEqual(line3.number, '6000')
@@ -92,7 +88,7 @@ class StreamitTest(TestCase):
         self.assertEqual(AuthUser.objects.all().count(), 3)
         self.assertEqual(Admin.objects.all().count(), 4)
         
-        lines = Line.objects.all()
+        lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
         forums = Forum.objects.all()
         
         self.assertEqual(forums.count(),4)
@@ -114,7 +110,7 @@ class StreamitTest(TestCase):
         g1 = streamit.update_group("g1", u1, 'eng')
         g2 = streamit.update_group("g2", u2, 'eng')
         
-        lines = Line.objects.all()
+        lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
         self.assertEqual(lines.count(),2)
         line1 = lines.filter(name__contains=u1.name)
         self.assertEqual(line1.count(), 1)
@@ -149,7 +145,7 @@ class StreamitTest(TestCase):
         streamit.update_group("g2", u2, 'eng')
         
         # make sure nothing new created
-        self.assertEqual(Line.objects.all().count(),2)
+        self.assertEqual(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR).count(),2)
         self.assertEqual(Forum.objects.all().count(),2)
         self.assertEqual(Admin.objects.all().count(),2)
         self.assertEqual(AuthUser.objects.all().count(),2)
@@ -174,7 +170,7 @@ class StreamitTest(TestCase):
         self.assertEqual(smstext, sms.text)
         
         g3 = streamit.update_group("g3", u1, 'hin')
-        self.assertEqual(Line.objects.all().count(),3)
+        self.assertEqual(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR).count(),3)
         self.assertEqual(Forum.objects.all().count(),3)
         self.assertEqual(Admin.objects.all().count(),3)
         self.assertEqual(AuthUser.objects.all().count(),2)

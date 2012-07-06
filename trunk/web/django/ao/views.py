@@ -917,6 +917,16 @@ def smsin(request):
     
     return send_data('ok') 
 
+@csrf_exempt
+def signup(request):
+    params = request.POST
+    
+    email = params['email']
+    number = params['number']
+    
+    u = User.objects.create(number=number,email=email)
+    return send_data('ok')
+
 def get_phone_number(number):
     # strip non-numerics and see if we have
     # a ten-digit number left.
