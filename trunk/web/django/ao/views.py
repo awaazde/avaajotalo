@@ -924,7 +924,14 @@ def signup(request):
     email = params['email']
     number = params['number']
     
-    u = User.objects.create(number=number,email=email)
+    u = User.objects.filter(number=number)
+    if bool(u):
+        u = u[0]
+        u.email=email
+        u.save()
+    else:
+        u = User.objects.create(number=number,allowed='y', email=email)
+        
     return send_data('ok')
 
 def get_phone_number(number):
