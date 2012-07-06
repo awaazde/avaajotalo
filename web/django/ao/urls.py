@@ -52,6 +52,7 @@ urlpatterns = patterns('',
     (r'^smsrecipients/(?P<smsmsg_id>\d+)/$', 'otalo.ao.views.smsrecipients'),
     (r'^sendsms/$', 'otalo.ao.views.sendsms'),
     (r'^smsin/$', 'otalo.ao.views.smsin'),
+    (r'^signup/$', 'otalo.ao.views.signup'),
 )
 
 if settings.DEVELOPMENT:
