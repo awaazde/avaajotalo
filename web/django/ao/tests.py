@@ -37,6 +37,7 @@ class StreamitTest(TestCase):
         streamit.STREAMIT_FILE_DIR = '/Users/neil/Development/'
         streamit.STREAMIT_GROUP_LIST_FILENAME = 'groups_test.xlsx'
         
+        streamit.SMS_DEFAULT_CONFIG_FILE='/Users/neil/Development/awaazde/streamit/sms.conf'
         info = streamit.load_sms_config_info()
         config = SMSConfig.objects.filter(url=info['url'])
         if bool(config):
@@ -156,7 +157,7 @@ class StreamitTest(TestCase):
             m.save()
             members.append(m)
         
-        streamit.update_members(g1, members, sendinvite=False) 
+        streamit.update_members(g1, members, sendinvite=False, status=Membership.STATUS_SUBSCRIBED) 
         self.assertEquals(g1.members.all().count(),10)
         self.assertEqual(SMSMessage.objects.filter(sender=u1).count(), 0)
         d = datetime.now()
@@ -165,7 +166,7 @@ class StreamitTest(TestCase):
         self.assertEqual(sms.recipients.all().count(), 10)
         
         line = Line.objects.get(forums__admin__user=u1)
-        smstext = "u1 invites you to join the g1 group. Call "+line.number+" to subscribe. Send your voice to your own groups: "+streamit.STREAMIT_SIGNUP_INFO
+        smstext = "u1 invites you to join the g1 group. Call 0"+line.number+" to subscribe."
         
         self.assertEqual(smstext, sms.text)
         
@@ -199,10 +200,13 @@ class StreamitTest(TestCase):
         streamit.update_members(g2, members)
         streamit.update_members(g3, members)
         streamit.update_members(g4, members)
+        m11 = User.objects.create(number='11', allowed='y')
+        streamit.add_member(g4,m11,status=Membership.STATUS_SUBSCRIBED)
         self.assertEqual(Membership.objects.filter(group=g1).count(),10)
         self.assertEqual(Membership.objects.filter(group=g2).count(),10)
         self.assertEqual(Membership.objects.filter(group=g3).count(),10)
-        self.assertEqual(Membership.objects.filter(group=g4).count(),10)
+        self.assertEqual(Membership.objects.filter(group=g4).count(),11)
+        self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_SUBSCRIBED).count(),1)
         
         # update group and members
         streamit.update_groups_by_file(streamit.STREAMIT_FILE_DIR + streamit.STREAMIT_GROUP_LIST_FILENAME)
@@ -242,7 +246,8 @@ class StreamitTest(TestCase):
         self.assertEqual(Membership.objects.filter(group=g1, status=Membership.STATUS_UNCONFIRMED).count(),10)
         self.assertEqual(Membership.objects.filter(group=g3, status=Membership.STATUS_UNCONFIRMED).count(),3)
         self.assertEqual(Membership.objects.filter(group=g3, status=Membership.STATUS_DELETED).count(),7)
-        self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_UNCONFIRMED).count(),12)
+        self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_UNCONFIRMED).count(),11)
+        self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_SUBSCRIBED).count(),1)
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_DELETED).count(),1)
         
     def test_sched_bcast(self):
@@ -272,7 +277,9 @@ class StreamitTest(TestCase):
         
         streamit.update_members(g3, members, status=Membership.STATUS_SUBSCRIBED)
         
-        d = datetime(year=2012, month=1, day=1, hour=10, minute=40)
+        now = datetime.now()
+        nextyear = now.year+1
+        d = datetime(year=nextyear, month=1, day=1, hour=10, minute=40)
         
         m = Message(date=d, content_file='foo.mp3', user=u1)
         m.save()
@@ -284,7 +291,7 @@ class StreamitTest(TestCase):
         self.assertEqual(Prompt.objects.filter(survey=b1, file__contains='chooserecord').count(), 1)
         g1.responses_allowed = 'n'
         g1.save()
-        b2 = streamit.create_bcast_survey(mf)
+        b2 = streamit.create_bcast_survey(mf, d)
         self.assertEqual(Prompt.objects.filter(survey=b2, file__contains='chooserecord').count(), 0)
         
         streamit.schedule_bcasts(d)
@@ -295,7 +302,7 @@ class StreamitTest(TestCase):
         calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.INTERVAL_MINS*1))
         self.assertEqual(calls.count(), 4)
         
-        nextd = datetime(year=2012, month=1, day=1, hour=11, minute=0)
+        nextd = datetime(year=nextyear, month=1, day=1, hour=11, minute=0)
         streamit.schedule_bcasts(nextd)
         self.assertEqual(nextd, d+timedelta(minutes=streamit.INTERVAL_MINS*2))
         calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.INTERVAL_MINS*2))
@@ -320,7 +327,7 @@ class StreamitTest(TestCase):
         m2.save()
         mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
         mf2.save()
-        b3 = streamit.create_bcast_survey(mf2)
+        b3 = streamit.create_bcast_survey(mf2,nextd)
         streamit.schedule_bcasts(nextd)
         
         calls = Call.objects.filter(date=nextd)
@@ -355,7 +362,7 @@ class StreamitTest(TestCase):
             m.save()
             members.append(m)
             
-        streamit.update_members(g1,members)
+        streamit.update_members(g1,members,sendinvite=True)
         
         # check invite SMSs
         self.assertEqual(SMSMessage.objects.all().count(), 1)
@@ -382,8 +389,11 @@ class StreamitTest(TestCase):
         mf = Message_forum(message=m, forum=g1, status=Message_forum.STATUS_APPROVED)
         mf.save()
         
-        d = datetime(year=2012, month=1, day=1, hour=10, minute=30)
-        b1 = streamit.create_bcast_survey(mf)
+        
+        now = datetime.now()
+        nextyear = now.year+1
+        d = datetime(year=nextyear, month=1, day=1, hour=10, minute=40)
+        b1 = streamit.create_bcast_survey(mf,d)
         
         streamit.schedule_bcasts(d)
         calls = Call.objects.filter(survey=b1, date=d)
@@ -392,7 +402,7 @@ class StreamitTest(TestCase):
         self.assertEqual(sms.recipients.all().count(), 4)
         
         line = Line.objects.get(forums__admin__user=u1)
-        smstext = "New message from u1 (g1)! Call "+line.number+" to listen. Send your voice to your own groups: "+streamit.STREAMIT_SIGNUP_INFO
+        smstext = "New message from u1 (g1)! Call 0"+line.number+" to listen."
         
         self.assertEqual(smstext, sms.text)
     
@@ -405,13 +415,13 @@ class StreamitTest(TestCase):
             m = User(number=str(i), allowed='y')
             m.save()
             members.append(m)
-        streamit.update_members(g1, members, status=Membership.STATUS_SUBSCRIBED)
+        streamit.update_members(g1, members, sendinvite=True, status=Membership.STATUS_SUBSCRIBED)
             
         u2 = streamit.update_user('u2','1002')
         g2 = streamit.update_group('g2', u2, 'eng', status=Forum.STATUS_BCAST_SMS)
         self.assertEqual(Forum.objects.filter(admin__user=u2).count(),1)   
         
-        streamit.update_members(g2, members, status=Membership.STATUS_SUBSCRIBED)
+        streamit.update_members(g2, members, sendinvite=True, status=Membership.STATUS_SUBSCRIBED)
         
         m = Message(date=datetime.now(), content_file='foo.mp3', user=u1)
         m.save()
@@ -423,7 +433,9 @@ class StreamitTest(TestCase):
         mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
         mf2.save()
         
-        d = datetime(year=2012, month=1, day=1, hour=10, minute=40)
+        now = datetime.now()
+        nextyear = now.year+1
+        d = datetime(year=nextyear, month=1, day=1, hour=10, minute=40)
         
         # 2 invite SMSs
         self.assertEqual(SMSMessage.objects.all().count(), 2)
@@ -440,7 +452,7 @@ class StreamitTest(TestCase):
         self.assertEqual(Survey.objects.all().count(), 2)
         b2 = Survey.objects.get(number = g2.line_set.all()[0].number)
 
-        nextd = datetime(year=2012, month=1, day=1, hour=10, minute=50)
+        nextd = datetime(year=nextyear, month=1, day=1, hour=10, minute=50)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
