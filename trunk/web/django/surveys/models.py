@@ -56,6 +56,14 @@ class Survey(models.Model):
     STATUS_CANCELLED = 2
     status = models.IntegerField(default = 0);
     
+    # For delayed broadcasts
+    # (when a scheduler needs to
+    # schedule calls for a bcast at
+    # a later date from when it's created)
+    # don't make auto in order to keep null where not needed
+    # and to allow manual setting in test suites
+    created_on = models.DateTimeField(blank=True, null=True)
+    
     def getstatus(self):
         now = datetime.now()
         pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()
@@ -192,7 +200,7 @@ class Param(models.Model):
     NUM = 'num'
     # For INPUT (optional)
     NAME = 'name'
-    
+        
     name = models.CharField(max_length=24)
     
     value = models.CharField(max_length=128)
