@@ -17,7 +17,7 @@ from datetime import datetime
 from openpyxl.reader.excel import load_workbook
 from urllib import urlencode
 import httplib2
-import datetime
+from datetime import datetime
 from otalo.ao.models import Line, User
 from otalo.sms.models import Config, ConfigParam, SMSMessage
 
@@ -44,6 +44,7 @@ def send_sms(from_line, recipients, content, date=None, sender=None):
     data = {config.to_param_name:recipients_str, config.text_param_name:content}
     if date and config.date_param_format:
         date_str = date.strftime(config.date_param_format)
+        #print ("date str="+date_str)
         data[config.date_param_name] = date_str
     params = ConfigParam.objects.filter(config=config)
     for param in params:
