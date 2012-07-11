@@ -49,6 +49,10 @@ class StreamitTest(TestCase):
             ConfigParam.objects.create(name='password', value=info['password'], config=config)
             
         Line.objects.create(name="SMS", number="N/A", language="N/A", sms_config=config)
+        for f in Membership._meta.fields:
+            if f.name == 'last_updated':
+                f.auto_now=False
+                f.default=datetime.now
         
     def test_create_users(self):
         u1 = streamit.update_user('u1','1001')
@@ -210,6 +214,16 @@ class StreamitTest(TestCase):
         
         # update group and members
         streamit.update_groups_by_file(streamit.STREAMIT_FILE_DIR + streamit.STREAMIT_GROUP_LIST_FILENAME)
+        # manually update membership, since updating_by_file only adds new members
+        #g1 - 0-9
+        #g3 - 0-2
+        #g4 - 0-8, 10-12
+        g1mems = User.objects.filter(number__in=[str(num) for num in range(10)])
+        g3mems = User.objects.filter(number__in=[str(num) for num in range(3)])
+        g4mems = User.objects.filter(number__in=[str(num) for num in range(9)]+['10','11','12'])
+        streamit.update_members(g1,g1mems)
+        streamit.update_members(g3,g3mems)
+        streamit.update_members(g4,g4mems)
         
         # check new users and groups
         u2 = User.objects.get(name='u2')
@@ -286,6 +300,12 @@ class StreamitTest(TestCase):
         mf = Message_forum(message=m, forum=g1, status=Message_forum.STATUS_APPROVED)
         mf.save()
         
+        # Rejected, so should not be scheduled
+        m2 = Message(date=d, content_file='foo2.mp3', user=u1)
+        m2.save()
+        mf2 = Message_forum(message=m2, forum=g1, status=Message_forum.STATUS_REJECTED)
+        mf2.save()
+        
         streamit.create_bcasts(d)
         b1 = Survey.objects.get(name=str(mf))
         self.assertEqual(Prompt.objects.filter(survey=b1, file__contains='chooserecord').count(), 1)
@@ -293,6 +313,8 @@ class StreamitTest(TestCase):
         g1.save()
         b2 = streamit.create_bcast_survey(mf, d)
         self.assertEqual(Prompt.objects.filter(survey=b2, file__contains='chooserecord').count(), 0)
+        # Only approved message's bcasts scheduled
+        self.assertEqual(Survey.objects.count(), 2)
         
         streamit.schedule_bcasts(d)
         calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d)
@@ -303,50 +325,167 @@ class StreamitTest(TestCase):
         self.assertEqual(calls.count(), 4)
         
         nextd = datetime(year=nextyear, month=1, day=1, hour=11, minute=0)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         self.assertEqual(nextd, d+timedelta(minutes=streamit.INTERVAL_MINS*2))
         calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.INTERVAL_MINS*2))
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 2)
         
-        m2 = Message(date=nextd, content_file='foo2.mp3', user=u2)
-        m2.save()
-        mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
-        mf2.save()
-        b3 = streamit.create_bcast_survey(mf2,nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd+timedelta(minutes=streamit.INTERVAL_MINS))
+        self.assertEqual(calls.count(), 0)
+        
+        m3 = Message(date=nextd, content_file='foo3.mp3', user=u2)
+        m3.save()
+        mf3 = Message_forum(message=m3, forum=g2, status=Message_forum.STATUS_APPROVED)
+        mf3.save()
+        b3 = streamit.create_bcast_survey(mf3,nextd)
         streamit.schedule_bcasts(nextd)
         
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 1)
+        
+        # add some more members to g2: subscribed and requested
+        for i in range(12,16):
+            m = User.objects.create(number=str(i), allowed='y')
+            streamit.add_member(g2, str(i), sendinvite=False, status=Membership.STATUS_REQUESTED)
+            mem = Membership.objects.get(group=g2,user=m)
+            mem.last_updated = nextd
+            mem.save()
+
+        for i in range(16,18):
+            m = User.objects.create(number=str(i), allowed='y')
+            streamit.add_member(g2, m, sendinvite=False, status=Membership.STATUS_SUBSCRIBED)
+            mem = Membership.objects.get(group=g2,user=m)
+            mem.last_updated = nextd
+            mem.save()
+        
+        # make sure they don't get the old broadcast
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 0)
+        
+        # schedule a new broadcast
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        m4 = Message(date=nextd, content_file='foo4.mp3', user=u2)
+        m4.save()
+        mf4 = Message_forum(message=m4, forum=g2, status=Message_forum.STATUS_APPROVED)
+        mf4.save()
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 1)
+        
+        # subscribe and remove some old members
+        # Add 4, subtract 3
+        # Total subscribers is now 14
+        requested = User.objects.filter(membership__group=g2, membership__status=Membership.STATUS_REQUESTED)
+        requested = [u for u in requested] 
+        streamit.update_status(g2, Membership.STATUS_SUBSCRIBED, requested)
+        u1 = User.objects.get(number='1')
+        u2 = User.objects.get(number='2')
+        u3 = User.objects.get(number='3')
+        streamit.update_status(g2, Membership.STATUS_UNSUBSCRIBED, [u1,u2,u3])
+        for u in requested + [u1,u2,u3]:
+            mem = Membership.objects.get(group=g2, user=u)
+            mem.last_updated = nextd
+            mem.save()
+            
+        # schedule a new broadcast
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        b5date = nextd
+        m5 = Message(date=nextd, content_file='foo5.mp3', user=u2)
+        m5.save()
+        mf5 = Message_forum(message=m5, forum=g2, status=Message_forum.STATUS_APPROVED)
+        mf5.save()
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 4)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 2)
+        
+        nextd += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.create_bcasts(nextd)
+        streamit.schedule_bcasts(nextd)
+        calls = Call.objects.filter(date=nextd)
+        self.assertEqual(calls.count(), 0)
+        
+        self.assertEqual(Call.objects.filter(date__gte=b5date, subject__number__in=[u.number for u in [u1,u2,u3]]).count(), 0)
+        self.assertEqual(Survey.objects.filter(call__subject__number__in=['13','14','15']).distinct().count(), 1)
+        
         # make sure unconfirmed members were not scheduled
         self.assertEqual(Call.objects.filter(subject__number=m11.number).count(), 0)
     
