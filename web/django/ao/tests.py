@@ -205,7 +205,7 @@ class StreamitTest(TestCase):
         streamit.update_members(g3, members)
         streamit.update_members(g4, members)
         m11 = User.objects.create(number='11', allowed='y')
-        streamit.add_member(g4,m11,status=Membership.STATUS_SUBSCRIBED)
+        streamit.update_member(g4,m11,status=Membership.STATUS_SUBSCRIBED)
         self.assertEqual(Membership.objects.filter(group=g1).count(),10)
         self.assertEqual(Membership.objects.filter(group=g2).count(),10)
         self.assertEqual(Membership.objects.filter(group=g3).count(),10)
@@ -277,7 +277,7 @@ class StreamitTest(TestCase):
         streamit.update_members(g1, members, status=Membership.STATUS_SUBSCRIBED)
         
         m11 = User.objects.create(name="m11", number="11")
-        streamit.add_member(g1, m11.number, status=Membership.STATUS_UNCONFIRMED)
+        streamit.update_member(g1, m11.number, status=Membership.STATUS_UNCONFIRMED)
         
         u2 = streamit.update_user('u2','1002')
         g2 = streamit.update_group('g1', u2, 'eng')
@@ -384,14 +384,14 @@ class StreamitTest(TestCase):
         # add some more members to g2: subscribed and requested
         for i in range(12,16):
             m = User.objects.create(number=str(i), allowed='y')
-            streamit.add_member(g2, str(i), sendinvite=False, status=Membership.STATUS_REQUESTED)
+            streamit.update_member(g2, str(i), sendinvite=False, status=Membership.STATUS_REQUESTED)
             mem = Membership.objects.get(group=g2,user=m)
             mem.last_updated = nextd
             mem.save()
 
         for i in range(16,18):
             m = User.objects.create(number=str(i), allowed='y')
-            streamit.add_member(g2, m, sendinvite=False, status=Membership.STATUS_SUBSCRIBED)
+            streamit.update_member(g2, m, sendinvite=False, status=Membership.STATUS_SUBSCRIBED)
             mem = Membership.objects.get(group=g2,user=m)
             mem.last_updated = nextd
             mem.save()
@@ -513,10 +513,10 @@ class StreamitTest(TestCase):
         sms1 = SMSMessage.objects.get(sender=u1)
         
         m11 = User.objects.create(number='11', allowed='y')
-        streamit.add_member(g1, m11.number)
+        streamit.update_member(g1, m11.number)
         mem = Membership.objects.get(user=m11, group=g1)
         self.assertEqual(mem.status, Membership.STATUS_UNCONFIRMED)
-        streamit.add_member(g1, m11.number, status=Membership.STATUS_SUBSCRIBED)
+        streamit.update_member(g1, m11.number, status=Membership.STATUS_SUBSCRIBED)
         mem = Membership.objects.get(pk=mem.id)
         self.assertEqual(mem.status, Membership.STATUS_SUBSCRIBED)
         self.assertEqual(SMSMessage.objects.all().count(), 2)
