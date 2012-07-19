@@ -1,0 +1,13 @@
+{% extends 'registration/base_site.html' %}
+{% load crispy_forms_tags %}
+
+{% block extrahead %}
+<script src="{{ STATIC_URL }}js/bootstrap-alert.js" type="text/javascript"></script>
+
+{% endblock %}
+
+{% block content %}
+	{% if already_exists %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ already_exists }}</strong></div>{% endif %}
+   	{% crispy form %}
+{% endblock %}
+

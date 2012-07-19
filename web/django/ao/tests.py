@@ -34,12 +34,16 @@ class StreamitTest(TestCase):
         streamit.PROFILES = {'user/':{'basenum':5002, 'maxnums':2, 'maxparallel':2}, 'user2/':{'basenum':6000, 'maxnums':1, 'maxparallel':2}, 'user3/':{'basenum':7000, 'maxnums':10, 'maxparallel':0}}
         streamit.INTERVAL_MINS = 10
         
-        streamit.STREAMIT_FILE_DIR = '/Users/neil/Development/'
-        streamit.STREAMIT_GROUP_LIST_FILENAME = 'groups_test.xlsx'
+        streamit.STREAMIT_FILE_DIR = ''
+        streamit.STREAMIT_GROUP_LIST_FILENAME = '/Users/neil/Development/groups_test.xlsx'
         
         streamit.SMS_DEFAULT_CONFIG_FILE='/Users/neil/Development/awaazde/streamit/sms.conf'
         info = streamit.load_sms_config_info()
         config = SMSConfig.objects.filter(url=info['url'])
+        
+        streamit.SMS_INVITE_TEXT = {"eng": "%s invites you to join the %s group. Call 0%s to subscribe.", "hin": "%s invites you to join the %s group. Call 0%s to subscribe."}
+        streamit.SMS_MESSAGE_TEXT = {"eng": "New message from %s (%s)! Call 0%s to listen.", "hin": "New message from %s (%s)! Call 0%s to listen."}
+
         if bool(config):
             config = config[0]
         else:
@@ -500,7 +504,9 @@ class StreamitTest(TestCase):
             m = User(number=str(i), allowed='y')
             m.save()
             members.append(m)
-            
+        m9 = User.objects.get(number=str(i))
+        m9.name = ''
+        m9.save()
         streamit.update_members(g1,members,sendinvite=True)
         
         # check invite SMSs
@@ -512,7 +518,7 @@ class StreamitTest(TestCase):
         self.assertEqual(SMSMessage.objects.all().count(), 1)
         sms1 = SMSMessage.objects.get(sender=u1)
         
-        m11 = User.objects.create(number='11', allowed='y')
+        m11 = User.objects.create(number='11', allowed='y', name='m11')
         streamit.update_member(g1, m11.number)
         mem = Membership.objects.get(user=m11, group=g1)
         self.assertEqual(mem.status, Membership.STATUS_UNCONFIRMED)
@@ -544,7 +550,20 @@ class StreamitTest(TestCase):
         smstext = "New message from u1 (g1)! Call 0"+line.number+" to listen."
         
         self.assertEqual(smstext, sms.text)
-    
+        
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        # There should be a personalized SMS and a standard
+        sms = SMSMessage.objects.filter(sender=u1, sent_on=d+timedelta(minutes=streamit.SMS_DELAY_MINS))
+        self.assertEqual(sms.count(), 2)
+        m11sms = sms.get(recipients__in=[m11])
+        self.assertEqual(m11sms.text, m11.name + ', '+smstext)
+        standard = sms.exclude(recipients__in=[m11])[0]
+        self.assertEqual(standard.recipients.count(), 2)
+        self.assertEqual(standard.text, smstext)
+        
     def test_bcast_type(self):
         u1 = streamit.update_user('u1','1001')
         g1 = streamit.update_group('g1', u1, 'eng')  

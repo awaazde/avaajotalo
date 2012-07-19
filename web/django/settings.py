@@ -122,6 +122,7 @@ INSTALLED_APPS = (
     'south',
     'django_extensions',
     'django.contrib.staticfiles',
+    'crispy_forms',
 )
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
@@ -133,3 +134,4 @@ SERIALIZATION_MODULES = {
 INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
 OUTBOUND_LOG_ROOT = '/Users/neil/Documents/outbound_'
 LOG_ROOT = '/Users/neil/Documents/'
+CRISPY_TEMPLATE_PACK = 'bootstrap' 
