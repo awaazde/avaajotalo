@@ -16,8 +16,10 @@
 import os, stat, re
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
+from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404, render
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.template import RequestContext
 from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
@@ -29,7 +31,8 @@ from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts, broadcast
 import otalo_utils, stats_by_phone_num
-from django.views.decorators.csrf import csrf_exempt
+from otalo.ao.forms import CreateAcctForm
+from awaazde.streamit import streamit
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -933,6 +936,35 @@ def signup(request):
         u = User.objects.create(number=number,allowed='y', email=email)
         
     return send_data('ok')
+
+def createacct(request):
+    html = 'AO/createacct.html'
+    if request.method == 'POST':
+        form = CreateAcctForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            number = form.cleaned_data['number']
+            email = form.cleaned_data['email']
+            groupname = form.cleaned_data['groupname']
+            lang = form.cleaned_data['language']
+            
+            u = User.objects.filter(number=number)
+            if not bool(u):
+                u = User.objects.create(number=number, name=name, email=email, allowed='y')
+            else:
+                u = u[0]
+            
+            # check if this user already has an account
+            if bool(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR, forums__admin__user=u)):
+                return render(request, html, {'form': form, 'title': 'Account Registration', 'already_exists':"An account with this number already exists"})
+            
+            g = streamit.update_group(groupname, u, lang)
+            streamit.new_acct_email(u)
+            return render(request, 'AO/accountcreated.html')
+        else:
+            return render(request, html, {'form': form, 'title': 'Account Registration'})
+    else:
+        return render(request, html, {'form': CreateAcctForm(), 'title': 'Account Registration'})
 
 def get_phone_number(number):
     # strip non-numerics and see if we have
