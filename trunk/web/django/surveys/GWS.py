@@ -90,13 +90,13 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     
     return s
 
-def create_intl_test_survey(phone_num, prefix, suffix = None, callback=False, inbound=False, template=False):
+def create_intl_test_survey(phone_num, country_code, callback=False, inbound=False, template=False):
     s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
     if bool(s):
         s = s[0]
         s.delete()
         print('deleting survey')
-    s = Survey(name='GWS_INTL', number=phone_num, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=1, callback=callback, inbound=inbound, template=template)
+    s = Survey(name='GWS_INTL', number=phone_num, dialstring_prefix=PREFIX+country_code, dialstring_suffix=SUFFIX, complete_after=1, callback=callback, inbound=inbound, template=template)
     s.save()
     print('creating new survey '+str(s))
 
