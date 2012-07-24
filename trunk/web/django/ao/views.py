@@ -947,6 +947,7 @@ def createacct(request):
             email = form.cleaned_data['email']
             groupname = form.cleaned_data['groupname']
             lang = form.cleaned_data['language']
+            status = form.cleaned_data['delivery']
             
             u = User.objects.filter(number=number)
             if not bool(u):
@@ -958,7 +959,7 @@ def createacct(request):
             if bool(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR, forums__admin__user=u)):
                 return render(request, html, {'form': form, 'title': 'Account Registration', 'already_exists':"An account with this number already exists"})
             
-            g = streamit.update_group(groupname, u, lang)
+            g = streamit.update_group(groupname, u, lang, status)
             streamit.new_acct_email(u)
             return render(request, 'AO/accountcreated.html')
         else:
