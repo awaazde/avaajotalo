@@ -3,6 +3,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django.core.exceptions import ValidationError
+from otalo.ao.models import Forum
 
 class CreateAcctForm(forms.Form):
     def validate_mobile(value):
@@ -47,6 +48,15 @@ class CreateAcctForm(forms.Form):
                    ('hin', 'Hindi'),
                    ('guj', 'Gujarati'),
                    ('eng', 'English'),
+                  ),
+        required = True,
+    )
+    
+    delivery = forms.ChoiceField(
+        label = "Message Delivery",
+        choices = (
+                   (Forum.STATUS_BCAST_CALL_SMS, 'Call + SMS'),
+                   (Forum.STATUS_BCAST_SMS, 'SMS Only'),
                   ),
         required = True,
     )
