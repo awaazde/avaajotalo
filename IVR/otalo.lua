@@ -374,7 +374,11 @@ function mainmenu ()
       -- leave the flag as 'n'
       playmessages(getpendingmessages(lineid), 'n');
    elseif (d == responderidx and responder) then
-   	  read(aosd .. "okresponder.mp3", 0);
+   	  if (io.open(aosd .. "okresponder.wav","rb") ~= nil) then
+   	  	read(aosd .. "okresponder.wav", 0);
+   	  else
+   	  	read(aosd .. "okresponder.mp3", 0);
+   	  end
       use();
    	  local rmsgs = get_responder_messages(userid);
       play_responder_messages(userid, rmsgs, adminforums);
