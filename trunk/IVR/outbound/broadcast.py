@@ -262,7 +262,7 @@ def thread(messageforum, template, responseprompt, bcastname=None):
         maxlen = messageforum.forum.max_user_resp_len or Forum.MAX_USER_RESP_LEN_DEF
         param2 = Param(option=record_opt, name=Param.MAXLENGTH, value=str(maxlen))
         param2.save()
-        if not forum.confirm_recordings:
+        if not messageforum.forum.confirm_recordings:
             param3 = Param(option=record_opt, name=Param.CONFIRM_REC, value="0")
             param3.save()
         record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
@@ -271,7 +271,7 @@ def thread(messageforum, template, responseprompt, bcastname=None):
         param4.save()
         param5 = Param(option=record_opt2, name=Param.MAXLENGTH, value=str(messageforum.forum.maxlength))
         param5.save()
-        if not forum.confirm_recordings:
+        if not messageforum.forum.confirm_recordings:
             param6 = Param(option=record_opt2, name=Param.CONFIRM_REC, value="0")
             param6.save()
     
