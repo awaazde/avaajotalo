@@ -165,7 +165,7 @@ class StreamitTest(TestCase):
             m.save()
             members.append(m)
         
-        streamit.update_members(g1, members, sendinvite=False, status=Membership.STATUS_SUBSCRIBED) 
+        streamit.add_members(g1, members, Membership.STATUS_SUBSCRIBED, send_sms=False) 
         self.assertEquals(g1.members.all().count(),10)
         self.assertEqual(SMSMessage.objects.filter(sender=u1).count(), 0)
         d = datetime.now()
@@ -204,12 +204,12 @@ class StreamitTest(TestCase):
             m.save()
             members.append(m)
             
-        streamit.update_members(g1, members)
-        streamit.update_members(g2, members)
-        streamit.update_members(g3, members)
-        streamit.update_members(g4, members)
+        streamit.add_members(g1, members)
+        streamit.add_members(g2, members)
+        streamit.add_members(g3, members)
+        streamit.add_members(g4, members)
         m11 = User.objects.create(number='11', allowed='y')
-        streamit.update_member(g4,m11,status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_members(g4, members=[m11], status=Membership.STATUS_SUBSCRIBED, send_sms=False)
         self.assertEqual(Membership.objects.filter(group=g1).count(),10)
         self.assertEqual(Membership.objects.filter(group=g2).count(),10)
         self.assertEqual(Membership.objects.filter(group=g3).count(),10)
@@ -217,41 +217,25 @@ class StreamitTest(TestCase):
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_SUBSCRIBED).count(),1)
         
         # update group and members
-        streamit.update_groups_by_file(streamit.STREAMIT_FILE_DIR + streamit.STREAMIT_GROUP_LIST_FILENAME)
-        # manually update membership, since updating_by_file only adds new members
         #g1 - 0-9
+        #g2 - inactive
         #g3 - 0-2
         #g4 - 0-8, 10-12
-        g1mems = User.objects.filter(number__in=[str(num) for num in range(10)])
-        g3mems = User.objects.filter(number__in=[str(num) for num in range(3)])
-        g4mems = User.objects.filter(number__in=[str(num) for num in range(9)]+['10','11','12'])
-        streamit.update_members(g1,g1mems)
-        streamit.update_members(g3,g3mems)
-        streamit.update_members(g4,g4mems)
-        
-        # check new users and groups
-        u2 = User.objects.get(name='u2')
-        self.assertEqual(Forum.objects.filter(admin__user=u2).count(),3)
-        self.assertEqual(Line.objects.filter(forums__admin__user=u2, language='hin').count(),3)
-        movies = Forum.objects.filter(name='Movies')
-        self.assertEqual(movies.count(), 2)
-        movies = movies.filter(admin__user=u2)
-        self.assertEqual(movies.count(), 1)
-        movies = movies[0]
-        g5 = Forum.objects.get(name='Band')
-        g6 = Forum.objects.get(name='Real Estate')
-        
-        self.assertEqual(movies.members.all().count(), 3)
-        self.assertEqual(g5.members.all().count(), 1)
-        self.assertEqual(g6.members.all().count(), 4)
-        
-        common = User.objects.filter(membership__group__in=[movies,g6])
-        self.assertEqual(common.distinct().count(), 4)
-        
-        u3 = User.objects.get(name='u3')
-        groups = Forum.objects.filter(admin__user=u3)
-        g7 = Forum.objects.get(name='Astrology')
-        self.assertEqual(g7.members.all().count(), 0)
+        m10 = User.objects.create(number='10', allowed='y')
+        m12 = User.objects.create(number='12', allowed='y')
+        g3mems = User.objects.filter(number__in=[str(num) for num in range(3,10)+[12]])
+        # for g1, do nothing
+        # for g2, deactivate
+        g2.status = Forum.STATUS_INACTIVE
+        g2.save()
+        # for g3, remove members 3-10. Add m12 just to test that non-members
+        # aren't affected by this method
+        streamit.update_members(g3,Membership.STATUS_DELETED, members=g3mems)
+        # for g4, add 10 and 12 (11 sh be ignored) and remove 9
+
+        u9 = User.objects.get(number='9')
+        streamit.update_members(g4,Membership.STATUS_DELETED, members=[u9])
+        streamit.add_members(g4,[m10,m11,m12])
         
         # check active statuses
         g1 = Forum.objects.get(pk=g1.id)
@@ -261,10 +245,10 @@ class StreamitTest(TestCase):
         self.assertEqual(g2.status, Forum.STATUS_INACTIVE)
         self.assertEqual(Forum.objects.filter(admin__user=u1, status=Forum.STATUS_BCAST_CALL_SMS).count(),3)
         # check membership changes
-        self.assertEqual(Membership.objects.filter(group=g1, status=Membership.STATUS_UNCONFIRMED).count(),10)
-        self.assertEqual(Membership.objects.filter(group=g3, status=Membership.STATUS_UNCONFIRMED).count(),3)
+        self.assertEqual(Membership.objects.filter(group=g1, status=Membership.STATUS_INVITED).count(),10)
+        self.assertEqual(Membership.objects.filter(group=g3, status=Membership.STATUS_INVITED).count(),3)
         self.assertEqual(Membership.objects.filter(group=g3, status=Membership.STATUS_DELETED).count(),7)
-        self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_UNCONFIRMED).count(),11)
+        self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_INVITED).count(),11)
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_SUBSCRIBED).count(),1)
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_DELETED).count(),1)
         
@@ -278,22 +262,22 @@ class StreamitTest(TestCase):
             m = User(number=str(i), allowed='y')
             m.save()
             members.append(m)
-        streamit.update_members(g1, members, status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_members(g1, members, status=Membership.STATUS_SUBSCRIBED)
         
         m11 = User.objects.create(name="m11", number="11")
-        streamit.update_member(g1, m11.number, status=Membership.STATUS_UNCONFIRMED)
+        streamit.add_members(g1, [m11])
         
         u2 = streamit.update_user('u2','1002')
         g2 = streamit.update_group('g1', u2, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u2).count(),1)   
         
-        streamit.update_members(g2, members, status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_members(g2, members, Membership.STATUS_SUBSCRIBED)
             
         u3 = streamit.update_user('u3','1003')
         g3 = streamit.update_group('g3', u3, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u3).count(),1)   
         
-        streamit.update_members(g3, members, status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_members(g3, members, status=Membership.STATUS_SUBSCRIBED)
         
         now = datetime.now()
         nextyear = now.year+1
@@ -330,6 +314,7 @@ class StreamitTest(TestCase):
         
         nextd = datetime(year=nextyear, month=1, day=1, hour=11, minute=0)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         self.assertEqual(nextd, d+timedelta(minutes=streamit.INTERVAL_MINS*2))
         calls = Call.objects.filter(survey__dialstring_prefix=b1.dialstring_prefix, date=d+timedelta(minutes=streamit.INTERVAL_MINS*2))
@@ -337,18 +322,21 @@ class StreamitTest(TestCase):
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(survey__dialstring_prefix=b2.dialstring_prefix, date=nextd)
         self.assertEqual(calls.count(), 2)
@@ -369,18 +357,21 @@ class StreamitTest(TestCase):
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 1)
@@ -388,14 +379,14 @@ class StreamitTest(TestCase):
         # add some more members to g2: subscribed and requested
         for i in range(12,16):
             m = User.objects.create(number=str(i), allowed='y')
-            streamit.update_member(g2, str(i), sendinvite=False, status=Membership.STATUS_REQUESTED)
+            streamit.add_members(g2, [m], Membership.STATUS_REQUESTED, send_sms=False)
             mem = Membership.objects.get(group=g2,user=m)
             mem.last_updated = nextd
             mem.save()
 
         for i in range(16,18):
             m = User.objects.create(number=str(i), allowed='y')
-            streamit.update_member(g2, m, sendinvite=False, status=Membership.STATUS_SUBSCRIBED)
+            streamit.add_members(g2, [m], Membership.STATUS_SUBSCRIBED, send_sms=False)
             mem = Membership.objects.get(group=g2,user=m)
             mem.last_updated = nextd
             mem.save()
@@ -403,6 +394,7 @@ class StreamitTest(TestCase):
         # make sure they don't get the old broadcast
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 0)
@@ -420,18 +412,21 @@ class StreamitTest(TestCase):
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 1)
@@ -441,11 +436,11 @@ class StreamitTest(TestCase):
         # Total subscribers is now 14
         requested = User.objects.filter(membership__group=g2, membership__status=Membership.STATUS_REQUESTED)
         requested = [u for u in requested] 
-        streamit.update_status(g2, Membership.STATUS_SUBSCRIBED, requested)
+        streamit.update_members(g2, Membership.STATUS_SUBSCRIBED, requested)
         u1 = User.objects.get(number='1')
         u2 = User.objects.get(number='2')
         u3 = User.objects.get(number='3')
-        streamit.update_status(g2, Membership.STATUS_UNSUBSCRIBED, [u1,u2,u3])
+        streamit.update_members(g2, Membership.STATUS_UNSUBSCRIBED, [u1,u2,u3])
         for u in requested + [u1,u2,u3]:
             mem = Membership.objects.get(group=g2, user=u)
             mem.last_updated = nextd
@@ -465,24 +460,28 @@ class StreamitTest(TestCase):
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 4)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 2)
         
         nextd += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.create_bcasts(nextd)
+        streamit.unsubscribe_by_broadcast(nextd)
         streamit.schedule_bcasts(nextd)
         calls = Call.objects.filter(date=nextd)
         self.assertEqual(calls.count(), 0)
@@ -507,25 +506,24 @@ class StreamitTest(TestCase):
         m9 = User.objects.get(number=str(i))
         m9.name = ''
         m9.save()
-        streamit.update_members(g1,members,sendinvite=True)
+        streamit.add_members(g1,members,send_sms=True)
         
         # check invite SMSs
         self.assertEqual(SMSMessage.objects.all().count(), 1)
         
         # should be no new invites
         streamit.update_group('g1',u1,'eng')
-        streamit.update_members(g1,members,status=Membership.STATUS_SUBSCRIBED, sendinvite=True)
-        self.assertEqual(SMSMessage.objects.all().count(), 1)
-        sms1 = SMSMessage.objects.get(sender=u1)
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members, send_sms=True)
+        self.assertEqual(SMSMessage.objects.all().count(), 2)
         
         m11 = User.objects.create(number='11', allowed='y', name='m11')
-        streamit.update_member(g1, m11.number)
+        streamit.add_members(g1, [m11], send_sms=True)
         mem = Membership.objects.get(user=m11, group=g1)
-        self.assertEqual(mem.status, Membership.STATUS_UNCONFIRMED)
-        streamit.update_member(g1, m11.number, status=Membership.STATUS_SUBSCRIBED)
+        self.assertEqual(mem.status, Membership.STATUS_INVITED)
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, [m11], send_sms=False)
         mem = Membership.objects.get(pk=mem.id)
         self.assertEqual(mem.status, Membership.STATUS_SUBSCRIBED)
-        self.assertEqual(SMSMessage.objects.all().count(), 2)
+        self.assertEqual(SMSMessage.objects.all().count(), 3)
         self.assertEqual(SMSMessage.objects.filter(sender=u1,recipients=m11).count(),1)
         self.assertEqual(g1.members.filter(number=m11.number).count(), 1)
         
@@ -533,7 +531,6 @@ class StreamitTest(TestCase):
         m.save()
         mf = Message_forum(message=m, forum=g1, status=Message_forum.STATUS_APPROVED)
         mf.save()
-        
         
         now = datetime.now()
         nextyear = now.year+1
@@ -564,6 +561,37 @@ class StreamitTest(TestCase):
         self.assertEqual(standard.recipients.count(), 2)
         self.assertEqual(standard.text, smstext)
         
+        u2 = streamit.update_user('u2','1002')
+        g2 = streamit.update_group('g2', u2, 'eng')
+        streamit.add_members(g2,members,send_sms=True)
+        
+        u3 = streamit.update_user('u3','1003')
+        g3 = streamit.update_group('g3', u3, 'eng')
+        streamit.add_members(g3,members,send_sms=False)
+        
+        self.assertEqual(SMSMessage.objects.filter(sender=u2).count(), 1)
+        self.assertEqual(SMSMessage.objects.filter(sender=u3).count(), 0)
+        
+        m10 = User.objects.create(number='10', allowed='y')
+        m12 = User.objects.create(number='12', allowed='y')
+        streamit.add_members(g2, members+[m10,m12], Membership.STATUS_SUBSCRIBED)
+        # should only send sms to 3 new users
+        self.assertEqual(SMSMessage.objects.filter(sender=u2).count(), 2)
+        self.assertEqual(SMSMessage.objects.filter(sender=u2, recipients__in=members).distinct().count(), 1)
+        
+        streamit.update_members(g2, Membership.STATUS_SUBSCRIBED, members)
+        # should only send to the original members (i.e. don't re-send to 10 and 12)
+        self.assertEqual(SMSMessage.objects.filter(sender=u2, recipients__in=members).distinct().count(), 2)
+        self.assertEqual(SMSMessage.objects.filter(sender=u2, recipients__in=[m10,m12]).distinct().count(), 1)
+        
+        # should send no new message (m11 not a member)
+        streamit.update_members(g2, Membership.STATUS_INVITED, [m10, m11])
+        streamit.update_members(g2, Membership.STATUS_SUBSCRIBED, [m10, m11])
+        self.assertEqual(SMSMessage.objects.filter(sender=u2, recipients__in=[m11]).count(), 0)
+        
+        # should have re-sent invite and resubscribe smss to m10
+        self.assertEqual(SMSMessage.objects.filter(sender=u2, recipients__in=[m10]).count(), 3)
+        
     def test_bcast_type(self):
         u1 = streamit.update_user('u1','1001')
         g1 = streamit.update_group('g1', u1, 'eng')  
@@ -573,13 +601,13 @@ class StreamitTest(TestCase):
             m = User(number=str(i), allowed='y')
             m.save()
             members.append(m)
-        streamit.update_members(g1, members, sendinvite=True, status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_members(g1, members, Membership.STATUS_SUBSCRIBED, send_sms=True)
             
         u2 = streamit.update_user('u2','1002')
         g2 = streamit.update_group('g2', u2, 'eng', status=Forum.STATUS_BCAST_SMS)
         self.assertEqual(Forum.objects.filter(admin__user=u2).count(),1)   
         
-        streamit.update_members(g2, members, sendinvite=True, status=Membership.STATUS_SUBSCRIBED)
+        streamit.add_members(g2, members, Membership.STATUS_SUBSCRIBED, send_sms=True)
         
         m = Message(date=datetime.now(), content_file='foo.mp3', user=u1)
         m.save()

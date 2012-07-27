@@ -229,7 +229,7 @@ class Membership(models.Model):
     STATUS_SUBSCRIBED = 0
     STATUS_UNSUBSCRIBED = 1
     STATUS_REQUESTED = 2
-    STATUS_UNCONFIRMED = 3
+    STATUS_INVITED = 3
     STATUS_DELETED = 4
     STATUS_DNC = 5
     
@@ -237,7 +237,7 @@ class Membership(models.Model):
     (STATUS_SUBSCRIBED, 'Subscribed'),
     (STATUS_UNSUBSCRIBED, 'Unsubscribed'),
     (STATUS_REQUESTED, 'Requested'),
-    (STATUS_UNCONFIRMED, 'Unconfirmed'),
+    (STATUS_INVITED, 'Invited'),
     (STATUS_DELETED, 'Deleted'),
     (STATUS_DNC, 'Do not call'),
     )
