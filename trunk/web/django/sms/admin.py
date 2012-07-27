@@ -17,7 +17,10 @@
 from otalo.sms.models import *
 from django.contrib import admin
 
-admin.site.register(Config)
-admin.site.register(ConfigParam)
-admin.site.register(SMSMessage)
+class OrderingAdmin(admin.ModelAdmin):
+    ordering = ('-id',)
+
+admin.site.register(Config, OrderingAdmin)
+admin.site.register(ConfigParam, OrderingAdmin)
+admin.site.register(SMSMessage, OrderingAdmin)
 
