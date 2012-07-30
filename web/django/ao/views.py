@@ -954,6 +954,9 @@ def createacct(request):
                 u = User.objects.create(number=number, name=name, email=email, allowed='y')
             else:
                 u = u[0]
+                u.name = name
+                u.email = email
+                u.save()
             
             # check if this user already has an account
             if bool(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR, forums__admin__user=u)):
