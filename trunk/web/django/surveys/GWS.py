@@ -1,4 +1,4 @@
-import os, sys, csv, re, shutil
+import os, sys, csv, re, shutil, ast
 from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
@@ -61,12 +61,12 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
             param2 = Param(option=record_opt, name=Param.MAXLENGTH, value="15")
             param2.save()
         else:
-            maxopt = int(opts)
+            maxopt = int(opts[:1])
             for j in range(1,maxopt+1):
                 p_opt = Option(number=str(j), action=Option.INPUT, prompt=p)
                 p_opt.save()
         if 'dep' in opts:
-            dependson = opts[opts.find('d')+3:]
+            dependson = opts[opts.find('dep')+3:]
             # assume it is index for a question number
             dependson = int(dependson)+1
             if includeid:
@@ -76,6 +76,20 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
             # remove the SOUND_EXT and add hyphen
             p.file = p.file[:p.file.find(SOUND_EXT)] + '-'
             p.save()
+        if 'goto' in opts:
+            # assumes single digit input
+            gotodict = opts[opts.find('{'):opts.find('}')+1]
+            gotodict = ast.literal_eval(gotodict)
+            for number, gotoidx in gotodict.iteritems():
+                # bump up one index for the intro
+                gotoidx += 1
+                if includeid:
+                    # and another if there is an id prompt
+                    gotoidx += 1
+                opt = Option.objects.get(prompt=p, number=number)
+                param = Param(option=opt, name=Param.IDX, value=gotoidx)
+                param.save()
+            
         repeat = Option(number=REPEAT_KEY, action=Option.REPLAY, prompt=p)
         repeat.save()
         order+=1
@@ -181,15 +195,16 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
     open_calls = {}
     soundfiles = {}
     survey = Survey.objects.filter(number=number, inbound=True)[0]
+    qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
     
     f = open(filename)
-
+    
     while(True):
         line = f.readline()
         if not line:
             break
         try:
-        
+            
         #################################################
         ## Use the calls here to determine what pieces
         ## of data must exist for the line to be valid.
@@ -200,7 +215,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
             dest = otalo_utils.get_destination(line)            
         ##
         ################################################
-            
+        
             if phone_num_filter and not phone_num in phone_num_filter:
                 continue
                 
@@ -213,7 +228,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                 else:
                     if not current_date >= date_start:
                         continue
-    
+                    
             if line.find("Start call") != -1:
                 # check to see if this caller already has one open
                 if phone_num in open_calls:
@@ -232,24 +247,31 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                         callerid = inputs.filter(prompt__file__contains="id"+SOUND_EXT)
                         if bool(callerid):
                             callerid = callerid[0].input
+                            result.append(callerid)
                         
-                        for input in inputs:
-                            if '.mp3' in input.input:
-                                if callerid:
-                                    if callerid in soundfiles:
-                                        soundfiles[callerid].append(input.input)
-                                        fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
-                                        result.append(fname)
+                        for i in range(1,qcount+1):
+                            input = inputs.filter(prompt__file__contains=str(i))
+                            # in case the survey has conditional skipping
+                            if bool(input):
+                                input = input[0]
+                                if '.mp3' in input.input:
+                                    if callerid:
+                                        if callerid in soundfiles:
+                                            soundfiles[callerid].append(input.input)
+                                            fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
+                                            result.append(fname)
+                                        else:
+                                            soundfiles[callerid] = [input.input]
+                                            result.append(callerid + ".mp3")
                                     else:
-                                        soundfiles[callerid] = [input.input]
-                                        result.append(callerid + ".mp3")
+                                        # complicated in order to keep file copy 
+                                        # code consistent down below.
+                                        soundfiles[input.input[:-4]] = [input.input]
+                                        result.append(input.input)
                                 else:
-                                    # complicated in order to keep file copy 
-                                    # code consistent down below.
-                                    soundfiles[input.input[:-4]] = [input.input]
                                     result.append(input.input)
                             else:
-                                result.append(input.input)                         
+                                result.append('')                      
                         all_calls.append(result)
                     #else:
                         #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
@@ -273,24 +295,31 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
                         callerid = inputs.filter(prompt__file__contains="id"+SOUND_EXT)
                         if bool(callerid):
                             callerid = callerid[0].input
-                        
-                        for input in inputs:
-                            if '.mp3' in input.input:
-                                if callerid:
-                                    if callerid in soundfiles:
-                                        soundfiles[callerid].append(input.input)
-                                        fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
-                                        result.append(fname)
+                            result.append(callerid)
+                            
+                        for i in range(1,qcount+1):
+                            input = inputs.filter(prompt__file__contains=str(i))
+                            # in case the survey has conditional skipping
+                            if bool(input):
+                                input = input[0]
+                                if '.mp3' in input.input:
+                                    if callerid:
+                                        if callerid in soundfiles:
+                                            soundfiles[callerid].append(input.input)
+                                            fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
+                                            result.append(fname)
+                                        else:
+                                            soundfiles[callerid] = [input.input]
+                                            result.append(callerid + ".mp3")
                                     else:
-                                        soundfiles[callerid] = [input.input]
-                                        result.append(callerid + ".mp3")
+                                        # complicated in order to keep file copy 
+                                        # code consistent down below.
+                                        soundfiles[input.input[:-4]] = [input.input]
+                                        result.append(input.input)
                                 else:
-                                    # complicated in order to keep file copy 
-                                    # code consistent down below.
-                                    soundfiles[input.input[:-4]] = [input.input]
                                     result.append(input.input)
                             else:
-                                result.append(input.input)                         
+                                result.append('')                      
                         all_calls.append(result)
                     #else:
                         #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
@@ -309,8 +338,12 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
             continue
     
     header = ['number','start','duration (s)']
-    qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
-    for i in range(1,qcount+1):
+    lastq = qcount+1
+    idprompt = Prompt.objects.filter(survey=survey, file__contains='id')
+    if bool(idprompt):
+        header.append('id')
+        lastq = qcount
+    for i in range(1,lastq):
         header.append('q'+str(i))
     outputfilename='survey_results_'+number
     audiofile_dir = 'audio_'+number
@@ -500,7 +533,7 @@ def main():
         else:
             repeats_requests(filename, date_start=start, date_end=end)
               
-    #else:
+    else:
         #create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=True, inbound=True)
         #create_survey('ppi', 'hin', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555078', callback=True, inbound=True)
         #create_survey('ppi', 'kan', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555095', callback=True, inbound=True)
@@ -521,5 +554,6 @@ def main():
         #create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555034', callback=True, inbound=True, includesid=True)
         #create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555021', callback=True, inbound=True, includesid=True)
         #create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555023', callback=True, inbound=True, includesid=True)
-        create_survey('la', 'por', ['*2','4','2','3','3','2','2','2','4','3','2','2','*2'], '7961555007', callback=True, inbound=True, includeid=True, countrycode='0055')
+        #create_survey('la', 'por', ['*2','4','2','3','3','2','2','2','4','3','2','2','*2'], '7961555007', callback=True, inbound=True, includeid=True, countrycode='0055')
+        create_survey('mm', 'por', ['*2','2','3','2','*1','*1','4','3','5-goto{5:12}','4','4','3'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
 main()
