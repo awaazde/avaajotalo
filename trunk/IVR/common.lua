@@ -989,6 +989,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
    local confirm = confirm or 1;
+   local firstiter = true;
    
    if (lang:sub(0,1) == '/') then
    	  recordsd = lang .. '/';
@@ -997,10 +998,13 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    end
    
    repeat
+      if (firstiter == false and io.open(recordsd .. "pleaserecord.wav","rb") ~= nil) then
+	   	  read(recordsd .. "pleaserecord.wav", 1000);
+	  end
       local d = use();
-
+	  
       if (d == GLOBAL_MENU_MAINMENU) then
-	 return d;
+	 	  return d;
       end
 
       session:execute("playback", "tone_stream://%(500, 0, 620)");
@@ -1033,6 +1037,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
       else
 	  	d = "1";
 	  end 
+	  firstiter = false;
    until (d == "1");
    
    local query = 	"INSERT INTO surveys_input (call_id, prompt_id, input) ";
