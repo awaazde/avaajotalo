@@ -194,7 +194,7 @@ def survey_results(number, filename, phone_num_filter=False, date_start=False, d
     all_calls = []
     open_calls = {}
     soundfiles = {}
-    survey = Survey.objects.filter(number=number, inbound=True)[0]
+    survey = Survey.objects.filter(number=number, inbound=True).order_by('-id')[0]
     qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
     
     f = open(filename)
