@@ -71,3 +71,26 @@ class CreateAcctForm(forms.Form):
         self.helper.add_input(Submit('submit', 'Register', css_class='btn btn-primary'))
         
         super(CreateAcctForm, self).__init__(*args, **kwargs)
+        
+class SignupForm(forms.Form):
+    name = forms.CharField(
+        max_length = 128,
+        required = True,
+    )
+    
+    email = forms.EmailField(
+        label = "Email",
+        max_length = 80,
+        required = True,
+    )
+    
+    number = forms.CharField(
+        label = "Mobile",
+        required = False,
+    )
+    
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Register', css_class='btn btn-primary'))
+        
+        super(SignupForm, self).__init__(*args, **kwargs)
