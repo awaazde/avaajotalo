@@ -931,14 +931,15 @@ def signup(request):
                 number = get_phone_number(number)
             email = form.cleaned_data['email']
             
+            msg = "name: "+name+"<br/> email: "+email+"<br/> number: "
+            msg += number or "" 
+            
             u = User.objects.filter(Q(email=email) | Q(number=number))
             if not bool(u):
                 if number is None:
                     number = "STREAMIT_SIGNUP"
                 u = User.objects.create(number=number, name=name, email=email, allowed='y')
-            
-            msg = "name: "+name+"<br/> email: "+email+"<br/> number: "
-            msg += number or ""   
+             
             streamit.new_signup_email(msg)
             return render(request, 'AO/splash.html', {'success':"Thanks, we'll contact you soon!"})
         else:
