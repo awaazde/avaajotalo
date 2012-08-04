@@ -27,8 +27,8 @@ def send_sms_from_line(from_line, recipients, content, date=None):
         sender = sender[0]
     else:
         sender = User.objects.create(name=from_line.name, number=from_line.number, allowed='y')
-        
-    send_sms(config, recipients, content, sender, date)
+    
+    send_sms(from_line.sms_config, recipients, content, sender, date)
     
 def send_sms(config, recipients, content, sender, date=None):
     if date:
