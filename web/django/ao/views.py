@@ -457,7 +457,7 @@ def tags(request, forum_id):
     
     if params.__contains__('type'):
         types = params['type'].split()
-        tags.filter(type__in=types)
+        tags = tags.filter(type__in=types)
        
     return send_response(tags)
 
@@ -885,7 +885,7 @@ def sendsms(request):
         send_date = datetime.strptime(bcastdate, '%b-%d-%Y')
         send_date = send_date + timedelta(hours=int(params['hour']), minutes=int(params['min']))
         
-    sms_utils.send_sms(line, recipients, smstext, send_date)
+    sms_utils.send_sms_from_line(line, recipients, smstext, send_date)
     
     return HttpResponseRedirect(reverse('otalo.ao.views.forum'))
 
@@ -924,6 +924,7 @@ def smsin(request):
 def signup(request):
     params = request.POST
     
+    name = params['name']
     email = params['email']
     number = params['number']
     

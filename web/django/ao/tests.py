@@ -48,10 +48,12 @@ class StreamitTest(TestCase):
             config = config[0]
         else:
             config = SMSConfig.objects.create(url=info['url'], to_param_name=info['to'], text_param_name=info['text'], date_param_name=info['date'], date_param_format=info['dateformat'], country_code=info['countrycode'])
-            ConfigParam.objects.create(name='feedid', value=info['feedid'], config=config)
-            ConfigParam.objects.create(name='username', value=info['username'], config=config)
-            ConfigParam.objects.create(name='password', value=info['password'], config=config)
-            
+            ConfigParam.objects.create(name='feedid', value=info['params']['feedid'], config=config)
+            ConfigParam.objects.create(name='username', value=info['params']['username'], config=config)
+            ConfigParam.objects.create(name='password', value=info['params']['password'], config=config)
+        
+        streamit.SMS_DEFAULT_CONFIG_ID=config.id
+        
         Line.objects.create(name="SMS", number="N/A", language="N/A", sms_config=config)
         for f in Membership._meta.fields:
             if f.name == 'last_updated':

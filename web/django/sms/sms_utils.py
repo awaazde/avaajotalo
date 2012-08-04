@@ -21,16 +21,16 @@ from datetime import datetime
 from otalo.ao.models import Line, User
 from otalo.sms.models import Config, ConfigParam, SMSMessage
 
-def send_sms(from_line, recipients, content, date=None, sender=None):
-    config = from_line.sms_config
+def send_sms_from_line(from_line, recipients, content, date=None):
+    sender = User.objects.filter(number=from_line.number)
+    if bool(sender):
+        sender = sender[0]
+    else:
+        sender = User.objects.create(name=from_line.name, number=from_line.number, allowed='y')
+        
+    send_sms(config, recipients, content, sender, date)
     
-    if not sender:
-        sender = User.objects.filter(number=from_line.number)
-        if bool(sender):
-            sender = sender[0]
-        else:
-            sender = User(number=from_line.number, allowed='y')
-            sender.save()
+def send_sms(config, recipients, content, sender, date=None):
     if date:
         msg = SMSMessage(sender=sender,sent_on=date,text=content)
     else:
