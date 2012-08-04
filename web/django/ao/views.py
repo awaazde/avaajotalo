@@ -31,7 +31,7 @@ from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts, broadcast
 import otalo_utils, stats_by_phone_num
-from otalo.ao.forms import CreateAcctForm
+from otalo.ao.forms import CreateAcctForm, SignupForm
 from awaazde.streamit import streamit
 
 # Only keep these around as legacy
@@ -922,21 +922,29 @@ def smsin(request):
 
 @csrf_exempt
 def signup(request):
-    params = request.POST
-    
-    name = params['name']
-    email = params['email']
-    number = params['number']
-    
-    u = User.objects.filter(number=number)
-    if bool(u):
-        u = u[0]
-        u.email=email
-        u.save()
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            number = form.cleaned_data['number']
+            if number is not None:
+                number = get_phone_number(number)
+            email = form.cleaned_data['email']
+            
+            u = User.objects.filter(Q(email=email) | Q(number=number))
+            if not bool(u):
+                if number is None:
+                    number = "STREAMIT_SIGNUP"
+                u = User.objects.create(number=number, name=name, email=email, allowed='y')
+            
+            msg = "name: "+name+"<br/> email: "+email+"<br/> number: "
+            msg += number or ""   
+            streamit.new_signup_email(msg)
+            return render(request, 'AO/splash.html', {'success':"Thanks, we'll contact you soon!"})
+        else:
+            return render(request, 'AO/splash.html', {'success':False})
     else:
-        u = User.objects.create(number=number,allowed='y', email=email)
-        
-    return send_data('ok')
+        return render(request, 'AO/splashpost.html')
 
 def createacct(request):
     html = 'AO/createacct.html'
@@ -958,7 +966,7 @@ def createacct(request):
                 u.name = name
                 u.email = email
                 u.save()
-            
+                
             # check if this user already has an account
             if bool(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR, forums__admin__user=u)):
                 return render(request, html, {'form': form, 'title': 'Account Registration', 'already_exists':"An account with this number already exists"})

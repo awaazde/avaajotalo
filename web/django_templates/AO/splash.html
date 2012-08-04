@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<html>
+	<head>
+		<link rel="stylesheet" media="all" href="{{ STATIC_URL }}css/bootstrap.css" type="text/css" />
+		<link rel="stylesheet" media="all" href="{{ STATIC_URL }}css/splash.css" type="text/css" />
+		<title>Awaaz.De</title>
+	</head>
+	<body>
+		<div id="main">
+			<div id="signup">
+				{% if success %}
+					<label id="thankyou">
+						{{ success }}
+					</label>
+					<div>
+						<a id="about" href="/home">About Awaaz.De</a>
+					</div>
+				{% else %}
+					<form id="signup-form" action="http://localhost:8000/AO/signup/" method="post">
+						<label id="form-title">
+							Want to know more?
+						</label>
+						<label>name* <span style="font-weight:bold; color:#0061CC;">Required!</span></label>
+						<input id="id_name" name="name" type="text" class="span2" placeholder="e.g. Haathi">
+						<label>email* <span style="font-weight:bold; color:#0061CC;">Required!</span></label>
+						<input id="id_email" name="email" type="text" class="span2" placeholder="e.g. mere@saathi.in">
+						<label>mobile</label>
+						<input id="id_number" name="number" type="text" class="span2" placeholder="e.g. 5555555555">
+						<button type="submit" class="btn btn-primary">Request</button>
+						<div>
+							<a id="about" href="/home">About Awaaz.De</a>
+						</div>
+					</form>
+				{% endif %}
+			</div>
+			<div>
+				<a id="logo-link" href="/home"></a>
+			</div>
+		</div>
+	</body>
+</html>
