@@ -217,11 +217,11 @@ end
 -- getusermessages
 -----------
 
-function getusermessages ()
+function getusermessages (lineid)
    local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message.thread_id, forum.id, forum.responses_allowed, forum.moderated, message_forum.status, forum.confirm_recordings, forum.max_user_resp_len ";
-   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_forum forum ";
+   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_forum forum, ao_line_forums line_forum ";
    query = query .. " WHERE message.id = message_forum.message_id AND message.lft = 1 AND message.user_id = " .. userid;
-   query = query .. " AND message_forum.forum_id = forum.id";
+   query = query .. " AND message_forum.forum_id = forum.id AND line_forum.forum_id = forum.id AND line_forum.line_id = " .. lineid;
    query = query .. " ORDER BY message.date DESC";
    freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
    return rows(query);
@@ -366,7 +366,7 @@ function mainmenu ()
    elseif (d == chkrepliesidx and personal_inbox == 1) then
       read(aosd .. "okyourreplies.wav", 0);
       use();
-      playmessages(getusermessages(), 'y');
+      playmessages(getusermessages(lineid), 'y');
    elseif (d == chkpendingidx and adminmode) then
       read(aosd .. "okpending.wav", 0);
       use();
@@ -730,6 +730,12 @@ function playforum (forumid)
 	    end
    end
    
+   
+   --[[
+
+	Disabling instructions at the beginning in deference
+	to instructions in between messages
+
    if (responsesallowed == 'y' or adminmode) then
       read(aosd .. "instructions_short.wav", 1000);
    else
@@ -745,7 +751,8 @@ function playforum (forumid)
 	 
 	  d = use();
    end
-
+   --]]
+   
    playmessages(getmessages(forumid, tagid), 'y');
    return;
 end
