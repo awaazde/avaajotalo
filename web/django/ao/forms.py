@@ -66,5 +66,8 @@ class CreateAcctForm(forms.Form):
         required = True,
     )
     
-    helper = FormHelper()
-    helper.add_input(Submit('submit', 'Register'))
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Register', css_class='btn btn-primary'))
+        
+        super(CreateAcctForm, self).__init__(*args, **kwargs)
