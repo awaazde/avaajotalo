@@ -14,6 +14,6 @@ public class Call extends BaseModel {
 	
 	public String getDate()
 	{
-		return getObject("fields").get("date");
+		return getObject("fields").get("date").replace("T", " ");
 	}
 }
