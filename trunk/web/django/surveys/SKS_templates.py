@@ -528,7 +528,7 @@ def kmvs_record_template(line):
     suffix = line.dialstring_suffix
     language = line.language
     number = line.outbound_number or line.number
-    name = 'RECORD_TEMPLATE'
+    name = 'RECORD'
     
     s = Survey.objects.filter(name=name, number=number)
     if bool(s):
