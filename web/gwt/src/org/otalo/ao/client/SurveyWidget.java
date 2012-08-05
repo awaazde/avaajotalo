@@ -294,7 +294,15 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 			
 			String surveyDetails = "<b>Start: </b> " + startdate + "<br><br>";
 			surveyDetails += "<b>End: </b> " + enddate + "<br><br>";
-			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(completed.split(", ").length+pending.split(", ").length-1);
+			int numrecipients = completed.split(", ").length+pending.split(", ").length;
+			// For some reason, the above line creates an array of length one if
+			// one of the strings is empty
+			// Assumes that completed and pending cannot both be empty
+			if (completed.equals("") || pending.equals(""))
+			{
+				numrecipients -= 1;
+			}
+			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(numrecipients);
 			
 			surveyDetails += "<br><br><b>Pending:</b>";    
 	    HTML pendingHTML = new HTML(surveyDetails);
