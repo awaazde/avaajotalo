@@ -211,9 +211,11 @@ def thread(messageforum, template, responseprompt, bcastname=None):
         prompt.order += ntoshift
         for option in Option.objects.filter(prompt=prompt):
             if option.action == Option.RECORD:
-                oncancel = Param.objects.get(option=option, name=Param.ONCANCEL)
-                oncancel.value = int(oncancel.value) + ntoshift
-                oncancel.save()
+                oncancel = Param.objects.filter(option=option, name=Param.ONCANCEL)
+                if bool(oncancel):
+                    for p in oncancel:
+                        p.value = int(p.value) + ntoshift
+                        p.save()
             if option.action == Option.GOTO:
                 goto = Param.objects.get(option=option, name=Param.IDX)
                 goto.value = int(goto.value) + ntoshift
