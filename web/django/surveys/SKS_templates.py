@@ -341,6 +341,93 @@ def subscription(line):
 
     return s
 
+def record_template(line, contenttype):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    if line.outbound_number:
+        num = line.outbound_number
+    else:
+        num = line.number
+    
+    name = contenttype[:3].upper() +'_REC_' + Survey.TEMPLATE_DESIGNATOR
+    
+    s = Survey.objects.filter(name=name)
+    if not bool(s):
+        s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num, template=True)
+        print ("adding template " + str(s))
+        s.save()
+    
+        # welcome
+        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
+        welcome.save()
+        welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
+        welcome_opt.save()
+        welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
+        welcome_opt2.save()
+        
+        # content
+        content = Prompt(file=language+"/"+contenttype+SOUND_EXT, order=2, bargein=True, survey=s)
+        content.save()
+        content_opt = Option(number="", action=Option.NEXT, prompt=content)
+        content_opt.save()
+        content_opt2 = Option(number="1", action=Option.NEXT, prompt=content)
+        content_opt2.save()
+        
+         # repeat
+        repeat = Prompt(file=language+"/repeat"+SOUND_EXT, order=4, bargein=True, delay=3000, survey=s)
+        repeat.save()
+        repeat_opt = Option(number="", action=Option.NEXT, prompt=repeat)
+        repeat_opt.save()
+        repeat_opt2 = Option(number="1", action=Option.NEXT, prompt=repeat)
+        repeat_opt2.save()
+        repeat_opt3 = Option(number="9", action=Option.GOTO, prompt=repeat)
+        repeat_opt3.save()
+        param = Param(option=repeat_opt3, name=Param.IDX, value=3)
+        param.save()
+        
+        # to record
+        motivation = Prompt(file=language+"/recordmotivation"+SOUND_EXT, order=5, bargein=True, survey=s, delay=5000)
+        motivation.save()
+        motivation_opt = Option(number="", action=Option.GOTO, prompt=motivation)
+        motivation_opt.save()
+        param = Param(option=motivation_opt, name=Param.IDX, value=8)
+        param.save()
+        motivation_opt2 = Option(number="1", action=Option.NEXT, prompt=motivation)
+        motivation_opt2.save()
+        
+        # record
+        record = Prompt(file=language+"/recordmessage_short"+SOUND_EXT, order=6, bargein=True, survey=s, name='Response' )
+        record.save()
+        record_opt = Option(number="", action=Option.RECORD, prompt=record)
+        record_opt.save()
+        param = Param(option=record_opt, name=Param.ONCANCEL, value=8)
+        param.save()
+        record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
+        record_opt2.save()
+        param2 = Param(option=record_opt2, name=Param.ONCANCEL, value=8)
+        param2.save()
+        
+        # thanks
+        thanks = Prompt(file=language+"/recordthankyou"+SOUND_EXT, order=7, bargein=True, survey=s)
+        thanks.save()
+        thanks_opt = Option(number="", action=Option.GOTO, prompt=thanks)
+        thanks_opt.save()
+        param = Param(option=thanks_opt, name=Param.IDX, value=9)
+        param.save()
+        
+        # thanks
+        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=8, bargein=True, survey=s)
+        thanks.save()
+        thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
+        thanks_opt1.save()
+        thanks_opt2 = Option(number="1", action=Option.NEXT, prompt=thanks)
+        thanks_opt2.save()
+        
+        return s
+    else:
+        return s[0]
+
 def blank_template(num, subdir, prefix, suffix):
     s = Survey.objects.filter(name__contains='BLANK', number=num, template=True)
     if not bool(s):
@@ -436,6 +523,55 @@ def ciie_survey(line, outbound_num, template, inbound):
     thankyou_opt = Option(number="", action=Option.NEXT, prompt=thankyou)
     thankyou_opt.save()
 
+def kmvs_record_template(line):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    number = line.outbound_number or line.number
+    name = 'RECORD_TEMPLATE'
+    
+    s = Survey.objects.filter(name=name, number=number)
+    if bool(s):
+        s = s[0]
+        s.delete()
+        print('deleting template '+str(s))
+        
+    s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=number, template=True)
+    print ("adding template " + str(s))
+    s.save()
+
+    order = 1
+    # welcome
+    welcome = Prompt(file=language+"/pre"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    welcome.save()
+    welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
+    welcome_opt.save()
+    order += 1
+    
+    # space for the content
+    order += 1 
+    
+    post = Prompt(file=language+"/post"+SOUND_EXT, order=order, bargein=False, survey=s, delay=0)
+    post.save()
+    post_opt = Option(number="", action=Option.NEXT, prompt=post)
+    post_opt.save()
+    order += 1
+    
+    # record
+    record = Prompt(file=language+"/pleaserecord"+SOUND_EXT, order=order, bargein=True, survey=s, name='Response' )
+    record.save()
+    record_opt = Option(number="", action=Option.RECORD, prompt=record)
+    record_opt.save()
+    param = Param(option=record_opt, name=Param.CONFIRM_REC, value="0")
+    param.save()
+    record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
+    record_opt2.save()
+    param2 = Param(option=record_opt2, name=Param.CONFIRM_REC, value="0")
+    param2.save()
+    order += 1
+        
+    return s
+    
 '''
 ****************************************************************************
 ******************* Reporting **********************************************
@@ -637,7 +773,7 @@ def time_str(date):
 '''
     
 def main():
-    line = Line.objects.get(pk=3)
+    line = Line.objects.get(pk=53)
     #Survey.objects.filter(number__in=[line.number, line.outbound_number], template=True).delete()
     
     #freecall_template(line, 'announcement')
@@ -648,7 +784,8 @@ def main():
     #subscription_results(line)
     #blank_template('7961907707', 'lokmitra','freetdm/grp1/a/','')
     #lokmitra_rsvp_template(line)
-    ciie_survey(line, outbound_num, template=False, inbound=True)
+    #ciie_survey(line, outbound_num, template=False, inbound=True)
+    kmvs_record_template(line)
         
 main()
 
