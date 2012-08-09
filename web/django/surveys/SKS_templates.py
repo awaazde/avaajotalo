@@ -571,6 +571,37 @@ def kmvs_record_template(line):
     order += 1
         
     return s
+
+def ambuja_subscription_survey(line):
+    prefix = line.dialstring_prefix
+    suffix = line.dialstring_suffix
+    language = line.language
+    number = line.outbound_number or line.number
+    name = 'SUBSCRIPTION_SURVEY'
+    
+    s = Survey.objects.filter(name=name, number=number)
+    if bool(s):
+        s = s[0]
+        s.delete()
+        print('deleting template '+str(s))
+        
+    s = Survey(name=name, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=number, template=True)
+    print ("adding template " + str(s))
+    s.save()
+
+    order = 1
+    # want to subscribe?
+    subscribe = Prompt(file=language+"/subscribe"+SOUND_EXT, order=order, bargein=True, survey=s, delay=5000)
+    subscribe.save()
+    subscribe_opt = Option(number="9", action=Option.INPUT, prompt=subscribe)
+    subscribe_opt.save()
+    order += 1
+    
+    oksubscribe = Prompt(file=language+"/oksubscribe"+SOUND_EXT, order=order, bargein=False, survey=s)
+    oksubscribe.save()
+    oksubscribe_opt = Option(number="", action=Option.NEXT, prompt=oksubscribe)
+    oksubscribe_opt.save()
+    order += 1
     
 '''
 ****************************************************************************
@@ -785,7 +816,8 @@ def main():
     #blank_template('7961907707', 'lokmitra','freetdm/grp1/a/','')
     #lokmitra_rsvp_template(line)
     #ciie_survey(line, outbound_num, template=False, inbound=True)
-    kmvs_record_template(line)
-        
+    #kmvs_record_template(line)
+    ambuja_subscription_survey(line)
+    
 main()
 
