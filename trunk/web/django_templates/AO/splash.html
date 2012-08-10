@@ -22,9 +22,9 @@
 						<label id="form-title">
 							Want to know more?
 						</label>
-						<label>name* <span style="font-weight:bold;">Required!</span></label>
+						<label>name* {% if required %} <span style="font-weight:bold;">Required!</span> {% endif %} </label> 
 						<input id="id_name" name="name" type="text" class="span2" placeholder="e.g. Haathi">
-						<label>email* <span style="font-weight:bold;">Required!</span></label>
+						<label>email* {% if required %} <span style="font-weight:bold;">Required!</span> {% endif %} </label> 
 						<input id="id_email" name="email" type="text" class="span2" placeholder="e.g. mere@saathi.in">
 						<label>mobile</label>
 						<input id="id_number" name="number" type="text" class="span2" placeholder="e.g. 5555555555">
