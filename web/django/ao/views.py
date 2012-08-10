@@ -943,9 +943,9 @@ def signup(request):
             streamit.new_signup_email(msg)
             return render(request, 'AO/splash.html', {'success':"Thanks, we'll contact you soon!"})
         else:
-            return render(request, 'AO/splash.html', {'success':False})
+            return render(request, 'AO/splash.html', {'success':False, 'required':True})
     else:
-        return render(request, 'AO/splashpost.html')
+        return render(request, 'AO/splash.html', {'success':False, 'required':False})
 
 def createacct(request):
     html = 'AO/createacct.html'
