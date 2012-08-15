@@ -478,7 +478,7 @@ function playmessage (msg, listenreplies)
   -- give some time for users to compose themselves and
   -- potentially respond
   -- only between threads, not between replies
-  if (listenreplies == 'y' and responsesallowed == 'y') then
+  if (listenreplies == 'y' and (responsesallowed == 'y' or adminmode)) then
 	  	read(aosd .. "instructions_between.wav", 4000)
 	  	d = use();
 	  	
@@ -731,15 +731,15 @@ function playforum (forumid)
    end
    
    
-   --[[
 
-	Disabling instructions at the beginning in deference
-	to instructions in between messages
-
-   if (responsesallowed == 'y' or adminmode) then
-      read(aosd .. "instructions_short.wav", 1000);
-   else
-      read(aosd .. "instructions_short_noresponse.wav", 1000);
+	--Disabling instructions at the beginning when there will be
+	--instructions in between messages.
+   
+   --if (responsesallowed == 'y' or adminmode) then
+    --  read(aosd .. "instructions_short.wav", 1000);
+   --else
+   if (responsesallowed == 'n' and adminmode == false) then
+   		read(aosd .. "instructions_short_noresponse.wav", 1000);
    end
    
    d = use(); 
@@ -751,7 +751,6 @@ function playforum (forumid)
 	 
 	  d = use();
    end
-   --]]
    
    playmessages(getmessages(forumid, tagid), 'y');
    return;
