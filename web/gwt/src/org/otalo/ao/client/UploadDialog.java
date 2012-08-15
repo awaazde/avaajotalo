@@ -59,11 +59,6 @@ public class UploadDialog extends DialogBox {
 		main.setTitle("Content");
 		Label mainLabel = new Label("Content:");
 		
-		FileUpload summary = new FileUpload();
-		summary.setName("summary");
-		summary.setTitle("Summary");
-		Label summaryLabel = new Label("Summary (optional):");
-		
 		number = new TextBox();
 		number.setName("number");
 		User moderator = Messages.get().getModerator();
@@ -90,15 +85,12 @@ public class UploadDialog extends DialogBox {
 		DOM.setStyleAttribute(contentPanel.getElement(), "textAlign", "left");
 		contentPanel.add(main);
 		outer.setWidget(0, 1, contentPanel);
-		outer.setWidget(1, 0, summaryLabel);
+		outer.setWidget(1, 0, numberLabel);
 		outer.getCellFormatter().setWordWrap(1, 0, false);
-		outer.setWidget(1, 1, summary);
-		outer.setWidget(2, 0, numberLabel);
-		outer.getCellFormatter().setWordWrap(2, 0, false);
 		numberPanel.setSpacing(2);	
 		DOM.setStyleAttribute(numberPanel.getElement(), "textAlign", "left");
 		numberPanel.add(number);
-		outer.setWidget(2, 1, numberPanel);
+		outer.setWidget(1, 1, numberPanel);
 
 		
 		HorizontalPanel buttons = new HorizontalPanel();
