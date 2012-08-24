@@ -234,7 +234,7 @@ class Membership(models.Model):
     STATUS_DNC = 5
     
     STATUS = (
-    (STATUS_SUBSCRIBED, 'Subscribed'),
+    (STATUS_SUBSCRIBED, 'Joined'),
     (STATUS_UNSUBSCRIBED, 'Unsubscribed'),
     (STATUS_REQUESTED, 'Requested'),
     (STATUS_INVITED, 'Invited'),
