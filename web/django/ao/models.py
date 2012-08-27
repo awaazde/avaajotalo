@@ -237,7 +237,7 @@ class Membership(models.Model):
     (STATUS_SUBSCRIBED, 'Joined'),
     (STATUS_UNSUBSCRIBED, 'Unsubscribed'),
     (STATUS_REQUESTED, 'Requested'),
-    (STATUS_INVITED, 'Invited'),
+    (STATUS_INVITED, 'Pending'),
     (STATUS_DELETED, 'Deleted'),
     (STATUS_DNC, 'Do not call'),
     )
