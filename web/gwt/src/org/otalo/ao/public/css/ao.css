@@ -24,3 +24,8 @@
 .sms_over {
   color: red;
 }
+
+.helptext {
+	color: #666666;
+    font-size: 11px;	
+}
