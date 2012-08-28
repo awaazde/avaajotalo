@@ -15,6 +15,8 @@
  */
 package org.otalo.ao.client.model;
 
+import org.otalo.ao.client.model.Forum.ForumStatus;
+
 
 public class Message extends BaseModel {
 
@@ -23,7 +25,27 @@ public class Message extends BaseModel {
 	 * is 0 and then increases from there.
 	 */
 	public enum MessageStatus {
-		PENDING, APPROVED, REJECTED
+		PENDING(0), APPROVED(1), REJECTED(2);
+		
+		private int code;  
+	  
+    private MessageStatus(int code) {  
+        this.code = code;  
+    }  
+  
+    public int getCode() {  
+        return code;  
+    }  
+    
+    public static MessageStatus getStatus(int code) {
+    	for (MessageStatus s : values())
+    	{
+    		if (s.getCode() == code)
+    			return s;
+    	}
+    	
+    	return null;
+    }
 	}
 	
 	public boolean read;

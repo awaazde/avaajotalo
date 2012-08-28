@@ -20,7 +20,7 @@ from django.shortcuts import render_to_response, get_object_or_404, get_list_or_
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext
-from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin
+from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin, Membership
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
@@ -500,11 +500,8 @@ def line(request):
     auth_user = request.user
     
     if not auth_user.is_superuser:
-        # get the first line based on the first forum that this
-        # admin is associated with
-        admin = Admin.objects.filter(auth_user=auth_user)[0]
-        forum = admin.forum
-        line = forum.line_set.all()[:1]
+        # get all lines associated with this login
+        line = Line.objects.filter(forums__admin__auth_user=auth_user).distinct().order_by('-id')
     else:
         line = Line.objects.filter(pk=1)
         
@@ -979,6 +976,165 @@ def createacct(request):
             return render(request, html, {'form': form, 'title': 'Account Registration'})
     else:
         return render(request, html, {'form': CreateAcctForm(), 'title': 'Account Registration'})
+
+@csrf_exempt
+def creategroup(request):
+    params = request.POST
+    if 'groupname' not in params or params['groupname'] == '':
+        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"name required"}]')
+        response['Pragma'] = "no cache"
+        response['Cache-Control'] = "no-cache, must-revalidate"
+        return response
+    else:
+        groupname = params['groupname']
+    lang = params['language']
+    
+    auth_user = request.user
+    owner = User.objects.filter(admin__auth_user=auth_user)[0]
+    
+    streamit.update_group(groupname, owner, lang)
+    
+    return HttpResponseRedirect(reverse('otalo.ao.views.group'))
+
+'''
+    Need to return lines since need 
+    language related to the group
+'''
+def group(request):
+    auth_user = request.user
+    
+    lines = Line.objects.filter(forums__admin__auth_user=auth_user, name__contains=streamit.STREAMIT_LINE_DESIGNATOR).exclude(forums__status=Forum.STATUS_INACTIVE).distinct()
+
+    return send_response(lines, relations=('forums',))
+
+def members(request, group_id):
+    params = request.GET
+    members = Membership.objects.filter(group=group_id).exclude(status=Membership.STATUS_DELETED)
+    if 'status' in params:
+        status = params['status'].split()
+        members = members.filter(status__in=status)
+    
+    return send_response(members, ('user'))
+
+@csrf_exempt
+def updatemembership(request, membership_id):
+    params = request.POST
+    membership = get_object_or_404(Membership, pk=int(membership_id))
+    u = membership.user
+    
+    if 'number' in params and params['number'] != '':
+        u.number = params['number']
+    if 'name' in params and params['name'] != '':
+        u.name = params['name']
+    
+    u.save()
+    
+    # Always return an HttpResponseRedirect after successfully dealing
+    # with POST data. This prevents data from being posted twice if a
+    # user hits the Back button.
+    return HttpResponseRedirect(reverse('otalo.ao.views.user', args=(u.id,)))
+
+@csrf_exempt
+def invitemembers(request):
+    params = request.POST
+    group = get_object_or_404(Forum, pk=int(params['groupid']))
+    
+    numsRaw = params['numbers']
+    if ',' in numsRaw:
+        numbers = numsRaw.split(',')
+    elif '\n' in numsRaw:
+        numbers = numsRaw.split('\n')        
+    else:
+        numbers = [numsRaw]
+    numbers = [number.strip() for number in numbers]
+        
+    if numbers:
+        names = []
+        if params['names'] != '':
+            namesRaw = params['names']
+            if ',' in numsRaw:
+                names = namesRaw.split(',')
+            elif '\n' in numsRaw:
+                names = namesRaw.split('\n')
+            else:
+                names = [namesRaw]
+            names = [name.strip() for name in names]
+            
+        users = []
+        for i in range(len(numbers)):
+            number = numbers[i][-10:]
+            user = User.objects.filter(number=number)
+            if bool(user):
+                user = user[0]
+            else:
+                name = None
+                if i<len(names) and names[i] != '':
+                    name=names[i]
+                user = User.objects.create(number=number, name=name, allowed='y')
+            users.append(user)
+        if bool(users):
+            streamit.add_members(group, users)
+        
+    return HttpResponseRedirect(reverse('otalo.ao.views.members', args=(int(group.id),)))
+
+@csrf_exempt
+def updategroupsettings(request):
+    params = request.POST
+    group = get_object_or_404(Forum, pk=int(params['groupid']))
+    
+    name = params['groupname']
+    language = params['language']
+    status = params['deliverytype']
+    responses_allowed = int(params['inputtype'])
+    
+    if 'greetingmessage' in request.FILES:
+        content = request.FILES['greetingmessage']
+        extension = content.name[content.name.index('.'):]
+        filename = streamit.GREETING_DIR + str(group.id) + extension
+        filename_abs = settings.MEDIA_ROOT + "/" + filename
+        destination = open(filename_abs, 'wb')
+        for chunk in content.chunks():
+            destination.write(chunk)
+        os.chmod(filename_abs, 0644)
+        destination.close()
+        group.name_file = filename
+        
+    group.name = name
+    group.status = status
+    group.responses_allowed = 'y' if responses_allowed else 'n'
+    line = group.line_set.all()[0]
+    line.language = language
+    
+    group.save()
+    line.save()
+    
+    return HttpResponseRedirect(reverse('otalo.ao.views.group'))
+
+@csrf_exempt
+def updatememstatus(request):
+    params = request.POST
+    group = get_object_or_404(Forum, pk=int(params['groupid']))
+    
+    memids = params['memberids']
+    if memids != '':
+        # remove trailing comma
+        memids = memids[:-1].split(',')
+        members = User.objects.filter(membership__pk__in=memids)
+        status = params['memberstatus']
+        
+        streamit.update_members(group, status, members)
+    
+    return HttpResponseRedirect(reverse('otalo.ao.views.members', args=(int(group.id),)))
+
+@csrf_exempt
+def deletegroup(request):
+    params = request.POST
+    group = get_object_or_404(Forum, pk=int(params['groupid']))
+    
+    group.status = Forum.STATUS_INACTIVE
+    group.save()
+    
+    return HttpResponseRedirect(reverse('otalo.ao.views.group')) 
 
 def get_phone_number(number):
     # strip non-numerics and see if we have

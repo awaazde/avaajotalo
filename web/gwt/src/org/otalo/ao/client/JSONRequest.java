@@ -70,6 +70,14 @@ public final class JSONRequest {
 		public static final String SMS = "sms/";
 		public static final String SMS_RECIPIENTS = "smsrecipients/";
 		public static final String SEND_SMS = "sendsms/";
+		public static final String CREATE_GROUP = "creategroup/";
+		public static final String GROUP = "group/";
+		public static final String MEMBERS = "members/";
+		public static final String UPDATE_MEMBER = "update/member/";
+		public static final String INVITE_MEMBERS = "invitemembers/";
+		public static final String UPDATE_GROUP_SETTINGS = "update/groupsettings/";
+		public static final String UPDATE_MEMBER_STATUS = "update/memberstatus/";
+		public static final String DELETE_GROUP = "deletegroup/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
@@ -138,6 +146,25 @@ public final class JSONRequest {
       requestBuilder.sendRequest(null, new JSONResponseTextHandler());
     } catch (RequestException ex) {
     	// TODO
+    }
+  }
+  
+  public static void doPost(String url, String postData) {
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+
+    try {
+      builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+      Request response = builder.sendRequest(postData, new RequestCallback() {
+
+        public void onError(Request request, Throwable exception) {
+          // code omitted for clarity
+        }
+
+        public void onResponseReceived(Request request, Response response) {
+          // code omitted for clarity
+        }
+      });
+    } catch (RequestException e) {
     }
   }
   

@@ -44,23 +44,7 @@ public class MessageForum extends BaseModel {
 	
 	public MessageStatus getStatus()
 	{
-		int statusCode = Integer.valueOf(getObject("fields").get("status"));
-		
-		if (statusCode == MessageStatus.PENDING.ordinal())
-		{
-			return MessageStatus.PENDING;
-		}
-		else if (statusCode == MessageStatus.APPROVED.ordinal())
-		{
-			return MessageStatus.APPROVED;
-		}
-		else if (statusCode == MessageStatus.REJECTED.ordinal())
-		{
-			return MessageStatus.REJECTED;
-		}
-		
-		// This should never happen
-		return null;
+		return MessageStatus.getStatus(Integer.valueOf(getObject("fields").get("status")));
 	}
 	
 	public boolean isResponse()

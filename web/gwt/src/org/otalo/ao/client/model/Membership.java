@@ -18,6 +18,7 @@ package org.otalo.ao.client.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.otalo.ao.client.model.Forum.ForumStatus;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
 
@@ -27,17 +28,18 @@ public class Membership extends BaseModel {
 	 * is 0 and then increases from there.
 	 */
 	public enum MembershipStatus {
-		SUBSCRIBED("Joined"),
-    UNSUBSCRIBED("Unsubscribed"),
-    REQUESTED("Requested"),
-    INVITED("Pending"),
-    DELETED("Deleted"),
-    DNC("Do Not Call")
+		SUBSCRIBED("Joined", 0),
+    UNSUBSCRIBED("Unsubscribed", 1),
+    REQUESTED("Requested", 2),
+    INVITED("Pending", 3),
+    DELETED("Deleted", 4),
+    DNC("Do Not Call", 5)
     ;
 		
-		private MembershipStatus(String value)
+		private MembershipStatus(String value, int code)
 		{
 			this.txtValue = value;
+			this.code = code;
 		}
 		
 		public static List<String> getValues()
@@ -55,7 +57,23 @@ public class Membership extends BaseModel {
 			return txtValue;
 		}
 		
+		public int getCode()
+		{
+			return code;
+		}
+		
+		public static MembershipStatus getStatus(int code) {
+    	for (MembershipStatus s : values())
+    	{
+    		if (s.getCode() == code)
+    			return s;
+    	}
+    	
+    	return null;
+    }
+		
 		private String txtValue;
+		private int code;
 	}
 	
 	public Membership(JSOModel data) 
@@ -73,34 +91,6 @@ public class Membership extends BaseModel {
 	
 	public MembershipStatus getStatus()
 	{
-		int statusCode = Integer.valueOf(getObject("fields").get("status"));
-		
-		if (statusCode == MembershipStatus.SUBSCRIBED.ordinal())
-		{
-			return MembershipStatus.SUBSCRIBED;
-		}
-		else if (statusCode == MembershipStatus.UNSUBSCRIBED.ordinal())
-		{
-			return MembershipStatus.UNSUBSCRIBED;
-		}
-		else if (statusCode == MembershipStatus.REQUESTED.ordinal())
-		{
-			return MembershipStatus.REQUESTED;
-		}
-		else if (statusCode == MembershipStatus.INVITED.ordinal())
-		{
-			return MembershipStatus.INVITED;
-		}
-		else if (statusCode == MembershipStatus.DELETED.ordinal())
-		{
-			return MembershipStatus.DELETED;
-		}
-		else if (statusCode == MembershipStatus.DNC.ordinal())
-		{
-			return MembershipStatus.DNC;
-		}
-		
-		// this should never happen
-		return null;
+		return MembershipStatus.getStatus(Integer.valueOf(getField("status")));
 	}
 }

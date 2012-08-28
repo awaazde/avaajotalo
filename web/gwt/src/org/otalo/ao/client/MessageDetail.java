@@ -191,7 +191,7 @@ public class MessageDetail extends Composite {
   	moveButtons.add(moveDownButton);
   	moveButtons.setSpacing(5);
   	VerticalPanel linksPanel = new VerticalPanel();
-  	if (Messages.get().getLine().bcasting_allowed())
+  	if (Messages.get().getLine().bcastingAllowed())
   	{
 	  	broadcastLink = new Anchor("Broadcast");
 	  	linksPanel.add(broadcastLink);
@@ -284,7 +284,7 @@ public class MessageDetail extends Composite {
   	routing.loadResponders(messageForum);
   	
   	downloadLink.setHref(AoAPI.DOWNLOAD + messageForum.getId() + "/");
-  	if (Messages.get().getLine().bcasting_allowed())
+  	if (Messages.get().getLine().bcastingAllowed())
   	{
 	  	if (forwardHandler != null) 
 	  	{

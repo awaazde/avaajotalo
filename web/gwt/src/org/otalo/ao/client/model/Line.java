@@ -15,8 +15,14 @@
  */
 package org.otalo.ao.client.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gwt.core.client.JsArray;
+
 
 public class Line extends BaseModel {
+	private static final String MANAGEMENT_DESIGNATOR = "";
 	
 	public Line(JSOModel data) {
 		super(data);
@@ -24,6 +30,10 @@ public class Line extends BaseModel {
 	
 	public String getLogoFile() {
 		return getField("logo_file");
+	}
+	
+	public String getName() {
+		return getField("name");
 	}
 	
 	public String[] getForumIds() {
@@ -34,6 +44,19 @@ public class Line extends BaseModel {
 
 	}
 	
+	public List<Forum> getForums()
+	{
+		List<Forum> forums = new ArrayList<Forum>();
+		JsArray<JSOModel> arr = getObject("fields").getArray("forums");
+		
+		JSOModel m;
+		for (int i=0; i<arr.length(); i++)
+		{
+			m = arr.get(i);
+			forums.add(new Forum(m));
+		}
+		return forums;
+	}
 	public boolean hasSMSConfig() {
 		return !getField("sms_config").equals("null");
 	}
@@ -54,7 +77,20 @@ public class Line extends BaseModel {
 			return null;
 	}
 	
-	public boolean bcasting_allowed() {
+	public boolean bcastingAllowed() {
 		return Boolean.valueOf(getField("bcasting_allowed"));
 	}
+	
+	public boolean canManage() {
+		return getName().contains(MANAGEMENT_DESIGNATOR);
+	}
+	
+	public String getLanguage() {
+		return getField("language");
+	}
+	
+	public String getNumber() {
+		return getField("number");
+	}
+	
 }

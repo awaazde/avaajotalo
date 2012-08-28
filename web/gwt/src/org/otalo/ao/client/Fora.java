@@ -18,18 +18,39 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.otalo.ao.client.ForumWidget.UploadComplete;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.Line;
+import org.otalo.ao.client.model.MessageForum;
+import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FileUpload;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.sun.xml.internal.rngom.binary.GroupPattern;
 
 /**
  * A panel of fora, each presented as a tree.
@@ -54,6 +75,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 
   private Images images;
   private VerticalPanel p;
+  private CreateGroupDialog createGroupDlg = new CreateGroupDialog();
 
   /**
    * Constructs a new list of forum widgets with a bundle of images.
@@ -63,6 +85,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   public Fora(Images images) {
 	  this.images = images;
 	  p = new VerticalPanel();
+	  
 		// Get fora
 		JSONRequest request = new JSONRequest();
 		request.doFetchURL(AoAPI.FORUM, this);
@@ -71,9 +94,9 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   }
 
 
-  public void dataReceived(List<JSOModel> models)
-  {
-  	//pass fora
+	@Override
+	public void dataReceived(List<JSOModel> models) {
+		//pass fora
   	List<Forum> fora = new ArrayList<Forum>();
   	
   	for (JSOModel model : models)
@@ -82,12 +105,25 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   	}
   	
   	loadFora(fora);
-  	
-  }
-
+		
+	}
+	
+	public void reloadFora(List<JSOModel> models)
+	{
+		List<Forum> fora = new ArrayList<Forum>();
+		Line l;
+		for (JSOModel model : models)
+		{
+			l = new Line(model);
+			fora.addAll(l.getForums());
+		}
+		loadFora(fora);
+	}
 
 	private void loadFora(List<Forum> fora)
 	{
+		p.clear();
+		widgets.clear();
 		
 		for (int i = 0; i < fora.size(); ++i) 
 		{
@@ -97,7 +133,42 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			p.add(w.getWidget());
 			widgets.add(w);
 		}
-		
+	  
+	  if (Messages.get().canManage())
+	  {
+	  	Button create = new Button("Create");
+		  create.addClickHandler(new ClickHandler() {
+				
+				public void onClick(ClickEvent event) {
+					createGroupDlg.reset();
+					createGroupDlg.center();
+					
+				}
+			});
+		  Button manage = new Button("Manage");
+		  manage.addClickHandler(new ClickHandler() {
+				
+				public void onClick(ClickEvent event) {
+					Messages.get().displayManageGroupsInterface();
+					
+				}
+			});
+		  
+		  createGroupDlg.setCompleteHandler(new CreateGroupComplete());
+		  
+		  HorizontalPanel bpanel = new HorizontalPanel();
+		  bpanel.setWidth("100%");
+		  bpanel.setSpacing(5);
+		  bpanel.add(create);
+		  bpanel.add(manage);
+		  VerticalAlignmentConstant v = p.getVerticalAlignment();
+		  p.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+		  p.add(bpanel);
+		  // to account for the fact that new forums can be
+		  // added on action in the console (create group)
+		  p.setVerticalAlignment(v);
+	  }
+	  
 		// Hackish Initialization of the forum panel
 		widgets.get(0).selectMain();
 	}
@@ -133,5 +204,117 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		
 	}
 	
+	public class CreateGroupDialog extends DialogBox {
+		private FormPanel createGroupForm = new FormPanel();
+		private static final int NO_CONTENT = 2;
+		private HorizontalPanel namePanel = new HorizontalPanel();
+		private  ListBox language;
+		
+		public CreateGroupDialog() {
+			setText("Create New Group");
+			
+			FlexTable outer = new FlexTable();
+			outer.setSize("100%", "100%");
+			createGroupForm.setAction(JSONRequest.BASE_URL+AoAPI.CREATE_GROUP);
+			createGroupForm.setMethod(FormPanel.METHOD_POST);
+			
+			TextBox groupName = new TextBox();
+			groupName.setName("groupname");
+			Label groupLabel = new Label("Name:");
+			namePanel.setSpacing(2);
+			DOM.setStyleAttribute(namePanel.getElement(), "textAlign", "left");
+			namePanel.add(groupLabel);
+			
+			language = new ListBox();
+			language.setName("language");
+			language.addItem("Hindi", "hin");
+			language.addItem("Gujarati", "guj");
+			language.addItem("English", "eng");
+			Label langLabel = new Label("Language:");
+			
+			Button createButton = new Button("Create", new ClickHandler() {
+	      public void onClick(ClickEvent event) {
+	      	createGroupForm.submit();
+	      }
+	    });
+			
+			Button cancelButton = new Button("Cancel", new ClickHandler() {
+	      public void onClick(ClickEvent event) {
+	      	hide();
+	      }
+	    });
+			
+			outer.setWidget(0, 0, namePanel);
+			outer.setWidget(0, 1, groupName);
+			outer.setWidget(1, 0, langLabel);
+			HorizontalPanel langPanel = new HorizontalPanel();
+			langPanel.setSpacing(2);
+			DOM.setStyleAttribute(langPanel.getElement(), "textAlign", "left");
+			langPanel.add(language);
+			outer.setWidget(1, 1, langPanel);
+
+			
+			HorizontalPanel buttons = new HorizontalPanel();
+			// tables don't obey the setHorizontal of parents, and buttons is a table,
+			// so use float instead
+			DOM.setStyleAttribute(buttons.getElement(), "cssFloat", "right");
+			buttons.add(createButton);
+			buttons.add(cancelButton);
+			outer.setWidget(3, 1, buttons);
+			
+			createGroupForm.setWidget(outer);
+			
+			setWidget(createGroupForm);
+		}
+		
+		public void validationError(int type, String msg)
+		{
+			HTML msgHTML = new HTML("<span style='color:red'>("+msg+")</span>");
+			if (type == NO_CONTENT && namePanel.getWidgetCount() == 1)
+			{
+				namePanel.insert(msgHTML, 1);
+			}
+		}
+		
+		public void reset()
+		{
+			createGroupForm.reset();
+			if (namePanel.getWidgetCount() == 2)
+				namePanel.remove(1);
+			language.setSelectedIndex(0);
+		}
+		
+		public void setCompleteHandler(SubmitCompleteHandler handler)
+		{
+			createGroupForm.addSubmitCompleteHandler(handler);
+		}
 	
+	}
+	
+	private class CreateGroupComplete implements SubmitCompleteHandler {
+
+		public void onSubmitComplete(SubmitCompleteEvent event) {
+			List<JSOModel> models = JSONRequest.getModels(event.getResults());
+			JSOModel model = models.get(0);
+			if (model.get("model").equals("VALIDATION_ERROR"))
+			{
+				String msg = model.get("message");
+				int type = Integer.valueOf(model.get("type"));
+				createGroupDlg.validationError(type, msg);
+			}
+			else
+			{
+				createGroupDlg.hide();
+				ConfirmDialog saved = new ConfirmDialog("Created!");
+				saved.center();
+				
+				// These models are Lines with connected forums. Lines since 
+				// line info can be shared to also populate 
+				// the group management UI (save a server hit)
+				Messages.get().reloadGroupsFromFora(models);
+			}
+
+		}
+	}
+
 }

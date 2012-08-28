@@ -55,7 +55,8 @@ public class Shortcuts extends Composite {
 		this.fora = fora;
 		this.bcasts = bcasts;
 		
-		add(fora, images.forum(), "Forums");
+		String forumPanelName = Messages.get().canManage() ? "Groups" : "Forums";
+		add(fora, images.forum(), forumPanelName);
 		if (bcasts != null)
 			add(bcasts, images.broadcast(), "Broadcasts");
 		if (sms != null)
