@@ -16,6 +16,7 @@
  */
 package org.otalo.ao.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
@@ -57,7 +58,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images {
   }
 
   /**
@@ -77,9 +78,11 @@ public class Messages implements EntryPoint, ResizeHandler {
   private SMSs smss = null;
   private Shortcuts shortcuts;
   private BroadcastInterface broadcastIface;
+  private ManageGroups groupsIface;
   private SMSInterface smsIface;
   private User moderator;
   private Line line;
+  private boolean canManage = false;
 
   /**
    * Displays the specified item. 
@@ -151,8 +154,12 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
 		broadcastIface.setVisible(true);
-		smsList.setVisible(false);
-		smsIface.setVisible(false);
+		if (canManage()) groupsIface.setVisible(false);
+		if (line.hasSMSConfig())
+		{
+			smsList.setVisible(false);
+			smsIface.setVisible(false);
+		}
   }
   
   public void loadBroadcasts(int start)
@@ -165,20 +172,28 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.setVisible(true);
   	messageDetail.setVisible(false);
 		broadcastIface.setVisible(false);
-		//smsList.setVisible(false);
-		smsIface.setVisible(false);
+		if (line.hasSMSConfig())
+		{
+			smsList.setVisible(false);
+			smsIface.setVisible(false);
+		}
+		if (canManage()) groupsIface.setVisible(false);
 		// you can get rid of this once there
 		// is a clickevent attached to a stackpanel header
 		shortcuts.showStack(1);
   }
   
-  public void displayForumPanel()
+  private void displayForumPanel()
   {
-  	broadcastIface.setVisible(false);
+  	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(true);
 		messageDetail.setVisible(true);
-		smsList.setVisible(false);
-		smsIface.setVisible(false);
+		if (line.hasSMSConfig())
+		{
+			smsList.setVisible(false);
+			smsIface.setVisible(false);
+		}
+		if (canManage()) groupsIface.setVisible(false);
 		shortcuts.showStack(0);
   }
   
@@ -186,9 +201,10 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	smsList.reset(type);
   	smsList.setVisible(true);
-  	broadcastIface.setVisible(false);
+  	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
+		if (canManage()) groupsIface.setVisible(false);
 		smsIface.setVisible(false);
 		shortcuts.showStack(2);
 		
@@ -199,11 +215,30 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	smsIface.reset();
   	smsIface.setVisible(true);
-  	broadcastIface.setVisible(false);
+  	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
+		if (canManage()) groupsIface.setVisible(false);
 		smsList.setVisible(false);
 		shortcuts.showStack(2);
+  }
+  
+  public void displayManageGroupsInterface()
+  {
+  	if (line.hasSMSConfig())
+  	{
+	  	smsIface.reset();
+	  	smsIface.setVisible(false);
+	  	smsList.setVisible(false);
+  	}
+  	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
+  	messageList.setVisible(false);
+		messageDetail.setVisible(false);
+		groupsIface.setVisible(true);
+		// display the first group by default
+		groupsIface.reset(0);
+		
+		shortcuts.showStack(0);
   }
   
   public void displaySurveyInput(Prompt p, int start)
@@ -227,6 +262,29 @@ public class Messages implements EntryPoint, ResizeHandler {
   public Line getLine()
   {
   	return line;
+  }
+  
+  public boolean canManage()
+  {
+  	return canManage;
+  }
+  
+  public void reloadGroupsFromFora(List<JSOModel> models)
+  {
+  	reloadGroups(models);
+  	displayForumPanel();
+  }
+  
+  public void reloadGroupsFromManageGroups(List<JSOModel> models)
+  {
+  	reloadGroups(models);
+  	displayManageGroupsInterface();
+  }
+  
+  public void reloadGroups(List<JSOModel> models)
+  {
+  	fora.reloadFora(models);
+  	groupsIface.refreshGroupBox(models);
   }
   
   public User getModerator()
@@ -254,24 +312,32 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
-    smsList = new SMSList(images);
-    smsList.setWidth("100%");
-    
-    broadcastIface = new BroadcastInterface(images);
-    smsIface = new SMSInterface(images);
-    if (line.bcasting_allowed())
-    	bcasts = new Broadcasts(images);
-    if (line.hasSMSConfig())
-    	smss = new SMSs(images);
-    
-    shortcuts = new Shortcuts(images, fora, bcasts, smss);
-
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
     rightPanel.add(messageDetail);
-    rightPanel.add(broadcastIface);
-    rightPanel.add(smsIface);
-    rightPanel.add(smsList);
+    if (line.bcastingAllowed())
+    {
+    	broadcastIface = new BroadcastInterface(images);
+    	bcasts = new Broadcasts(images);
+    	rightPanel.add(broadcastIface);
+    }
+    if (line.hasSMSConfig())
+    {
+      smsList = new SMSList(images);
+    	smsList.setWidth("100%");
+    	smsIface = new SMSInterface(images);
+    	smss = new SMSs(images);
+	    rightPanel.add(smsIface);
+	    rightPanel.add(smsList);
+    }
+    if (canManage())
+    {
+      groupsIface = new ManageGroups(images);
+    	rightPanel.add(groupsIface);
+    }
+    
+    shortcuts = new Shortcuts(images, fora, bcasts, smss);
+    
     rightPanel.setWidth("100%");
     messageDetail.setWidth("100%");
     shortcuts.setWidth("100%");
@@ -353,12 +419,23 @@ public class Messages implements EntryPoint, ResizeHandler {
 		 
 		public void dataReceived(List<JSOModel> models) 
 		{
-			// just in case, though the controller should return
-			// something even for the supersu
-			if (models.size() > 0)
+			List<Line> lines = new ArrayList<Line>();
+			Line l;
+			for (JSOModel model : models)
 			{
-				line = new Line(models.get(0));
+				l = new Line(model);
+				if (l.canManage()) {
+					// as long as one line can be managed, enable it for
+					// the admin
+					canManage = true;
+				}
+				lines.add(l);
 			}
+			// This worked when all forums came from the same line
+			// but may not be true if you're admining across multiple
+			// lines. Should be replaced by full line list, with operations
+			// and queries on a list of listids
+			line = lines.get(0);
 			// do all the stuff that depends on line being loaded
 			loadRest();
 

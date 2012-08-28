@@ -55,7 +55,7 @@ import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 
 /**
- * A composite that displays voice messages.
+ * A composite representing a list of SMS text messages (analagous to MessageList)
  */
 public class SMSList extends Composite implements ClickHandler, JSONRequester {
 

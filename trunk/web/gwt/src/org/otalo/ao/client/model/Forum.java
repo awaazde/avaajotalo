@@ -18,6 +18,30 @@ package org.otalo.ao.client.model;
 
 public class Forum extends BaseModel {
 	
+	// make this consistent with ao:models.py
+  public enum ForumStatus {  
+  	BCAST_CALL_SMS(1), BCAST_SMS(2), INACTIVE(3);
+  
+    private int code;  
+  
+    private ForumStatus(int code) {  
+        this.code = code;  
+    }  
+  
+    public int getCode() {  
+        return code;  
+    }  
+    
+    public static ForumStatus getStatus(int code) {
+    	for (ForumStatus s : values())
+    	{
+    		if (s.getCode() == code)
+    			return s;
+    	}
+    	
+    	return null;
+    }
+  }  
 	
 	public Forum(JSOModel data) 
 	{
@@ -53,4 +77,14 @@ public class Forum extends BaseModel {
 		return data.get("model").equals("AO.forum");
 	}
 
+	public ForumStatus getStatus()
+	{
+		return ForumStatus.getStatus(Integer.valueOf(getField("status")));
+	}
+	
+	public String getNameFile()
+	{
+		return getField("name_file");
+	}
+	
 }

@@ -260,9 +260,6 @@ public class SMSInterface extends Composite {
 			}
 		});
 		
-		CheckBox backups = new CheckBox("Backup Calls");
-		backups.setName("backups");
-		
 		HorizontalPanel nowPanel = new HorizontalPanel();
 		nowPanel.setSpacing(10);
 		nowPanel.add(now);

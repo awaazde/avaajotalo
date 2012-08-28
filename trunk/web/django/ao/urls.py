@@ -54,6 +54,14 @@ urlpatterns = patterns('',
     (r'^smsin/$', 'otalo.ao.views.smsin'),
     (r'^signup/$', 'otalo.ao.views.signup'),
     (r'^createaccount/$', 'otalo.ao.views.createacct'),
+    (r'^creategroup/$', 'otalo.ao.views.creategroup'),
+    (r'^group/$', 'otalo.ao.views.group'),
+    (r'^members/(?P<group_id>\d+)/$', 'otalo.ao.views.members'),
+    (r'^update/member/(?P<membership_id>\d+)/$', 'otalo.ao.views.updatemembership'),
+    (r'^invitemembers/$', 'otalo.ao.views.invitemembers'),
+    (r'^update/groupsettings/$', 'otalo.ao.views.updategroupsettings'),
+    (r'^update/memberstatus/$', 'otalo.ao.views.updatememstatus'),
+    (r'^deletegroup/$', 'otalo.ao.views.deletegroup'),
 )
 
 if settings.DEVELOPMENT:

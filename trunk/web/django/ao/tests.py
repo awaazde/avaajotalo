@@ -77,9 +77,6 @@ class StreamitTest(TestCase):
         line2 = lines.filter(name__contains=u2.name)
         self.assertEqual(line2.count(), 1)
         
-        self.assertEqual(g1.name_file, str(g1.id)+".wav")
-        self.assertEqual(g2.name_file, str(g2.id)+".wav")
-        
         line1 = line1[0]
         line2 = line2[0]
         
