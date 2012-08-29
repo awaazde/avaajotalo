@@ -32,7 +32,6 @@ from django.core.servers.basehttp import FileWrapper
 import alerts, broadcast
 import otalo_utils, stats_by_phone_num
 from otalo.ao.forms import CreateAcctForm, SignupForm
-from awaazde.streamit import streamit
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
