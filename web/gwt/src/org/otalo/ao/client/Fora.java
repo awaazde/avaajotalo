@@ -18,13 +18,10 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.otalo.ao.client.ForumWidget.UploadComplete;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
-import org.otalo.ao.client.model.MessageForum;
-import org.otalo.ao.client.model.User;
 import org.otalo.ao.client.model.Message.MessageStatus;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -35,22 +32,19 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
-import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.sun.xml.internal.rngom.binary.GroupPattern;
 
 /**
  * A panel of fora, each presented as a tree.
