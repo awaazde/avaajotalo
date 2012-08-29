@@ -305,7 +305,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			else
 			{
 				createGroupDlg.hide();
-				ConfirmDialog saved = new ConfirmDialog("Created!");
+				ConfirmDialog saved = new ConfirmDialog("Group created! Get its number in Manage -> Settings");
 				saved.center();
 				
 				// These models are Lines with connected forums. Lines since 
