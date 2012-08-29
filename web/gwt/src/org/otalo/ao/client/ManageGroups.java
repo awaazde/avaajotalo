@@ -71,7 +71,8 @@ public class ManageGroups extends Composite {
 	private DataGrid<MemberInfo> memberTable, joinsTable;
 	private FormPanel manageGroupsForm;
 	private VerticalPanel invitePanel, namesPanel;
-	private HorizontalPanel memberControls, greetingMessage;
+	private HorizontalPanel memberControls;
+	private FlexTable greetingMessage;
 	private SimplePager pager;
 	private TextBox groupNameText;
 	private HandlerRegistration submitHandler = null;
@@ -381,12 +382,12 @@ public class ManageGroups extends Composite {
     inputBox.addItem("Voice", "1");
     
     Label greetingLabel = new Label("Greeting Message");
-    greetingMessage = new HorizontalPanel();
-    greetingMessage.setSpacing(5);
+    greetingMessage = new FlexTable();
+    //greetingMessage.setSpacing(5);
     FileUpload uploadGreeting = new FileUpload();
     uploadGreeting.setName("greetingmessage");
     uploadGreeting.setTitle("Upload greeting");
-    greetingMessage.add(uploadGreeting);
+    greetingMessage.setWidget(0, 1, uploadGreeting);
     
     deleteButton = new Button("Delete group", new ClickHandler() {
       public void onClick(ClickEvent event) {
@@ -683,11 +684,11 @@ public class ManageGroups extends Composite {
 		int inputType = group.responsesAllowed() ? 1 : 0;
 		inputBox.setSelectedIndex(inputType);
 		
-		if (greetingMessage.getWidgetCount() > 1) greetingMessage.remove(0);
+		greetingMessage.clearCell(0, 0);
 		if (!"".equals(group.getNameFile()) && !"null".equals(group.getNameFile()))
 		{
 			SoundWidget sound = new SoundWidget(group.getNameFile());
-			greetingMessage.insert(sound.getWidget(), 0);
+			greetingMessage.setHTML(0, 0, sound.getWidget().getHTML());
 		}
 		
 	}
