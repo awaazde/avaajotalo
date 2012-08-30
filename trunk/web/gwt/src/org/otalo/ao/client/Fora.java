@@ -16,9 +16,12 @@
 package org.otalo.ao.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
@@ -37,7 +40,9 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -51,6 +56,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class Fora extends Composite implements JSONRequester, ClickHandler {
   private ArrayList<ForumWidget> widgets = new ArrayList<ForumWidget>();
+	// lookup of lines that map to the given group
 	
 	/**
    * Specifies the images that will be bundled for this Composite and specify
@@ -65,6 +71,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
     ImageResource approve_sm();
     ImageResource reject_sm();
     ImageResource responses();
+    ImageResource manage();
   }
 
   private Images images;
@@ -82,47 +89,39 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 	  
 		// Get fora
 		JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.FORUM, this);
+		request.doFetchURL(AoAPI.GROUP, this);
 	  
+		createGroupDlg.setCompleteHandler(new CreateGroupComplete());
+		
 	  initWidget(p);
   }
 
-
-	@Override
 	public void dataReceived(List<JSOModel> models) {
-		//pass fora
-  	List<Forum> fora = new ArrayList<Forum>();
-  	
-  	for (JSOModel model : models)
-  	{
-  		fora.add(new Forum(model));
-  	}
-  	
-  	loadFora(fora);
-		
+		reloadFora(models);
 	}
 	
 	public void reloadFora(List<JSOModel> models)
 	{
-		List<Forum> fora = new ArrayList<Forum>();
-		Line l;
+		List<Line> lines = new ArrayList<Line>();
 		for (JSOModel model : models)
-		{
-			l = new Line(model);
-			fora.addAll(l.getForums());
-		}
-		loadFora(fora);
+	  {
+				lines.add(new Line(model));
+	  }
+  	
+  	loadFora(lines);
 	}
 
-	private void loadFora(List<Forum> fora)
+	private void loadFora(List<Line> lines)
 	{
 		p.clear();
 		widgets.clear();
 		
-		for (int i = 0; i < fora.size(); ++i) 
+		for (int i = 0; i < lines.size(); ++i) 
 		{
-			Forum f = fora.get(i);
-			ForumWidget w = new ForumWidget(f, images, this);
+			Line l = lines.get(i);
+			// ASSUME one group per line
+			Forum f = l.getForums().get(0);
+			ForumWidget w = new ForumWidget(f, l, images, this);
 	    
 			p.add(w.getWidget());
 			widgets.add(w);
@@ -130,7 +129,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 	  
 	  if (Messages.get().canManage())
 	  {
-	  	Button create = new Button("Create");
+	  	Button create = new Button("Create group");
 		  create.addClickHandler(new ClickHandler() {
 				
 				public void onClick(ClickEvent event) {
@@ -139,28 +138,18 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 					
 				}
 			});
-		  Button manage = new Button("Manage");
-		  manage.addClickHandler(new ClickHandler() {
-				
-				public void onClick(ClickEvent event) {
-					Messages.get().displayManageGroupsInterface();
-					
-				}
-			});
 		  
-		  createGroupDlg.setCompleteHandler(new CreateGroupComplete());
+		  create.setWidth("100%");
 		  
-		  HorizontalPanel bpanel = new HorizontalPanel();
-		  bpanel.setWidth("100%");
-		  bpanel.setSpacing(5);
-		  bpanel.add(create);
-		  bpanel.add(manage);
 		  VerticalAlignmentConstant v = p.getVerticalAlignment();
+		  HorizontalAlignmentConstant h = p.getHorizontalAlignment();
 		  p.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-		  p.add(bpanel);
+		  p.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
+		  p.add(create);
 		  // to account for the fact that new forums can be
 		  // added on action in the console (create group)
 		  p.setVerticalAlignment(v);
+		  p.setHorizontalAlignment(h);
 	  }
 	  
 		// Hackish Initialization of the forum panel
@@ -200,7 +189,6 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 	
 	public class CreateGroupDialog extends DialogBox {
 		private FormPanel createGroupForm = new FormPanel();
-		private static final int NO_CONTENT = 2;
 		private HorizontalPanel namePanel = new HorizontalPanel();
 		private  ListBox language;
 		
@@ -261,10 +249,10 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			setWidget(createGroupForm);
 		}
 		
-		public void validationError(int type, String msg)
+		public void validationError(ValidationError error, String msg)
 		{
 			HTML msgHTML = new HTML("<span style='color:red'>("+msg+")</span>");
-			if (type == NO_CONTENT && namePanel.getWidgetCount() == 1)
+			if ((error == ValidationError.NO_CONTENT || error == ValidationError.INVALID_GROUPNAME) && namePanel.getWidgetCount() == 1)
 			{
 				namePanel.insert(msgHTML, 1);
 			}
@@ -294,18 +282,19 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			{
 				String msg = model.get("message");
 				int type = Integer.valueOf(model.get("type"));
-				createGroupDlg.validationError(type, msg);
+				createGroupDlg.validationError(ValidationError.getError(type), msg);
 			}
 			else
 			{
 				createGroupDlg.hide();
 				ConfirmDialog saved = new ConfirmDialog("Group created! Get its number in Manage -> Settings");
+				saved.show();
 				saved.center();
 				
 				// These models are Lines with connected forums. Lines since 
 				// line info can be shared to also populate 
 				// the group management UI (save a server hit)
-				Messages.get().reloadGroupsFromFora(models);
+				reloadFora(models);
 			}
 
 		}

@@ -22,7 +22,7 @@ import com.google.gwt.core.client.JsArray;
 
 
 public class Line extends BaseModel {
-	private static final String MANAGEMENT_DESIGNATOR = "";
+	private static final String MANAGEMENT_DESIGNATOR = "_STREAMIT";
 	
 	public Line(JSOModel data) {
 		super(data);

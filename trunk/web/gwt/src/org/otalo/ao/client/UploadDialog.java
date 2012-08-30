@@ -16,6 +16,7 @@
 package org.otalo.ao.client;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.User;
@@ -43,8 +44,6 @@ public class UploadDialog extends DialogBox {
 	private TextBox number;
 	private HorizontalPanel numberPanel = new HorizontalPanel();
 	private HorizontalPanel contentPanel = new HorizontalPanel();
-	public static final int INVALID_NUMBER = 1;
-	public static final int NO_CONTENT = 2;
 	
 	public UploadDialog() {
 		setText("Upload Content");
@@ -119,14 +118,14 @@ public class UploadDialog extends DialogBox {
 		messageForumId.setValue(mf.getId());
 	}
 	
-	public void validationError(int type, String msg)
+	public void validationError(ValidationError error, String msg)
 	{
 		HTML msgHTML = new HTML("<span style='color:red'>("+msg+")</span>");
-		if (type == INVALID_NUMBER && numberPanel.getWidgetCount() == 1)
+		if (error == ValidationError.INVALID_NUMBER && numberPanel.getWidgetCount() == 1)
 		{
 			numberPanel.insert(msgHTML, 0);
 		}
-		else if (type == NO_CONTENT && contentPanel.getWidgetCount() == 1)
+		else if (error == ValidationError.NO_CONTENT && contentPanel.getWidgetCount() == 1)
 		{
 			contentPanel.insert(msgHTML, 0);
 		}

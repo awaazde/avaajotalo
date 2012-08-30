@@ -223,7 +223,7 @@ public class Messages implements EntryPoint, ResizeHandler {
 		shortcuts.showStack(2);
   }
   
-  public void displayManageGroupsInterface()
+  public void displayManageGroupsInterface(Forum group)
   {
   	if (line.hasSMSConfig())
   	{
@@ -235,10 +235,28 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.setVisible(false);
 		messageDetail.setVisible(false);
 		groupsIface.setVisible(true);
-		// display the first group by default
-		groupsIface.reset(0);
+		fora.setFolder(group, MessageStatus.MANAGE);
 		
 		shortcuts.showStack(0);
+  }
+  
+  public void reloadGroups(List<JSOModel> models)
+  {
+  	fora.reloadFora(models);
+  }
+  
+  /**
+   * Separate this out from displayManageGroupsInterface() to avoid
+   * the flickering that happens on loading of new data. This loads the
+   * data, and at the end of that process displayManageGroupsInterface()
+   * will be invoked to pull the curtain
+   * 
+   * @param line
+   * @param group
+   */
+  public void loadManageGroupsInterface(Line line, Forum group)
+  {
+  	groupsIface.reset(line, group);
   }
   
   public void displaySurveyInput(Prompt p, int start)
@@ -267,24 +285,6 @@ public class Messages implements EntryPoint, ResizeHandler {
   public boolean canManage()
   {
   	return canManage;
-  }
-  
-  public void reloadGroupsFromFora(List<JSOModel> models)
-  {
-  	reloadGroups(models);
-  	displayForumPanel();
-  }
-  
-  public void reloadGroupsFromManageGroups(List<JSOModel> models)
-  {
-  	reloadGroups(models);
-  	displayManageGroupsInterface();
-  }
-  
-  public void reloadGroups(List<JSOModel> models)
-  {
-  	fora.reloadFora(models);
-  	groupsIface.refreshGroupBox(models);
   }
   
   public User getModerator()

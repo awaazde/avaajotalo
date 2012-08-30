@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.Forum.ForumStatus;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.http.client.Request;
@@ -38,7 +39,7 @@ public final class JSONRequest {
    * Class for handling the response text associated with a request for a JSON
    * object.
    */
-	public final class AoAPI {
+	public static final class AoAPI {
 		public static final String USER = "user/";
 		public static final String THREAD = "thread/";
 		public static final String FORUM = "forum/";
@@ -87,6 +88,35 @@ public final class JSONRequest {
 		public static final String TAG_TYPE_TOPIC = "agri-topic";
 		
 		public static final String MSG_METADATA = "MESSAGE_METADATA";
+		
+		/**
+		 * Should be consistent with views.py validation codes
+		 * @author neil
+		 *
+		 */
+		public enum ValidationError {  
+	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3);
+	  
+	    private int code;  
+	  
+	    private ValidationError(int code) {  
+	        this.code = code;  
+	    }  
+	  
+	    public int getCode() {  
+	        return code;  
+	    }  
+	    
+	    public static ValidationError getError(int code) {
+	    	for (ValidationError s : values())
+	    	{
+	    		if (s.getCode() == code)
+	    			return s;
+	    	}
+	    	
+	    	return null;
+	    }
+	  }  
 	}
 	public static List<JSOModel> getModels(String jsonStr)
 	{

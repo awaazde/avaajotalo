@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Message.MessageStatus;
@@ -458,7 +459,7 @@ public class MessageDetail extends Composite {
 			{
 				String msg = model.get("message");
 				int type = Integer.valueOf(model.get("type"));
-				uploadDlg.validationError(type, msg);
+				uploadDlg.validationError(ValidationError.getError(type), msg);
 			}
 			else
 			{

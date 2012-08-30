@@ -25,7 +25,12 @@ public class Message extends BaseModel {
 	 * is 0 and then increases from there.
 	 */
 	public enum MessageStatus {
-		PENDING(0), APPROVED(1), REJECTED(2);
+		PENDING(0), APPROVED(1), REJECTED(2),
+		
+		// this status is not a message status;
+		// It is PURELY for display purposes on
+		// forumwidget.setFolder()
+		MANAGE(99);
 		
 		private int code;  
 	  
