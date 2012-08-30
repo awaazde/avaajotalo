@@ -90,9 +90,9 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		// Get fora
 		JSONRequest request = new JSONRequest();
 		String params = "";
-		if (Messages.get().canManage())
+		if (!Messages.get().canManage())
 		{
-			params = "?latestfirst=1";
+			params = "?forums=1";
 		}
 		request.doFetchURL(AoAPI.GROUP + params, this);
 	  
@@ -102,30 +102,30 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   }
 
 	public void dataReceived(List<JSOModel> models) {
-		reloadFora(models);
+		loadFora(models);
 	}
 	
-	public void reloadFora(List<JSOModel> models)
-	{
-		List<Line> lines = new ArrayList<Line>();
-		for (JSOModel model : models)
-	  {
-				lines.add(new Line(model));
-	  }
-  	
-  	loadFora(lines);
-	}
-
-	private void loadFora(List<Line> lines)
+	public void loadFora(List<JSOModel> models)
 	{
 		p.clear();
 		widgets.clear();
+		Forum f;
+		Line l;
 		
-		for (int i = 0; i < lines.size(); ++i) 
+		for (JSOModel model : models) 
 		{
-			Line l = lines.get(i);
-			// ASSUME one group per line
-			Forum f = l.getForums().get(0);
+			if (Forum.isForum(model))
+			{
+				f = new Forum(model);
+				l = null;
+			}
+			else
+			{
+				l = new Line(model);
+				// ASSUME one group per line
+				f = l.getForums().get(0);
+			}
+			
 			ForumWidget w = new ForumWidget(f, l, images, this);
 	    
 			p.add(w.getWidget());
@@ -297,7 +297,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 				// These models are Lines with connected forums. Lines since 
 				// line info can be shared to also populate 
 				// the group management UI (save a server hit)
-				reloadFora(models);
+				loadFora(models);
 			}
 
 		}

@@ -103,7 +103,7 @@ public class ForumWidget implements ClickHandler {
     uploadDlg.setForum(f);
     uploadDlg.setCompleteHandler(new UploadComplete());
     
-    if (line.canManage())
+    if (line != null && line.canManage())
     {
     	manageHTML = imageItemHTML(images.manage(), "Manage");
       manage = new TreeItem(manageHTML);

@@ -74,7 +74,7 @@ public class Forum extends BaseModel {
 	
 	public static boolean isForum(JSOModel data)
 	{
-		return data.get("model").equals("AO.forum");
+		return data.get("model").equals("ao.forum");
 	}
 
 	public ForumStatus getStatus()
