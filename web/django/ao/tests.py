@@ -66,8 +66,8 @@ class StreamitTest(TestCase):
         self.assertEqual(u1.name, 'u1')
         self.assertEqual(u2.name, 'u2')
         
-        g1 = streamit.update_group("g1", u1, 'eng')
-        g2 = streamit.update_group("g2", u2, 'eng')
+        g1 = streamit.create_group("g1", u1, 'eng')
+        g2 = streamit.create_group("g2", u2, 'eng')
         
         self.assertEqual(Forum.objects.all().count(), 2)
         lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
@@ -84,14 +84,14 @@ class StreamitTest(TestCase):
         self.assertEqual(line2.number, '5003')
         
         u3 = streamit.update_user('u2', '1003')
-        streamit.update_group('g3', u3, 'eng')
+        streamit.create_group('g3', u3, 'eng')
         lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
         self.assertEqual(lines.count(),3,"Failed to add a new line with overlapping name")
         line3 = Line.objects.get(forums__admin__user=u3)     
         self.assertEqual(line3.number, '6000')
         
         u4 = streamit.update_user('u4', '1002')
-        g4 = streamit.update_group('g4', u4, 'eng')
+        g4 = streamit.create_group('g4', u4, 'eng')
         self.assertEqual(User.objects.all().count(), 3)
         self.assertEqual(AuthUser.objects.all().count(), 3)
         self.assertEqual(Admin.objects.all().count(), 4)
@@ -115,8 +115,8 @@ class StreamitTest(TestCase):
         self.assertEqual(u1.name, 'u1')
         self.assertEqual(u2.name, 'u2')
         
-        g1 = streamit.update_group("g1", u1, 'eng')
-        g2 = streamit.update_group("g2", u2, 'eng')
+        g1 = streamit.create_group("g1", u1, 'eng')
+        g2 = streamit.create_group("g2", u2, 'eng')
         
         lines = Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR)
         self.assertEqual(lines.count(),2)
@@ -149,15 +149,6 @@ class StreamitTest(TestCase):
         self.assertEqual(g2, admin.forum)
         self.assertEqual(admin.auth_user.username, 'u2')
         
-        streamit.update_group("g1", u1, 'eng')
-        streamit.update_group("g2", u2, 'eng')
-        
-        # make sure nothing new created
-        self.assertEqual(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR).count(),2)
-        self.assertEqual(Forum.objects.all().count(),2)
-        self.assertEqual(Admin.objects.all().count(),2)
-        self.assertEqual(AuthUser.objects.all().count(),2)
-        
         members=[]
         for i in range(10):
             m = User(number=str(i), allowed='y')
@@ -177,7 +168,7 @@ class StreamitTest(TestCase):
         
         self.assertEqual(smstext, sms.text)
         
-        g3 = streamit.update_group("g3", u1, 'hin')
+        g3 = streamit.create_group("g3", u1, 'hin')
         self.assertEqual(Line.objects.filter(name__contains=streamit.STREAMIT_LINE_DESIGNATOR).count(),3)
         self.assertEqual(Forum.objects.all().count(),3)
         self.assertEqual(Admin.objects.all().count(),3)
@@ -191,10 +182,10 @@ class StreamitTest(TestCase):
         # create group with members
         u1 = streamit.update_user('u1','1001')
         
-        g1 = streamit.update_group("g1", u1, 'eng')
-        g2 = streamit.update_group("g2", u1, 'eng')
-        g3 = streamit.update_group("g3", u1, 'eng')
-        g4 = streamit.update_group("g4", u1, 'eng')
+        g1 = streamit.create_group("g1", u1, 'eng')
+        g2 = streamit.create_group("g2", u1, 'eng')
+        g3 = streamit.create_group("g3", u1, 'eng')
+        g4 = streamit.create_group("g4", u1, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u1).count(),4)
         
         members=[]
@@ -253,7 +244,7 @@ class StreamitTest(TestCase):
         
     def test_sched_bcast(self):
         u1 = streamit.update_user('u1','1001')
-        g1 = streamit.update_group('g1', u1, 'eng')
+        g1 = streamit.create_group('g1', u1, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u1).count(),1)   
         
         members = []
@@ -267,13 +258,13 @@ class StreamitTest(TestCase):
         streamit.add_members(g1, [m11])
         
         u2 = streamit.update_user('u2','1002')
-        g2 = streamit.update_group('g1', u2, 'eng')
+        g2 = streamit.create_group('g1', u2, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u2).count(),1)   
         
         streamit.add_members(g2, members, Membership.STATUS_SUBSCRIBED)
             
         u3 = streamit.update_user('u3','1003')
-        g3 = streamit.update_group('g3', u3, 'eng')
+        g3 = streamit.create_group('g3', u3, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u3).count(),1)   
         
         streamit.add_members(g3, members, status=Membership.STATUS_SUBSCRIBED)
@@ -493,7 +484,7 @@ class StreamitTest(TestCase):
     
     def test_sms(self):
         u1 = streamit.update_user('u1','1001')
-        g1 = streamit.update_group('g1', u1, 'eng')
+        g1 = streamit.create_group('g1', u1, 'eng')
         
         self.assertEqual(Forum.objects.filter(admin__user=u1).count(),1)   
         
@@ -510,8 +501,6 @@ class StreamitTest(TestCase):
         # check invite SMSs
         self.assertEqual(SMSMessage.objects.all().count(), 1)
         
-        # should be no new invites
-        streamit.update_group('g1',u1,'eng')
         streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members, send_sms=True)
         self.assertEqual(SMSMessage.objects.all().count(), 2)
         
@@ -561,11 +550,11 @@ class StreamitTest(TestCase):
         self.assertEqual(standard.text, smstext)
         
         u2 = streamit.update_user('u2','1002')
-        g2 = streamit.update_group('g2', u2, 'eng')
+        g2 = streamit.create_group('g2', u2, 'eng')
         streamit.add_members(g2,members,send_sms=True)
         
         u3 = streamit.update_user('u3','1003')
-        g3 = streamit.update_group('g3', u3, 'eng')
+        g3 = streamit.create_group('g3', u3, 'eng')
         streamit.add_members(g3,members,send_sms=False)
         
         self.assertEqual(SMSMessage.objects.filter(sender=u2).count(), 1)
@@ -593,7 +582,7 @@ class StreamitTest(TestCase):
         
     def test_bcast_type(self):
         u1 = streamit.update_user('u1','1001')
-        g1 = streamit.update_group('g1', u1, 'eng')  
+        g1 = streamit.create_group('g1', u1, 'eng')  
         
         members = []
         for i in range(10):
@@ -603,7 +592,7 @@ class StreamitTest(TestCase):
         streamit.add_members(g1, members, Membership.STATUS_SUBSCRIBED, send_sms=True)
             
         u2 = streamit.update_user('u2','1002')
-        g2 = streamit.update_group('g2', u2, 'eng', status=Forum.STATUS_BCAST_SMS)
+        g2 = streamit.create_group('g2', u2, 'eng', status=Forum.STATUS_BCAST_SMS)
         self.assertEqual(Forum.objects.filter(admin__user=u2).count(),1)   
         
         streamit.add_members(g2, members, Membership.STATUS_SUBSCRIBED, send_sms=True)
@@ -631,7 +620,8 @@ class StreamitTest(TestCase):
         self.assertEqual(SMSMessage.objects.filter(sender=u2).count(), 2)
         self.assertEqual(Survey.objects.filter(number__in=[g1.line_set.all()[0].number, g2.line_set.all()[0].number]).count(), 1)
         
-        streamit.update_group('g2', u2, 'eng', status=Forum.STATUS_BCAST_CALL_SMS)
+        g2.status = Forum.STATUS_BCAST_CALL_SMS
+        g2.save()
         mf2 = Message_forum.objects.get(pk=mf2.id)
         streamit.create_and_schedule_bcast(mf2, d)
         self.assertEqual(Survey.objects.all().count(), 2)
