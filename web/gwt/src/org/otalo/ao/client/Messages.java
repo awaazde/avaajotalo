@@ -242,7 +242,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   
   public void reloadGroups(List<JSOModel> models)
   {
-  	fora.reloadFora(models);
+  	fora.loadFora(models);
   }
   
   /**

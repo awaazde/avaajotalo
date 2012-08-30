@@ -82,16 +82,17 @@ def group(request):
     
     if not auth_user.is_superuser:
         # get all forums that this user has access to
-        lines = Line.objects.filter(forums__admin__auth_user=auth_user).exclude(forums__status=Forum.STATUS_INACTIVE).distinct()
+        if 'forums' in params and bool(params['forums']):
+            groups = Forum.objects.filter(admin__auth_user=auth_user).exclude(status=Forum.STATUS_INACTIVE).distinct()
+        else:
+            groups = Line.objects.filter(forums__admin__auth_user=auth_user).exclude(forums__status=Forum.STATUS_INACTIVE).distinct().order_by('-id')
     else:
-        lines = Line.objects.all()
-        
+        if 'forums' in params:
+            groups = Forum.objects.all()
+        else:
+            groups = Line.objects.all().order_by('-id')
 
-    if 'latestfirst' in params:
-        # reverse the order of the groups to display most recently created first
-        lines = lines.order_by('-id')
-    
-    return send_response(lines, relations=('forums',))
+    return send_response(groups, relations=('forums',))
 
 def messages(request, forum_id):
     params = request.GET
