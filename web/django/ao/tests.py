@@ -649,3 +649,39 @@ class StreamitTest(TestCase):
         
          # invite SMS plus 3 blasts
         self.assertEqual(SMSMessage.objects.filter(sender=u1).count(), 4)
+        
+    def test_create_delete_groups(self):
+        u1 = streamit.update_user('u1','1001')
+        g1 = streamit.create_group('g1', u1, 'eng')
+        l = Line.objects.get(forums=g1)
+        self.assertEqual(l.number, '5002')
+        
+        g2 = streamit.create_group('g2', u1, 'eng')
+        l = Line.objects.get(forums=g2)
+        self.assertEqual(l.number, '5003')
+        
+        streamit.delete_group(g1)
+        
+        g3 = streamit.create_group('g3', u1, 'eng')
+        l = Line.objects.get(forums=g3)
+        self.assertEqual(l.number, '5002')
+        
+        g4 = streamit.create_group('g4', u1, 'eng')
+        l = Line.objects.get(forums=g4)
+        self.assertEqual(l.number, '6000')
+        
+        streamit.delete_group(g2)
+        streamit.delete_group(g3)
+        
+        g5 = streamit.create_group('g1', u1, 'eng')
+        l = Line.objects.get(forums=g5)
+        self.assertEqual(l.number, '5002')
+        
+        g6 = streamit.create_group('g6', u1, 'eng')
+        l = Line.objects.get(forums=g6)
+        self.assertEqual(l.number, '5003')
+        
+        self.assertEqual(Line.objects.filter(number='5002').count(), 3)
+        self.assertEqual(Line.objects.filter(number='5002').exclude(forums__status=Forum.STATUS_INACTIVE).count(), 1)
+        
+        

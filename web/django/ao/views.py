@@ -50,6 +50,7 @@ VISIBLE_MESSAGE_COUNT = 10
 # Validation error codes
 INVALID_NUMBER = "1"
 NO_CONTENT = "2"
+INVALID_GROUPNAME = "3"
 
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
@@ -74,6 +75,23 @@ def forum(request):
         fora = Forum.objects.all()
         
     return send_response(fora, excludes=('messages','tags','responders'))
+
+def group(request):
+    auth_user = request.user
+    params = request.GET
+    
+    if not auth_user.is_superuser:
+        # get all forums that this user has access to
+        lines = Line.objects.filter(forums__admin__auth_user=auth_user).exclude(forums__status=Forum.STATUS_INACTIVE).distinct()
+    else:
+        lines = Line.objects.all()
+        
+
+    if 'latestfirst' in params:
+        # reverse the order of the groups to display most recently created first
+        lines = lines.order_by('-id')
+    
+    return send_response(lines, relations=('forums',))
 
 def messages(request, forum_id):
     params = request.GET
