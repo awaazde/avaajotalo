@@ -89,7 +89,12 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 	  
 		// Get fora
 		JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.GROUP, this);
+		String params = "";
+		if (Messages.get().canManage())
+		{
+			params = "?latestfirst=1";
+		}
+		request.doFetchURL(AoAPI.GROUP + params, this);
 	  
 		createGroupDlg.setCompleteHandler(new CreateGroupComplete());
 		
@@ -138,8 +143,6 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 					
 				}
 			});
-		  
-		  create.setWidth("100%");
 		  
 		  VerticalAlignmentConstant v = p.getVerticalAlignment();
 		  HorizontalAlignmentConstant h = p.getHorizontalAlignment();
