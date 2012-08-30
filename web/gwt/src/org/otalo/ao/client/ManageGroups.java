@@ -67,7 +67,7 @@ public class ManageGroups extends Composite {
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
 	private Button saveButton, cancelButton, inviteButton, deleteButton;
-	private ListBox groupBox, languageBox, deliveryBox, inputBox, statusFilterBox;
+	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox;
 	private DataGrid<MemberInfo> memberTable, joinsTable;
 	private FormPanel manageGroupsForm;
 	private VerticalPanel invitePanel, namesPanel;
@@ -80,9 +80,8 @@ public class ManageGroups extends Composite {
 	private TextArea numbersArea, namesArea;
 	private Label groupNumber;
 	
-	private List<Forum> groups = new ArrayList<Forum>();
-	// lookup of lines that map to the given group
-	private Map<Forum,Line> lines = new HashMap<Forum,Line>();
+	private Forum group;
+	private Line line;
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -100,31 +99,6 @@ public class ManageGroups extends Composite {
 		 *  Top Panel (group selection and tabs)
 		 *  
 		 *************************************************/
-		Label groupLabel = new Label("Group");
-		groupBox = new ListBox();
-		groupBox.addChangeHandler(new ChangeHandler() {
-			
-			public void onChange(ChangeEvent event) {
-				reset(groupBox.getSelectedIndex());
-			}
-
-		});
-		
-		Anchor inviteMembers = new Anchor("Invite Members");
-		inviteMembers.addClickHandler(new ClickHandler() {
-			
-			public void onClick(ClickEvent event) {
-				showInviteView();
-			}
-			
-		});
-		
-		HorizontalPanel groupPanel = new HorizontalPanel();
-		groupPanel.setSpacing(10);
-		groupPanel.add(groupLabel);
-		groupPanel.add(groupBox);
-		groupPanel.add(inviteMembers);
-		
  		VerticalPanel memberPanel = new VerticalPanel();
 		memberPanel.setSize("100%", "100%");
 		VerticalPanel settingsPanel = new VerticalPanel();
@@ -162,6 +136,14 @@ public class ManageGroups extends Composite {
 		memberControls.setWidth("800px");
 		memberControls.setSpacing(10);
 		Button removeMembers = new Button("Remove from group");
+		Button inviteMembers = new Button("Invite members");
+		inviteMembers.addClickHandler(new ClickHandler() {
+			
+			public void onClick(ClickEvent event) {
+				showInviteView();
+			}
+			
+		});
 		Label filterLabel = new Label("Filter By");
 		statusFilterBox = new ListBox();
 		statusFilterBox.addItem("", "-1");
@@ -183,6 +165,7 @@ public class ManageGroups extends Composite {
 		});
 		
 		memberControls.add(removeMembers);
+		memberControls.add(inviteMembers);
 				
 		memberControls.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
 		HorizontalPanel filterPanel = new HorizontalPanel();
@@ -193,8 +176,9 @@ public class ManageGroups extends Composite {
 		
 		// Member Grid
 		memberTable = new DataGrid<MemberInfo>(MemberDatabase.MemberInfo.KEY_PROVIDER);
-		memberTable.setSize("800px", "320px");
-		memberTable.setRowCount(50, true);
+		memberTable.setSize("850px", "320px");
+		//memberTable.setRowCount(50, false);
+		memberTable.setPageSize(50);
 		
 		// Add a selection model so we can select cells.
     final MultiSelectionModel<MemberInfo> selectionModel = new MultiSelectionModel<MemberInfo>(MemberDatabase.MemberInfo.KEY_PROVIDER);
@@ -205,7 +189,9 @@ public class ManageGroups extends Composite {
     // Create a Pager to control the table.
     SimplePager.Resources pagerResources = GWT.create(SimplePager.Resources.class);
     pager = new SimplePager(TextLocation.CENTER, pagerResources, false, 0, true);
+    pager.setPageSize(50);
     pager.setDisplay(memberTable);
+    pager.setRangeLimited(false);
 
     // Initialize the columns.
     initTableColums(selectionModel, sortHandler);
@@ -253,7 +239,7 @@ public class ManageGroups extends Composite {
 		
 		Label namesLabel = new Label("Enter names one per line. Pasting from a spreadsheet is OK.");
 		namesLabel.setWordWrap(true);
-    Label namesHelp = new Label("Match the order of names to the phone numbers column on the left. Skip a line for unknown names.");
+    Label namesHelp = new Label("Match the order of names to the phone numbers box above. Skip a line for unknown names.");
     namesHelp.setWordWrap(true);
     namesHelp.setStyleName("helptext");
     namesArea = new TextArea();
@@ -329,7 +315,7 @@ public class ManageGroups extends Composite {
 		joinControls.add(rejectMembers); 
 		
 		joinsTable = new DataGrid<MemberInfo>(MemberDatabase.MemberInfo.KEY_PROVIDER);
-		joinsTable.setSize("800px", "360px");
+		joinsTable.setSize("850px", "360px");
 		joinsTable.setRowCount(50, true);
 		
     joinsTable.setSelectionModel(selectionModel, DefaultSelectionEventManager.<MemberInfo> createCheckboxManager());
@@ -338,6 +324,7 @@ public class ManageGroups extends Composite {
     // Create a Pager to control the table.
     SimplePager joinsPager = new SimplePager(TextLocation.CENTER, pagerResources, false, 0, true);
     joinsPager.setDisplay(joinsTable);
+    joinsPager.setRangeLimited(false);
     MemberDatabase.get().addDataDisplay(joinsTable);
 
     // Initialize the columns.
@@ -433,7 +420,7 @@ public class ManageGroups extends Composite {
 		cancelButton = new Button("Cancel");
 		cancelButton.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-					reset(groupBox.getSelectedIndex());
+					reset(line, group);
 			}
 			
 		});
@@ -476,7 +463,6 @@ public class ManageGroups extends Composite {
 		groupid = new Hidden("groupid");
 		groupid.setName("groupid");
 		
-		outer.add(groupPanel);
 		outer.add(tabPanel);
 		//outer.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		//outer.add(controls);		
@@ -487,8 +473,6 @@ public class ManageGroups extends Composite {
 		manageGroupsForm.setWidget(outer);
 		
 		initWidget(manageGroupsForm);
-		
-		loadGroups();
 	}
 	
 	private void initTableColums(final SelectionModel<MemberInfo> selectionModel, ListHandler<MemberInfo> sortHandler)
@@ -640,23 +624,17 @@ public class ManageGroups extends Composite {
 
 	}
 	
-	public void loadGroups()
-	{	
-		JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.GROUP, new GroupRequester());
-	}
-	
-	public void loadMembers(Forum group)
+	public void loadMembers()
 	{	
 		JSONRequest request = new JSONRequest();
 		request.doFetchURL(AoAPI.MEMBERS + group.getId() + "/", new GroupMembersRequestor());
 	}
 	
-	public void loadSettings(Forum group)
+	public void loadSettings()
 	{	
-		groupNumber.setText(lines.get(group).getNumber());
+		groupNumber.setText(line.getNumber());
 		groupNameText.setValue(group.getName());
-		String lang = lines.get(group).getLanguage();
+		String lang = line.getLanguage();
 		for (int i=0; i<languageBox.getItemCount(); i++)
 		{
 			if (languageBox.getValue(i).equals(lang))
@@ -693,32 +671,6 @@ public class ManageGroups extends Composite {
 		
 	}
 	
-	private class GroupRequester implements JSONRequester {
-		 
-		public void dataReceived(List<JSOModel> models) {
-			refreshGroupBox(models);
-		}
-	}
-	
-	public void refreshGroupBox(List<JSOModel> models)
-	{
-		Line l;
-		Forum g;
-		
-		groups.clear();
-		groupBox.clear();
-		lines.clear();
-		for (JSOModel model : models)
-	  {
-				l = new Line(model);
-				// ASSUME one group per line
-				g = l.getForums().get(0);
-				groupBox.addItem(g.getName(), g.getId());
-				groups.add(g);
-				lines.put(g, l);
-	  }
-	}
-	
 	private class GroupMembersRequestor implements JSONRequester {
 		 
 		public void dataReceived(List<JSOModel> models) {
@@ -734,12 +686,17 @@ public class ManageGroups extends Composite {
 			 * Need to call displayMembers explicitly here for reset
 			 * since the call from reset on tab change will get triggered
 			 * before this data retuns. So yes it's an extra call to display,
-			 * that that should be cheap for a datagrid
+			 * but that should be cheap for a datagrid
 			 *
 			 * Note we call displayMembers since loading of new members will take
 			 * us to that tab by default
 			 */
 			MemberDatabase.get().displayMembers();
+			
+			/*
+			 * Now that members are loaded, pull the curtain on the interface
+			 */
+			Messages.get().displayManageGroupsInterface(group);
 		}
 	 }
 	
@@ -777,11 +734,11 @@ public class ManageGroups extends Composite {
 			updated.show();
 			updated.center();
 			List<JSOModel> models = JSONRequest.getModels(event.getResults());
-			int idx = groupBox.getSelectedIndex();
-			refreshGroupBox(models);
 			
 	  	submitComplete();
-	  	reset(idx);
+	  	// May have changed the name, so reload the side panel
+	  	Messages.get().reloadGroups(models);
+	  	Messages.get().displayManageGroupsInterface(group);
 		}
 	}
 	
@@ -795,26 +752,19 @@ private class DeleteComplete implements SubmitCompleteHandler {
 			
 	  	submitComplete();
 	  	
-	  	Messages.get().reloadGroupsFromManageGroups(models);
-	  	reset(0);
+	  	Messages.get().reloadGroups(models);
 		}
 	}
 	
-	public void reset(int idx)
+	public void reset(Line line, Forum group)
 	{ 
+		 this.group = group;
+		 this.line = line;
 		 manageGroupsForm.reset();
-		 if (idx < groups.size())
-		 {
-			 Forum group = groups.get(idx);
-			 loadMembers(group);
-			 loadSettings(group);
-			 groupid.setValue(group.getId());
-			 
-		 }
-		 
-		 // manageGroupsForm.reset() sets groupbox selectedidx
-		 // to 1, so set it back to idx here
-		 groupBox.setSelectedIndex(idx);
+		 loadMembers();
+		 loadSettings();
+		 groupid.setValue(group.getId());
+
 		 showMemberTable();
 		
 	 }

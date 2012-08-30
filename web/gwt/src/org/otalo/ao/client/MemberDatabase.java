@@ -17,6 +17,7 @@ package org.otalo.ao.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Membership;
@@ -270,6 +271,10 @@ public class MemberDatabase {
    */
   public void refreshDisplays() {
     dataProvider.refresh();
+    for (HasData<MemberInfo> d : dataProvider.getDataDisplays())
+    {
+    	d.setRowCount(members.size());
+    }
   }
 
 }

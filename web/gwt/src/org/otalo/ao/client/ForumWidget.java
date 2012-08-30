@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.Fora.Images;
+import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 
@@ -45,17 +47,19 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class ForumWidget implements ClickHandler {
 	private Tree tree;
-	private TreeItem root, inbox, approved, rejected, responses, upload;
-	private HTML rootHTML, inboxHTML, approvedHTML, rejectedHTML, responsesHTML, uploadHTML;
+	private TreeItem root, inbox, approved, rejected, responses, upload, manage;
+	private HTML rootHTML, inboxHTML, approvedHTML, rejectedHTML, responsesHTML, uploadHTML, manageHTML;
 	private Forum forum;
 	private Composite parent;
 	private List<HTML>options = new ArrayList<HTML>();
 	private UploadDialog uploadDlg = new UploadDialog();
 	private boolean responsesSelected = false;
+	private Line line;
 	
-	public ForumWidget(Forum f, Images images, Composite parent)
+	public ForumWidget(Forum f, Line l, Images images, Composite parent)
 	{
 		this.forum = f;
+		this.line = l;
 		this.parent = parent;
 		
 		tree = new Tree(images);
@@ -99,12 +103,21 @@ public class ForumWidget implements ClickHandler {
     uploadDlg.setForum(f);
     uploadDlg.setCompleteHandler(new UploadComplete());
     
+    if (Messages.get().canManage())
+    {
+    	manageHTML = imageItemHTML(images.manage(), "Manage");
+      manage = new TreeItem(manageHTML);
+      root.addItem(manage);
+    }
+    
     options.add(rootHTML);
     options.add(inboxHTML);
     options.add(approvedHTML);
     options.add(rejectedHTML);
     options.add(responsesHTML);
     options.add(uploadHTML);
+    options.add(manageHTML);
+    
 	}
 
   /**
@@ -161,6 +174,10 @@ public class ForumWidget implements ClickHandler {
     	uploadDlg.reset();
     	uploadDlg.center();
     }
+    else if (sender == manageHTML)
+    {
+    	Messages.get().loadManageGroupsInterface(line, forum);
+    }
     else if (sender == rootHTML)
     {
     	selectMain();
@@ -199,7 +216,7 @@ public class ForumWidget implements ClickHandler {
 			{
 				String msg = model.get("message");
 				int type = Integer.valueOf(model.get("type"));
-				uploadDlg.validationError(type, msg);
+				uploadDlg.validationError(ValidationError.getError(type), msg);
 			}
 			else
 			{
@@ -244,6 +261,8 @@ public class ForumWidget implements ClickHandler {
 				case REJECTED:
 					tree.setSelectedItem(rejected);
 					break;
+				case MANAGE:
+					tree.setSelectedItem(manage);
 				}
 			}
 						
