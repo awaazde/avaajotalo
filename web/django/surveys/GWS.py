@@ -556,5 +556,10 @@ def main():
         #create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555023', callback=True, inbound=True, includesid=True)
         #create_survey('la', 'por', ['*2','4','2','3','3','2','2','2','4','3','2','2','*2'], '7961555007', callback=True, inbound=True, includeid=True, countrycode='0055')
         #create_survey('mm', 'por', ['*2','2','3','2','*1','*1','4','3','5-goto{5:12}','4','4','3'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
-        create_survey('mm', 'por', ['*2','2','*2','2','*1','*1','4','2','2','2','2','*2','*2','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
+        #create_survey('mm', 'por', ['*2','2','*2','2','*1','*1','4','2','2','2','2','*2','*2','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
+        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555040', callback=True, inbound=True, includeid=False)
+        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555041', callback=True, inbound=True, includeid=False)
+        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555042', callback=True, inbound=True, includeid=False)
+        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555043', callback=True, inbound=True, includeid=False)
+
 main()
