@@ -83,7 +83,7 @@ public class MemberDatabase {
      * @return the contact's name
      */
     public String getName() {
-    	String name = membership.getUser().getName();
+    	String name = membership.getMemberName();
     	if ("null".equals(name))
     		return "";
     	else
@@ -270,11 +270,15 @@ public class MemberDatabase {
    * Refresh all displays.
    */
   public void refreshDisplays() {
-    dataProvider.refresh();
     for (HasData<MemberInfo> d : dataProvider.getDataDisplays())
     {
     	d.setRowCount(members.size());
+    	for (MemberInfo m : members)
+    	{
+    		d.getSelectionModel().setSelected(m, false);
+    	}
     }
+    dataProvider.refresh();
   }
 
 }

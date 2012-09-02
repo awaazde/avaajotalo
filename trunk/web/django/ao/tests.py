@@ -684,4 +684,78 @@ class StreamitTest(TestCase):
         self.assertEqual(Line.objects.filter(number='5002').count(), 3)
         self.assertEqual(Line.objects.filter(number='5002').exclude(forums__status=Forum.STATUS_INACTIVE).count(), 1)
         
+    def test_member_names(self):
+        u1 = streamit.update_user('u1','1001')
+        g1 = streamit.create_group('g1', u1, 'eng')
+        l = Line.objects.get(forums=g1)
+        self.assertEqual(l.number, '5002')
         
+        g2 = streamit.create_group('g2', u1, 'eng')
+        l = Line.objects.get(forums=g2)
+        self.assertEqual(l.number, '5003')
+        
+        members = []
+        names = []
+        for i in range(5):
+            u = User.objects.create(name='u'+str(i), number=str(i), allowed='y')
+            members.append(u)
+            names.append(u.name)
+        streamit.add_members(g1,members,names=names, send_sms=False)
+        self.assertEqual(User.objects.filter(name=None).count(),0)
+        self.assertEqual(User.objects.exclude(name=None).count(),6)
+              
+        for i in range(5,15):
+            u = User.objects.create(number=str(i), allowed='y')
+            members.append(u)
+            names.append(None)
+        streamit.add_members(g1,members, send_sms=False)
+        
+        self.assertEqual(User.objects.filter(name=None).count(),10)
+        self.assertEqual(User.objects.exclude(name=None).count(),6)
+        
+        self.assertEqual(Membership.objects.filter(membername=None).count(),10)
+        self.assertEqual(Membership.objects.exclude(membername=None).count(),5)
+        
+        mems2 = []
+        for i in range(15,20):
+            u = User.objects.create(name='u'+str(i), number=str(i), allowed='y')
+            mems2.append(u)
+            
+        mems2 += [u for u in User.objects.filter(number__in=['5','6','7','8','9'])]
+        # mems2 = [u15, u16, ... u19, 5,6,7,8,9]
+        names2 = ['u'+str(i) for i in range(len(mems2))]
+        #names2 = ['u0', 'u1',...'u9']
+        
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems2, names=names2, send_sms=False)
+        self.assertEqual(Membership.objects.filter(membername=None).count(),5)
+        
+        u15 = User.objects.get(number='15')
+        u16 = User.objects.get(number='16')
+        u17 = User.objects.get(number='17')
+        
+        # non-members, so should not be changed
+        self.assertEqual(u15.name, 'u15')
+        self.assertEqual(u16.name, 'u16')
+        self.assertEqual(u17.name, 'u17')
+        
+        mems3 = User.objects.filter(number__in=['10','11','12','13','14'])
+        names3 = ['u10', 'u11']
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems3, names=names3, send_sms=False)
+        # uneven lists, so no names should be updated
+        self.assertEqual(Membership.objects.filter(membername=None).count(),5)
+        
+        names3 = ['u10', 'u11', '', None, None]
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems3, names=names3, send_sms=False)
+        # only u10 and u11
+        self.assertEqual(Membership.objects.filter(membername=None).count(),3)
+        u10 = User.objects.get(number='10')
+        u11 = User.objects.get(number='11')
+        self.assertEqual(u10.name, None)
+        self.assertEqual(u11.name, None)
+        m10 = Membership.objects.get(group=g1, user=u10)
+        m11 = Membership.objects.get(group=g1, user=u11)
+        self.assertEqual(m10.membername, 'u10')
+        self.assertEqual(m11.membername, 'u11')
+        
+        
+            

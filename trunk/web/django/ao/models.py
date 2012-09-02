@@ -98,7 +98,7 @@ class Message(models.Model):
         return datetime.strftime(self.date, '%b-%d-%Y') + '_' + unicode(self.user)
       
 class Forum(models.Model):
-    name = models.CharField(max_length=24)
+    name = models.CharField(max_length=128)
     name_file = models.CharField(max_length=24)
     moderated = models.CharField(max_length=1)
     posting_allowed = models.CharField(max_length=1)
@@ -141,17 +141,18 @@ class Forum(models.Model):
     confirm_recordings = models.BooleanField(default=True)
     
     '''
-    StreamIt related additions
+    Group related additions
     '''
     STATUS_BCAST_CALL_SMS = 1
     STATUS_BCAST_SMS = 2
     STATUS_INACTIVE = 3
     status = models.IntegerField(blank=True, null=True)
-    
+    # The display name of the owner of this group
+    sendername = models.CharField(max_length=128, blank=True, null=True)
     members = models.ManyToManyField(User, through='Membership', related_name='members', blank=True, null=True)
     
     '''
-    end StreamIt related additions
+    end Group related additions
     '''
     
     
@@ -245,6 +246,25 @@ class Membership(models.Model):
     user = models.ForeignKey(User)
     group = models.ForeignKey(Forum)
     status = models.IntegerField(choices=STATUS)
+    '''
+    ****************************************************************************************************
+    '''
+    '''
+    This is the member's display name that is associated with this group.
+    It is set and updated by the person(s) who have access to this group's
+    membership. When the name is added and.or changed by them, this value is updated only.
+    
+    This is to account for these cases:
+        1) A group owner adds a number with the name different or misspelled from what's in the system
+        2) multiple group owners add a number and name the person differently (or
+            one person has the name and the other doesn't)
+        3) The actual user creates their own account and sets their name (which should not change)
+    '''
+    membername = models.CharField(max_length=128, blank=True, null=True)
+    '''
+    ****************************************************************************************************
+    '''
+    
     added = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     

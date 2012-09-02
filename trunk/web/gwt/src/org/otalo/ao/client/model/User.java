@@ -45,4 +45,8 @@ public class User extends BaseModel {
 		return getObject("fields").get("village");
 	}
 	
+	public String getEmail()
+	{
+		return getObject("fields").get("email");
+	}
 }

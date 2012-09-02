@@ -81,8 +81,8 @@ public class Membership extends BaseModel {
 		super(data);
 	}
 	
-	public String getName() {
-		return getField("name");
+	public String getMemberName() {
+		return getField("membername");
 	}
 	
 	public User getUser() {
@@ -93,4 +93,5 @@ public class Membership extends BaseModel {
 	{
 		return MembershipStatus.getStatus(Integer.valueOf(getField("status")));
 	}
+	
 }
