@@ -87,4 +87,9 @@ public class Forum extends BaseModel {
 		return getField("name_file");
 	}
 	
+	public String getSenderName()
+	{
+		return getField("sendername");
+	}
+	
 }

@@ -123,7 +123,9 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 	  if (cell != null) {
 	    int row = cell.getRowIndex();
 	    int col = cell.getCellIndex();
-	    if (row > 0 && (table.getHTML(row, col).equals("") || col != 2)) {
+	    // apparently styling the row doesn't do well with any cell that has HTML
+	    // so weed them out of selection
+	    if (row > 0 && (table.getHTML(row, col).equals("") || (col != 2 && col != 5))) {
 	      selectRow(row - 1);
 	    }
 	  }
@@ -139,7 +141,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
     table.setText(0, 1, "User");
     table.setText(0, 2, "Message");
     table.setWidget(0, 3, navBar);
-    table.getFlexCellFormatter().setColSpan(0, 3, 2);
+    table.getFlexCellFormatter().setColSpan(0, 3, 3);
     table.getRowFormatter().setStyleName(0, "mail-ListHeader");
 
     // Initialize the rest of the rows.
@@ -149,6 +151,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       table.setText(i + 1, 2, "");
       table.setText(i + 1, 3, "");
       table.setText(i + 1, 4, "");
+      table.setText(i + 1, 5, "");
       table.getCellFormatter().setWordWrap(i + 1, 0, false);
       table.getCellFormatter().setWordWrap(i + 1, 1, false);
       table.getCellFormatter().setWordWrap(i + 1, 2, false);
@@ -167,8 +170,8 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       return;
     }
     
-    styleRow(selectedRow, false);
-    styleRow(row, true);
+  	styleRow(selectedRow, false);
+  	styleRow(row, true);
 
     // TODO
     //message.read = true;
@@ -193,9 +196,19 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
         }
         SoundWidget sound = new SoundWidget(content);
         table.setHTML(row + 1, 2, sound.getWidget().getHTML());
+        if (Messages.get().canManage())
+        {
+        	Anchor downloadLink = new Anchor("Download", AoAPI.DOWNLOAD);
+          downloadLink.setHref(AoAPI.DOWNLOAD + message.getId() + "/");
+          table.setWidget(row + 1, 5, downloadLink);
+          //table.setHTML(row+1, 5, downloadLink.getHTML());
+        }
+        
+        
       } else {
         table.getRowFormatter().removeStyleName(row + 1, "mail-SelectedRow");
         table.clearCell(row + 1, 2);
+        if (Messages.get().canManage()) table.clearCell(row + 1, 5);
       }
     }
   }
@@ -259,7 +272,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 		      	break;
 		      case REJECTED:
 		      	table.setWidget(i+1, 3, approveButton);
-			    table.setHTML(i+1, 4, "&nbsp");
+		      	table.setHTML(i+1, 4, "&nbsp");
 		      	break;
 		      case PENDING:
 		      	table.setWidget(i+1, 3, approveButton);
@@ -298,6 +311,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
       table.setHTML(i + 1, 2, "&nbsp;");
       table.setHTML(i + 1, 3, "&nbsp;");
       table.setHTML(i + 1, 4, "&nbsp;");
+      table.setHTML(i + 1, 5, "&nbsp;");
 
     }
     // set the hidden field in the last row

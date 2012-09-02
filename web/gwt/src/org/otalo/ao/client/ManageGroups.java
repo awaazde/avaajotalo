@@ -2,19 +2,18 @@ package org.otalo.ao.client;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.MemberDatabase.MemberInfo;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Forum.ForumStatus;
-import org.otalo.ao.client.model.Membership.MembershipStatus;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Membership;
+import org.otalo.ao.client.model.Membership.MembershipStatus;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.EditTextCell;
@@ -38,7 +37,6 @@ import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -60,6 +58,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.MultiSelectionModel;
+import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -74,7 +73,7 @@ public class ManageGroups extends Composite {
 	private HorizontalPanel memberControls;
 	private FlexTable greetingMessage;
 	private SimplePager pager;
-	private TextBox groupNameText;
+	private TextBox groupNameText, emailText, senderText;
 	private HandlerRegistration submitHandler = null;
 	private AreYouSureDialog confirm;
 	private TextArea numbersArea, namesArea;
@@ -188,10 +187,10 @@ public class ManageGroups extends Composite {
     
     // Create a Pager to control the table.
     SimplePager.Resources pagerResources = GWT.create(SimplePager.Resources.class);
-    pager = new SimplePager(TextLocation.CENTER, pagerResources, false, 0, true);
+    pager = new MembersPager(TextLocation.CENTER, pagerResources, false, 0, true);
     pager.setPageSize(50);
     pager.setDisplay(memberTable);
-    pager.setRangeLimited(false);
+    //pager.setRangeLimited(false);
 
     // Initialize the columns.
     initTableColums(selectionModel, sortHandler);
@@ -368,6 +367,26 @@ public class ManageGroups extends Composite {
     inputBox.addItem("Touchtone", "0");
     inputBox.addItem("Voice", "1");
     
+    Label emailLabel = new Label("Email Address");
+    emailText = new TextBox();
+    emailText.setName("email");
+    Label emailHelp = new Label("Daily Digest will be sent here");
+    emailHelp.setStyleName("helptext");
+    HorizontalPanel emailPanel = new HorizontalPanel();
+    emailPanel.setSpacing(5);
+    emailPanel.add(emailText);
+    emailPanel.add(emailHelp);
+    
+    Label senderLabel = new Label("Sender Name");
+    senderText = new TextBox();
+    senderText.setName("sendername");
+    Label senderHelp = new Label("This name appears as the sender on SMSs");
+    senderHelp.setStyleName("helptext");
+    HorizontalPanel senderPanel = new HorizontalPanel();
+    senderPanel.setSpacing(5);
+    senderPanel.add(senderText);
+    senderPanel.add(senderHelp);
+    
     Label greetingLabel = new Label("Greeting Message");
     greetingMessage = new FlexTable();
     //greetingMessage.setSpacing(5);
@@ -438,6 +457,10 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row++, 1, deliveryBox);
 		settingsTable.setWidget(row, 0, inputTypeLabel);
 		settingsTable.setWidget(row++, 1, inputBox);
+		settingsTable.setWidget(row, 0, emailLabel);
+		settingsTable.setWidget(row++, 1, emailPanel);
+		settingsTable.setWidget(row, 0, senderLabel);
+		settingsTable.setWidget(row++, 1, senderPanel);
 		settingsTable.setWidget(row, 0, greetingLabel);
 		settingsTable.setWidget(row++, 1, greetingMessage);
 		
@@ -506,6 +529,7 @@ public class ManageGroups extends Composite {
         }
       }
     });
+    
       
     memberTable.addColumn(checkColumn, selectPageHeader);
     memberTable.setColumnWidth(checkColumn, 40, Unit.PX);
@@ -531,7 +555,7 @@ public class ManageGroups extends Composite {
     });
     memberTable.setColumnWidth(nameColumn, 50, Unit.PCT);
     
-    Column<MemberInfo, String> numberColumn = new Column<MemberInfo, String>(new EditTextCell()) {
+    Column<MemberInfo, String> numberColumn = new Column<MemberInfo, String>(new TextCell()) {
       public String getValue(MemberInfo object) {
         // Return the name as the value of this column.
         return object.getNumber();
@@ -653,7 +677,7 @@ public class ManageGroups extends Composite {
 			}
 		}
 		
-		/**
+		/*
 		 *  This works as long as there are only two input types and
 		 *  their order in the box matches their boolean value.
 		 *  
@@ -661,6 +685,13 @@ public class ManageGroups extends Composite {
 		 */
 		int inputType = group.responsesAllowed() ? 1 : 0;
 		inputBox.setSelectedIndex(inputType);
+		
+		String email = Messages.get().getModerator().getEmail();
+		emailText.setValue(email);
+		
+		String sendername = group.getSenderName();
+		if (!sendername.equals("null"))
+			senderText.setValue(sendername);
 		
 		greetingMessage.clearCell(0, 0);
 		if (!"".equals(group.getNameFile()) && !"null".equals(group.getNameFile()))
@@ -738,9 +769,29 @@ public class ManageGroups extends Composite {
 	  	submitComplete();
 	  	// May have changed the name, so reload the side panel
 	  	Messages.get().reloadGroups(models);
-	  	Messages.get().displayManageGroupsInterface(group);
+	  	// May have updated the email address of the moderator, 
+	  	// so reload her.
+	  	JSONRequest request = new JSONRequest();
+		  request.doFetchURL(AoAPI.MODERATOR, new ModeratorRequestor());
+	  	
 		}
 	}
+	
+ private class ModeratorRequestor implements JSONRequester {
+	 
+		public void dataReceived(List<JSOModel> models) 
+		{
+			// for e.g. superuser will not have an associated AO_admin record
+			if (models.size() > 0)
+			{
+				User moderator = new User(models.get(0));
+				Messages.get().setModerator(moderator);
+			}
+			// reload settings in case there's validation server-side
+	  	// (like setting an empty groupname, etc.)
+	  	Messages.get().loadManageGroupsInterface(line, group);
+		}
+	 }
 	
 private class DeleteComplete implements SubmitCompleteHandler {
 		
@@ -875,6 +926,43 @@ private class DeleteComplete implements SubmitCompleteHandler {
 			
 		}
 		
+	}
+	
+	/**
+	 * Code taken and slighly modified at 
+	 * http://stackoverflow.com/a/12235786/199754
+	 * 
+	 * Solution needed to page the last page properly, AND
+	 * not have unending next page.
+	 * 
+	 * @author neil
+	 *
+	 */
+	public class MembersPager extends SimplePager {
+
+    public MembersPager() {
+        this.setRangeLimited(true);
+    }
+
+    public MembersPager(TextLocation location, Resources resources, boolean showFastForwardButton, int fastForwardRows, boolean showLastPageButton) {
+        super(location, resources, showFastForwardButton, fastForwardRows, showLastPageButton);
+        this.setRangeLimited(true);
+    }
+
+		public void setPageStart(int index) {
+	
+	    if (this.getDisplay() != null) {
+	      Range range = getDisplay().getVisibleRange();
+	      int pageSize = range.getLength();
+	      if (!isRangeLimited() && getDisplay().isRowCountExact()) {
+	        index = Math.min(index, getDisplay().getRowCount() - pageSize);
+	      }
+	      index = Math.max(0, index);
+	      if (index != range.getStart()) {
+	        getDisplay().setVisibleRange(index, pageSize);
+	      }
+	    }  
+	  }
 	}
 
 }

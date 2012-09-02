@@ -90,7 +90,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * @param messageForum
    */
   public void setItem(MessageForum messageForum) {
-    messageDetail.setItem(messageForum);
+  	if (!canManage()) messageDetail.setItem(messageForum);
   }
   
   /**
@@ -103,7 +103,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	// need to setup panels here 
   	// in case there are no messages
-  	messageDetail.reset();
+  	if (!canManage()) messageDetail.reset();
   	fora.setFolder(mf.getForum(), mf.getStatus());
   	displayForumPanel();
   	
@@ -120,7 +120,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	// need to setup panels here 
   	// in case there are no messages
-  	messageDetail.reset();
+  	if (!canManage()) messageDetail.reset();
   	fora.setFolder(f, status);
   	displayForumPanel();
   	
@@ -131,7 +131,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	// need to setup panels here 
   	// in case there are no messages
-  	messageDetail.reset();
+  	if (!canManage()) messageDetail.reset();
   	fora.setFolderResponses(mf.getForum());
   	
   	messageList.getResponses(mf);
@@ -141,7 +141,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	// need to setup panels here 
   	// in case there are no messages
-  	messageDetail.reset();
+  	if (!canManage()) messageDetail.reset();
   	fora.setFolderResponses(f);
   	displayForumPanel();
   	
@@ -152,7 +152,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	broadcastIface.reset(thread);
   	messageList.setVisible(false);
-		messageDetail.setVisible(false);
+  	if (!canManage()) messageDetail.setVisible(false);
 		broadcastIface.setVisible(true);
 		if (canManage()) groupsIface.setVisible(false);
 		if (line.hasSMSConfig())
@@ -170,7 +170,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   public void displaySurveyInputPanel()
   {
   	messageList.setVisible(true);
-  	messageDetail.setVisible(false);
+  	if (!canManage()) messageDetail.setVisible(false);
 		broadcastIface.setVisible(false);
 		if (line.hasSMSConfig())
 		{
@@ -187,7 +187,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   {
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(true);
-		messageDetail.setVisible(true);
+  	if (!canManage()) messageDetail.setVisible(true);
 		if (line.hasSMSConfig())
 		{
 			smsList.setVisible(false);
@@ -203,7 +203,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   	smsList.setVisible(true);
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(false);
-		messageDetail.setVisible(false);
+  	if (!canManage()) messageDetail.setVisible(false);
 		if (canManage()) groupsIface.setVisible(false);
 		smsIface.setVisible(false);
 		shortcuts.showStack(2);
@@ -217,7 +217,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   	smsIface.setVisible(true);
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(false);
-		messageDetail.setVisible(false);
+  	if (!canManage()) messageDetail.setVisible(false);
 		if (canManage()) groupsIface.setVisible(false);
 		smsList.setVisible(false);
 		shortcuts.showStack(2);
@@ -233,7 +233,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   	}
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(false);
-		messageDetail.setVisible(false);
+  	if (!canManage()) messageDetail.setVisible(false);
 		groupsIface.setVisible(true);
 		fora.setFolder(group, MessageStatus.MANAGE);
 		
@@ -308,13 +308,12 @@ public class Messages implements EntryPoint, ResizeHandler {
     topPanel.setWidth("100%");
     
     fora = new Fora(images);
-    messageDetail = new MessageDetail();
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
-    rightPanel.add(messageDetail);
+    
     if (line.bcastingAllowed())
     {
     	broadcastIface = new BroadcastInterface(images);
@@ -335,11 +334,16 @@ public class Messages implements EntryPoint, ResizeHandler {
       groupsIface = new ManageGroups(images);
     	rightPanel.add(groupsIface);
     }
+    else
+    {
+    	messageDetail = new MessageDetail();
+    	messageDetail.setWidth("100%");
+    	rightPanel.add(messageDetail);
+    }
     
     shortcuts = new Shortcuts(images, fora, bcasts, smss);
     
     rightPanel.setWidth("100%");
-    messageDetail.setWidth("100%");
     shortcuts.setWidth("100%");
     
     displayForumPanel();
@@ -414,6 +418,11 @@ public class Messages implements EntryPoint, ResizeHandler {
 		  request.doFetchURL(AoAPI.LINE, new LineRequestor());
 		}
 	 }
+  
+  public void setModerator(User moderator)
+  {
+  	this.moderator = moderator;
+  }
   
   private class LineRequestor implements JSONRequester {
 		 

@@ -23,7 +23,7 @@ public class SMSMessage extends BaseModel {
 	
 	public String getSentOn()
 	{
-		return getObject("fields").get("sent_on");
+		return getObject("fields").get("sent_on").replace("T", " ");
 	}
 	
 	public String getText()
