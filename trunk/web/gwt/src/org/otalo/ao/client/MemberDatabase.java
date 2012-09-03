@@ -214,6 +214,7 @@ public class MemberDatabase {
   {
   	List<MemberInfo> members = dataProvider.getList();
     members.clear();
+    
     for (MemberInfo m : this.members)
     {
     	members.add(m);

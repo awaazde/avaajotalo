@@ -321,9 +321,8 @@ public class ManageGroups extends Composite {
     joinsTable.addColumnSortHandler(sortHandler);
 
     // Create a Pager to control the table.
-    SimplePager joinsPager = new SimplePager(TextLocation.CENTER, pagerResources, false, 0, true);
+    MembersPager joinsPager = new MembersPager(TextLocation.CENTER, pagerResources, false, 0, true);
     joinsPager.setDisplay(joinsTable);
-    joinsPager.setRangeLimited(false);
     MemberDatabase.get().addDataDisplay(joinsTable);
 
     // Initialize the columns.
@@ -534,7 +533,7 @@ public class ManageGroups extends Composite {
     memberTable.addColumn(checkColumn, selectPageHeader);
     memberTable.setColumnWidth(checkColumn, 40, Unit.PX);
     
-    Column<MemberInfo, String> nameColumn = new Column<MemberInfo, String>(new EditTextCell()) {
+    final Column<MemberInfo, String> nameColumn = new Column<MemberInfo, String>(new EditTextCell()) {
       public String getValue(MemberInfo object) {
         // Return the name as the value of this column.
         return object.getName();
@@ -549,7 +548,12 @@ public class ManageGroups extends Composite {
     memberTable.addColumn(nameColumn, "Name");
     nameColumn.setFieldUpdater(new FieldUpdater<MemberInfo, String>() {
 			public void update(int index, MemberInfo object, String value) {
-				object.setName(value);
+				if (!"".equals(value))
+					object.setName(value);
+				else
+					// added this based on advice on how to restore the value of a cell in case of validation error
+					// solution from https://groups.google.com/d/msg/google-web-toolkit/sPRy0lqACsc/UJH-jvBNAcIJ
+					((EditTextCell)nameColumn.getCell()).clearViewData(memberTable.getKeyProvider().getKey(object));
         MemberDatabase.get().refreshDisplays();
 			}
     });
@@ -562,12 +566,6 @@ public class ManageGroups extends Composite {
       }
     };
     memberTable.addColumn(numberColumn, "Number");
-    numberColumn.setFieldUpdater(new FieldUpdater<MemberInfo, String>() {
-			public void update(int index, MemberInfo object, String value) {
-				object.setNumber(value);
-        MemberDatabase.get().refreshDisplays();
-			}
-    });
     memberTable.setColumnWidth(numberColumn, 30, Unit.PCT);
     
     Column<MemberInfo, String> statusColumn = new Column<MemberInfo, String>(new TextCell()) {
