@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Regents of the University of California, Stanford University, and others
+  * Copyright (c) 2009 Regents of the University of California, Stanford University, and others
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -172,6 +172,17 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		for (ForumWidget w : widgets)
 		{
 			w.setFolderResponses(f);
+		}
+	}
+	
+	public void setGroup(Line l, Forum f)
+	{
+		for (ForumWidget w : widgets)
+		{
+			 if (w.getForum().getId().equals(f.getId()))
+			 {
+				 w.setGroup(l, f);
+			 }
 		}
 	}
 	

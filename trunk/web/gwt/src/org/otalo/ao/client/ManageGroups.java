@@ -688,7 +688,7 @@ public class ManageGroups extends Composite {
 		emailText.setValue(email);
 		
 		String sendername = group.getSenderName();
-		if (!sendername.equals("null"))
+		if (!"null".equals(sendername))
 			senderText.setValue(sendername);
 		
 		greetingMessage.clearCell(0, 0);
@@ -765,8 +765,24 @@ public class ManageGroups extends Composite {
 			List<JSOModel> models = JSONRequest.getModels(event.getResults());
 			
 	  	submitComplete();
-	  	// May have changed the name, so reload the side panel
-	  	Messages.get().reloadGroups(models);
+	  	
+	  	Line l;
+	  	String oldGroupName = group.getName();
+	  	// Find and update the currently selected group
+	  	for (JSOModel m : models)
+	  	{
+	  		l = new Line(m);
+	  		if (line.getId().equals(l.getId()))
+				{
+	  			line = l;
+	  			group = line.getForums().get(0);
+				}
+	  	}
+	  	
+	  	// update the forum widget that corresponds
+	  	// to this group
+		  Messages.get().reloadGroup(line, group);
+	  	
 	  	// May have updated the email address of the moderator, 
 	  	// so reload her.
 	  	JSONRequest request = new JSONRequest();
@@ -785,9 +801,8 @@ public class ManageGroups extends Composite {
 				User moderator = new User(models.get(0));
 				Messages.get().setModerator(moderator);
 			}
-			// reload settings in case there's validation server-side
-	  	// (like setting an empty groupname, etc.)
-	  	Messages.get().loadManageGroupsInterface(line, group);
+			// reset
+			loadSettings();
 		}
 	 }
 	

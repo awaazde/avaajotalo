@@ -55,18 +55,20 @@ public class ForumWidget implements ClickHandler {
 	private UploadDialog uploadDlg = new UploadDialog();
 	private boolean responsesSelected = false;
 	private Line line;
+	private Images images;
 	
 	public ForumWidget(Forum f, Line l, Images images, Composite parent)
 	{
 		this.forum = f;
 		this.line = l;
 		this.parent = parent;
+		this.images = images;
 		
 		tree = new Tree(images);
 		rootHTML = imageItemHTML(images.home(), forum.getName());
-	    root = new TreeItem(rootHTML);
-	    tree.addItem(root);
-    
+    root = new TreeItem(rootHTML);
+    tree.addItem(root);
+
     if (forum.moderated())
     {
     	inboxHTML = imageItemHTML(images.inbox(), "Inbox");
@@ -282,4 +284,11 @@ public class ForumWidget implements ClickHandler {
 		return responsesSelected;
 	}
 	
+	public void setGroup(Line l, Forum f)
+	{
+		this.line = l;
+		this.forum = f;
+		AbstractImagePrototype imageProto = AbstractImagePrototype.create(images.home());
+		rootHTML.setHTML(imageProto.getHTML() + " " + forum.getName());
+	}
 }
