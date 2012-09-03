@@ -74,7 +74,7 @@ def forum(request):
     else:
         fora = Forum.objects.all()
         
-    return send_response(fora, excludes=('messages','tags','responders'))
+    return send_response(fora, excludes=('messages','tags','responders', 'members'))
 
 def group(request):
     auth_user = request.user
@@ -92,7 +92,7 @@ def group(request):
         else:
             groups = Line.objects.all().order_by('-id')
 
-    return send_response(groups, relations=('forums',))
+    return send_response(groups, relations=('forums',), excludes=('messages','tags','responders', 'members'))
 
 def messages(request, forum_id):
     params = request.GET
