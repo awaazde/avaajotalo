@@ -96,6 +96,7 @@ def group(request):
 
 def messages(request, forum_id):
     params = request.GET
+    forum = get_object_or_404(Forum, pk=int(forum_id))
     
     status = params['status'].split()
     posttype = params['posttype']
@@ -138,7 +139,22 @@ def messages(request, forum_id):
         if start >= count and start > 0:
             start -= VISIBLE_MESSAGE_COUNT
         message_forums = message_forums[start:min(message_forums.count(),start+VISIBLE_MESSAGE_COUNT)]
-        
+    
+    # if this forum has members, override users' names
+    # with membership.membername for display purposes
+    if forum.members.all():
+        users = [mf.message.user for mf in message_forums]
+        memberships = Membership.objects.filter(group=forum, user__in=users)
+        membernamedict = {}
+        for membership in memberships:
+            membernamedict[membership.user] = membership.membername
+        for u in users:
+            if u in membernamedict:
+                # for serialization purposes only; do not save.
+                # Use NoneType membernames as well because this is
+                # a full overwrite
+                u.name = membernamedict[u]
+                
     resp = send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('name', 'moderated', 'responses_allowed', 'posting_allowed', 'routeable')}})
     
     if count > 0:
