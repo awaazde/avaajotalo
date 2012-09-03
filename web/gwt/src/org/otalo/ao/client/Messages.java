@@ -259,6 +259,11 @@ public class Messages implements EntryPoint, ResizeHandler {
   	groupsIface.reset(line, group);
   }
   
+  public void reloadGroup(Line l, Forum f)
+  {
+  	fora.setGroup(l, f);
+  }
+  
   public void displaySurveyInput(Prompt p, int start)
   {
   	displaySurveyInputPanel();
