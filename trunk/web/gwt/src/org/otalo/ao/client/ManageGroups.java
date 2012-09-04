@@ -332,6 +332,8 @@ public class ManageGroups extends Composite {
 		rejectMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to reject these requests?", MembershipStatus.DELETED, "Members rejected!"));
     joinsPanel.add(joinControls);
     joinsPanel.add(joinsTable);
+    joinsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
+    joinsPanel.add(joinsPager);
     
     /**************************************************
 		 * 
