@@ -922,6 +922,11 @@ private class DeleteComplete implements SubmitCompleteHandler {
 								memberIds += m.getId() + ",";
 							}
 							membersToUpdate.setValue(memberIds);
+							
+							// before submitting, clear any selected cells
+							// (rejected members won't get cleared when server returns)
+							MemberDatabase.get().refreshDisplays();
+							
 							if (submitHandler != null)
 							{
 								submitHandler.removeHandler();
