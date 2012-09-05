@@ -278,6 +278,10 @@ public class MemberDatabase {
     	{
     		d.getSelectionModel().setSelected(m, false);
     	}
+    	for (MemberInfo m : joinRequests)
+    	{
+    		d.getSelectionModel().setSelected(m, false);
+    	}
     }
     dataProvider.refresh();
   }
