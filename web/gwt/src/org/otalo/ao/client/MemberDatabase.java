@@ -167,19 +167,6 @@ public class MemberDatabase {
   }
 
   /**
-   * Add a new member.
-   *
-   * @param member the member to add.
-   */
-  public void addMember(Membership membership) {
-    List<MemberInfo> members = dataProvider.getList();
-    // Remove the member first so we don't add a duplicate.
-    MemberInfo member = new MemberInfo(membership);
-    members.remove(member);
-    members.add(member);
-  }
-  
-  /**
    * Add list of members. We are doing this in a slightly non-clean
    * way to avoid two seperate server hits for members that display on
    * Members and those that display as Join Requests. The server will

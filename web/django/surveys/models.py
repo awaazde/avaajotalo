@@ -148,6 +148,8 @@ class Call(models.Model):
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     
+    duration = models.IntegerField(blank=True, null=True)
+    
     def __unicode__(self):
         return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
     

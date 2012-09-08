@@ -49,4 +49,9 @@ public class User extends BaseModel {
 	{
 		return getObject("fields").get("email");
 	}
+	
+	public String getBalance()
+	{
+		return getField("balance");
+	}
 }
