@@ -39,6 +39,7 @@ urlpatterns = patterns('',
     (r'^messageresponder/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.messageresponder'),
     (r'^moderator/$', 'otalo.ao.views.moderator'),
     (r'^line/$', 'otalo.ao.views.line'),
+    (r'^download/bcastreport/(?P<survey_id>\d+)/$', 'awaazde.streamit.views.downloadbcastreport'),
     (r'^download/(?P<model>\w+)/(?P<model_id>\d+)/$', 'otalo.ao.views.download'),
     (r'^survey/$', 'otalo.ao.views.survey'),
     (r'^bcast/$', 'otalo.ao.views.bcast'),
@@ -62,6 +63,7 @@ urlpatterns = patterns('',
     (r'^update/groupsettings/$', 'awaazde.streamit.views.updategroupsettings'),
     (r'^update/memberstatus/$', 'awaazde.streamit.views.updatememstatus'),
     (r'^deletegroup/$', 'awaazde.streamit.views.deletegroup'),
+    (r'^broadcastreports/(?P<group_id>\d+)/$', 'awaazde.streamit.views.broadcastreports'),
 )
 
 if settings.DEVELOPMENT:

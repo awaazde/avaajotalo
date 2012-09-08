@@ -79,6 +79,8 @@ public final class JSONRequest {
 		public static final String UPDATE_GROUP_SETTINGS = "update/groupsettings/";
 		public static final String UPDATE_MEMBER_STATUS = "update/memberstatus/";
 		public static final String DELETE_GROUP = "deletegroup/";
+		public static final String BROADCAST_REPORTS = "broadcastreports/";
+		public static final String DOWNLOAD_BCAST_REPORT = "download/bcastreport/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";

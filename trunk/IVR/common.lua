@@ -22,12 +22,20 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 -----------
 
 function hangup() 
+   local callendtime = os.time();
    logfile:write(sessid, "\t",
 		 caller, "\t", destination, "\t",
-		 os.time(), "\t", "End call", "\n");
+		 callendtime, "\t", "End call", "\n");
 
    for i,curs in ipairs(opencursors) do
 		curs:close();
+   end
+   
+   if (callid ~= nil and callstarttime ~= nil) then
+   		local callduration = callendtime - callstarttime;
+   		local query = "UPDATE surveys_call SET duration="..callduration.." WHERE id="..callid;
+	    con:execute(query);
+	    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
    end
    
    -- cleanup

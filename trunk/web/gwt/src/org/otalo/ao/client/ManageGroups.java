@@ -9,12 +9,15 @@ import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.MemberDatabase.MemberInfo;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Forum.ForumStatus;
+import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Membership;
 import org.otalo.ao.client.model.Membership.MembershipStatus;
 import org.otalo.ao.client.model.User;
 
+import com.google.gwt.cell.client.ActionCell;
+import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -37,6 +40,7 @@ import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -56,9 +60,13 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
+import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.MultiSelectionModel;
+import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.Range;
+import com.google.gwt.view.client.RangeChangeEvent;
 import com.google.gwt.view.client.SelectionModel;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -68,6 +76,7 @@ public class ManageGroups extends Composite {
 	private Button saveButton, cancelButton, inviteButton, deleteButton;
 	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox;
 	private DataGrid<MemberInfo> memberTable, joinsTable;
+	private DataGrid<Broadcast> reportTable;
 	private FormPanel manageGroupsForm;
 	private VerticalPanel invitePanel, namesPanel;
 	private HorizontalPanel memberControls;
@@ -78,6 +87,7 @@ public class ManageGroups extends Composite {
 	private AreYouSureDialog confirm;
 	private TextArea numbersArea, namesArea;
 	private Label groupNumber;
+	private int reportStartIndex = 0;
 	
 	private Forum group;
 	private Line line;
@@ -104,19 +114,26 @@ public class ManageGroups extends Composite {
 		settingsPanel.setSize("100%", "100%");
 		VerticalPanel joinsPanel = new VerticalPanel();
 		joinsPanel.setSize("100%", "100%");
+		VerticalPanel reportsPanel = new VerticalPanel();
+		reportsPanel.setSize("100%", "100%");
 		
 		tabPanel.setSize("100%", "100%");
 		tabPanel.add(memberPanel, "Members");
 		tabPanel.add(joinsPanel, "Join Requests");
+		tabPanel.add(reportsPanel, "Reports");
 		tabPanel.add(settingsPanel, "Settings");
 		tabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			
 			public void onSelection(SelectionEvent<Integer> event) {
 				int tabId = event.getSelectedItem();
         if (tabId == 0) 
-	        MemberDatabase.get().displayMembers();
+        {
+	        showMemberTable();
+        }
         else if (tabId == 1)
         	MemberDatabase.get().displayJoinRequests();
+        else if (tabId == 2)
+        	loadReports(0);
 			}
 		});
 		
@@ -334,6 +351,57 @@ public class ManageGroups extends Composite {
     joinsPanel.add(joinsTable);
     joinsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
     joinsPanel.add(joinsPager);
+		
+		/**************************************************
+		 * 
+		 *  Reports Tab
+		 *  
+		 *************************************************/
+		// top-level widgets
+		HorizontalPanel reportsTopPanel = new HorizontalPanel();
+		reportsTopPanel.setSpacing(10);
+		Label balanceLabel = new Label("Current Balance:");
+		String balance = Messages.get().getModerator().getBalance();
+		if ("null".equals(balance))
+			balance = "0";
+		Label balanceAmount = new Label(balance);
+		Button rechargeBtn = new Button("Recharge");
+		rechargeBtn.addClickHandler(new ClickHandler() {
+			
+			public void onClick(ClickEvent event) {
+				ConfirmDialog recharge = new ConfirmDialog("Online payment coming soon! For now, please send a cheque to Awaaz.De to recharge your balance. Contact info@awaaz.de for bank details.");
+				recharge.show();
+				recharge.center();
+				
+			}
+		});
+		
+		reportsTopPanel.add(balanceLabel);
+		reportsTopPanel.add(balanceAmount);
+		reportsTopPanel.add(rechargeBtn);
+				
+		// Reports Grid
+		reportTable = new DataGrid<Broadcast>();
+		reportTable.setSize("850px", "320px");
+		
+		reportTable.setPageSize(10);
+    
+    // Create a Pager to control the table.
+    MembersPager reportspager = new MembersPager(TextLocation.CENTER, pagerResources, false, 0, true);
+    reportspager.setPageSize(50);
+    reportspager.setDisplay(reportTable);
+
+    // Initialize the columns.
+    initReportColumns();
+
+    // Add the member table to the adapter in the database.
+    reportsDataProvider.addDataDisplay(reportTable);
+    //reportsDataProvider.updateRowData(0, null);
+    
+    reportsPanel.add(reportsTopPanel);
+    reportsPanel.add(reportTable);
+    reportsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
+    reportsPanel.add(reportspager);
     
     /**************************************************
 		 * 
@@ -648,15 +716,81 @@ public class ManageGroups extends Composite {
 
 	}
 	
-	public void loadMembers()
+	private void initReportColumns()
+	{
+    Column<Broadcast, String> dateColumn = new Column<Broadcast, String>(new TextCell()) {
+      public String getValue(Broadcast object) {
+        // Return the name as the value of this column.
+        return object.getDate();
+      }
+    };
+    
+    reportTable.addColumn(dateColumn, "Date");
+    reportTable.setColumnWidth(dateColumn, 20, Unit.PCT);
+    
+    Column<Broadcast, String> attemptsColumn = new Column<Broadcast, String>(new TextCell()) {
+      public String getValue(Broadcast object) {
+        // Return the name as the value of this column.
+        return object.getAttempts();
+      }
+    };
+    
+    reportTable.addColumn(attemptsColumn, "Attempts");
+    reportTable.setColumnWidth(attemptsColumn, 20, Unit.PCT);
+    
+    Column<Broadcast, String> maturedColumn = new Column<Broadcast, String>(new TextCell()) {
+      public String getValue(Broadcast object) {
+        // Return the name as the value of this column.
+        return object.getMatured();
+      }
+    };
+    
+    reportTable.addColumn(maturedColumn, "Pickups");
+    reportTable.setColumnWidth(maturedColumn, 20, Unit.PCT);
+    
+    Column<Broadcast, String> costColumn = new Column<Broadcast, String>(new TextCell()) {
+      public String getValue(Broadcast object) {
+        // Return the name as the value of this column.
+        return object.getCost();
+      }
+    };
+    
+    reportTable.addColumn(costColumn, "Cost (INR)");
+    reportTable.setColumnWidth(costColumn, 20, Unit.PCT);
+    
+    Column<Broadcast, Broadcast> downloadColumn = new Column<Broadcast,Broadcast>(new ActionCell<Broadcast>("Download", new ActionCell.Delegate<Broadcast>() {
+
+			public void execute(Broadcast bcast) {
+				if (bcast.getReportLink() != null)
+					Window.open(AoAPI.DOWNLOAD_BCAST_REPORT + bcast.getId(), "Download Report", "");
+				else
+				{
+					ConfirmDialog notAvailable = new ConfirmDialog("Report is currently unavailable. Check back after the broadcast completes");
+					notAvailable.show();
+					notAvailable.center();
+				}
+			}
+		})) {
+
+			public Broadcast getValue(Broadcast object) {
+				return object;
+			}
+    	
+    };
+    reportTable.addColumn(downloadColumn, "Details");
+    reportTable.setColumnWidth(downloadColumn, 20, Unit.PCT);
+
+	}
+	
+	private void loadMembers()
 	{	
 		JSONRequest request = new JSONRequest();
 		request.doFetchURL(AoAPI.MEMBERS + group.getId() + "/", new GroupMembersRequestor());
 	}
 	
-	public void loadSettings()
+	private void loadSettings()
 	{	
-		groupNumber.setText(line.getNumber());
+		groupNumber.setText("0"+line.getNumber());
 		groupNameText.setValue(group.getName());
 		String lang = line.getLanguage();
 		for (int i=0; i<languageBox.getItemCount(); i++)
@@ -700,6 +834,13 @@ public class ManageGroups extends Composite {
 			greetingMessage.setHTML(0, 0, sound.getWidget().getHTML());
 		}
 		
+	}
+	
+	public void loadReports(int start)
+	{
+		JSONRequest request = new JSONRequest();
+		String params = "/?start=0&length="+String.valueOf(reportTable.getPageSize());
+		request.doFetchURL(AoAPI.BROADCAST_REPORTS + group.getId() + params, new BcastReportRequestor());
 	}
 	
 	private class GroupMembersRequestor implements JSONRequester {
@@ -831,7 +972,9 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		 loadSettings();
 		 groupid.setValue(group.getId());
 
-		 showMemberTable();
+		 // select tab explicitly so that
+		 // membertable loads properly
+		 tabPanel.selectTab(0);
 		
 	 }
 
@@ -860,10 +1003,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		memberTable.setVisible(true);
 		pager.setVisible(true);
 		
-		// don't need to explicitly call
-		// displayMembers since the tab
-		// change event will get triggered here
-		tabPanel.selectTab(0);
+		MemberDatabase.get().displayMembers();
 		
 	}
 	
@@ -984,5 +1124,78 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	    }  
 	  }
 	}
+	
+	private AsyncDataProvider<Broadcast> reportsDataProvider = new AsyncDataProvider<Broadcast>() {
 
+		protected void onRangeChanged(HasData<Broadcast> display) {
+			if (group != null)
+			{
+				reportStartIndex = display.getVisibleRange().getStart();
+	      int length = display.getVisibleRange().getLength();
+	      String params = "/?start="+reportStartIndex+"&length="+length;
+	      JSONRequest request = new JSONRequest();
+	      request.doFetchURL(AoAPI.BROADCAST_REPORTS + group.getId() + params, new BcastReportRequestor());
+			}
+			
+		}
+	};
+	
+	private class BcastReportRequestor implements JSONRequester {
+		 
+		public void dataReceived(List<JSOModel> models) {
+			List<Broadcast> bcasts = new ArrayList<Broadcast>();
+			Broadcast b;
+			
+			for (JSOModel model : models)
+	  	{
+				b = new Broadcast(model);
+				bcasts.add(b);
+	  	}
+			
+			reportsDataProvider.updateRowCount(bcasts.size(), true);
+			reportsDataProvider.updateRowData(reportStartIndex, bcasts);
+			
+		}
+	 }
+
+	/**
+	 * Information about a member.
+	 */
+	private class Broadcast extends BaseModel {
+	    
+	  public Broadcast(JSOModel data) {
+			super(data);
+		}
+	
+	
+	  public String getDate() {
+	    return get("date").replace("T", " ");
+	  }
+	
+	  public String getId() {
+	  	return get("surveyid");
+	  }
+	
+	  public String getAttempts() {
+	  	return get("attempts"); 
+	  }
+	  
+	  public String getMatured() {
+	  	return get("matured"); 
+	  }
+	
+	  public String getCost() {
+	    return get("cost");
+	  }
+	  
+	  public String getReportLink()
+	  {
+	  	String link = get("report");
+	  	if ("0".equals(link))
+	    	return null;
+	    else
+	    	return link;
+	  }
+	}
+  
 }
