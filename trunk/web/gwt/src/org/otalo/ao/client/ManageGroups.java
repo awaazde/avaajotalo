@@ -13,6 +13,7 @@ import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Membership;
+import org.otalo.ao.client.model.Survey;
 import org.otalo.ao.client.model.Membership.MembershipStatus;
 import org.otalo.ao.client.model.User;
 
@@ -1148,11 +1149,19 @@ private class DeleteComplete implements SubmitCompleteHandler {
 			
 			for (JSOModel model : models)
 	  	{
-				b = new Broadcast(model);
-				bcasts.add(b);
+				if (Broadcast.MODEL_TYPE.equals(model.get("model")))
+				{
+					b = new Broadcast(model);
+					bcasts.add(b);
+				}
+				else if (Forum.isGroupMetadata(model))
+				{
+					int rowcount = Integer.valueOf(model.get("totalsurveys"));
+					reportsDataProvider.updateRowCount(rowcount, true);
+					
+				}
 	  	}
 			
-			reportsDataProvider.updateRowCount(bcasts.size(), true);
 			reportsDataProvider.updateRowData(reportStartIndex, bcasts);
 			
 		}
@@ -1162,7 +1171,8 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	 * Information about a member.
 	 */
 	private class Broadcast extends BaseModel {
-	    
+		private static final String MODEL_TYPE = "BCAST_METADATA";
+		
 	  public Broadcast(JSOModel data) {
 			super(data);
 		}
@@ -1196,6 +1206,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	    else
 	    	return link;
 	  }
+	  
 	}
   
 }

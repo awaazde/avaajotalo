@@ -17,7 +17,7 @@ package org.otalo.ao.client.model;
 
 
 public class Forum extends BaseModel {
-	
+	private static final String METADATA_MODEL_TYPE = "GROUP_METADATA";
 	// make this consistent with ao:models.py
   public enum ForumStatus {  
   	BCAST_CALL_SMS(1), BCAST_SMS(2), INACTIVE(3);
@@ -42,6 +42,7 @@ public class Forum extends BaseModel {
     	return null;
     }
   }  
+  
 	
 	public Forum(JSOModel data) 
 	{
@@ -90,6 +91,11 @@ public class Forum extends BaseModel {
 	public String getSenderName()
 	{
 		return getField("sendername");
+	}
+	
+	public static boolean isGroupMetadata(JSOModel model)
+	{
+		return model.get("model").equals(METADATA_MODEL_TYPE);
 	}
 	
 }
