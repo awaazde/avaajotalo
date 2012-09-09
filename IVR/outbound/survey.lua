@@ -33,6 +33,9 @@ digits = "";
 arg = {};
 
 sessid = os.time();
+-- for call durations
+callstarttime = nil;
+
 -- The prompts_played queue. Make global to record listens
 -- on hangup event
 prevprompts = {};
@@ -132,8 +135,9 @@ session:setHangupHook("hangup");
 -- wait a while before testing
 session:sleep(2000);
 if (session:ready() == true) then
+	callstarttime = os.time();
 	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", os.time(), "\t", "Start call", "\n");
+	"\t", callstarttime, "\t", "Start call", "\n");
 	
 	-- play prompts
    	play_prompts(prompts);
