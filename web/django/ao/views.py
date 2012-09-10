@@ -389,7 +389,7 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
     summary_filename = ''
 
     extension = content.name[content.name.index('.'):]
-    filename = t.strftime("%m-%d-%Y_%H%M%S") + extension
+    filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + extension
     filename_abs = settings.MEDIA_ROOT + '/' + filename
     destination = open(filename_abs, 'wb')
     for chunk in content.chunks():
@@ -399,7 +399,7 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
 
     if summary:
         extension = summary.name[summary.name.index('.'):]
-        summary_filename = t.strftime("%m-%d-%Y_%H%M%S") + '_summary' + extension
+        summary_filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + '_summary' + extension
         summary_filename_abs = settings.MEDIA_ROOT + '/' + summary_filename
         destination = open(summary_filename_abs, 'wb')
         for chunk in summary.chunks():
