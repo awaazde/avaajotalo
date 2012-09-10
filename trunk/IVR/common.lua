@@ -234,7 +234,8 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local maxlength = maxlength; -- mandatory field, so no default
    local rgt = rgt or 1;
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
-   local partfilename = os.time() .. ".mp3";
+   -- add caller digits to prevent name collisions
+   local partfilename = os.time() .. caller:sub(caller:len()-1) .. ".mp3";
    local filename = sd .. partfilename;
 
    repeat
@@ -993,7 +994,8 @@ end
 
 function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    local maxlength = maxlength or 90;
-   local partfilename = os.time() .. ".mp3";
+   -- add callid digits to prevent name collisions
+   local partfilename = os.time() .. callid:sub(callid:len()-1) .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
    local confirm = confirm or 1;
