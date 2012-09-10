@@ -60,7 +60,7 @@ public class SMSInterface extends Composite {
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
 	private Label remainingCharsLabel;
-	private final int SMS_MAX_LENGTH = 160;
+	private final int SMS_MAX_LENGTH = 140;
 	//private FileUpload fileUpload;
 	
 	public interface Images extends Fora.Images {
