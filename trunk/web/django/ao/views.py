@@ -91,8 +91,15 @@ def group(request):
             groups = Forum.objects.all()
         else:
             groups = Line.objects.all().order_by('-id')
-
-    return send_response(groups, relations=('forums',), excludes=('messages','tags','responders', 'members'))
+    
+    excludes=()
+    relations={}
+    if 'forums' in params:
+        excludes=('members','messages','tags','responders')
+    else:
+        relations={'forums':{'excludes':('members','messages','tags','responders')}}
+        
+    return send_response(groups, relations=relations, excludes=excludes )
 
 def messages(request, forum_id):
     params = request.GET
