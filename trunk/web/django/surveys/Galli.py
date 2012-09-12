@@ -98,7 +98,7 @@ def monitoring_template(line, questionname):
     s.save()
     print('creating new survey '+str(s))
     
-    welcome = Prompt(file=language+"/MFQw"+SOUND_EXT, order=1, bargein=True, survey=s)
+    welcome = Prompt(file=language+"/MFQw-guj"+SOUND_EXT, order=1, bargein=True, survey=s)
     welcome.save()
     welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
     welcome_opt1.save()
@@ -114,7 +114,7 @@ def monitoring_template(line, questionname):
     question_opt4 = Option(number="4", action=Option.INPUT, prompt=question)
     question_opt4.save()
         
-    thanks = Prompt(file=language+"/MFQe"+SOUND_EXT, order=3, bargein=True, survey=s)
+    thanks = Prompt(file=language+"/MFQe-guj"+SOUND_EXT, order=3, bargein=True, survey=s)
     thanks.save()
     thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
     thanks_opt1.save()
@@ -406,5 +406,15 @@ def main():
     elif '--userinfo' in sys.argv:
         calleesfname = sys.argv[2]
         add_users(calleesfname)
+    elif '--monitoring_survey' in sys.argv:
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
+        
+        qnames = sys.argv[3]
+        qnames = qnames.split(',')
+        qnames = [name.strip() for name in qnames]
+        
+        for qname in qnames:
+            monitoring_template(line,qname) 
         
 main()
