@@ -98,7 +98,7 @@ def monitoring_template(line, questionname):
     s.save()
     print('creating new survey '+str(s))
     
-    welcome = Prompt(file=language+"/MFQw-guj"+SOUND_EXT, order=1, bargein=True, survey=s)
+    welcome = Prompt(file=language+"/MFQw-guj"+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
     welcome.save()
     welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
     welcome_opt1.save()
