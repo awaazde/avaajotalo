@@ -44,7 +44,7 @@ def standard_template(line, contenttype):
     else:
         number = line.number
     
-    name = contenttype[:3].upper()
+    name = contenttype
     s = Survey.objects.filter(name=name, number=number, template=True)
     if bool(s):
         s = s[0]
@@ -55,7 +55,7 @@ def standard_template(line, contenttype):
     print('creating new survey '+str(s))
     
     # welcome
-    welcome = Prompt(file=language+"/welcome_"+contenttype[:3].upper()+SOUND_EXT, order=1, bargein=True, survey=s)
+    welcome = Prompt(file=language+"/welcome_"+contenttype[:3].upper()+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
     welcome.save()
     welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
     welcome_opt1.save()
