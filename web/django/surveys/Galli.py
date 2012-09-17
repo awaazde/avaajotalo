@@ -55,7 +55,7 @@ def standard_template(line, contenttype):
     print('creating new survey '+str(s))
     
     # welcome
-    welcome = Prompt(file=language+"/welcome_"+contenttype[:3].upper()+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
+    welcome = Prompt(file=language+"/welcome_"+contenttype+SOUND_EXT, order=1, bargein=True, survey=s, delay=0)
     welcome.save()
     welcome_opt1 = Option(number="", action=Option.NEXT, prompt=welcome)
     welcome_opt1.save()
@@ -71,7 +71,7 @@ def standard_template(line, contenttype):
 #        content_opt2.save()
     
     # thanks
-    thanks = Prompt(file=language+"/thankyou_"+contenttype[:3].upper()+SOUND_EXT, order=3, bargein=True, survey=s)
+    thanks = Prompt(file=language+"/thankyou_"+contenttype+SOUND_EXT, order=3, bargein=True, survey=s)
     thanks.save()
     thanks_opt1 = Option(number="", action=Option.NEXT, prompt=thanks)
     thanks_opt1.save()
