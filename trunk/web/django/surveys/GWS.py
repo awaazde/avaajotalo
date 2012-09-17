@@ -566,5 +566,5 @@ def main():
         #create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555052', callback=True, inbound=True, includeid=False)
         #create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555053', callback=True, inbound=True, includeid=False)
         create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555008', callback=True, inbound=True, includeid=False, countrycode='00861')
-        create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555009', callback=True, inbound=True, includeid=False, countrycode='00861')
+        create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555009', callback=True, inbound=True, includeid=False, countrycode='00852')
 main()
