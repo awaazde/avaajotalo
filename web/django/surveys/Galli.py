@@ -416,5 +416,11 @@ def main():
         
         for qname in qnames:
             monitoring_template(line,qname) 
+    elif '--standard_template' in sys.argv:
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
         
+        name = sys.argv[3]
+        
+        standard_template(line,name)
 main()
