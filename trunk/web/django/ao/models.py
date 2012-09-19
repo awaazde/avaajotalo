@@ -14,10 +14,12 @@
 #    limitations under the License.
 #===============================================================================
 
+from decimal import *
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
-from otalo.surveys.models import Survey
+from otalo.surveys.models import Survey, Call
 from datetime import datetime
+from django.db.models import F
 
 class Line(models.Model):
     number = models.CharField(max_length=24)
@@ -71,7 +73,8 @@ class User(models.Model):
     district_file = models.CharField(max_length=24, blank=True, null=True)
     taluka_file = models.CharField(max_length=24, blank=True, null=True)
     village_file = models.CharField(max_length=24, blank=True, null=True)
-    balance = models.IntegerField(blank=True, null=True)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    balance_last_updated = models.DateTimeField(blank=True, null=True)
     email = models.CharField(max_length=64, blank=True, null=True)
     # whether broadcasts should consider this number if found
     # from indirect sources (log, based on tags, etc.)
@@ -150,13 +153,12 @@ class Forum(models.Model):
     # The display name of the owner of this group
     sendername = models.CharField(max_length=128, blank=True, null=True)
     members = models.ManyToManyField(User, through='Membership', related_name='members', blank=True, null=True)
+    #add_credits = models.IntegerField(blank=True, null=True)
     
     '''
     end Group related additions
     '''
     
-    
-
     def __unicode__(self):
         return self.name
     
@@ -270,6 +272,34 @@ class Membership(models.Model):
     
     def __unicode__(self):
         return unicode(self.user) + '_' + unicode(self.group) +"-" + unicode(self.status)
+
+class Transaction(models.Model):
+    BROADCAST_CALL = 0
+    INBOUND_CALL = 1
+    RECHARGE = 2
+    
+    TYPE = (
+    (BROADCAST_CALL, 'Broadcast'),
+    (INBOUND_CALL, 'Inbound Call'),
+    (RECHARGE, 'Recharge'),
+    )
+    
+    user = models.ForeignKey(User)
+    type = models.IntegerField(choices=TYPE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)
+    
+    '''
+    ' In order to link transactions back to specific calls
+    ' (this is only for auditing purposes; assuming the software works
+    '    as supposed to, each call should have an xact associated with it
+    '    
+    ' Make nullable in order to account for non-call related xacts (like recharge)
+    '''
+    call = models.ForeignKey(Call, blank=True, null=True)
+        
+    def __unicode__(self):
+        return unicode(self.user) + '_' + unicode(self.type) +"-" + unicode(self.amount)
     
 #class DoNotCall(models.Model):
 #    user = models.ForeignKey(User)

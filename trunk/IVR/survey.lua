@@ -183,7 +183,7 @@ session:setVariable("playback_terminators", "#");
 session:setHangupHook("hangup");
 
 -- sleep for a bit
-session:sleep(1000);
+--session:sleep(1000);
 
 callstarttime = os.time();
 logfile:write(sessid, "\t", caller, "\t", destination,

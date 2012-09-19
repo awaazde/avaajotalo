@@ -81,6 +81,7 @@ public final class JSONRequest {
 		public static final String DELETE_GROUP = "deletegroup/";
 		public static final String BROADCAST_REPORTS = "broadcastreports/";
 		public static final String DOWNLOAD_BCAST_REPORT = "download/bcastreport/";
+		public static final String BALANCE = "balance/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";

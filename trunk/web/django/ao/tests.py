@@ -59,6 +59,14 @@ class StreamitTest(TestCase):
             if f.name == 'last_updated':
                 f.auto_now=False
                 f.default=datetime.now
+                
+        for f in Transaction._meta.fields:
+            if f.name == 'date':
+                f.auto_now=False
+                f.default=datetime.now
+        
+        streamit.PULSE_SIZE = 30
+        streamit.RATE_PER_PULSE = .75
         
     def test_create_users(self):
         u1 = streamit.update_user('u1','1001')
@@ -726,7 +734,7 @@ class StreamitTest(TestCase):
         names2 = ['u'+str(i) for i in range(len(mems2))]
         #names2 = ['u0', 'u1',...'u9']
         
-        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems2, names=names2, send_sms=False)
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems2, names=names2)
         self.assertEqual(Membership.objects.filter(membername=None).count(),5)
         
         u15 = User.objects.get(number='15')
@@ -740,12 +748,12 @@ class StreamitTest(TestCase):
         
         mems3 = User.objects.filter(number__in=['10','11','12','13','14'])
         names3 = ['u10', 'u11']
-        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems3, names=names3, send_sms=False)
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems3, names=names3)
         # uneven lists, so no names should be updated
         self.assertEqual(Membership.objects.filter(membername=None).count(),5)
         
         names3 = ['u10', 'u11', '', None, None]
-        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems3, names=names3, send_sms=False)
+        streamit.update_members(g1, Membership.STATUS_SUBSCRIBED, members=mems3, names=names3)
         # only u10 and u11
         self.assertEqual(Membership.objects.filter(membername=None).count(),3)
         u10 = User.objects.get(number='10')
@@ -757,5 +765,184 @@ class StreamitTest(TestCase):
         self.assertEqual(m10.membername, 'u10')
         self.assertEqual(m11.membername, 'u11')
         
+    def testBalance(self):
+        u1 = streamit.update_user('u1','1001')
+        u1.balance = 0
+        u1.save()
+        g1 = streamit.create_group('g1', u1, 'eng')
         
+        members = []
+        for i in range(20):
+            u = User.objects.create(name='u'+str(i), number=str(i), allowed='y')
+            members.append(u)
             
+        streamit.add_members(g1,members,status=Membership.STATUS_SUBSCRIBED,send_sms=False)
+        
+        now = datetime.now()
+        nextyear = now.year+1
+        d = datetime(year=nextyear, month=1, day=1, hour=10, minute=40)
+        
+        m = Message(date=datetime.now(), content_file='foo.mp3', user=u1)
+        m.save()
+        mf = Message_forum(message=m, forum=g1, status=Message_forum.STATUS_APPROVED)
+        mf.save()
+        streamit.create_and_schedule_bcast(mf,d)
+        
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        # all calls have been scheduled
+        self.assertEqual(Call.objects.all().count(), 20)
+        self.assertEqual(Call.objects.filter(complete=True).count(), 0)
+        
+        # now complete some calls
+        completed = [2,4,6,8,10,12]
+        Call.objects.filter(subject__number__in=completed).update(complete=True, duration=60)
+        self.assertEqual(Call.objects.filter(complete=True).count(), 6)
+        
+        streamit.update_balance(u1,d)
+        u1 = User.objects.get(pk=u1.id)
+        self.assertEqual(u1.balance, float(-1.5*6))
+        
+        # recharge a little bit in the future
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.recharge_balance(u1, 10, d)
+        streamit.update_balance(u1,d)
+        u1 = User.objects.get(pk=u1.id)
+        self.assertEqual(Transaction.objects.filter(user=u1).count(),7)
+        self.assertEqual(u1.balance, 1)
+        
+        '''
+        ' Let's restart the scenario with some intermittent transactions and balance checking
+        '''
+        u2 = streamit.update_user('u2','1002')
+        self.assertEqual(u2.balance, streamit.FREE_TRIAL_BALANCE)
+        u2.balance = 0
+        u2.save()
+        g2 = streamit.create_group('g2', u2, 'eng')
+            
+        streamit.add_members(g2,members,status=Membership.STATUS_SUBSCRIBED,send_sms=False)
+        
+        d = datetime(year=nextyear+2, month=1, day=1, hour=10, minute=40)
+        
+        m2 = Message(date=datetime.now(), content_file='foo2.mp3', user=u2)
+        m2.save()
+        mf2 = Message_forum(message=m2, forum=g2, status=Message_forum.STATUS_APPROVED)
+        mf2.save()
+        b = streamit.create_bcast_survey(mf2, d)
+        
+        '''
+        ' CALLS 0-3
+        '''
+        streamit.schedule_bcasts(d)
+        
+        # complete a few calls
+        call = Call.objects.get(survey=b, subject__number='0')
+        call.complete = True
+        call.duration = 60
+        call.save()
+        
+        call = Call.objects.get(survey=b, subject__number='2')
+        call.complete = True
+        call.duration = 60
+        call.save()
+        
+        streamit.update_balance(u2, d)
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -3)
+        
+        '''
+        ' CALLS 4-7
+        '''
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        call = Call.objects.get(survey=b, subject__number='5')
+        call.complete = True
+        call.duration = 60
+        call.save()
+        
+        call = Call.objects.get(survey=b, subject__number='7')
+        call.complete = True
+        call.save()
+        
+        # should reflect same balance as previous check
+        # since one call is still live 
+        streamit.update_balance(u2, d)
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -3)
+        
+        call.duration = 30
+        call.save()
+        
+        streamit.update_balance(u2, d)
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -5.25)
+        
+        '''
+        ' CALLS 8-11
+        '''
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        streamit.update_balance(u2, d)
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -5.25)
+        
+        call8 = Call.objects.get(survey=b, subject__number='8')
+        call8.complete = True
+        call8.save()
+        
+        call11 = Call.objects.get(survey=b, subject__number='11')
+        call11.complete = True
+        call11.save()
+        
+        streamit.update_balance(u2, d)
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -5.25)
+        
+        # Rs.1.5
+        call8.duration = 45
+        call8.save()
+        # Rs.2.25
+        call11.duration = 61
+        call11.save()
+        
+        streamit.update_balance(u2, d+timedelta(seconds=10))
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -9)
+        
+        '''
+        ' CALLS 12-15
+        '''
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        call = Call.objects.get(survey=b, subject__number='12')
+        call.complete = True
+        call.duration = 60
+        call.save()
+        
+        streamit.recharge_balance(u2, 10, d)
+        u2 = User.objects.get(pk=u2.id)
+        
+        streamit.update_balance(u2, d)
+        u2 = User.objects.get(pk=u2.id)
+        self.assertEqual(u2.balance, -.5)
+        
+        '''
+        ' CALLS 16-19
+        '''
+        d += timedelta(minutes=streamit.INTERVAL_MINS)
+        streamit.schedule_bcasts(d)
+        
+        

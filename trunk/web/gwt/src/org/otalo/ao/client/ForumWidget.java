@@ -174,7 +174,7 @@ public class ForumWidget implements ClickHandler {
     else if (sender == uploadHTML)
     {
     	uploadDlg.reset();
-    	uploadDlg.center();
+    	uploadDlg.center(this.forum);
     }
     else if (sender == manageHTML)
     {

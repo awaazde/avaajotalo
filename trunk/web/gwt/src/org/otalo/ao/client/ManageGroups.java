@@ -358,28 +358,6 @@ public class ManageGroups extends Composite {
 		 *  Reports Tab
 		 *  
 		 *************************************************/
-		// top-level widgets
-		HorizontalPanel reportsTopPanel = new HorizontalPanel();
-		reportsTopPanel.setSpacing(10);
-		Label balanceLabel = new Label("Current Balance:");
-		String balance = Messages.get().getModerator().getBalance();
-		if ("null".equals(balance))
-			balance = "0";
-		Label balanceAmount = new Label(balance);
-		Button rechargeBtn = new Button("Recharge");
-		rechargeBtn.addClickHandler(new ClickHandler() {
-			
-			public void onClick(ClickEvent event) {
-				ConfirmDialog recharge = new ConfirmDialog("Online payment coming soon! For now, please send a cheque to Awaaz.De to recharge your balance. Contact info@awaaz.de for bank details.");
-				recharge.show();
-				recharge.center();
-				
-			}
-		});
-		
-		reportsTopPanel.add(balanceLabel);
-		reportsTopPanel.add(balanceAmount);
-		reportsTopPanel.add(rechargeBtn);
 				
 		// Reports Grid
 		reportTable = new DataGrid<Broadcast>();
@@ -399,7 +377,7 @@ public class ManageGroups extends Composite {
     reportsDataProvider.addDataDisplay(reportTable);
     //reportsDataProvider.updateRowData(0, null);
     
-    reportsPanel.add(reportsTopPanel);
+    reportsPanel.setSpacing(15);
     reportsPanel.add(reportTable);
     reportsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
     reportsPanel.add(reportspager);
