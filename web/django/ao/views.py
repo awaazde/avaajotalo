@@ -31,7 +31,6 @@ from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import alerts, broadcast
 import otalo_utils, stats_by_phone_num
-from otalo.ao.forms import CreateAcctForm, SignupForm
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -531,7 +530,7 @@ def messageresponder(request, message_forum_id):
 def moderator(request):
     auth_user = request.user
     if not auth_user.is_superuser:
-        moderator = get_list_or_404(User, admin__auth_user=auth_user)
+        moderator = User.objects.filter(admin__auth_user=auth_user).distinct()
     else:
         moderator = []
     

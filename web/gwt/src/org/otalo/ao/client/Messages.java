@@ -58,7 +58,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images {
   }
 
   /**
@@ -309,7 +309,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   
   public void loadRest() {
 
-    topPanel = new TopPanel(line, moderator);
+    topPanel = new TopPanel(line, moderator, images);
     topPanel.setWidth("100%");
     
     fora = new Fora(images);

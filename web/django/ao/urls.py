@@ -64,6 +64,7 @@ urlpatterns = patterns('',
     (r'^update/memberstatus/$', 'awaazde.streamit.views.updatememstatus'),
     (r'^deletegroup/$', 'awaazde.streamit.views.deletegroup'),
     (r'^broadcastreports/(?P<group_id>\d+)/$', 'awaazde.streamit.views.broadcastreports'),
+    (r'^balance/$', 'awaazde.streamit.views.updatebalance'),
 )
 
 if settings.DEVELOPMENT:

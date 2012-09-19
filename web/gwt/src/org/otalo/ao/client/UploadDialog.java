@@ -15,6 +15,8 @@
  */
 package org.otalo.ao.client;
 
+import java.math.BigDecimal;
+
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.Forum;
@@ -147,6 +149,26 @@ public class UploadDialog extends DialogBox {
 	public void setCompleteHandler(SubmitCompleteHandler handler)
 	{
 		uploadForm.addSubmitCompleteHandler(handler);
+	}
+	
+	public void center(Forum f)
+	{
+		if (Messages.get().canManage())
+		{
+			String balance = Messages.get().getModerator().getBalance();
+			
+			if (!User.FREE_TRIAL_BALANCE.equals(balance) && Double.valueOf(balance) <= Double.valueOf(User.BCAST_DISALLOW_BALANCE_THRESH) && f.getStatus() == Forum.ForumStatus.BCAST_CALL_SMS)
+			{
+				ConfirmDialog recharge = new ConfirmDialog("Your balance is too low for sending broadcast calls. Please recharge your account or set your group's delivery type setting to 'SMS only'");
+				recharge.center();
+			}
+			else
+			{
+				super.center();
+			}
+		}
+		else
+			super.center();
 	}
 
 }
