@@ -196,7 +196,7 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
 '    in Call objects, there is no need!
 '
 '''
-def survey_results2(number, phone_num_filter=False, date_start=False, date_end=False):
+def survey_results(number, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
     soundfiles = {}
     survey = Survey.objects.filter(number=number, inbound=True).order_by('-id')[0]
@@ -276,7 +276,7 @@ def survey_results2(number, phone_num_filter=False, date_start=False, date_end=F
                 shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir+fname)
                 
                 
-def survey_results(number, filename, phone_num_filter=False, date_start=False, date_end=False):
+def survey_results_legacy(number, filename, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
     open_calls = {}
     soundfiles = {}
@@ -603,7 +603,7 @@ def main():
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=6)
-        survey_results(number, filename, date_start=start)
+        survey_results_legacy(number, filename, date_start=start)
         repeats_requests(filename, date_start=start)
     elif '--report' in sys.argv or '--repeats' in sys.argv:
         number = sys.argv[2]    
@@ -615,7 +615,7 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         if '--report' in sys.argv:
-            survey_results(number, filename, date_start=start, date_end=end)
+            survey_results_legacy(number, filename, date_start=start, date_end=end)
         else:
             repeats_requests(filename, date_start=start, date_end=end)
               
