@@ -133,6 +133,8 @@ public class UploadDialog extends DialogBox {
 		{
 			contentPanel.insert(msgHTML, 0);
 		}
+		saveButton.setEnabled(true);
+		cancelButton.setEnabled(true);
 	}
 	
 	public void reset()
