@@ -189,7 +189,93 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
 ******************* REPORTING **********************************************
 ****************************************************************************
 '''
+
+'''
+'
+'    Generate results without scouring the logs. Now that durations are cached
+'    in Call objects, there is no need!
+'
+'''
+def survey_results2(number, phone_num_filter=False, date_start=False, date_end=False):
+    all_calls = []
+    soundfiles = {}
+    survey = Survey.objects.filter(number=number, inbound=True).order_by('-id')[0]
+    qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
+
+    calls = Call.objects.filter(survey=survey, complete=True)
+    if phone_num_filter:
+        calls = calls.filter(subject__number__in=phone_num_filter)
+    if date_start:
+        calls = calls.filter(date__gte=date_start)
+    if date_end:
+        calls = calls.filter(date__lt=date_end)
         
+    for call in calls:
+        result = [call.subject.number, time_str(call.date), call.duration or '']
+        
+        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
+        callerid = inputs.filter(prompt__file__contains="id"+SOUND_EXT)
+        if bool(callerid):
+            callerid = callerid[0].input
+            result.append(callerid)
+        
+        for i in range(1,qcount+1):
+            input = inputs.filter(prompt__file__contains=str(i))
+            # in case the survey has conditional skipping
+            if bool(input):
+                input = input[0]
+                if '.mp3' in input.input:
+                    if callerid:
+                        if callerid in soundfiles:
+                            soundfiles[callerid].append(input.input)
+                            fname = callerid + "-" + str(len(soundfiles[callerid])) + '.mp3'
+                            result.append(fname)
+                        else:
+                            soundfiles[callerid] = [input.input]
+                            result.append(callerid + ".mp3")
+                    else:
+                        # complicated in order to keep file copy 
+                        # code consistent down below.
+                        soundfiles[input.input[:-4]] = [input.input]
+                        result.append(input.input)
+                else:
+                    result.append(input.input)
+            else:
+                result.append('')                      
+        all_calls.append(result)
+        
+    header = ['number','start','duration (s)']
+    lastq = qcount+1
+    idprompt = Prompt.objects.filter(survey=survey, file__contains='id')
+    if bool(idprompt):
+        header.append('id')
+        lastq = qcount
+    for i in range(1,lastq):
+        header.append('q'+str(i))
+    outputfilename='survey_results_'+number
+    audiofile_dir = 'audio_'+number
+    if date_start:
+        outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+        audiofile_dir+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+    audiofile_dir += "/"
+    outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
+    output = csv.writer(open(outputfilename, 'wb'))
+    output.writerow(header)            
+    output.writerows(all_calls)
+    
+    if len(soundfiles) > 0:
+        if os.path.isdir(OUTPUT_FILE_DIR+audiofile_dir):
+            shutil.rmtree(OUTPUT_FILE_DIR+audiofile_dir)
+        os.mkdir(OUTPUT_FILE_DIR+audiofile_dir)
+        for callid,files in soundfiles.items():
+            for i in range(len(files)):
+                f = files[i]
+                fname = callid + '.mp3'
+                if i > 0:
+                    fname = callid + "-" + str(i+1) + '.mp3'
+                shutil.copy(settings.MEDIA_ROOT+'/'+f, OUTPUT_FILE_DIR+audiofile_dir+fname)
+                
+                
 def survey_results(number, filename, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
     open_calls = {}
@@ -565,6 +651,15 @@ def main():
         #create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555051', callback=True, inbound=True, includeid=False)
         #create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555052', callback=True, inbound=True, includeid=False)
         #create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555053', callback=True, inbound=True, includeid=False)
-        create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555008', callback=True, inbound=True, includeid=False, countrycode='00861')
-        create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555009', callback=True, inbound=True, includeid=False, countrycode='00852')
+        #create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555008', callback=True, inbound=True, includeid=False, countrycode='00861')
+        #create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555009', callback=True, inbound=True, includeid=False, countrycode='00852')
+        number = sys.argv[2]    
+        start=None  
+        if len(sys.argv) > 3:
+            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        survey_results2(number, date_start=start, date_end=end)
+        
 main()
