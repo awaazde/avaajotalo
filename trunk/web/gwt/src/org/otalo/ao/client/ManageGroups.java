@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.MemberDatabase.MemberInfo;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Forum.ForumStatus;
@@ -51,6 +52,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
@@ -58,6 +60,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -74,12 +77,12 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 public class ManageGroups extends Composite {
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
-	private Button saveButton, cancelButton, inviteButton, deleteButton;
+	private Button saveButton, cancelButton, addMembersButton, deleteButton;
 	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox;
 	private DataGrid<MemberInfo> memberTable, joinsTable;
 	private DataGrid<Broadcast> reportTable;
 	private FormPanel manageGroupsForm;
-	private VerticalPanel invitePanel, namesPanel;
+	private VerticalPanel addMembersPanel, namesPanel;
 	private HorizontalPanel memberControls;
 	private FlexTable greetingMessage;
 	private SimplePager pager;
@@ -88,6 +91,7 @@ public class ManageGroups extends Composite {
 	private AreYouSureDialog confirm;
 	private TextArea numbersArea, namesArea;
 	private Label groupNumber;
+	private HTML creditsLabel;
 	private int reportStartIndex = 0;
 	
 	private Forum group;
@@ -153,11 +157,11 @@ public class ManageGroups extends Composite {
 		memberControls.setWidth("800px");
 		memberControls.setSpacing(10);
 		Button removeMembers = new Button("Remove from group");
-		Button inviteMembers = new Button("Invite members");
-		inviteMembers.addClickHandler(new ClickHandler() {
+		Button addMembers = new Button("Add members");
+		addMembers.addClickHandler(new ClickHandler() {
 			
 			public void onClick(ClickEvent event) {
-				showInviteView();
+				showAddMembersView();
 			}
 			
 		});
@@ -182,7 +186,7 @@ public class ManageGroups extends Composite {
 		});
 		
 		memberControls.add(removeMembers);
-		memberControls.add(inviteMembers);
+		memberControls.add(addMembers);
 				
 		memberControls.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
 		HorizontalPanel filterPanel = new HorizontalPanel();
@@ -224,9 +228,13 @@ public class ManageGroups extends Composite {
     
     /**************************************************
 		 * 
-		 * Invitation Interface
+		 * Add Membership Interface
 		 *  
-		 *************************************************/    
+		 *************************************************/  
+    creditsLabel = new HTML();
+    VerticalPanel creditsPanel = new VerticalPanel();
+    creditsPanel.setSpacing(5);
+    creditsPanel.add(creditsLabel);
     Label numbersLabel = new Label("Enter 10-digit numbers, one per line. Pasting from a spreadsheet is OK.");
     numbersLabel.setWordWrap(true);
     Anchor addNamesLink = new Anchor("Add Names");
@@ -237,7 +245,7 @@ public class ManageGroups extends Composite {
 			}
 				
 		});
-    Label numbersHelp = new Label("Each person will receive an invitation SMS to your group and must accept before they can receive messages.");
+    Label numbersHelp = new Label("Each person will receive an SMS welcoming them to your group and reminding them that they can unsubscribe any time.");
     numbersHelp.setWordWrap(true);
     numbersHelp.setStyleName("helptext");
     numbersArea = new TextArea();
@@ -270,12 +278,14 @@ public class ManageGroups extends Composite {
     namesPanel.setVisible(false);
 		
     memberPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-    invitePanel = new VerticalPanel();
-    invitePanel.setSpacing(10);
-    invitePanel.add(numbersPanel);
-    invitePanel.add(namesPanel);
+    addMembersPanel = new VerticalPanel();
+    addMembersPanel.setSpacing(10);
+    addMembersPanel.add(creditsPanel);
+    addMembersPanel.add(new HTML("<br />"));
+    addMembersPanel.add(numbersPanel);
+    addMembersPanel.add(namesPanel);
 		
-		inviteButton = new Button("Send invitation SMS", new ClickHandler() {
+		addMembersButton = new Button("Send welcome SMS", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (numbersArea.getValue() == null || "".equals(numbersArea.getValue()))
 				{
@@ -291,31 +301,31 @@ public class ManageGroups extends Composite {
 	      		submitHandler.removeHandler();
 	      		submitHandler = null;
 	      	}
-	      	submitHandler = manageGroupsForm.addSubmitCompleteHandler(new UpdateMembersComplete("Invitations Sent!"));
-	      	manageGroupsForm.setAction(JSONRequest.BASE_URL + AoAPI.INVITE_MEMBERS);
+	      	submitHandler = manageGroupsForm.addSubmitCompleteHandler(new UpdateMembersComplete("Welcome SMSs Sent!"));
+	      	manageGroupsForm.setAction(JSONRequest.BASE_URL + AoAPI.ADD_MEMBERS);
 	      	manageGroupsForm.setEncoding(FormPanel.ENCODING_URLENCODED);
 	      	manageGroupsForm.submit();
 				}
     	}
     });
 		
-		Button cancelInvite = new Button("Cancel");
-		cancelInvite.addClickHandler(new ClickHandler(){
+		Button cancelAddMembers = new Button("Cancel");
+		cancelAddMembers.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
 					showMemberTable();
 			}
 			
 		});
 		
-		HorizontalPanel inviteButtonsPanel = new HorizontalPanel();
-		inviteButtonsPanel.setSpacing(10);
-		inviteButtonsPanel.add(cancelInvite);
-		inviteButtonsPanel.add(inviteButton);
-		invitePanel.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
-		invitePanel.add(inviteButtonsPanel);
-		invitePanel.setVisible(false);
+		HorizontalPanel addMembersButtonsPanel = new HorizontalPanel();
+		addMembersButtonsPanel.setSpacing(10);
+		addMembersButtonsPanel.add(cancelAddMembers);
+		addMembersButtonsPanel.add(addMembersButton);
+		addMembersPanel.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
+		addMembersPanel.add(addMembersButtonsPanel);
+		addMembersPanel.setVisible(false);
 		
-		memberPanel.add(invitePanel);
+		memberPanel.add(addMembersPanel);
 		
 		/**************************************************
 		 * 
@@ -829,7 +839,21 @@ public class ManageGroups extends Composite {
 			
 			for (JSOModel model : models)
 		  	{
-					members.add(new Membership(model));
+					if (model.get("model").equals(AoAPI.MEMBER_METADATA))
+		  		{
+						/* this is redundant here since we could just use group.getAddMemberCredits(),
+						 * but we need this for the times when membership updates are happening without
+						 * a new group being loaded into the management panel entirely. So for consistency
+						 * with UpdateMembersComplete.onSubmitComplete, do it here 
+						 */
+		  			String addMemberCredits = model.get("add_member_credits");
+		  			creditsLabel.setHTML("You can add up to <b>"+addMemberCredits+"</b> more members to this group. <a href='mailto:info@awaaz.de'>Contact us</a> to add more.");
+		  		}
+		  		else // Assume it's a Membership model
+		  		{
+		  			members.add(new Membership(model));
+		  		}
+					
 		  	}
 			
 			MemberDatabase.get().addMembers(members);
@@ -858,23 +882,42 @@ public class ManageGroups extends Composite {
 			{
 				this.confirm = confirm;
 			}
+			
 			public void onSubmitComplete(SubmitCompleteEvent event) {
-				ConfirmDialog sent = new ConfirmDialog(confirm);
-				sent.show();
-				sent.center();
-				
 				List<JSOModel> models = JSONRequest.getModels(event.getResults());
-		  	List<Membership> members = new ArrayList<Membership>();
-		  	
-		  	for (JSOModel model : models)
-		  	{
-		  		members.add(new Membership(model));
-		  	}
-		  	
-		  	MemberDatabase.get().addMembers(members);
-		  	MemberDatabase.get().refreshDisplays();
-		  	submitComplete();
-		  	showMemberTable();
+				// check first model for validation error
+				JSOModel first = models.get(0);
+				if (first.get("model").equals("VALIDATION_ERROR"))
+				{
+					ConfirmDialog err = new ConfirmDialog(first.get("message"));
+					err.center();
+					submitComplete();
+				}
+				else
+				{
+					ConfirmDialog sent = new ConfirmDialog(confirm);
+					sent.center();
+					
+			  	List<Membership> members = new ArrayList<Membership>();
+			  	
+			  	for (JSOModel model : models)
+			  	{
+			  		if (model.get("model").equals(AoAPI.MEMBER_METADATA))
+			  		{
+			  			String addMemberCredits = model.get("add_member_credits");
+			  			creditsLabel.setHTML("You can add up to <b>"+addMemberCredits+"</b> more members to this group. Contact us to add more.");
+			  		}
+			  		else // Assume it's a Membership model
+			  		{
+			  			members.add(new Membership(model));
+			  		}
+			  	}
+			  	
+			  	MemberDatabase.get().addMembers(members);
+			  	MemberDatabase.get().refreshDisplays();
+			  	submitComplete();
+			  	showMemberTable();
+				}
 		}
 	}
 	
@@ -960,7 +1003,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	private void setClickedButton()
 	{
 		saveButton.setEnabled(false);
-		inviteButton.setEnabled(false);
+		addMembersButton.setEnabled(false);
 		cancelButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 	}
@@ -968,14 +1011,14 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	private void submitComplete()
 	{
 		saveButton.setEnabled(true);
-		inviteButton.setEnabled(true);
+		addMembersButton.setEnabled(true);
 		cancelButton.setEnabled(true);
 		deleteButton.setEnabled(true);
 	}
 	
 	private void showMemberTable() {
-		// hide invite panel
-		invitePanel.setVisible(false);
+		// hide add members panel
+		addMembersPanel.setVisible(false);
 		
 		// show member table stuff
 		memberControls.setVisible(true);
@@ -986,18 +1029,18 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		
 	}
 	
-	private void showInviteView() {
+	private void showAddMembersView() {
 		tabPanel.selectTab(0);
 		// hide member table stuff
 		memberControls.setVisible(false);
 		memberTable.setVisible(false);
 		pager.setVisible(false);
 		
-		// reset invitation stuff
+		// reset add members stuff
 		numbersArea.setValue("");
 		namesArea.setValue("");
 		namesPanel.setVisible(false);
-		invitePanel.setVisible(true);
+		addMembersPanel.setVisible(true);
 		
 	}
 	

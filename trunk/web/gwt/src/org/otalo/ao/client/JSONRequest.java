@@ -75,7 +75,7 @@ public final class JSONRequest {
 		public static final String GROUP = "group/";
 		public static final String MEMBERS = "members/";
 		public static final String UPDATE_MEMBER = "update/member/";
-		public static final String INVITE_MEMBERS = "invitemembers/";
+		public static final String ADD_MEMBERS = "addmembers/";
 		public static final String UPDATE_GROUP_SETTINGS = "update/groupsettings/";
 		public static final String UPDATE_MEMBER_STATUS = "update/memberstatus/";
 		public static final String DELETE_GROUP = "deletegroup/";
@@ -91,6 +91,7 @@ public final class JSONRequest {
 		public static final String TAG_TYPE_TOPIC = "agri-topic";
 		
 		public static final String MSG_METADATA = "MESSAGE_METADATA";
+		public static final String MEMBER_METADATA = "MEMBER_METADATA";
 		
 		/**
 		 * Should be consistent with views.py validation codes
@@ -98,7 +99,7 @@ public final class JSONRequest {
 		 *
 		 */
 		public enum ValidationError {  
-	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3);
+	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4);
 	  
 	    private int code;  
 	  
