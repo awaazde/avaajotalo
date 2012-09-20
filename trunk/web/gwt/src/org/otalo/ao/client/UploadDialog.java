@@ -46,6 +46,7 @@ public class UploadDialog extends DialogBox {
 	private TextBox number;
 	private HorizontalPanel numberPanel = new HorizontalPanel();
 	private HorizontalPanel contentPanel = new HorizontalPanel();
+	private Button saveButton, cancelButton;
 	
 	public UploadDialog() {
 		setText("Upload Content");
@@ -68,13 +69,14 @@ public class UploadDialog extends DialogBox {
 			number.setValue(moderator.getNumber());
 		Label numberLabel = new Label("Author Number:");
 		
-		Button saveButton = new Button("Save", new ClickHandler() {
+		saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
+      	setClickedButton();
       	uploadForm.submit();
       }
     });
 		
-		Button cancelButton = new Button("Cancel", new ClickHandler() {
+		cancelButton = new Button("Cancel", new ClickHandler() {
       public void onClick(ClickEvent event) {
       	hide();
       }
@@ -136,6 +138,8 @@ public class UploadDialog extends DialogBox {
 	public void reset()
 	{
 		uploadForm.reset();
+		saveButton.setEnabled(true);
+		cancelButton.setEnabled(true);
 		User moderator = Messages.get().getModerator();
 		if (numberPanel.getWidgetCount() == 2)
 			numberPanel.remove(0);
@@ -169,6 +173,12 @@ public class UploadDialog extends DialogBox {
 		}
 		else
 			super.center();
+	}
+	
+	private void setClickedButton()
+	{
+		saveButton.setEnabled(false);
+		cancelButton.setEnabled(false);
 	}
 
 }
