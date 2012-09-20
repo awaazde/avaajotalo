@@ -211,6 +211,7 @@ class StreamitTest(TestCase):
         self.assertEqual(Membership.objects.filter(group=g1).count(),10)
         self.assertEqual(Membership.objects.filter(group=g2).count(),10)
         self.assertEqual(Membership.objects.filter(group=g3).count(),10)
+        self.assertEqual(g3.add_member_credits,streamit.ADD_MEMBER_CREDITS-10)
         self.assertEqual(Membership.objects.filter(group=g4).count(),11)
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_SUBSCRIBED).count(),1)
         
@@ -249,6 +250,16 @@ class StreamitTest(TestCase):
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_INVITED).count(),11)
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_SUBSCRIBED).count(),1)
         self.assertEqual(Membership.objects.filter(group=g4, status=Membership.STATUS_DELETED).count(),1)
+        
+        m2 = User.objects.get(number='2')
+        m13 = User.objects.create(number='13', allowed='y')
+        m14 = User.objects.create(number='14', allowed='y')
+        m15 = User.objects.create(number='15', allowed='y')
+        m16 = User.objects.create(number='16', allowed='y')
+        current_credits = g3.add_member_credits
+        streamit.add_members(g3, [m2,m13,m14,m15,m16], status=Membership.STATUS_SUBSCRIBED)
+        # m2 is an older add, so don't lose a credit for it
+        self.assertEqual(current_credits-4, g3.add_member_credits)
         
     def test_sched_bcast(self):
         u1 = streamit.update_user('u1','1001')

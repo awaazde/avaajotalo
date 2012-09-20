@@ -102,7 +102,7 @@ class Message(models.Model):
       
 class Forum(models.Model):
     name = models.CharField(max_length=128)
-    name_file = models.CharField(max_length=24)
+    name_file = models.CharField(max_length=24, blank=True, null=True)
     moderated = models.CharField(max_length=1)
     posting_allowed = models.CharField(max_length=1)
     responses_allowed = models.CharField(max_length=1)
@@ -144,7 +144,7 @@ class Forum(models.Model):
     confirm_recordings = models.BooleanField(default=True)
     
     '''
-    Group related additions
+    ' Begin group-related additions
     '''
     STATUS_BCAST_CALL_SMS = 1
     STATUS_BCAST_SMS = 2
@@ -153,10 +153,10 @@ class Forum(models.Model):
     # The display name of the owner of this group
     sendername = models.CharField(max_length=128, blank=True, null=True)
     members = models.ManyToManyField(User, through='Membership', related_name='members', blank=True, null=True)
-    #add_credits = models.IntegerField(blank=True, null=True)
+    add_member_credits = models.IntegerField(blank=True, null=True)
     
     '''
-    end Group related additions
+    ' End group-related additions
     '''
     
     def __unicode__(self):
