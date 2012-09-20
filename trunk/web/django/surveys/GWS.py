@@ -653,6 +653,12 @@ def main():
         #create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555053', callback=True, inbound=True, includeid=False)
         #create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555008', callback=True, inbound=True, includeid=False, countrycode='00861')
         #create_survey('hk', 'chi', ['*2','2','4','4','3','3','3','5'], '7961555009', callback=True, inbound=True, includeid=False, countrycode='00852')
+        for i in range(4,10):
+            kannum = '796155504'+str(i)
+            hinnum = '796155505'+str(i)
+            create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], kannum, callback=True, inbound=True, includeid=False)
+            create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], hinnum, callback=True, inbound=True, includeid=False)
+        
         number = sys.argv[2]    
         start=None  
         if len(sys.argv) > 3:
