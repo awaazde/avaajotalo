@@ -659,13 +659,13 @@ def main():
             create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], kannum, callback=True, inbound=True, includeid=False)
             create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], hinnum, callback=True, inbound=True, includeid=False)
         
-        number = sys.argv[2]    
+        number = sys.argv[1]    
         start=None  
-        if len(sys.argv) > 3:
-            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        if len(sys.argv) > 2:
+            start = datetime.strptime(sys.argv[2], "%m-%d-%Y")
         end = None    
-        if len(sys.argv) > 4:
-            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        if len(sys.argv) > 3:
+            end = datetime.strptime(sys.argv[3], "%m-%d-%Y")
         survey_results2(number, date_start=start, date_end=end)
         
 main()
