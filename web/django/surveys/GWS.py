@@ -603,7 +603,7 @@ def main():
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=6)
-        survey_results_legacy(number, filename, date_start=start)
+        survey_results(number, filename, date_start=start)
         repeats_requests(filename, date_start=start)
     elif '--report' in sys.argv or '--repeats' in sys.argv:
         number = sys.argv[2]    
@@ -615,7 +615,7 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         if '--report' in sys.argv:
-            survey_results_legacy(number, filename, date_start=start, date_end=end)
+            survey_results(number, filename, date_start=start, date_end=end)
         else:
             repeats_requests(filename, date_start=start, date_end=end)
               
