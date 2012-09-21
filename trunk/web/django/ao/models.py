@@ -114,6 +114,11 @@ class Forum(models.Model):
     # purely for the phone interface. If this false, then 
     listening_allowed = models.BooleanField(default=True)
     
+    '''
+    ' On approved responses, should a response call be automatically
+    ' be scheduled to the original poster?
+    '''
+    response_calls = models.BooleanField(default=True)
     # On answer calls that go out, do you want to prompt for a response
     # to the response that was played
     respondtoresponse_allowed = models.BooleanField(default=False)
