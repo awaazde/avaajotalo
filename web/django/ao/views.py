@@ -424,7 +424,7 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
     
     if parent:
         add_child(msg, parent.message)
-        if msg_forum.status == Message_forum.STATUS_APPROVED:
+        if msg_forum.status == Message_forum.STATUS_APPROVED and msg_forum.forum.response_calls:
             alerts.answer_call(forum.line_set.all()[0], msg_forum)
 
     return msg_forum
@@ -461,7 +461,7 @@ def updatestatus(request, action):
             #     parent = m.thread.message_forum_set.all()[0]
             #     notut.process_notification(m, parent)
             #alerts.missed_call(m.forum.line_set.all()[0], [userid])
-            if not Prompt.objects.filter(file__contains=m.message.content_file):
+            if not Prompt.objects.filter(file__contains=m.message.content_file) and m.forum.response_calls:
                 alerts.answer_call(m.forum.line_set.all()[0], m)
             
             

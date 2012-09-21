@@ -193,6 +193,7 @@ class StreamitTest(TestCase):
         g1 = streamit.create_group("g1", u1, 'eng')
         g2 = streamit.create_group("g2", u1, 'eng')
         g3 = streamit.create_group("g3", u1, 'eng')
+        self.assertEqual(g3.add_member_credits,streamit.ADD_MEMBER_CREDITS)
         g4 = streamit.create_group("g4", u1, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u1).count(),4)
         
@@ -776,8 +777,9 @@ class StreamitTest(TestCase):
         self.assertEqual(m10.membername, 'u10')
         self.assertEqual(m11.membername, 'u11')
         
-    def testBalance(self):
+    def test_balance(self):
         u1 = streamit.update_user('u1','1001')
+        self.assertEqual(u1.balance, streamit.FREE_TRIAL_BALANCE)
         u1.balance = 0
         u1.save()
         g1 = streamit.create_group('g1', u1, 'eng')
