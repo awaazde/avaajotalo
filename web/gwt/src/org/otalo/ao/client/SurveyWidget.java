@@ -279,7 +279,7 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	  public DetailsDialog(JSOModel details) {
 	  	//setWidth("500px");
 	    // Use this opportunity to set the dialog's caption.
-	    setText("Awaaz De Administration");
+	    setText("Awaaz.De Administration");
 
 	    // Create a VerticalPanel to contain the 'about' label and the 'OK' button.
 	    VerticalPanel outer = new VerticalPanel();

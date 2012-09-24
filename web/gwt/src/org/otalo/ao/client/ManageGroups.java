@@ -31,6 +31,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -52,6 +53,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -77,7 +79,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 public class ManageGroups extends Composite {
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
-	private Button saveButton, cancelButton, addMembersButton, deleteButton;
+	private Button saveButton, cancelButton, addMembersButton, cancelAddMembers, deleteButton;
 	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox;
 	private DataGrid<MemberInfo> memberTable, joinsTable;
 	private DataGrid<Broadcast> reportTable;
@@ -301,7 +303,7 @@ public class ManageGroups extends Composite {
 	      		submitHandler.removeHandler();
 	      		submitHandler = null;
 	      	}
-	      	submitHandler = manageGroupsForm.addSubmitCompleteHandler(new UpdateMembersComplete("Welcome SMSs Sent!"));
+	      	submitHandler = manageGroupsForm.addSubmitCompleteHandler(new AddMembersComplete());
 	      	manageGroupsForm.setAction(JSONRequest.BASE_URL + AoAPI.ADD_MEMBERS);
 	      	manageGroupsForm.setEncoding(FormPanel.ENCODING_URLENCODED);
 	      	manageGroupsForm.submit();
@@ -309,7 +311,7 @@ public class ManageGroups extends Composite {
     	}
     });
 		
-		Button cancelAddMembers = new Button("Cancel");
+		cancelAddMembers = new Button("Cancel");
 		cancelAddMembers.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
 					showMemberTable();
@@ -823,6 +825,8 @@ public class ManageGroups extends Composite {
 			greetingMessage.setHTML(0, 0, sound.getWidget().getHTML());
 		}
 		
+		creditsLabel.setHTML("You can add up to <b>"+group.getAddMemberCredits()+"</b> more members to this group. Contact us to add more.");
+		
 	}
 	
 	public void loadReports(int start)
@@ -838,24 +842,8 @@ public class ManageGroups extends Composite {
 			List<Membership> members = new ArrayList<Membership>();
 			
 			for (JSOModel model : models)
-		  	{
-					if (model.get("model").equals(AoAPI.MEMBER_METADATA))
-		  		{
-						/* this is redundant here since we could just use group.getAddMemberCredits(),
-						 * but we need this for the times when membership updates are happening without
-						 * a new group being loaded into the management panel entirely. So for consistency
-						 * with UpdateMembersComplete.onSubmitComplete, do it here 
-						 */
-		  			String addMemberCredits = model.get("add_member_credits");
-		  			creditsLabel.setHTML("You can add up to <b>"+addMemberCredits+"</b> more members to this group. <a href='mailto:info@awaaz.de'>Contact us</a> to add more.");
-		  		}
-		  		else // Assume it's a Membership model
-		  		{
-		  			members.add(new Membership(model));
-		  		}
-					
-		  	}
-			
+		  	members.add(new Membership(model));
+
 			MemberDatabase.get().addMembers(members);
 			/*
 			 * Need to call displayMembers explicitly here for reset
@@ -885,40 +873,124 @@ public class ManageGroups extends Composite {
 			
 			public void onSubmitComplete(SubmitCompleteEvent event) {
 				List<JSOModel> models = JSONRequest.getModels(event.getResults());
-				// check first model for validation error
-				JSOModel first = models.get(0);
-				if (first.get("model").equals("VALIDATION_ERROR"))
-				{
-					ConfirmDialog err = new ConfirmDialog(first.get("message"));
-					err.center();
-					submitComplete();
-				}
-				else
-				{
-					ConfirmDialog sent = new ConfirmDialog(confirm);
-					sent.center();
-					
-			  	List<Membership> members = new ArrayList<Membership>();
-			  	
-			  	for (JSOModel model : models)
-			  	{
-			  		if (model.get("model").equals(AoAPI.MEMBER_METADATA))
-			  		{
-			  			String addMemberCredits = model.get("add_member_credits");
-			  			creditsLabel.setHTML("You can add up to <b>"+addMemberCredits+"</b> more members to this group. Contact us to add more.");
-			  		}
-			  		else // Assume it's a Membership model
-			  		{
-			  			members.add(new Membership(model));
-			  		}
-			  	}
-			  	
-			  	MemberDatabase.get().addMembers(members);
-			  	MemberDatabase.get().refreshDisplays();
-			  	submitComplete();
-			  	showMemberTable();
-				}
+				ConfirmDialog sent = new ConfirmDialog(confirm);
+				sent.center();
+				
+		  	List<Membership> members = new ArrayList<Membership>();
+		  	
+		  	for (JSOModel model : models)
+		  			members.add(new Membership(model));
+		  	
+		  	MemberDatabase.get().addMembers(members);
+		  	MemberDatabase.get().refreshDisplays();
+		  	submitComplete();
+		  	tabPanel.selectTab(0);
 		}
+	}
+	
+	private class AddMembersComplete implements SubmitCompleteHandler {
+		public void onSubmitComplete(SubmitCompleteEvent event) {
+			List<JSOModel> models = JSONRequest.getModels(event.getResults());
+			// check first model for validation error
+			JSOModel first = models.get(0);
+			if (first.get("model").equals("VALIDATION_ERROR"))
+			{
+				ConfirmDialog err = new ConfirmDialog(first.get("message"));
+				err.center();
+				submitComplete();
+			}
+			else
+			{
+				String added = "";
+				String notAdded = "";
+				
+		  	List<Membership> members = new ArrayList<Membership>();
+		  	Membership m;
+		  	
+		  	for (JSOModel model : models)
+		  	{
+		  		if (model.get("model").equals(AoAPI.MEMBER_METADATA))
+		  		{
+		  			String addMemberCredits = model.get("add_member_credits");
+		  			creditsLabel.setHTML("You can add up to <b>"+addMemberCredits+"</b> more members to this group. Contact us to add more.");
+		  			
+		  			// comma-seperated lists
+		  			added = model.get("added");
+		  			notAdded = model.get("notadded");
+		  		}
+		  		else // Assume it's a Membership model
+		  		{
+		  			members.add(new Membership(model));
+		  		}
+		  	}
+		  	
+		  	AddMembersDialog details = new AddMembersDialog(added, notAdded);
+				details.center();
+		  	
+		  	MemberDatabase.get().addMembers(members);
+		  	MemberDatabase.get().refreshDisplays();
+		  	submitComplete();
+		  	showMemberTable();
+			}
+		}
+	}
+		
+	private class AddMembersDialog extends DialogBox {
+
+	  public AddMembersDialog(String added, String notAdded) {
+	  	//setWidth("500px");
+	    // Use this opportunity to set the dialog's caption.
+	    setText("Awaaz.De Administration");
+
+	    // Create a VerticalPanel to contain the 'about' label and the 'OK' button.
+	    VerticalPanel outer = new VerticalPanel();
+	    outer.setWidth("100%");
+	    outer.setSpacing(10);
+	    
+	    HTML confirm = new HTML("<b>Welcome SMSs sent!</b>");
+	    confirm.setStyleName("dialog-headerText");
+	    outer.add(confirm);
+	    
+	    HTML addedTitle = new HTML("<b>Added:</b>");
+	    addedTitle.setStyleName("dialog-headerText");
+			outer.add(addedTitle);
+			Label addedLbl = new Label(added, true);
+	    addedLbl.setWordWrap(true);
+	    addedLbl.setStyleName("dialog-NumsText");
+	    outer.add(addedLbl);
+	    
+	    HTML notAddedTitle = new HTML("<b>Not Added (already joined, unsubscribed, deleted):</b>");
+	    notAddedTitle.setStyleName("dialog-headerText");
+			outer.add(notAddedTitle);
+			Label notAddedLbl = new Label(notAdded, true);
+			notAddedLbl.setWordWrap(true);
+			notAddedLbl.setStyleName("dialog-NumsText");
+	    outer.add(notAddedLbl);
+
+	    // Create the 'OK' button, along with a handler that hides the dialog
+	    // when the button is clicked.
+	    outer.add(new Button("Close", new ClickHandler() {
+	      public void onClick(ClickEvent event) {
+	        hide();
+	      }
+	    }));
+
+	    setWidget(outer);
+	  }
+
+	  @Override
+	  public boolean onKeyDownPreview(char key, int modifiers) {
+	    // Use the popup's key preview hooks to close the dialog when either
+	    // enter or escape is pressed.
+	    switch (key) {
+	      case KeyCodes.KEY_ENTER:
+	      case KeyCodes.KEY_ESCAPE:
+	        hide();
+	        break;
+	    }
+
+	    return true;
+	  }
 	}
 	
 	private class SettingsComplete implements SubmitCompleteHandler {
@@ -1004,6 +1076,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	{
 		saveButton.setEnabled(false);
 		addMembersButton.setEnabled(false);
+		cancelAddMembers.setEnabled(false);
 		cancelButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 	}
@@ -1012,6 +1085,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	{
 		saveButton.setEnabled(true);
 		addMembersButton.setEnabled(true);
+		cancelAddMembers.setEnabled(true);
 		cancelButton.setEnabled(true);
 		deleteButton.setEnabled(true);
 	}
@@ -1022,6 +1096,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		
 		// show member table stuff
 		memberControls.setVisible(true);
+		statusFilterBox.setSelectedIndex(0);
 		memberTable.setVisible(true);
 		pager.setVisible(true);
 		
