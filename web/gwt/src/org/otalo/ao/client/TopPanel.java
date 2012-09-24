@@ -74,7 +74,7 @@ public class TopPanel extends Composite implements ClickHandler {
 
     outer.add(inner);
     if (moderator != null)
-    	inner.add(new HTML("Welcome back, " + moderator.getName() + "&nbsp;|&nbsp;"));
+    	inner.add(new HTML("Welcome back, " + moderator.getName() + "&nbsp;(" + moderator.getNumber() + ")&nbsp;|&nbsp;"));
     
     if (Messages.get().canManage())
     {
@@ -138,7 +138,7 @@ public class TopPanel extends Composite implements ClickHandler {
 			rechargeButton.addClickHandler(new ClickHandler() {
 				
 				public void onClick(ClickEvent event) {
-					ConfirmDialog recharge = new ConfirmDialog("Online payment coming soon! For now, please send a cheque to Awaaz.De to recharge your balance. Contact info@awaaz.de for bank details.");
+					ConfirmDialog recharge = new ConfirmDialog("Online payment coming soon! For now, please send us a cheque or contact info@awaaz.de for bank e-transfer details.");
 					recharge.show();
 					recharge.center();
 					
