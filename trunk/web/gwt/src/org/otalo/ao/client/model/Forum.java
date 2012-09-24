@@ -93,6 +93,11 @@ public class Forum extends BaseModel {
 		return getField("sendername");
 	}
 	
+	public String getAddMemberCredits()
+	{
+		return getField("add_member_credits");
+	}
+	
 	public static boolean isGroupMetadata(JSOModel model)
 	{
 		return model.get("model").equals(METADATA_MODEL_TYPE);

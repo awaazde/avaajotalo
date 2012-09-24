@@ -29,3 +29,10 @@
 	color: #666666;
     font-size: 11px;	
 }
+
+.dialog-headerText {
+    font-size: 80%;
+    padding: 10px;
+    text-align: left;
+    width: 28em;
+}
