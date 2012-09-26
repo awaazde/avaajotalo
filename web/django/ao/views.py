@@ -51,6 +51,7 @@ INVALID_NUMBER = "1"
 NO_CONTENT = "2"
 INVALID_GROUPNAME = "3"
 MEMBER_CREDITS_EXCEEDED = "4"
+INVALID_DATE = "5"
 
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
@@ -347,26 +348,33 @@ def movemessage(request):
 @csrf_exempt    
 def uploadmessage(request):
     if 'main' in request.FILES:
+        params = request.POST
+        
         main = request.FILES['main']
         summary = False
         if 'summary' in request.FILES:
             summary = request.FILES['summary']
         
-        number = request.POST['number'].strip()
-        author = User.objects.filter(number=number)
-        if author:
-            author = author[0]
-        else:
-            # try to get a 10-digit number
-            number = get_phone_number(number)
-            if number:
-                author = User(number=number, allowed='y')
-                author.save()
+        if 'number' in params:
+            number = params['number'].strip()
+            author = User.objects.filter(number=number)
+            if author:
+                author = author[0]
             else:
-                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
-                response['Pragma'] = "no cache"
-                response['Cache-Control'] = "no-cache, must-revalidate"
-                return response
+                # try to get a 10-digit number
+                number = get_phone_number(number)
+                if number:
+                    author = User(number=number, allowed='y')
+                    author.save()
+                else:
+                    response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
+                    response['Pragma'] = "no cache"
+                    response['Cache-Control'] = "no-cache, must-revalidate"
+                    return response
+        else:
+            auth_user = request.user
+            author = User.objects.filter(admin__auth_user=auth_user).distinct()[0]
+            number = author.number
         
         parent = False
         if request.POST['messageforumid']:
@@ -375,7 +383,24 @@ def uploadmessage(request):
         else:
             f = get_object_or_404(Forum, pk=request.POST['forumid'])
         
-        m = createmessage(request, f, main, author, summary, parent)
+        date=None
+        if 'when' in params:
+            when = params['when']
+            if when == 'date':
+                bcastdate = params['date']
+                try:
+                    date = datetime.strptime(bcastdate, '%b-%d-%Y')
+                except ValueError as err:
+                    response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_DATE+', "message":"invalid date"}]')
+                    response['Pragma'] = "no cache"
+                    response['Cache-Control'] = "no-cache, must-revalidate"
+                    return response
+                
+                hour = int(params['hour'])
+                min = int(params['min'])
+                date = datetime(year=date.year,month=date.month,day=date.day,hour=hour,minute=min)
+                
+        m = createmessage(request, f, main, author, summary, parent, date)
 
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
     else:
@@ -384,7 +409,7 @@ def uploadmessage(request):
         response['Cache-Control'] = "no-cache, must-revalidate"
         return response
 
-def createmessage(request, forum, content, author, summary=False, parent=False):
+def createmessage(request, forum, content, author, summary=False, parent=False, date=None):
     t = datetime.now()
     summary_filename = ''
 
@@ -408,7 +433,7 @@ def createmessage(request, forum, content, author, summary=False, parent=False):
         destination.close()
 
     pos = None
-    msg = Message(date=t, content_file=filename, summary_file=summary_filename, user=author)
+    msg = Message(date=date or t, content_file=filename, summary_file=summary_filename, user=author)
     msg.save()
     if bool(Admin.objects.filter(user=author,forum=forum)):
         status = Message_forum.STATUS_APPROVED
@@ -627,10 +652,7 @@ def bcast(request):
         survey = broadcast.thread(mf, template, responseprompt, bcastname)
     else:
         survey = broadcast.regular_bcast(line,template,bcastname)
-        
-   
-        
-     
+
     # Get schedule
     when = params['when']
     if when == 'now':

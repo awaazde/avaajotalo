@@ -99,7 +99,7 @@ public final class JSONRequest {
 		 *
 		 */
 		public enum ValidationError {  
-	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4);
+	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4), INVALID_DATE(5);
 	  
 	    private int code;  
 	  

@@ -278,7 +278,7 @@ class StreamitTest(TestCase):
         streamit.add_members(g1, [m11])
         
         u2 = streamit.update_user('u2','1002')
-        g2 = streamit.create_group('g1', u2, 'eng')
+        g2 = streamit.create_group('g2', u2, 'eng')
         self.assertEqual(Forum.objects.filter(admin__user=u2).count(),1)   
         
         streamit.add_members(g2, members, Membership.STATUS_SUBSCRIBED)
@@ -448,10 +448,10 @@ class StreamitTest(TestCase):
         requested = [u for u in requested] 
         streamit.update_members(g2, Membership.STATUS_SUBSCRIBED, requested)
         u1 = User.objects.get(number='1')
-        u2 = User.objects.get(number='2')
+        u2_2 = User.objects.get(number='2')
         u3 = User.objects.get(number='3')
-        streamit.update_members(g2, Membership.STATUS_UNSUBSCRIBED, [u1,u2,u3])
-        for u in requested + [u1,u2,u3]:
+        streamit.update_members(g2, Membership.STATUS_UNSUBSCRIBED, [u1,u2_2,u3])
+        for u in requested + [u1,u2_2,u3]:
             mem = Membership.objects.get(group=g2, user=u)
             mem.last_updated = nextd
             mem.save()
@@ -958,4 +958,20 @@ class StreamitTest(TestCase):
         d += timedelta(minutes=streamit.INTERVAL_MINS)
         streamit.schedule_bcasts(d)
         
+        # negative balance, let's try to create a new bcast
+        m3 = Message(date=d, content_file='foo3.mp3', user=u2)
+        m3.save()
+        mf3 = Message_forum(message=m3, forum=g2, status=Message_forum.STATUS_APPROVED)
+        mf3.save()
+        streamit.create_bcasts(d)
+        self.assertEqual(Survey.objects.filter(name=str(mf3)).count(), 0)
         
+        streamit.recharge_balance(u2, .5, d)
+        streamit.create_bcasts(d)
+        # still not above threshold
+        self.assertEqual(Survey.objects.filter(name=str(mf3)).count(), 0)
+        
+        # now above threshold
+        streamit.recharge_balance(u2, 1, d)
+        streamit.create_bcasts(d)
+        self.assertEqual(Survey.objects.filter(name=str(mf3)).count(), 1)
