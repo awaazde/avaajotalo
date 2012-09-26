@@ -18,7 +18,7 @@ package org.otalo.ao.client.model;
 import java.math.BigDecimal;
 
 public class User extends BaseModel {
-	public static final String FREE_TRIAL_BALANCE = "999";
+	public static final String FREE_TRIAL_BALANCE = "999.00";
 	public static final String BCAST_DISALLOW_BALANCE_THRESH = "0";
 	
 	public User(JSOModel data) {
