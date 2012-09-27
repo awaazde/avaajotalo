@@ -779,7 +779,7 @@ class StreamitTest(TestCase):
         
     def test_balance(self):
         u1 = streamit.update_user('u1','1001')
-        self.assertEqual(u1.balance, streamit.FREE_TRIAL_BALANCE)
+        self.assertEqual(u1.balance, Decimal(str(streamit.FREE_TRIAL_BALANCE)))
         u1.balance = 0
         u1.save()
         g1 = streamit.create_group('g1', u1, 'eng')
@@ -838,7 +838,7 @@ class StreamitTest(TestCase):
         ' Let's restart the scenario with some intermittent transactions and balance checking
         '''
         u2 = streamit.update_user('u2','1002')
-        self.assertEqual(u2.balance, streamit.FREE_TRIAL_BALANCE)
+        self.assertEqual(u2.balance, Decimal(str(streamit.FREE_TRIAL_BALANCE)))
         u2.balance = 0
         u2.save()
         g2 = streamit.create_group('g2', u2, 'eng')

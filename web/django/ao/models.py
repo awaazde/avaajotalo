@@ -304,7 +304,7 @@ class Transaction(models.Model):
     call = models.ForeignKey(Call, blank=True, null=True)
         
     def __unicode__(self):
-        return unicode(self.user) + '_' + unicode(self.type) +"-" + unicode(self.amount)
+        return unicode(self.user) + '_' + unicode(self.type) +"-"+ unicode(self.call) + "-" + unicode(self.amount)
     
 #class DoNotCall(models.Model):
 #    user = models.ForeignKey(User)
