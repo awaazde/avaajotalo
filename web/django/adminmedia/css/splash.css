@@ -5,6 +5,7 @@
 	width:1024px;
 	height:768px;
 	margin:auto;
+	position: relative;
 }
 body
 {
@@ -70,7 +71,7 @@ body
 { 
 		position: absolute; 
 		top: 30px; 
-		left: 350px; 
+		left: 300px; 
 		width: 600px; 
 		height: 280px; 
 		background-color: transparent; 
