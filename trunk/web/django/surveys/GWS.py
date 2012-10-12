@@ -668,6 +668,6 @@ def main():
 #            end = datetime.strptime(sys.argv[3], "%m-%d-%Y")
         #survey_results2(number, date_start=start, date_end=end)
         #create_intl_test_survey('7961555010', '0094', callback=True, inbound=True)
-        create_survey('sl', 'sin', ['2','2','2','*2','3','4','2','2','4','3','2','3'], '7961555010', callback=True, inbound=True, includeid=False, countrycode='009')
-        
+        #create_survey('sl', 'sin', ['2','2','2','*2','3','4','2','2','4','3','2','3'], '7961555010', callback=True, inbound=True, includeid=False, countrycode='009')
+        create_survey('dr', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555011', callback=True, inbound=True, includeid=False, countrycode='001')
 main()
