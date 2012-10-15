@@ -23,6 +23,7 @@ import org.otalo.ao.client.model.Message.MessageStatus;
 
 
 public class Membership extends BaseModel {
+	public static final String MODEL_TYPE = "ao.membership";
 	/* Order matters. The constants are mirrored in 
 	 * server side code. The ordinal value of the first declared
 	 * is 0 and then increases from there.
