@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
-import org.otalo.ao.client.MemberDatabase.MemberInfo;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Forum.ForumStatus;
 import org.otalo.ao.client.model.BaseModel;
@@ -38,7 +37,10 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.ColumnSortEvent;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.ColumnSortList;
+import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.SimplePager;
@@ -66,6 +68,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.AbstractDataProvider;
 import com.google.gwt.view.client.AsyncDataProvider;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.HasData;
@@ -81,7 +84,7 @@ public class ManageGroups extends Composite {
 	private Hidden groupid, memberStatus, membersToUpdate;
 	private Button saveButton, cancelButton, addMembersButton, cancelAddMembers, deleteButton;
 	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox;
-	private DataGrid<MemberInfo> memberTable, joinsTable;
+	private DataGrid<Membership> memberTable, joinsTable;
 	private DataGrid<Broadcast> reportTable;
 	private FormPanel manageGroupsForm;
 	private VerticalPanel addMembersPanel, namesPanel;
@@ -94,7 +97,7 @@ public class ManageGroups extends Composite {
 	private TextArea numbersArea, namesArea;
 	private Label groupNumber;
 	private HTML creditsLabel;
-	private int reportStartIndex = 0;
+	private int reportStartIndex = 0, membersStartIndex = 0;
 	
 	private Forum group;
 	private Line line;
@@ -135,12 +138,23 @@ public class ManageGroups extends Composite {
 				int tabId = event.getSelectedItem();
         if (tabId == 0) 
         {
+        	membersStartIndex = 0;
+        	// show loading data icon
+        	// (from http://www.quora.com/Google-Web-Toolkit-GWT/How-do-I-change-loading-state-of-a-GWT-celltable)
+        	memberTable.setVisibleRangeAndClearData(new Range(membersStartIndex, memberTable.getPageSize()), true);
 	        showMemberTable();
         }
         else if (tabId == 1)
-        	MemberDatabase.get().displayJoinRequests();
+        {
+        	
+        	membersStartIndex = 0;
+        	joinsTable.setVisibleRangeAndClearData(new Range(membersStartIndex, joinsTable.getPageSize()), true);
+        }
         else if (tabId == 2)
-        	loadReports(0);
+        {
+        	reportStartIndex = 0;
+        	reportTable.setVisibleRangeAndClearData(new Range(reportStartIndex, reportTable.getPageSize()), true);
+        }
 			}
 		});
 		
@@ -178,12 +192,14 @@ public class ManageGroups extends Composite {
 
 			public void onChange(ChangeEvent event) {
 				String code = statusFilterBox.getValue(statusFilterBox.getSelectedIndex());
-				MembershipStatus status = null;
 				if (!code.equals("-1"))
 				{
-					status = MembershipStatus.getStatus(Integer.valueOf(code));
+					MembershipStatus status[] = {MembershipStatus.getStatus(Integer.valueOf(code))};
+					loadMembers(status);
 				}
-				MemberDatabase.get().filterBy(status);
+				else
+					loadMembers();
+				
 			}
 		});
 		
@@ -198,16 +214,14 @@ public class ManageGroups extends Composite {
 		memberControls.add(filterPanel);
 		
 		// Member Grid
-		memberTable = new DataGrid<MemberInfo>(MemberDatabase.MemberInfo.KEY_PROVIDER);
-		memberTable.setSize("850px", "320px");
+		memberTable = new DataGrid<Membership>();
+		memberTable.setSize("850px", "360px");
 		//memberTable.setRowCount(50, false);
 		memberTable.setPageSize(50);
 		
 		// Add a selection model so we can select cells.
-    final MultiSelectionModel<MemberInfo> selectionModel = new MultiSelectionModel<MemberInfo>(MemberDatabase.MemberInfo.KEY_PROVIDER);
-    memberTable.setSelectionModel(selectionModel, DefaultSelectionEventManager.<MemberInfo> createCheckboxManager());
-    ListHandler<MemberInfo> sortHandler = new ListHandler<MemberInfo>(MemberDatabase.get().getDataProvider().getList());
-    memberTable.addColumnSortHandler(sortHandler);
+    final MultiSelectionModel<Membership> selectionModel = new MultiSelectionModel<Membership>();
+    memberTable.setSelectionModel(selectionModel, DefaultSelectionEventManager.<Membership> createCheckboxManager());
     
     // Create a Pager to control the table.
     SimplePager.Resources pagerResources = GWT.create(SimplePager.Resources.class);
@@ -217,10 +231,23 @@ public class ManageGroups extends Composite {
     //pager.setRangeLimited(false);
 
     // Initialize the columns.
-    initTableColums(selectionModel, sortHandler);
-
-    // Add the member table to the adapter in the database.
-    MemberDatabase.get().addDataDisplay(memberTable);
+    initTableColums(selectionModel);
+    
+    membersDataProvider.addDataDisplay(memberTable);
+    memberTable.addColumnSortHandler(new ColumnSortEvent.Handler() {
+			
+			public void onColumnSort(ColumnSortEvent event) {
+				String code = statusFilterBox.getValue(statusFilterBox.getSelectedIndex());
+				if (!code.equals("-1"))
+				{
+					MembershipStatus status[] = {MembershipStatus.getStatus(Integer.valueOf(code))};
+					loadMembers(status);
+				}
+				else
+					loadMembers();
+				
+			}
+		});
     
     memberPanel.add(memberControls);
     memberPanel.add(memberTable);
@@ -314,7 +341,7 @@ public class ManageGroups extends Composite {
 		cancelAddMembers = new Button("Cancel");
 		cancelAddMembers.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
-					showMemberTable();
+					tabPanel.selectTab(0);
 			}
 			
 		});
@@ -343,20 +370,27 @@ public class ManageGroups extends Composite {
 		joinControls.add(approveMembers); 
 		joinControls.add(rejectMembers); 
 		
-		joinsTable = new DataGrid<MemberInfo>(MemberDatabase.MemberInfo.KEY_PROVIDER);
+		joinsTable = new DataGrid<Membership>();
 		joinsTable.setSize("850px", "360px");
 		joinsTable.setRowCount(50, true);
 		
-    joinsTable.setSelectionModel(selectionModel, DefaultSelectionEventManager.<MemberInfo> createCheckboxManager());
-    joinsTable.addColumnSortHandler(sortHandler);
+    joinsTable.setSelectionModel(selectionModel, DefaultSelectionEventManager.<Membership> createCheckboxManager());
 
     // Create a Pager to control the table.
     MembersPager joinsPager = new MembersPager(TextLocation.CENTER, pagerResources, false, 0, true);
     joinsPager.setDisplay(joinsTable);
-    MemberDatabase.get().addDataDisplay(joinsTable);
 
     // Initialize the columns.
-    initJoinTableColums(selectionModel, sortHandler);
+    initJoinTableColums(selectionModel);
+    
+    membersDataProvider.addDataDisplay(joinsTable);
+    joinsTable.addColumnSortHandler(new ColumnSortEvent.Handler() {
+			
+			public void onColumnSort(ColumnSortEvent event) {
+				loadJoinRequests();
+				
+			}
+		});
     
     approveMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to approve these requests?", MembershipStatus.SUBSCRIBED, "Members joined!"));
 		rejectMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to reject these requests?", MembershipStatus.DELETED, "Members rejected!"));
@@ -373,7 +407,7 @@ public class ManageGroups extends Composite {
 				
 		// Reports Grid
 		reportTable = new DataGrid<Broadcast>();
-		reportTable.setSize("850px", "320px");
+		reportTable.setSize("850px", "360px");
 		
 		reportTable.setPageSize(10);
     
@@ -558,12 +592,12 @@ public class ManageGroups extends Composite {
 		initWidget(manageGroupsForm);
 	}
 	
-	private void initTableColums(final SelectionModel<MemberInfo> selectionModel, ListHandler<MemberInfo> sortHandler)
+	private void initTableColums(final SelectionModel<Membership> selectionModel)
 	{
 		// Add a checkbox column for bulk actions.
-    Column<MemberInfo, Boolean> checkColumn =
-      new Column<MemberInfo, Boolean>(new CheckboxCell(true, false)) {
-        public Boolean getValue(MemberInfo object) {
+    Column<Membership, Boolean> checkColumn =
+      new Column<Membership, Boolean>(new CheckboxCell(true, false)) {
+        public Boolean getValue(Membership object) {
           // Get the value from the selection model.
           return selectionModel.isSelected(object);
         }
@@ -573,7 +607,7 @@ public class ManageGroups extends Composite {
     Header<Boolean> selectPageHeader = new Header<Boolean>(headerCheckbox) {
       @Override
       public Boolean getValue() {
-        for (MemberInfo item : memberTable.getVisibleItems()) {
+        for (Membership item : memberTable.getVisibleItems()) {
           if (!memberTable.getSelectionModel().isSelected(item)) {
             return false;
           }
@@ -584,7 +618,7 @@ public class ManageGroups extends Composite {
     selectPageHeader.setUpdater(new ValueUpdater<Boolean>() {
       @Override
       public void update(Boolean value) {
-        for (MemberInfo item : memberTable.getVisibleItems()) {
+        for (Membership item : memberTable.getVisibleItems()) {
           memberTable.getSelectionModel().setSelected(item, value);
         }
       }
@@ -594,64 +628,64 @@ public class ManageGroups extends Composite {
     memberTable.addColumn(checkColumn, selectPageHeader);
     memberTable.setColumnWidth(checkColumn, 40, Unit.PX);
     
-    final Column<MemberInfo, String> nameColumn = new Column<MemberInfo, String>(new EditTextCell()) {
-      public String getValue(MemberInfo object) {
+    final Column<Membership, String> nameColumn = new Column<Membership, String>(new EditTextCell()) {
+      public String getValue(Membership object) {
         // Return the name as the value of this column.
-        return object.getName();
+        String name = object.getMemberName();
+      	if ("null".equals(name))
+      		return "";
+      	else
+      		return name; 
       }
     };
     nameColumn.setSortable(true);
-    sortHandler.setComparator(nameColumn, new Comparator<MemberInfo>() {
-			public int compare(MemberInfo m1, MemberInfo m2) {
-				return m1.getName().compareTo(m2.getName());
-			}
-    });
+    
     memberTable.addColumn(nameColumn, "Name");
-    nameColumn.setFieldUpdater(new FieldUpdater<MemberInfo, String>() {
-			public void update(int index, MemberInfo object, String value) {
+    nameColumn.setFieldUpdater(new FieldUpdater<Membership, String>() {
+			public void update(int index, Membership object, String value) {
 				if (!"".equals(value))
-					object.setName(value);
+				{
+					// check if name changed
+		    	if (!object.getUser().getName().equals(value) && !value.equals(""))
+		    	{
+		    		String data = "name=" + value;
+		        JSONRequest.doPost(AoAPI.UPDATE_MEMBER + object.getId() + "/", data);
+		    	}
+				}
 				else
 					// added this based on advice on how to restore the value of a cell in case of validation error
 					// solution from https://groups.google.com/d/msg/google-web-toolkit/sPRy0lqACsc/UJH-jvBNAcIJ
 					((EditTextCell)nameColumn.getCell()).clearViewData(memberTable.getKeyProvider().getKey(object));
-        MemberDatabase.get().refreshDisplays();
 			}
     });
     memberTable.setColumnWidth(nameColumn, 50, Unit.PCT);
     
-    Column<MemberInfo, String> numberColumn = new Column<MemberInfo, String>(new TextCell()) {
-      public String getValue(MemberInfo object) {
+    Column<Membership, String> numberColumn = new Column<Membership, String>(new TextCell()) {
+      public String getValue(Membership object) {
         // Return the name as the value of this column.
-        return object.getNumber();
+        return object.getUser().getNumber();
       }
     };
     memberTable.addColumn(numberColumn, "Number");
     memberTable.setColumnWidth(numberColumn, 30, Unit.PCT);
     
-    Column<MemberInfo, String> statusColumn = new Column<MemberInfo, String>(new TextCell()) {
+    Column<Membership, String> statusColumn = new Column<Membership, String>(new TextCell()) {
 
-			public String getValue(MemberInfo object) {
+			public String getValue(Membership object) {
 					return object.getStatus().getTxtValue();
 			}
     	
     };
-    statusColumn.setSortable(true);
-    sortHandler.setComparator(statusColumn, new Comparator<MemberInfo>() {
-			public int compare(MemberInfo m1, MemberInfo m2) {
-				return m1.getStatus().getTxtValue().compareTo(m2.getStatus().getTxtValue());
-			}
-    });
     memberTable.addColumn(statusColumn, "Status");
 
 	}
 	
-	private void initJoinTableColums(final SelectionModel<MemberInfo> selectionModel, ListHandler<MemberInfo> sortHandler)
+	private void initJoinTableColums(final SelectionModel<Membership> selectionModel)
 	{
 		// Add a checkbox column for bulk actions.
-    Column<MemberInfo, Boolean> checkColumn =
-      new Column<MemberInfo, Boolean>(new CheckboxCell(true, false)) {
-        public Boolean getValue(MemberInfo object) {
+    Column<Membership, Boolean> checkColumn =
+      new Column<Membership, Boolean>(new CheckboxCell(true, false)) {
+        public Boolean getValue(Membership object) {
           // Get the value from the selection model.
           return selectionModel.isSelected(object);
         }
@@ -661,7 +695,7 @@ public class ManageGroups extends Composite {
     Header<Boolean> selectPageHeader = new Header<Boolean>(headerCheckbox) {
       @Override
       public Boolean getValue() {
-        for (MemberInfo item : joinsTable.getVisibleItems()) {
+        for (Membership item : joinsTable.getVisibleItems()) {
           if (!joinsTable.getSelectionModel().isSelected(item)) {
             return false;
           }
@@ -672,7 +706,7 @@ public class ManageGroups extends Composite {
     selectPageHeader.setUpdater(new ValueUpdater<Boolean>() {
       @Override
       public void update(Boolean value) {
-        for (MemberInfo item : joinsTable.getVisibleItems()) {
+        for (Membership item : joinsTable.getVisibleItems()) {
         	joinsTable.getSelectionModel().setSelected(item, value);
         }
       }
@@ -681,25 +715,25 @@ public class ManageGroups extends Composite {
     joinsTable.addColumn(checkColumn, selectPageHeader);
     joinsTable.setColumnWidth(checkColumn, 40, Unit.PX);
     
-    Column<MemberInfo, String> nameColumn = new Column<MemberInfo, String>(new TextCell()) {
-      public String getValue(MemberInfo object) {
-        // Return the name as the value of this column.
-        return object.getName();
+    Column<Membership, String> nameColumn = new Column<Membership, String>(new TextCell()) {
+      public String getValue(Membership object) {
+      	// Return the name as the value of this column.
+        String name = object.getMemberName();
+      	if ("null".equals(name))
+      		return "";
+      	else
+      		return name;
       }
     };
     nameColumn.setSortable(true);
-    sortHandler.setComparator(nameColumn, new Comparator<MemberInfo>() {
-			public int compare(MemberInfo m1, MemberInfo m2) {
-				return m1.getName().compareTo(m2.getName());
-			}
-    });
+    
     joinsTable.addColumn(nameColumn, "Name");
     joinsTable.setColumnWidth(nameColumn, 60, Unit.PCT);
     
-    Column<MemberInfo, String> numberColumn = new Column<MemberInfo, String>(new TextCell()) {
-      public String getValue(MemberInfo object) {
+    Column<Membership, String> numberColumn = new Column<Membership, String>(new TextCell()) {
+      public String getValue(Membership object) {
         // Return the name as the value of this column.
-        return object.getNumber();
+        return object.getUser().getNumber();
       }
     };
     joinsTable.addColumn(numberColumn, "Number");
@@ -774,9 +808,55 @@ public class ManageGroups extends Composite {
 	}
 	
 	private void loadMembers()
+	{
+		MembershipStatus statuses[] = {MembershipStatus.SUBSCRIBED, MembershipStatus.INVITED, MembershipStatus.UNSUBSCRIBED};
+		loadMembers(statuses);
+	}
+	
+	private void loadMembers(MembershipStatus statuses[])
 	{	
 		JSONRequest request = new JSONRequest();
-		request.doFetchURL(AoAPI.MEMBERS + group.getId() + "/", new GroupMembersRequestor());
+		String params = "/?start="+membersStartIndex+"&length="+String.valueOf(memberTable.getPageSize())+"&status=";
+		for (MembershipStatus s : statuses)
+		{
+			params += s.getCode() + " ";
+		}
+		ColumnSortList sortList = memberTable.getColumnSortList();
+    if (sortList != null && sortList.size() > 0)
+    {
+    	params += "&orderby=";
+    	ColumnSortInfo sortInfo = sortList.get(0);
+    	Column <Membership, ?> sortColumn = (Column <Membership, ?>) 
+	                                          sortInfo.getColumn();
+	    int columnIndex = memberTable.getColumnIndex(sortColumn);
+	    boolean isAscending = sortInfo.isAscending();
+	    if (columnIndex == 1)
+	    	// Name
+	    	params += isAscending ? "membername" : "-membername";
+    }
+		
+		request.doFetchURL(AoAPI.MEMBERS + group.getId() + params, new MemberRequestor());
+	}
+	
+	private void loadJoinRequests()
+	{	
+		JSONRequest request = new JSONRequest();
+		String params = "/?start="+membersStartIndex+"&length="+String.valueOf(joinsTable.getPageSize())+"&status="+MembershipStatus.REQUESTED.getCode();
+		ColumnSortList sortList = joinsTable.getColumnSortList();
+    if (sortList != null && sortList.size() > 0)
+    {
+    	params += "&orderby=";
+    	ColumnSortInfo sortInfo = sortList.get(0);
+    	Column <Membership, ?> sortColumn = (Column <Membership, ?>) 
+	                                          sortInfo.getColumn();
+	    int columnIndex = joinsTable.getColumnIndex(sortColumn);
+	    boolean isAscending = sortInfo.isAscending();
+	    if (columnIndex == 1)
+	    	// Name
+	    	params += isAscending ? "membername" : "-membername";
+    }
+		request.doFetchURL(AoAPI.MEMBERS + group.getId() + params, new MemberRequestor());
+		
 	}
 	
 	private void loadSettings()
@@ -836,33 +916,6 @@ public class ManageGroups extends Composite {
 		request.doFetchURL(AoAPI.BROADCAST_REPORTS + group.getId() + params, new BcastReportRequestor());
 	}
 	
-	private class GroupMembersRequestor implements JSONRequester {
-		 
-		public void dataReceived(List<JSOModel> models) {
-			List<Membership> members = new ArrayList<Membership>();
-			
-			for (JSOModel model : models)
-		  	members.add(new Membership(model));
-
-			MemberDatabase.get().addMembers(members);
-			/*
-			 * Need to call displayMembers explicitly here for reset
-			 * since the call from reset on tab change will get triggered
-			 * before this data retuns. So yes it's an extra call to display,
-			 * but that should be cheap for a datagrid
-			 *
-			 * Note we call displayMembers since loading of new members will take
-			 * us to that tab by default
-			 */
-			MemberDatabase.get().displayMembers();
-			
-			/*
-			 * Now that members are loaded, pull the curtain on the interface
-			 */
-			Messages.get().displayManageGroupsInterface(group);
-		}
-	 }
-	
 	private class UpdateMembersComplete implements SubmitCompleteHandler {
 			private String confirm;
 			
@@ -872,17 +925,9 @@ public class ManageGroups extends Composite {
 			}
 			
 			public void onSubmitComplete(SubmitCompleteEvent event) {
-				List<JSOModel> models = JSONRequest.getModels(event.getResults());
 				ConfirmDialog sent = new ConfirmDialog(confirm);
 				sent.center();
-				
-		  	List<Membership> members = new ArrayList<Membership>();
 		  	
-		  	for (JSOModel model : models)
-		  			members.add(new Membership(model));
-		  	
-		  	MemberDatabase.get().addMembers(members);
-		  	MemberDatabase.get().refreshDisplays();
 		  	submitComplete();
 		  	tabPanel.selectTab(0);
 		}
@@ -927,10 +972,8 @@ public class ManageGroups extends Composite {
 		  	AddMembersDialog details = new AddMembersDialog(added, notAdded);
 				details.center();
 		  	
-		  	MemberDatabase.get().addMembers(members);
-		  	MemberDatabase.get().refreshDisplays();
 		  	submitComplete();
-		  	showMemberTable();
+		  	tabPanel.selectTab(0);
 			}
 		}
 	}
@@ -1062,10 +1105,9 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		 this.group = group;
 		 this.line = line;
 		 manageGroupsForm.reset();
-		 loadMembers();
 		 loadSettings();
 		 groupid.setValue(group.getId());
-
+		 
 		 // select tab explicitly so that
 		 // membertable loads properly
 		 tabPanel.selectTab(0);
@@ -1100,7 +1142,10 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		memberTable.setVisible(true);
 		pager.setVisible(true);
 		
-		MemberDatabase.get().displayMembers();
+		// This is invoked in the tab panel
+		// select event for the members panel
+		// on memberTable.setVisibleRangeAndClearData(memberTable.getVisibleRange(), true); 
+		//loadMembers();
 		
 	}
 	
@@ -1120,11 +1165,11 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	}
 	
 	private class UpdateMemberClickHandler implements ClickHandler {
-		DataGrid<MemberInfo> table;
+		DataGrid<Membership> table;
 		String areYouSureText, confirmText;
 		MembershipStatus status;
 		
-		public UpdateMemberClickHandler(DataGrid<MemberInfo> table, String areYouSureText, MembershipStatus status, String confirmText)
+		public UpdateMemberClickHandler(DataGrid<Membership> table, String areYouSureText, MembershipStatus status, String confirmText)
 		{
 			this.table = table;
 			this.areYouSureText = areYouSureText;
@@ -1134,7 +1179,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		}
 		@Override
 		public void onClick(ClickEvent event) {
-			Set<MemberInfo> selectedMems = ((MultiSelectionModel<MemberInfo>)table.getSelectionModel()).getSelectedSet();
+			Set<Membership> selectedMems = ((MultiSelectionModel<Membership>)table.getSelectionModel()).getSelectedSet();
 			if (selectedMems.size() == 0)
 			{
 				ConfirmDialog noneSelected = new ConfirmDialog("No members selected. Please check the boxes for rows you want to update.");
@@ -1152,17 +1197,15 @@ private class DeleteComplete implements SubmitCompleteHandler {
 						if (confirm.isConfirmed())
 						{
 							memberStatus.setValue(String.valueOf(status.getCode()));
-							Set<MemberInfo> selectedMems = ((MultiSelectionModel<MemberInfo>)table.getSelectionModel()).getSelectedSet();
+							Set<Membership> selectedMems = ((MultiSelectionModel<Membership>)table.getSelectionModel()).getSelectedSet();
 							String memberIds = "";
-							for (MemberInfo m : selectedMems)
+							for (Membership m : selectedMems)
 							{
 								memberIds += m.getId() + ",";
+								// clear selected
+								table.getSelectionModel().setSelected(m, false);
 							}
 							membersToUpdate.setValue(memberIds);
-							
-							// before submitting, clear any selected cells
-							// (rejected members won't get cleared when server returns)
-							MemberDatabase.get().refreshDisplays();
 							
 							if (submitHandler != null)
 							{
@@ -1222,6 +1265,60 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	  }
 	}
 	
+	private AsyncDataProvider<Membership> membersDataProvider = new AsyncDataProvider<Membership>() {
+
+		protected void onRangeChanged(HasData<Membership> display) {
+			if (group != null)
+			{
+				membersStartIndex = display.getVisibleRange().getStart();
+	      int selectedTabIndex = tabPanel.getTabBar().getSelectedTab(); 
+	      if (selectedTabIndex == 0)
+	      {
+	      	loadMembers();
+	      }
+	      else if (selectedTabIndex == 1)
+	      {
+	      	loadJoinRequests();
+	      }
+			}
+			
+		}
+	};
+	
+	private class MemberRequestor implements JSONRequester {
+		 
+		public void dataReceived(List<JSOModel> models) {
+			List<Membership> members = new ArrayList<Membership>();
+			
+			for (JSOModel model : models)
+	  	{
+				if (Membership.MODEL_TYPE.equals(model.get("model")))
+				{
+					members.add(new Membership(model));
+				}
+				else if (model.get("model").equals(AoAPI.MEMBER_METADATA))
+	  		{
+					int rowcount = Integer.valueOf(model.get("total"));
+					membersDataProvider.updateRowCount(rowcount, true);
+					
+					int joinrequests = Integer.valueOf(model.get("requests"));
+					if (joinrequests > 0)
+					{
+						tabPanel.getTabBar().setTabText(1, "Join Requests ("+joinrequests+")");
+					}
+					else
+					{
+						tabPanel.getTabBar().setTabText(1, "Join Requests");
+					}
+				}
+	  	}
+			
+			membersDataProvider.updateRowData(membersStartIndex, members);
+			Messages.get().displayManageGroupsInterface(group);
+			
+		}
+	 }
+	
 	private AsyncDataProvider<Broadcast> reportsDataProvider = new AsyncDataProvider<Broadcast>() {
 
 		protected void onRangeChanged(HasData<Broadcast> display) {
@@ -1264,7 +1361,51 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	 }
 
 	/**
-	 * Information about a member.
+   * Information about a member.
+   */
+  public static class MemberInfo {
+      
+    private Membership membership;
+
+    public MemberInfo(Membership membership) {
+    	this.membership = membership;
+    }
+
+    /**
+     * @return the status of the membership
+     */
+    public MembershipStatus getStatus() {
+      return membership.getStatus();
+    }
+
+    /**
+     * @return the unique ID of the member
+     */
+    public String getId() {
+      return membership.getId();
+    }
+
+    /**
+     * @return the contact's name
+     */
+    public String getName() {
+    	String name = membership.getMemberName();
+    	if ("null".equals(name))
+    		return "";
+    	else
+    		return name; 
+    }
+
+    /**
+     * @return the contact's number
+     */
+    public String getNumber() {
+      return membership.getUser().getNumber();
+    }
+  }
+  
+	/**
+	 * Information about a broadcast.
 	 */
 	private class Broadcast extends BaseModel {
 		private static final String MODEL_TYPE = "BCAST_METADATA";
@@ -1304,5 +1445,5 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	  }
 	  
 	}
-  
+	
 }
