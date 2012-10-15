@@ -139,6 +139,7 @@ public class ManageGroups extends Composite {
         if (tabId == 0) 
         {
         	membersStartIndex = 0;
+        	statusFilterBox.setSelectedIndex(0);
         	// show loading data icon
         	// (from http://www.quora.com/Google-Web-Toolkit-GWT/How-do-I-change-loading-state-of-a-GWT-celltable)
         	memberTable.setVisibleRangeAndClearData(new Range(membersStartIndex, memberTable.getPageSize()), true);
@@ -191,15 +192,8 @@ public class ManageGroups extends Composite {
 		statusFilterBox.addChangeHandler(new ChangeHandler() {
 
 			public void onChange(ChangeEvent event) {
-				String code = statusFilterBox.getValue(statusFilterBox.getSelectedIndex());
-				if (!code.equals("-1"))
-				{
-					MembershipStatus status[] = {MembershipStatus.getStatus(Integer.valueOf(code))};
-					loadMembers(status);
-				}
-				else
-					loadMembers();
-				
+				membersStartIndex = 0;
+				memberTable.setVisibleRangeAndClearData(new Range(membersStartIndex, memberTable.getPageSize()), true);
 			}
 		});
 		
@@ -1274,7 +1268,15 @@ private class DeleteComplete implements SubmitCompleteHandler {
 	      int selectedTabIndex = tabPanel.getTabBar().getSelectedTab(); 
 	      if (selectedTabIndex == 0)
 	      {
-	      	loadMembers();
+	      	String code = statusFilterBox.getValue(statusFilterBox.getSelectedIndex());
+	      	if (!code.equals("-1"))
+					{
+						MembershipStatus status[] = {MembershipStatus.getStatus(Integer.valueOf(code))};
+						loadMembers(status);
+					}
+					else
+						loadMembers();
+
 	      }
 	      else if (selectedTabIndex == 1)
 	      {
