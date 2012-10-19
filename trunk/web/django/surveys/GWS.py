@@ -199,10 +199,13 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
 def survey_results(number, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
     soundfiles = {}
-    survey = Survey.objects.filter(number=number, inbound=True).order_by('-id')[0]
-    qcount = Prompt.objects.filter(survey=survey).exclude(file__contains='intro').exclude(file__contains='outro').count()
+    surveyin = Survey.objects.filter(number=number, inbound=True).order_by('-id')[0]
+    # get bcasts as well
+    surveyouts = Survey.objects.filter(number=number, broadcast=True)
+    surveys = [surveyin] + [s for s in surveyouts]
+    qcount = Prompt.objects.filter(survey=surveyin).exclude(file__contains='intro').exclude(file__contains='outro').count()
 
-    calls = Call.objects.filter(survey=survey, complete=True)
+    calls = Call.objects.filter(survey__in=surveys, complete=True)
     if phone_num_filter:
         calls = calls.filter(subject__number__in=phone_num_filter)
     if date_start:
@@ -246,7 +249,7 @@ def survey_results(number, phone_num_filter=False, date_start=False, date_end=Fa
         
     header = ['number','start','duration (s)']
     lastq = qcount+1
-    idprompt = Prompt.objects.filter(survey=survey, file__contains='id')
+    idprompt = Prompt.objects.filter(survey=surveyin, file__contains='id')
     if bool(idprompt):
         header.append('id')
         lastq = qcount
