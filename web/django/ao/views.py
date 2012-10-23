@@ -52,6 +52,9 @@ NO_CONTENT = "2"
 INVALID_GROUPNAME = "3"
 MEMBER_CREDITS_EXCEEDED = "4"
 INVALID_DATE = "5"
+INVALID_GROUP_SETTING = "6"
+INVALID_FILE_FORMAT = "7"
+INVALID_SUMMARY_FILE_FORMAT = "8"
 
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
@@ -351,9 +354,22 @@ def uploadmessage(request):
         params = request.POST
         
         main = request.FILES['main']
+        extension = main.name[main.name.index('.'):]
+        if extension != '.mp3':
+            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_FILE_FORMAT+', "message":"mp3 format required"}]')
+            response['Pragma'] = "no cache"
+            response['Cache-Control'] = "no-cache, must-revalidate"
+            return response
+        
         summary = False
         if 'summary' in request.FILES:
             summary = request.FILES['summary']
+            extension = summary.name[summary.name.index('.'):]
+            if extension != '.mp3':
+                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_SUMMARY_FILE_FORMAT+', "message":"mp3 format required"}]')
+                response['Pragma'] = "no cache"
+                response['Cache-Control'] = "no-cache, must-revalidate"
+                return response
         
         if 'number' in params:
             number = params['number'].strip()
@@ -692,7 +708,7 @@ def forwardthread(request, message_forum_id):
         for line in lines:
             if line.number not in numbers:
                 numbers.append(line.number)
-            if line.outbound_number not in numbers:
+            if line.outbound_number and line.outbound_number not in numbers:
                 numbers.append(line.outbound_number)
                 
         templates = Survey.objects.filter(template=True, number__in=numbers)
