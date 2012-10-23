@@ -254,7 +254,7 @@ public class UploadDialog extends DialogBox {
 		{
 			numberPanel.insert(msgHTML, 0);
 		}
-		else if (error == ValidationError.NO_CONTENT && contentPanel.getWidgetCount() == 1)
+		else if ((error == ValidationError.NO_CONTENT || error == ValidationError.INVALID_FILE_FORMAT) && contentPanel.getWidgetCount() == 1)
 		{
 			contentPanel.insert(msgHTML, 0);
 		}

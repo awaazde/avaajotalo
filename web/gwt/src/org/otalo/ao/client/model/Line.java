@@ -93,4 +93,11 @@ public class Line extends BaseModel {
 		return getField("number");
 	}
 	
+	public boolean callback() {
+		return getField("callback").equals("true");
+	}
+	
+	public boolean open() {
+		return getField("open").equals("true");
+	}
 }
