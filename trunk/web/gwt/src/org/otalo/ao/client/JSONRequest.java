@@ -81,6 +81,7 @@ public final class JSONRequest {
 		public static final String DELETE_GROUP = "deletegroup/";
 		public static final String BROADCAST_REPORTS = "broadcastreports/";
 		public static final String DOWNLOAD_BCAST_REPORT = "download/bcastreport/";
+		public static final String DOWNLOAD_STREAM_REPORT = "download/streamreport/";
 		public static final String BALANCE = "balance/";
 		
 		public static final String POSTS_TOP = "top";
@@ -99,7 +100,7 @@ public final class JSONRequest {
 		 *
 		 */
 		public enum ValidationError {  
-	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4), INVALID_DATE(5);
+	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4), INVALID_DATE(5), INVALID_GROUP_SETTING(6), INVALID_FILE_FORMAT(7), INVALID_SUMMARY_FILE_FORMAT(8);
 	  
 	    private int code;  
 	  

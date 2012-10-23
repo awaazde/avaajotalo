@@ -1,24 +1,21 @@
 package org.otalo.ao.client;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.Forum.ForumStatus;
 import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Membership;
-import org.otalo.ao.client.model.Survey;
 import org.otalo.ao.client.model.Membership.MembershipStatus;
 import org.otalo.ao.client.model.User;
 
 import com.google.gwt.cell.client.ActionCell;
-import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -35,10 +32,10 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent;
-import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.user.cellview.client.DataGrid;
@@ -64,6 +61,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -83,7 +81,7 @@ public class ManageGroups extends Composite {
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
 	private Button saveButton, cancelButton, addMembersButton, cancelAddMembers, deleteButton;
-	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox;
+	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox, reports, month, year;
 	private DataGrid<Membership> memberTable, joinsTable;
 	private DataGrid<Broadcast> reportTable;
 	private FormPanel manageGroupsForm;
@@ -97,6 +95,7 @@ public class ManageGroups extends Composite {
 	private TextArea numbersArea, namesArea;
 	private Label groupNumber;
 	private HTML creditsLabel;
+	private RadioButton inboundOff, inboundMemsOnly, inboundAll;
 	private int reportStartIndex = 0, membersStartIndex = 0;
 	
 	private Forum group;
@@ -417,10 +416,47 @@ public class ManageGroups extends Composite {
     reportsDataProvider.addDataDisplay(reportTable);
     //reportsDataProvider.updateRowData(0, null);
     
+    reports = new ListBox();
+    reports.addItem("Call-in report", "callin");
+    String months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    month = new ListBox();
+    for (int i=0; i<months.length; i++)
+    {
+    	month.addItem(months[i], String.valueOf(i+1));
+    }
+    DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy");
+    String currentYearStr = dtf.format(new Date());
+    int currentYear = Integer.valueOf(currentYearStr);
+    
+    year = new ListBox();
+    for (int i=currentYear; 2012<=i; i--)
+    {
+    	year.addItem(String.valueOf(i));
+    }
+    Button downloadReport = new Button("Download");
+    downloadReport.addClickHandler(new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				String params = "/?reporttype=" + reports.getValue(reports.getSelectedIndex()) + "&month=" + month.getValue(month.getSelectedIndex()) + "&year=" + year.getValue(year.getSelectedIndex());
+				Window.open(AoAPI.DOWNLOAD_STREAM_REPORT + group.getId() + params, "Download Report", "");
+				
+			}
+		});
+    
+    HorizontalPanel callinReportPanel = new HorizontalPanel();
+    callinReportPanel.setSpacing(8);
+    callinReportPanel.add(reports);
+    callinReportPanel.add(new Label("for"));
+    callinReportPanel.add(month);
+    callinReportPanel.add(year);
+    callinReportPanel.add(downloadReport);
+    
     reportsPanel.setSpacing(15);
     reportsPanel.add(reportTable);
     reportsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
     reportsPanel.add(reportspager);
+    reportsPanel.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
+    reportsPanel.add(callinReportPanel);
     
     /**************************************************
 		 * 
@@ -451,9 +487,21 @@ public class ManageGroups extends Composite {
     Label inputTypeLabel = new Label("Response Type");
     inputBox = new ListBox();
     inputBox.setName("inputtype");
-    // hard-coding for now; stay consistent with forms.py:createacctform
     inputBox.addItem("Touchtone", "0");
     inputBox.addItem("Voice", "1");
+    
+    Label freeInboundLabel = new Label("Missed Call");
+    inboundOff = new RadioButton("freeinbound", "Off");
+    inboundOff.setFormValue("inboundoff");
+    inboundMemsOnly = new RadioButton("freeinbound", "Members Only");
+    inboundMemsOnly.setFormValue("inboundmemsonly");
+    inboundAll = new RadioButton("freeinbound", "All");
+    inboundAll.setFormValue("inboundall");
+    HorizontalPanel inboundButtons = new HorizontalPanel();
+    inboundButtons.setSpacing(5);
+    inboundButtons.add(inboundOff);
+    inboundButtons.add(inboundMemsOnly);
+    inboundButtons.add(inboundAll);
     
     Label emailLabel = new Label("Email Address");
     emailText = new TextBox();
@@ -545,6 +593,8 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row++, 1, deliveryBox);
 		settingsTable.setWidget(row, 0, inputTypeLabel);
 		settingsTable.setWidget(row++, 1, inputBox);
+		settingsTable.setWidget(row, 0, freeInboundLabel);
+		settingsTable.setWidget(row++, 1, inboundButtons);
 		settingsTable.setWidget(row, 0, emailLabel);
 		settingsTable.setWidget(row++, 1, emailPanel);
 		settingsTable.setWidget(row, 0, senderLabel);
@@ -847,8 +897,11 @@ public class ManageGroups extends Composite {
 	    boolean isAscending = sortInfo.isAscending();
 	    if (columnIndex == 1)
 	    	// Name
-	    	params += isAscending ? "membername" : "-membername";
+	    	params += isAscending ? "membername,-last_updated" : "-membername,-last_updated";
     }
+    else
+    	params += "&orderby=-last_updated";
+    
 		request.doFetchURL(AoAPI.MEMBERS + group.getId() + params, new MemberRequestor());
 		
 	}
@@ -884,6 +937,16 @@ public class ManageGroups extends Composite {
 		 */
 		int inputType = group.responsesAllowed() ? 1 : 0;
 		inputBox.setSelectedIndex(inputType);
+		
+		if (line.callback())
+		{
+			if (line.open())
+				inboundAll.setValue(true);
+			else
+				inboundMemsOnly.setValue(true);
+		}
+		else
+			inboundOff.setValue(true);
 		
 		String email = Messages.get().getModerator().getEmail();
 		emailText.setValue(email);
@@ -1033,35 +1096,48 @@ public class ManageGroups extends Composite {
 	private class SettingsComplete implements SubmitCompleteHandler {
 		
 		public void onSubmitComplete(SubmitCompleteEvent event) {
-			ConfirmDialog updated = new ConfirmDialog("Settings updated!");
-			updated.show();
-			updated.center();
+			ConfirmDialog confirm;
 			List<JSOModel> models = JSONRequest.getModels(event.getResults());
-			
-	  	submitComplete();
-	  	
-	  	Line l;
-	  	String oldGroupName = group.getName();
-	  	// Find and update the currently selected group
-	  	for (JSOModel m : models)
-	  	{
-	  		l = new Line(m);
-	  		if (line.getId().equals(l.getId()))
-				{
-	  			line = l;
-	  			group = line.getForums().get(0);
-				}
-	  	}
-	  	
-	  	// update the forum widget that corresponds
-	  	// to this group
-		  Messages.get().reloadGroup(line, group);
-	  	
-	  	// May have updated the email address of the moderator, 
-	  	// so reload her.
-	  	JSONRequest request = new JSONRequest();
-		  request.doFetchURL(AoAPI.MODERATOR, new ModeratorRequestor());
-	  	
+	
+			JSOModel model = models.get(0);
+			if (model.get("model").equals("VALIDATION_ERROR"))
+			{
+				String msg = model.get("message");
+				confirm = new ConfirmDialog(msg);
+				confirm.center();
+				
+				submitComplete();
+				loadSettings();
+			}
+			else
+			{
+				confirm = new ConfirmDialog("Settings updated!");
+				confirm.show();
+				confirm.center();
+				
+		  	submitComplete();
+		  	
+		  	Line l;
+		  	// Find and update the currently selected group
+		  	for (JSOModel m : models)
+		  	{
+		  		l = new Line(m);
+		  		if (line.getId().equals(l.getId()))
+					{
+		  			line = l;
+		  			group = line.getForums().get(0);
+					}
+		  	}
+		  	
+		  	// update the forum widget that corresponds
+		  	// to this group
+			  Messages.get().reloadGroup(line, group);
+		  	
+		  	// May have updated the email address of the moderator, 
+		  	// so reload her.
+		  	JSONRequest request = new JSONRequest();
+			  request.doFetchURL(AoAPI.MODERATOR, new ModeratorRequestor());
+			}
 		}
 	}
 	
@@ -1357,6 +1433,12 @@ private class DeleteComplete implements SubmitCompleteHandler {
 				}
 	  	}
 			
+			// default report dropdown
+			DateTimeFormat dtf = DateTimeFormat.getFormat("MM");
+		  String currentMonthStr = dtf.format(new Date());
+		  int currentMonth = Integer.valueOf(currentMonthStr);
+		  month.setSelectedIndex(currentMonth-1);
+		    
 			reportsDataProvider.updateRowData(reportStartIndex, bcasts);
 			
 		}
