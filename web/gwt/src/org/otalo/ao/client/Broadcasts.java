@@ -111,7 +111,6 @@ public class Broadcasts extends Composite implements JSONRequester, ClickHandler
   	// Get surveys
 	  JSONRequest request = new JSONRequest();
 	  String params = "?start="+String.valueOf(start);
-	  params += Messages.get().getLine() != null ? "&lineid=" + Messages.get().getLine().getId() : ""; 
 		request.doFetchURL(AoAPI.SURVEY + params, this);
   }
 

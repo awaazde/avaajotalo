@@ -591,13 +591,20 @@ def line(request):
 
 def survey(request):
     params = request.GET
+    auth_user = request.user
     start = int(params['start'])
     
     surveys = Survey.objects.filter(broadcast=True).order_by('-id')
-    if params.__contains__('lineid'):
-        line_id = int(params['lineid'])
-        line = get_object_or_404(Line, pk=line_id)
-        surveys = surveys.filter(number__in=[line.number,line.outbound_number])
+    if not auth_user.is_superuser:
+        # get all lines associated with this login
+        lines = Line.objects.filter(forums__admin__auth_user=auth_user).distinct()
+        numbers = []
+        for line in lines:
+            numbers.append(line.number)
+            if line.outbound_number:
+                numbers.append(line.outbound_number)
+        
+        surveys = surveys.filter(number__in=numbers)
     
     surveys = surveys[start:start+BCAST_PAGE_SIZE]
     for survey in surveys:
@@ -715,10 +722,21 @@ def forwardthread(request, message_forum_id):
     
     return send_response(templates)
 
-def regularbcast(request, line_id):
-    line = get_object_or_404(Line, pk=line_id)
+def regularbcast(request):
+    auth_user = request.user
     
-    templates = Survey.objects.filter(template=True, number__in=[line.number, line.outbound_number])
+    templates = Survey.objects.filter(template=True)
+    if not auth_user.is_superuser:
+        # get all lines associated with this login
+        lines = Line.objects.filter(forums__admin__auth_user=auth_user).exclude(forums__status=Forum.STATUS_INACTIVE).distinct()
+        numbers = []
+        for line in lines:
+            numbers.append(line.number)
+            if line.outbound_number:
+                numbers.append(line.outbound_number)
+        
+        templates = templates.filter(number__in=numbers)
+        
     return send_response(templates)
 
 def surveyinput(request, survey_id):

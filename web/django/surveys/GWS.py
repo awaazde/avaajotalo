@@ -1,7 +1,10 @@
 import os, sys, csv, re, shutil, ast
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.contrib.auth.models import User as AuthUser
 from otalo.surveys.models import Subject, Survey, Prompt, Option, Param, Call, Input
+from otalo.ao.models import User, Line, Forum, Admin
+from awaazde.streamit.utils import templates
 import otalo_utils
 
 '''
@@ -16,6 +19,7 @@ SUBDIR = 'gws/'
 SOUND_EXT = ".wav"
 REPEAT_KEY='*'
 BARGEIN_KEY='9'
+GWS_AUTH_ID = 25
 
 '''
 ****************************************************************************
@@ -23,7 +27,8 @@ BARGEIN_KEY='9'
 ****************************************************************************
 '''
 def create_survey(prefix, language, options, phone_num, callback, inbound, template=False, includeid=False, countrycode = '0'):
-    s = Survey(name='GWS_'+prefix+'_'+language, number=phone_num, dialstring_prefix=PREFIX+countrycode, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template)
+    name = 'GWS_'+prefix+'_'+language
+    s = Survey(name=name, number=phone_num, dialstring_prefix=PREFIX+countrycode, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template)
     s.save()
     print('creating new survey '+str(s))
     
@@ -102,6 +107,35 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     outro_opt2.save()
     order += 1
     
+    if template:
+        # provide a broadcast mechanism for this survey through the console
+        # create a line, announcements section, and admin
+        
+        # deactivate any forum previously on this number. This will also take away the corresponding templates
+        old_forums = Forum.objects.filter(line__number=phone_num)
+        for f in old_forums:
+            print('deactivating '+str(f))
+            f.status = Forum.STATUS_INACTIVE
+            f.save()
+        # delete any old templates associated with this number
+        Survey.objects.filter(number=phone_num, template=True).exclude(pk=s.id).delete()
+        
+        l = Line.objects.create(name=name, number=phone_num, dialstring_prefix=PREFIX+countrycode, dialstring_suffix=SUFFIX, language=language, logo_file='ao/img/goodworld.png')
+        print("creating line "+ str(l))
+        f = Forum.objects.create(name='Announce_'+name[4:], moderated='y', posting_allowed='n', responses_allowed='n', maxlength=90, routeable='n', listening_allowed=False)
+        print("creating forum "+ str(f))
+        l.forums.add(f)
+        
+        # create a blank template
+        templates.blank_template(phone_num, SUBDIR, PREFIX+countrycode, SUFFIX, name='BLANK_'+name[4:])
+        
+        auth = AuthUser.objects.get(pk=GWS_AUTH_ID)
+        # assume a single user for this auth
+        user = User.objects.filter(admin__auth_user=auth)[0]
+        
+        admin = Admin.objects.create(user=user, forum=f, auth_user=auth)
+        print ("creating Admin "+str(admin))
+        
     return s
 
 def create_intl_test_survey(phone_num, country_code, callback=False, inbound=False, template=False):
@@ -672,5 +706,9 @@ def main():
         #survey_results2(number, date_start=start, date_end=end)
         #create_intl_test_survey('7961555010', '0094', callback=True, inbound=True)
         #create_survey('sl', 'sin', ['2','2','2','*2','3','4','2','2','4','3','2','3'], '7961555010', callback=True, inbound=True, includeid=False, countrycode='009')
-        create_survey('dr', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555011', callback=True, inbound=True, includeid=False, countrycode='001')
+        #create_survey('dr', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555011', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        #create_survey('sl', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        #create_survey('sl2', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        create_survey('sl3', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        create_survey('sl4', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555013', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
 main()
