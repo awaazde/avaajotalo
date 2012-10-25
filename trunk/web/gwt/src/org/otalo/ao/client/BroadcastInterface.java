@@ -422,7 +422,7 @@ public class BroadcastInterface extends Composite {
 		 else
 		 {
 			 messageforumid.setValue(null);
-			 request.doFetchURL(AoAPI.REGULAR_BCAST + Messages.get().getLine().getId() + "/", new BroadcastRequestor());
+			 request.doFetchURL(AoAPI.REGULAR_BCAST, new BroadcastRequestor());
 		 }
 			 
 		 
