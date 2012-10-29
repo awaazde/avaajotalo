@@ -139,6 +139,7 @@ public class ManageGroups extends Composite {
         {
         	membersStartIndex = 0;
         	statusFilterBox.setSelectedIndex(0);
+        	memberTable.getColumnSortList().clear();
         	// show loading data icon
         	// (from http://www.quora.com/Google-Web-Toolkit-GWT/How-do-I-change-loading-state-of-a-GWT-celltable)
         	memberTable.setVisibleRangeAndClearData(new Range(membersStartIndex, memberTable.getPageSize()), true);
@@ -148,6 +149,7 @@ public class ManageGroups extends Composite {
         {
         	
         	membersStartIndex = 0;
+        	joinsTable.getColumnSortList().clear();
         	joinsTable.setVisibleRangeAndClearData(new Range(membersStartIndex, joinsTable.getPageSize()), true);
         }
         else if (tabId == 2)
