@@ -56,6 +56,42 @@ def send_sms(config, recipients, content, sender, date=None):
     #print "SMS TO GATEWAY ", data
     return True
 
+'''
+'    Send different SMSs to different recipients on the same api call
+'    
+'    ASSUMES recipients and texts are of same length
+'''
+def send_multiple_sms(config, recipients, texts, sender, date=None):
+    if len(recipients) != len(texts):
+        return False
+    
+    csv=''
+    for i in range(len(recipients)):
+        u = recipients[i]
+        text = texts[i]
+        if date:
+            msg = SMSMessage(sender=sender,sent_on=date,text=text)
+        else:
+            msg = SMSMessage(sender=sender,text=text)
+        msg.save()
+        msg.recipients.add(u)
+        csv += (config.country_code or '')+ u.number +',"'+text+'"\n'  
+        
+    data = {config.text_param_name:csv}
+    if date and config.date_param_format:
+        date_str = date.strftime(config.date_param_format)
+        #print ("date str="+date_str)
+        data[config.date_param_name] = date_str
+    params = ConfigParam.objects.filter(config=config)
+    for param in params:
+        data[param.name] = param.value
+        
+    http = httplib2.Http()
+    resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
+    #print "SMS TO GATEWAY HTTP", resp, content
+    #print "SMS TO GATEWAY ", data
+    return True
+
 #DND_FILE=''
 #def updateDND():
 #    wb = load_workbook(filename = DND_FILE)
@@ -91,9 +127,12 @@ def send_sms(config, recipients, content, sender, date=None):
         
 if __name__=="__main__":
     line = Line.objects.get(pk=1)
-    users = User.objects.filter(pk__in=[1,2])
+    users = User.objects.filter(pk__in=[783,223])
+    texts = ['message for Jay', 'message for Neil']
+    config = Config.objects.get(pk=2)
     print(str(users))
-    send_sms(line,users,"Testing again from Neil/Awaaz.De. Thanks!!")
+    #send_sms(line,users,"Testing again from Neil/Awaaz.De. Thanks!!")
+    send_multiple_sms(config, users, texts, users[0])
     
     
     
