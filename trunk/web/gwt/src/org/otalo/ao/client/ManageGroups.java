@@ -184,7 +184,6 @@ public class ManageGroups extends Composite {
 		Label filterLabel = new Label("Filter By");
 		statusFilterBox = new ListBox();
 		statusFilterBox.addItem("", "-1");
-		statusFilterBox.addItem(Membership.MembershipStatus.INVITED.getTxtValue(), String.valueOf(MembershipStatus.INVITED.getCode()));
 		statusFilterBox.addItem(Membership.MembershipStatus.SUBSCRIBED.getTxtValue(), String.valueOf(MembershipStatus.SUBSCRIBED.getCode()));
 		statusFilterBox.addItem(Membership.MembershipStatus.UNSUBSCRIBED.getTxtValue(), String.valueOf(MembershipStatus.UNSUBSCRIBED.getCode()));
 		
@@ -710,6 +709,8 @@ public class ManageGroups extends Composite {
         return object.getUser().getNumber();
       }
     };
+    numberColumn.setSortable(true);
+    
     memberTable.addColumn(numberColumn, "Number");
     memberTable.setColumnWidth(numberColumn, 30, Unit.PCT);
     
@@ -780,6 +781,8 @@ public class ManageGroups extends Composite {
         return object.getUser().getNumber();
       }
     };
+    numberColumn.setSortable(true);
+    
     joinsTable.addColumn(numberColumn, "Number");
     joinsTable.setColumnWidth(numberColumn, 40, Unit.PCT);
 
@@ -877,6 +880,9 @@ public class ManageGroups extends Composite {
 	    if (columnIndex == 1)
 	    	// Name
 	    	params += isAscending ? "membername" : "-membername";
+	    else if (columnIndex == 2)
+	    	// Number
+	    	params += isAscending ? "user__number" : "-user__number";
     }
 		
 		request.doFetchURL(AoAPI.MEMBERS + group.getId() + params, new MemberRequestor());
@@ -898,6 +904,9 @@ public class ManageGroups extends Composite {
 	    if (columnIndex == 1)
 	    	// Name
 	    	params += isAscending ? "membername,-last_updated" : "-membername,-last_updated";
+	    else if (columnIndex == 2)
+	    	// Number
+	    	params += isAscending ? "user__number,-last_updated" : "-user__number,-last_updated";
     }
     else
     	params += "&orderby=-last_updated";
