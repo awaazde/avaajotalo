@@ -709,6 +709,9 @@ def main():
         #create_survey('dr', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555011', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
         #create_survey('sl', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
         #create_survey('sl2', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
-        create_survey('sl3', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
-        create_survey('sl4', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555013', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        #create_survey('sl3', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        #create_survey('sl4', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555013', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
+        
+        create_survey('ch', 'chi', ['2','*2','2','2','2','4','3','3','2','2','3','*2','5'], '7961555008', callback=True, inbound=True, includeid=True, countrycode='00861')
 main()
+        
