@@ -27,7 +27,7 @@ GWS_AUTH_ID = 25
 ****************************************************************************
 '''
 def create_survey(prefix, language, options, phone_num, callback, inbound, template=False, includeid=False, countrycode = '0'):
-    name = 'GWS_'+prefix+'_'+language
+    name = 'GWS_'+prefix+'_'+language+'_'+phone_num[-3:]
     s = Survey(name=name, number=phone_num, dialstring_prefix=PREFIX+countrycode, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template)
     s.save()
     print('creating new survey '+str(s))
