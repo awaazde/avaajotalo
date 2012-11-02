@@ -712,6 +712,33 @@ def main():
         #create_survey('sl3', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555012', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
         #create_survey('sl4', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555013', callback=False, inbound=False, template=True, includeid=False, countrycode='001')
         
-        create_survey('ch', 'chi', ['2','*2','2','2','2','4','3','3','2','2','3','*2','5'], '7961555008', callback=True, inbound=True, includeid=True, countrycode='00861')
+        #create_survey('ch', 'chi', ['2','*2','2','2','2','4','3','3','2','2','3','*2','5'], '7961555008', callback=True, inbound=True, includeid=True, countrycode='00861')
+        
+        create_survey('ef', 'eng', ['2','*1','4','2','3','3','3','3','2','3','6'], '7961555000', callback=False, inbound=False, template=True)
+        create_survey('lw', 'eng', ['*1','4','6','3','2','*5','2','3','3','4','*2','5'], '7961555001', callback=False, inbound=False, template=True, countrycode='001')
+        
+#        create_survey('mm', 'por', ['*2','2','*2','2','*1','*1','4','2','2','2','2','*2','*2','2'], '7961555006', callback=False, inbound=False, includeid=True, template=True, countrycode='0055')
+#        create_survey('ch', 'chi', ['2','*2','2','2','2','4','3','3','2','2','3','*2','5'], '7961555008', callback=False, inbound=False, includeid=True, template=True, countrycode='00861')
+#        create_survey('sl', 'sin', ['2','2','2','*2','3','4','2','2','4','3','2','3'], '7961555010', callback=False, inbound=False, template=True, countrycode='009')
+#        create_survey('dr', 'esp', ['2','3','*1','*1','2','*2','3','3','3','3','2'], '7961555011', callback=False, inbound=False, template=True, countrycode='001')
+#        
+#        create_survey('sa', 'hin', ['2','*2','3','3','3','2','3','3','2','2','2','2','2'], '7961555015', callback=False, inbound=False, template=True,)
+#        create_survey('', 'tiru/hinA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555032', callback=False, inbound=False, template=True, includesid=True)
+#        create_survey('', 'tiru/hinB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555034', callback=False, inbound=False, template=True, includesid=True)
+#        create_survey('', 'tiru/tamA', ['3','2','2','4','5','*2','*2','5','3','reccomp','2','2','*3dep12'], '7961555021', callback=False, inbound=False, template=True, includesid=True)
+#        create_survey('', 'tiru/tamB', ['3','2','2','4','5','*2','*2','5','3','recbrands','2','2','*3dep12'], '7961555023', callback=False, inbound=False, template=True, includesid=True)
+#
+#        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555041', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555042', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('ms', 'kan', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555043', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555050', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555051', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555052', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('mh', 'hin', ['2','2','2','2','2','2-goto{2:8}','4','5','3','3','4','2'], '7961555053', callback=False, inbound=False, template=True, includeid=False)
+#        create_survey('ppi', 'pun', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555076', callback=False, inbound=False, template=True,)
+#        create_survey('ppi', 'hin', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555078', callback=False, inbound=False, template=True,)
+#        create_survey('ppi', 'kan', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555095', callback=False, inbound=False, template=True,)
+#        create_survey('ppi', 'tam', ['2','*1','3','2','4','2','2','2','2','*1','*1','*2'], '7961555097', callback=False, inbound=False, template=True,)
+        
 main()
         
