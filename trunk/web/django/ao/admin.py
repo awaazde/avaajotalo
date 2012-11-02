@@ -35,13 +35,17 @@ class ForumTagInline(admin.TabularInline):
     
 class ForumAdmin(OrderingAdmin):
     inlines = (ForumTagInline,)
+    search_fields = ['name']
+
+class LineAdmin(OrderingAdmin):
+    search_fields = ['name']
 
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Tag, OrderingAdmin)
 admin.site.register(Admin, OrderingAdmin)
-admin.site.register(Line, OrderingAdmin)
+admin.site.register(Line, LineAdmin)
 admin.site.register(Message_forum, OrderingAdmin)
 admin.site.register(Membership, OrderingAdmin)
 admin.site.register(Transaction, OrderingAdmin)
