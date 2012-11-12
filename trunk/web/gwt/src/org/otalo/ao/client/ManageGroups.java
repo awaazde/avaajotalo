@@ -308,7 +308,7 @@ public class ManageGroups extends Composite {
     addMembersPanel.add(numbersPanel);
     addMembersPanel.add(namesPanel);
 		
-		addMembersButton = new Button("Send welcome SMS", new ClickHandler() {
+		addMembersButton = new Button("Add Members", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if (numbersArea.getValue() == null || "".equals(numbersArea.getValue()))
 				{
@@ -1058,7 +1058,7 @@ public class ManageGroups extends Composite {
 	    outer.setWidth("100%");
 	    outer.setSpacing(10);
 	    
-	    HTML confirm = new HTML("<b>Welcome SMSs sent!</b>");
+	    HTML confirm = new HTML("<b>Members added!</b>");
 	    confirm.setStyleName("dialog-headerText");
 	    outer.add(confirm);
 	    
