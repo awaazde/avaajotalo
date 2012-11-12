@@ -336,10 +336,12 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     dur = current_date - start
                     # may not be there if it's an old number
                     treatment = 'N/A'
+                    uname = ''
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
                         u = u[0]
                         treatment = 'No'
+                        uname = u.name
                         if u.balance == -1:
                             treatment = 'Yes'
                     last_prompt_file = call['last_prompt']
@@ -353,7 +355,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                         else:
                             input = 'N/A'                          
                         #all_calls += phone_num+delim+priority+delim+time_str(start)+delim+str(dur.seconds)+"\n"
-                        all_calls.append([phone_num,treatment,priority,time_str(start),str(dur.seconds), last_prompt_file, input])                        
+                        all_calls.append([uname, treatment,priority,time_str(start),str(dur.seconds), last_prompt_file, input])                        
                     del open_calls[phone_num]
                     
                 # add new call
@@ -368,10 +370,12 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                     dur = current_date - start
                     # may not be there if it's an old number
                     treatment = 'N/A'
+                    uname = ''
                     u = User.objects.filter(number=phone_num)
                     if bool(u):
                         u = u[0]
                         treatment = 'No'
+                        uname = u.name
                         if u.balance == -1:
                             treatment = 'Yes'
                     last_prompt_file = call['last_prompt']
@@ -385,7 +389,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                         else:
                             input = 'N/A'                         
                         #all_calls += phone_num+delim+priority+delim+time_str(start)+delim+str(dur.seconds)+"\n"
-                        all_calls.append([phone_num,treatment,priority,time_str(start),str(dur.seconds), last_prompt_file, input])
+                        all_calls.append([uname,treatment,priority,time_str(start),str(dur.seconds), last_prompt_file, input])
                     del open_calls[phone_num]
                     
             elif phone_num in open_calls:
@@ -405,7 +409,7 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
             #print("PhoneNumException: " + line)
             continue
                 
-    header = ['number','treatment?','call try #','time','duration','last prompt','input']    
+    header = ['name','treatment?','call try #','time','duration','last prompt','input']    
     if date_start:
         outfilename='outgoing_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -542,7 +546,7 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
                         topic = mf.tags.get(type='agri-topic')
                         topic = topic.tag
                     dur = (current_date-listenstart).seconds
-                    all_calls.append([uid,str(phone_num),treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),mf.message.user.number,crop,topic,str(mf.message.date),str(dur)])
+                    all_calls.append([uid,treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),crop,topic,str(mf.message.date),str(dur)])
                     
                     open_calls[phone_num] = False
                 
@@ -560,7 +564,7 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
             #print("PhoneNumException: " + line)
             continue
     
-    header = ['UserId','UserNum','Treatment?','SessId','ListenTime','Name','ForumId','MessageForumId','MessageAuthorNum','MessageCrop','MessageTopic','MessageDate','ListenDuration(s)']
+    header = ['UserId','Treatment?','SessId','ListenTime','Name','ForumId','MessageForumId','MessageCrop','MessageTopic','MessageDate','ListenDuration(s)']
     if date_start:
         outfilename='listens_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
