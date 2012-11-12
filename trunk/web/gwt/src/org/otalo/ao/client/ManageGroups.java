@@ -175,7 +175,7 @@ public class ManageGroups extends Composite {
 		memberControls.setWidth("800px");
 		memberControls.setSpacing(10);
 		Button removeMembers = new Button("Remove from group");
-		Button addMembers = new Button("Add members");
+		Anchor addMembers = new Anchor("Add members");
 		addMembers.addClickHandler(new ClickHandler() {
 			
 			public void onClick(ClickEvent event) {
