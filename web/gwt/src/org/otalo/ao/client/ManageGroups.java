@@ -45,6 +45,7 @@ import com.google.gwt.user.cellview.client.SimplePager.TextLocation;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratedTabPanel;
 import com.google.gwt.user.client.ui.FileUpload;
@@ -92,11 +93,12 @@ public class ManageGroups extends Composite {
 	private TextBox groupNameText, emailText, senderText;
 	private HandlerRegistration submitHandler = null;
 	private AreYouSureDialog confirm;
-	private TextArea numbersArea, namesArea;
+	private TextArea numbersArea, namesArea, publishersArea;
 	private Label groupNumber;
 	private HTML creditsLabel;
 	private RadioButton inboundOff, inboundMemsOnly, inboundAll;
 	private int reportStartIndex = 0, membersStartIndex = 0;
+	private CheckBox welcomeSMS;
 	
 	private Forum group;
 	private Line line;
@@ -299,6 +301,10 @@ public class ManageGroups extends Composite {
     namesPanel.add(namesArea);
     namesPanel.add(namesHelp);
     namesPanel.setVisible(false);
+    
+    welcomeSMS = new CheckBox();
+    welcomeSMS.setName("welcomeSMS");
+    welcomeSMS.setText("Send Welcome SMS");
 		
     memberPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
     addMembersPanel = new VerticalPanel();
@@ -307,6 +313,7 @@ public class ManageGroups extends Composite {
     addMembersPanel.add(new HTML("<br />"));
     addMembersPanel.add(numbersPanel);
     addMembersPanel.add(namesPanel);
+    addMembersPanel.add(welcomeSMS);
 		
 		addMembersButton = new Button("Add Members", new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -524,6 +531,17 @@ public class ManageGroups extends Composite {
     senderPanel.add(senderText);
     senderPanel.add(senderHelp);
     
+    Label publishersLabel = new Label("Multiple Publishers");
+    publishersArea = new TextArea();
+    publishersArea.setName("publishers");
+    publishersArea.setSize("80px", "90px");
+    Label publishersHelp = new HTML("Specify other phone numbers from which messages can be posted. <br /> Enter one 10-digit number per line.");
+    publishersHelp.setStyleName("helptext");
+    HorizontalPanel pubsPanel = new HorizontalPanel();
+    pubsPanel.setSpacing(5);
+    pubsPanel.add(publishersArea);
+    pubsPanel.add(publishersHelp);
+    
     Label greetingLabel = new Label("Greeting Message");
     greetingMessage = new FlexTable();
     //greetingMessage.setSpacing(5);
@@ -600,6 +618,8 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row++, 1, emailPanel);
 		settingsTable.setWidget(row, 0, senderLabel);
 		settingsTable.setWidget(row++, 1, senderPanel);
+		settingsTable.setWidget(row, 0, publishersLabel);
+		settingsTable.setWidget(row++, 1, pubsPanel);
 		settingsTable.setWidget(row, 0, greetingLabel);
 		settingsTable.setWidget(row++, 1, greetingMessage);
 		
@@ -966,6 +986,14 @@ public class ManageGroups extends Composite {
 		if (!"null".equals(sendername))
 			senderText.setValue(sendername);
 		
+		List<User> responders = group.getResponders();
+		String pubsStr = "";
+		for (User u : responders)
+		{
+			pubsStr += u.getNumber() + "\n";
+		}
+		publishersArea.setValue(pubsStr);
+		
 		greetingMessage.clearCell(0, 0);
 		if (!"".equals(group.getNameFile()) && !"null".equals(group.getNameFile()))
 		{
@@ -1241,6 +1269,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		numbersArea.setValue("");
 		namesArea.setValue("");
 		namesPanel.setVisible(false);
+		welcomeSMS.setValue(false);
 		addMembersPanel.setVisible(true);
 		
 	}

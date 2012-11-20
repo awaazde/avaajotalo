@@ -15,6 +15,11 @@
  */
 package org.otalo.ao.client.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gwt.core.client.JsArray;
+
 
 public class Forum extends BaseModel {
 	private static final String METADATA_MODEL_TYPE = "GROUP_METADATA";
@@ -101,6 +106,20 @@ public class Forum extends BaseModel {
 	public static boolean isGroupMetadata(JSOModel model)
 	{
 		return model.get("model").equals(METADATA_MODEL_TYPE);
+	}
+	
+	public List<User> getResponders()
+	{
+		List<User> users = new ArrayList<User>();
+		JsArray<JSOModel> arr = getObject("fields").getArray("responders");
+		
+		JSOModel m;
+		for (int i=0; i<arr.length(); i++)
+		{
+			m = arr.get(i);
+			users.add(new User(m));
+		}
+		return users;
 	}
 	
 }

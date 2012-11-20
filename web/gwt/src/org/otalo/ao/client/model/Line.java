@@ -57,6 +57,7 @@ public class Line extends BaseModel {
 		}
 		return forums;
 	}
+	
 	public boolean hasSMSConfig() {
 		return !getField("sms_config").equals("null");
 	}
