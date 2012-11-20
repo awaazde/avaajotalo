@@ -101,7 +101,7 @@ def group(request):
     if 'forums' in params:
         excludes=('members','messages','tags','responders')
     else:
-        relations={'forums':{'excludes':('members','messages','tags','responders')}}
+        relations={'forums':{'relations':{'responders':{'excludes':('name','balance','district','taluka','village','allowed','email','tags','name_file','balance_last_updated','taluka_file','village_file','district_file','indirect_bcasts_allowed')}}, 'excludes':('members','messages','tags',)}}
         
     return send_response(groups, relations=relations, excludes=excludes )
 
