@@ -534,7 +534,7 @@ public class ManageGroups extends Composite {
     Label publishersLabel = new Label("Multiple Publishers");
     publishersArea = new TextArea();
     publishersArea.setName("publishers");
-    publishersArea.setSize("80px", "90px");
+    publishersArea.setSize("95px", "90px");
     Label publishersHelp = new HTML("Specify other phone numbers from which messages can be posted. <br /> Enter one 10-digit number per line.");
     publishersHelp.setStyleName("helptext");
     HorizontalPanel pubsPanel = new HorizontalPanel();
