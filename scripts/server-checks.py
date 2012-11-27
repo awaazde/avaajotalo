@@ -10,7 +10,7 @@ ADMINS = User.objects.filter(pk__in=[2])
 CONFIG = Config.objects.get(pk=1)
 
 def report_error(msg):
-	sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, sender)
+	sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
 	
 def check_pris():
 	for i in range(1,NUM_PRIS+1):	
