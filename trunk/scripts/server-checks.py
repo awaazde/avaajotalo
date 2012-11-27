@@ -13,7 +13,7 @@ def report_error(msg):
 	sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, sender)
 	
 def check_pris():
-	for i in range(NUM_PRIS):	
+	for i in range(1,NUM_PRIS+1):	
 		p = subprocess.Popen(["wanpipemon", "-i", "w"+str(i)+"g1", "-c", "xm"], stdout=subprocess.PIPE)
 		out,err = p.communicate()
 		
