@@ -79,6 +79,7 @@ sd = basedir .. "/storage/otalo/";
 logfilename = sd .. "ao.log";
       --]]
 
+luasql = require "luasql.odbc";
 env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 assert (con:execute ("use otalo"));
