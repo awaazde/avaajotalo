@@ -18,7 +18,6 @@ Copyright (c) 2009 Regents of the University of California, Stanford
    --]]
 
 -- INCLUDES
-require "luasql.odbc";
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
