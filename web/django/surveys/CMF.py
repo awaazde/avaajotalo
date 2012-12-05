@@ -22,8 +22,8 @@ from otalo.surveys.models import Survey, Prompt, Option, Call, Input, Subject
 import otalo_utils, call_duration
 
 CMF_DESIGNATOR = '_CMF'
-#CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
-CMF_OUTPUT_DIR = ''
+CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
+#CMF_OUTPUT_DIR = ''
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
 
@@ -929,7 +929,7 @@ def main():
     #create_blank(num, line.dialstring_prefix, line.dialstring_suffix)
     #get_survey_results()
     
-    responder_report(48, [1], date_start=datetime(year=2012, month=1, day=1))
+    #responder_report(48, [1], date_start=datetime(year=2012, month=1, day=1))
     
 main()
 
