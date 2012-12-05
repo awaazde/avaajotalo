@@ -22,7 +22,7 @@ from otalo.surveys.models import Survey, Prompt, Option, Call, Input, Subject
 import otalo_utils, call_duration
 
 CMF_DESIGNATOR = '_CMF'
-CMF_OUTPUT_DIR = '/home/cmf/ao_reports/'
+CMF_OUTPUT_DIR = '/home/cmf/reports/'
 #CMF_OUTPUT_DIR = ''
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
