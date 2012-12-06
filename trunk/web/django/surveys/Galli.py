@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from otalo.ao.models import Line, User
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
-import otalo_utils
+import otalo_utils, num_calls
 
 '''
 ****************************************************************************
@@ -281,6 +281,39 @@ def results_by_callee(linenumber, callees, date_start=None, date_end=None):
     outputfilename = OUTPUT_FILE_DIR+outputfilename+'.csv'
     output = csv.writer(open(outputfilename, 'wb'))           
     output.writerows(all_callees)
+    
+def monthly_calls(inboundf, number, date_start, date_end=False):
+    calls={}
+    
+    if not date_end:
+        date_end = datetime.now()
+    
+    # inbound calls
+    inbound_calls = num_calls.get_calls(inboundf, date_start=date_start, date_end=date_end, quiet=True)
+        
+    d = datetime(day=1, month=date_start.month, year=date_start.year)
+    
+    while d < date_end:
+        if d.month == 12:
+            month_end = datetime(day=1,month=1,year=d.year+1)
+        else:
+            month_end = datetime(day=1,month=d.month+1,year=d.year+1)
+            
+        ninbound_calls = 0
+        for week in inbound_calls:
+            if week >= d and week < month_end:
+                ninbound_calls += inbound_calls[week]
+                
+        noutbound_calls = Call.objects.filter(survey__number=number, complete=True, date__gte=d, date__lt=month_end).count()
+        
+        calls[d] = [ninbound_calls, noutbound_calls]
+        d = month_end
+    
+    print('Month\tInbound\tOutbound')
+    for date, call_lst in calls.iteritems():
+        print(date_str(date) + '\t' + '\t'.join(map(str, call_lst)) )
+        
+    
 
 '''
 ****************************************************************************
@@ -407,20 +440,16 @@ def main():
         calleesfname = sys.argv[2]
         add_users(calleesfname)
     elif '--monitoring_survey' in sys.argv:
-        lineid = sys.argv[2]
-        line = Line.objects.get(pk=int(lineid))
-        
         qnames = sys.argv[3]
         qnames = qnames.split(',')
         qnames = [name.strip() for name in qnames]
         
         for qname in qnames:
             monitoring_template(line,qname) 
-    elif '--standard_template' in sys.argv:
-        lineid = sys.argv[2]
-        line = Line.objects.get(pk=int(lineid))
-        
-        name = sys.argv[3]
-        
-        standard_template(line,name)
+    elif '--monthly_calls' in sys.argv:
+        start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        monthly_calls(inbound, line.number, start, end)
 main()
