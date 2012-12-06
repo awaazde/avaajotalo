@@ -1135,4 +1135,4 @@ def main():
 #		destnums=['7961907777']
 #		print_log_for_nums(f, destnums, lang="kan/")
 		
-main()
+#main()
