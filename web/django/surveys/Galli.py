@@ -297,7 +297,7 @@ def monthly_calls(inboundf, number, date_start, date_end=False):
         if d.month == 12:
             month_end = datetime(day=1,month=1,year=d.year+1)
         else:
-            month_end = datetime(day=1,month=d.month+1,year=d.year+1)
+            month_end = datetime(day=1,month=d.month+1,year=d.year)
             
         ninbound_calls = 0
         for week in inbound_calls:
@@ -310,8 +310,11 @@ def monthly_calls(inboundf, number, date_start, date_end=False):
         d = month_end
     
     print('Month\tInbound\tOutbound')
-    for date, call_lst in calls.iteritems():
-        print(date_str(date) + '\t' + '\t'.join(map(str, call_lst)) )
+    dates = calls.keys()
+    dates.sort()
+    for date in dates:
+        call_lst = calls[date]
+        print(time_str(date) + '\t' + '\t'.join(map(str, call_lst)) )
         
     
 
