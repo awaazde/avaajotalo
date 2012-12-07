@@ -421,7 +421,15 @@ def main():
     elif '--monthlyreport' in sys.argv:
         calleesfname = sys.argv[2]
         now = datetime.now()
-        start = datetime(year=now.year, month=now.month-1, day=1)
+        # assume we want the report for the previous month
+        year = now.year
+        month = now.month-1
+        
+        if now.month == 0:
+            year -= 1
+            month = 12
+        
+        start = datetime(year=year, month=month, day=1)
         
         callees_info = get_callees_info(calleesfname)
         
