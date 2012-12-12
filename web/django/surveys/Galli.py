@@ -306,11 +306,11 @@ def monthly_calls(inboundf, number, date_start, date_end=False):
                 
         noutbound_calls = Call.objects.filter(survey__number=number, complete=True, date__gte=d, date__lt=month_end).count()
         
-        bcasts = Survey.objects.filter(number=number, broadcast=True, call__date__gte=d, call__date__lt=month_end)
+        bcasts = Survey.objects.filter(number=number, broadcast=True, call__date__gte=d, call__date__lt=month_end).distinct()
         naow_bcasts = bcasts.filter(prompt__file__contains='AOW').count()
         nmonitor_bcasts = bcasts.filter(prompt__file__contains='MFQw-guj').count()
         
-        calls[d] = [ninbound_calls, noutbound_calls, naow_bcasts, n_monitor_bcasts, bcasts.count()]
+        calls[d] = [ninbound_calls, noutbound_calls, naow_bcasts, nmonitor_bcasts, bcasts.count()]
         d = month_end
     
     print('Month\tInbound\tOutbound\tAOW bcasts\tMonitoring bcasts\tTotal bcasts')
