@@ -16,7 +16,7 @@
 import sys, os, csv
 from datetime import datetime, timedelta
 from django.conf import settings
-from otalo.ao.models import Line, User
+from otalo.ao.models import Line, User, Forum, Message_forum
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
 import otalo_utils, num_calls
 
