@@ -467,4 +467,28 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         monthly_calls(inbound, line.number, start, end)
+    elif '--main' in sys.argv:
+        fids =[29]
+        for fid in fids:
+            f = Forum.objects.get(pk=fid)
+            messages = Message_forum.objects.filter(forum=f, status=Message_forum.STATUS_APPROVED).order_by('-position')
+            messages = messages[2:]
+            for m in messages:
+                print("rejecting "+str(m))
+                m.status = Message_forum.STATUS_REJECTED
+                # Reject all responses
+                if m.message.lft == 1:
+                    top = m.message
+                else:
+                    top = m.message.thread
+                responses = Message_forum.objects.filter(forum = m.forum, message__thread=top, message__lft__gt=m.message.lft, message__rgt__lt=m.message.rgt)
+                for msg in responses:
+                    print("rejecting response "+str(msg))
+                    msg.status = Message_forum.STATUS_REJECTED
+                    msg.save()
+        
+                m.position = None
+                
+                m.save()
+        
 main()
