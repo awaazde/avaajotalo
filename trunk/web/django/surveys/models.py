@@ -64,6 +64,12 @@ class Survey(models.Model):
     # and to allow manual setting in test suites
     created_on = models.DateTimeField(blank=True, null=True)
     
+    
+    '''
+    ' For inbound surveys' callback with spoofed numbers (e.g. for VoIP calling)
+    '''
+    outbound_number = models.CharField(max_length=24, blank=True, null=True)
+    
     def getstatus(self):
         now = datetime.now()
         pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()

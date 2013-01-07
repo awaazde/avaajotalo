@@ -54,7 +54,7 @@ caller = session:getVariable("caller_id_number");
 caller = caller:sub(-10);
 
 -- get survey id
-query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback ";
+query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback, survey.outbound_number ";
 query = query .. " FROM surveys_survey survey ";
 query = query .. " WHERE number LIKE '%" .. destination .. "%' ";
 -- This is legacy, moved to inbound field
@@ -81,6 +81,7 @@ end
 
 complete_after_idx = tonumber(res[4]);
 local callback_allowed = tonumber(res[5]);
+local outbound_number = tonumber(res[6]);
 
 -- create a call in order to track any inputs made to this survey
 -- first get subject id
@@ -147,6 +148,7 @@ end
 prompts = get_prompts(surveyid);
 
 if (callback_allowed == 1) then
+	freeswitch.consoleLog("info", script_name .. " : in main \n");
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	api = freeswitch.API();
@@ -164,7 +166,7 @@ if (callback_allowed == 1) then
 	local vars = '{';
 	vars = vars .. 'ignore_early_media=true';
 	vars = vars .. ',caller_id_number='..caller;
-	vars = vars .. ',origination_caller_id_number='..destination;
+	vars = vars .. ',origination_caller_id_number='.. (outbound_number or destination);
 	vars = vars .. '}'
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
