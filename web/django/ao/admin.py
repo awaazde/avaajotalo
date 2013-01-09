@@ -38,7 +38,7 @@ class ForumAdmin(OrderingAdmin):
     search_fields = ['name']
 
 class LineAdmin(OrderingAdmin):
-    search_fields = ['name']
+    search_fields = ['name', 'number']
 
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
