@@ -38,6 +38,7 @@ bsd = basedir .. "/scripts/AO/sounds/blood/";
 
 digits = "";
 arg = {};
+opencursors = {};
 
 sessid = os.time();
 
