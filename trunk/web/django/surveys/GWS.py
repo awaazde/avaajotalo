@@ -151,11 +151,11 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
     else:
         prefix = PREFIX
     prefix += country_code
-#    s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
-#    if bool(s):
-#        s = s[0]
-#        s.delete()
-#        print('deleting survey')
+    s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
+    if bool(s):
+        s = s[0]
+        s.delete()
+        print('deleting survey')
     s = Survey(name='GWS_INTL', number=phone_num, dialstring_prefix=prefix, dialstring_suffix=SUFFIX, complete_after=1, callback=callback, inbound=inbound, template=template, outbound_number=outbound_number)
     s.save()
     print('creating new survey '+str(s))
@@ -170,12 +170,8 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
 #    intro_opt2.save()
 #    order += 1
     
-    q1 = Prompt(file=SUBDIR+language+"/ed1"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
+    q1 = Prompt(file=SUBDIR+language+"/ed1"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000, inputlen=2)
     q1.save()
-    q1_opt = Option(number="1", action=Option.INPUT, prompt=q1)
-    q1_opt.save()
-    q1_opt2 = Option(number="2", action=Option.INPUT, prompt=q1)
-    q1_opt2.save()
     order+=1
     
     q2 = Prompt(file=SUBDIR+language+"/ed2"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
@@ -184,8 +180,6 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
     q2_opt.save()
     q2_opt2 = Option(number="2", action=Option.INPUT, prompt=q2)
     q2_opt2.save()
-    q2_opt3 = Option(number="3", action=Option.INPUT, prompt=q2)
-    q2_opt3.save()
     order+=1
     
     q3 = Prompt(file=SUBDIR+language+"/ed3"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
@@ -198,12 +192,12 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
     q3_opt3.save()
     order+=1
     
-    q4 = Prompt(file=SUBDIR+language+"/ed4"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000, inputlen=10)
+    q4 = Prompt(file=SUBDIR+language+"/ed4"+SOUND_EXT, order=order, bargein=True, survey=s, delay=4000)
     q4.save()
-    #q4_opt = Option(number="1", action=Option.INPUT, prompt=q4)
-    #q4_opt.save()
-    #q4_opt2 = Option(number="2", action=Option.INPUT, prompt=q4)
-    #q4_opt2.save()
+    q4_opt = Option(number="1", action=Option.INPUT, prompt=q4)
+    q4_opt.save()
+    q4_opt2 = Option(number="2", action=Option.INPUT, prompt=q4)
+    q4_opt2.save()
     #q4_opt3 = Option(number="3", action=Option.INPUT, prompt=q4)
     #q4_opt3.save()
     #q4_opt4 = Option(number="4", action=Option.INPUT, prompt=q4)
@@ -755,7 +749,7 @@ def main():
         #create_survey('ar', 'guj', ['*2','3','3','3','3','3','3','3','2-goto{2:12}','2','2'], '7961555070', callback=True, inbound=True, includeid=True)
         #create_survey('ar', 'guj', ['*2','3','3','3','3','3','3','3','2-goto{2:12}','2','2'], '7961555070', callback=False, inbound=False, includeid=True, template=True)
         
-        create_intl_test_survey('7961555007', '0055', callback=True, inbound=True, outbound_number='00551130705198', language='por')
+        create_intl_test_survey('7961555007', '0055', callback=True, inbound=True, outbound_number='551130705198', language='por')
         
         #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*3dep11','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
         #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*3dep11','2'], '7961555006', callback=False, inbound=False, includeid=True, countrycode='0055', template=True)        
