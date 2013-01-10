@@ -749,10 +749,10 @@ def main():
         #create_survey('ar', 'guj', ['*2','3','3','3','3','3','3','3','2-goto{2:12}','2','2'], '7961555070', callback=True, inbound=True, includeid=True)
         #create_survey('ar', 'guj', ['*2','3','3','3','3','3','3','3','2-goto{2:12}','2','2'], '7961555070', callback=False, inbound=False, includeid=True, template=True)
         
-        create_intl_test_survey('7961555007', '0055', callback=True, inbound=True, outbound_number='551130705198', language='por')
+        #create_intl_test_survey('7961555007', '0055', callback=True, inbound=True, outbound_number='551130705198', language='por')
         
-        #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*3dep11','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
-        #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*3dep11','2'], '7961555006', callback=False, inbound=False, includeid=True, countrycode='0055', template=True)        
+        create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
+        create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=False, inbound=False, includeid=True, countrycode='0055', template=True)        
 
 main()
         
