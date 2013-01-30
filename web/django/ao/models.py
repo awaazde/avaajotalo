@@ -154,6 +154,7 @@ class Forum(models.Model):
     STATUS_BCAST_CALL_SMS = 1
     STATUS_BCAST_SMS = 2
     STATUS_INACTIVE = 3
+    STATUS_BCAST_CALL = 4
     status = models.IntegerField(blank=True, null=True)
     # The display name of the owner of this group
     sendername = models.CharField(max_length=128, blank=True, null=True)
@@ -168,7 +169,7 @@ class Forum(models.Model):
         return self.name
     
 class Tag(models.Model):
-    tag = models.CharField(max_length=48)
+    tag = models.CharField(max_length=256)
     type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
     
@@ -282,11 +283,13 @@ class Transaction(models.Model):
     BROADCAST_CALL = 0
     INBOUND_CALL = 1
     RECHARGE = 2
+    SMS = 3
     
     TYPE = (
     (BROADCAST_CALL, 'Broadcast'),
     (INBOUND_CALL, 'Inbound Call'),
     (RECHARGE, 'Recharge'),
+    (SMS, 'SMS'),
     )
     
     user = models.ForeignKey(User)
