@@ -121,7 +121,7 @@ public class TopPanel extends Composite implements ClickHandler {
 				Messages.get().setModerator(moderator);
 			}
 			
-			HTML balanceLabel = new HTML("<b>Balance (Rs.):</b>");
+			HTML balanceLabel = new HTML("<b>Credits:</b>");
 			String balance = Messages.get().getModerator().getBalance();
 			if ("null".equals(balance))
 				balance = "0";

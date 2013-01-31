@@ -25,7 +25,7 @@ public class Forum extends BaseModel {
 	private static final String METADATA_MODEL_TYPE = "GROUP_METADATA";
 	// make this consistent with ao:models.py
   public enum ForumStatus {  
-  	BCAST_CALL_SMS(1), BCAST_SMS(2), INACTIVE(3);
+  	BCAST_CALL_SMS(1), BCAST_SMS(2), INACTIVE(3), BCAST_CALL(4);
   
     private int code;  
   
