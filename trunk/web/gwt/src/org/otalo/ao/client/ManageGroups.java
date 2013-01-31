@@ -489,8 +489,15 @@ public class ManageGroups extends Composite {
     deliveryBox = new ListBox();
     deliveryBox.setName("deliverytype");
     // hard-coding for now; stay consistent with forms.py:createacctform
+    deliveryBox.addItem("Call Only", String.valueOf(Forum.ForumStatus.BCAST_CALL.getCode()));
     deliveryBox.addItem("Call + SMS", String.valueOf(Forum.ForumStatus.BCAST_CALL_SMS.getCode()));
     deliveryBox.addItem("SMS Only", String.valueOf(Forum.ForumStatus.BCAST_SMS.getCode()));
+    Label deliveryHelp = new Label("IMPORTANT: SMSs cost half credit per recipient in addition to the call charge.");
+    deliveryHelp.setStyleName("helptext");
+    HorizontalPanel deliveryPanel = new HorizontalPanel();
+    deliveryPanel.setSpacing(5);
+    deliveryPanel.add(deliveryBox);
+    deliveryPanel.add(deliveryHelp);
     
     Label inputTypeLabel = new Label("Response Type");
     inputBox = new ListBox();
@@ -609,7 +616,7 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row, 0, languageLabel);
 		settingsTable.setWidget(row++, 1, languageBox);
 		settingsTable.setWidget(row, 0, deliveryLabel);
-		settingsTable.setWidget(row++, 1, deliveryBox);
+		settingsTable.setWidget(row++, 1, deliveryPanel);
 		settingsTable.setWidget(row, 0, inputTypeLabel);
 		settingsTable.setWidget(row++, 1, inputBox);
 		settingsTable.setWidget(row, 0, freeInboundLabel);
@@ -849,7 +856,7 @@ public class ManageGroups extends Composite {
       }
     };
     
-    reportTable.addColumn(costColumn, "Cost (INR)");
+    reportTable.addColumn(costColumn, "Credits");
     reportTable.setColumnWidth(costColumn, 20, Unit.PCT);
     
     Column<Broadcast, Broadcast> downloadColumn = new Column<Broadcast,Broadcast>(new ActionCell<Broadcast>("Download", new ActionCell.Delegate<Broadcast>() {
