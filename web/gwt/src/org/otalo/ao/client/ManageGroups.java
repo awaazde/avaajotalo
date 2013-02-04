@@ -1105,7 +1105,7 @@ public class ManageGroups extends Composite {
 	    addedLbl.setStyleName("dialog-NumsText");
 	    outer.add(addedLbl);
 	    
-	    HTML notAddedTitle = new HTML("<b>Not Added (already joined/unsubscribed/deleted):</b>");
+	    HTML notAddedTitle = new HTML("<b>Not Added (already joined or unsubscribed):</b>");
 	    notAddedTitle.setStyleName("dialog-headerText");
 			outer.add(notAddedTitle);
 			Label notAddedLbl = new Label(notAdded, true);
