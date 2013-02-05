@@ -32,9 +32,7 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     if outbound_number:
         dprefix = VOIP_PREFIX
     else:
-        dprefix = PREFIX
-        
-    dprefix += countrycode
+        dprefix = PREFIX + countrycode
     s = Survey(name=name, number=phone_num, dialstring_prefix=dprefix, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template, outbound_number=outbound_number)
     s.save()
     print('creating new survey '+str(s))
@@ -149,8 +147,7 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
     if outbound_number:
         prefix = VOIP_PREFIX
     else:
-        prefix = PREFIX
-    prefix += country_code
+        prefix = PREFIX + country_code
     s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
     if bool(s):
         s = s[0]
@@ -751,8 +748,11 @@ def main():
         
         #create_intl_test_survey('7961555007', '0055', callback=True, inbound=True, outbound_number='551130705198', language='por')
         
-        create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
-        create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=False, inbound=False, includeid=True, countrycode='0055', template=True)        
+        #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
+        #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=False, inbound=False, includeid=True, countrycode='0055', template=True)
+        
+        create_survey('mx', 'esp', ['2','*2','*2','3','4-goto{1:7,3:7}','3','3','3-goto{2:10,3:10}','7','4','3','6'], '7961555012', callback=True, inbound=True, outbound_number='0018006816738', includeid=True, countrycode='0052')
+        #create_survey('mx', 'esp', ['2','*2','*2','3','4-goto{1:7,3:7}','3','3','3-goto{2:10,3:10}','7','4','3','6'], '7961555012', callback=False, inbound=False, outbound_number='0018006816738', includeid=True, countrycode='0052', template=True)        
 
 main()
         
