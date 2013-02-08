@@ -32,7 +32,9 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
     if outbound_number:
         dprefix = VOIP_PREFIX
     else:
-        dprefix = PREFIX + countrycode
+        dprefix = PREFIX 
+        
+    dprefix += countrycode
     s = Survey(name=name, number=phone_num, dialstring_prefix=dprefix, dialstring_suffix=SUFFIX, complete_after=0, callback=callback, inbound=inbound, template=template, outbound_number=outbound_number)
     s.save()
     print('creating new survey '+str(s))
@@ -125,14 +127,14 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
         # delete any old templates associated with this number
         Survey.objects.filter(number=phone_num, template=True).exclude(pk=s.id).delete()
         
-        l = Line.objects.create(name=name, number=phone_num, dialstring_prefix=PREFIX+countrycode, dialstring_suffix=SUFFIX, language=language, logo_file='ao/img/goodworld.png')
+        l = Line.objects.create(name=name, number=phone_num, dialstring_prefix=dprefix, dialstring_suffix=SUFFIX, language=language, logo_file='ao/img/goodworld.png')
         print("creating line "+ str(l))
         f = Forum.objects.create(name='Announce_'+name[4:], moderated='y', posting_allowed='n', responses_allowed='n', maxlength=90, routeable='n', listening_allowed=False)
         print("creating forum "+ str(f))
         l.forums.add(f)
         
         # create a blank template
-        templates.blank_template(phone_num, SUBDIR, PREFIX+countrycode, SUFFIX, name='BLANK_'+name[4:])
+        templates.blank_template(phone_num, SUBDIR, dprefix, SUFFIX, name='BLANK_'+name[4:])
         
         auth = AuthUser.objects.get(pk=GWS_AUTH_ID)
         # assume a single user for this auth
