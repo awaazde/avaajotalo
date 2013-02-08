@@ -36,6 +36,7 @@ class ForumTagInline(admin.TabularInline):
 class ForumAdmin(OrderingAdmin):
     inlines = (ForumTagInline,)
     search_fields = ['name']
+    exclude = ('responders',)
 
 class LineAdmin(OrderingAdmin):
     search_fields = ['name', 'number']
