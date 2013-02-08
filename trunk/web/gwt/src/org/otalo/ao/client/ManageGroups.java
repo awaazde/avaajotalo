@@ -82,7 +82,7 @@ public class ManageGroups extends Composite {
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
 	private Button saveButton, cancelButton, addMembersButton, cancelAddMembers, deleteButton;
-	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox, reports, month, year;
+	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox, reports, month, year, backupsBox;
 	private DataGrid<Membership> memberTable, joinsTable;
 	private DataGrid<Broadcast> reportTable;
 	private FormPanel manageGroupsForm;
@@ -518,6 +518,13 @@ public class ManageGroups extends Composite {
     inboundButtons.add(inboundMemsOnly);
     inboundButtons.add(inboundAll);
     
+    Label backupsLabel = new Label("Backup Calls");
+    backupsBox = new ListBox();
+    backupsBox.setName("backup_calls");
+    backupsBox.addItem("0");
+    backupsBox.addItem("1");
+    backupsBox.addItem("2");
+    
     Label emailLabel = new Label("Email Address");
     emailText = new TextBox();
     emailText.setName("email");
@@ -621,6 +628,8 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row++, 1, inputBox);
 		settingsTable.setWidget(row, 0, freeInboundLabel);
 		settingsTable.setWidget(row++, 1, inboundButtons);
+		settingsTable.setWidget(row, 0, backupsLabel);
+		settingsTable.setWidget(row++, 1, backupsBox);
 		settingsTable.setWidget(row, 0, emailLabel);
 		settingsTable.setWidget(row++, 1, emailPanel);
 		settingsTable.setWidget(row, 0, senderLabel);
@@ -985,6 +994,12 @@ public class ManageGroups extends Composite {
 		}
 		else
 			inboundOff.setValue(true);
+		
+		String backups = group.getBackups();
+		if ("null".equals(backups))
+			backupsBox.setSelectedIndex(0);
+		else
+			backupsBox.setSelectedIndex(Integer.valueOf(backups));
 		
 		String email = Messages.get().getModerator().getEmail();
 		emailText.setValue(email);
