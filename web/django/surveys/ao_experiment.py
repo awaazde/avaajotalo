@@ -314,8 +314,10 @@ def main():
     for source in SOURCES:
         for msg in MSGS:
             surname = source + "_" + msg
-            INBOUND[surname] = INBOUND_PREFIX + str(suffix)
+            number = INBOUND_PREFIX + str(suffix)
+            INBOUND[surname] = number
             suffix += 1
+            print(source+"\t"+msg+"\t"+number)
             
     #subjects()
     #surveys()
@@ -596,7 +598,7 @@ def main():
 9909399897,
 9909070236,
 9904622512]
-    print_groups(numbers)
+    #print_groups(numbers)
 
 main()
 

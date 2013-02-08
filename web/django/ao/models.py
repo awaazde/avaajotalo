@@ -160,6 +160,7 @@ class Forum(models.Model):
     sendername = models.CharField(max_length=128, blank=True, null=True)
     members = models.ManyToManyField(User, through='Membership', related_name='members', blank=True, null=True)
     add_member_credits = models.IntegerField(blank=True, null=True)
+    backup_calls = models.IntegerField(blank=True, null=True)
     
     '''
     ' End group-related additions

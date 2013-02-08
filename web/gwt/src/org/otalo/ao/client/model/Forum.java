@@ -122,4 +122,9 @@ public class Forum extends BaseModel {
 		return users;
 	}
 	
+	public String getBackups()
+	{
+		return getField("backup_calls");
+	}
+	
 }
