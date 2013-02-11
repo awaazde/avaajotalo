@@ -123,6 +123,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.staticfiles',
     'crispy_forms',
+    #'streamit',
 )
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
@@ -139,3 +140,4 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+REPORTS_ROOT = '/Users/neil/Documents/'

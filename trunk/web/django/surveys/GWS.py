@@ -149,7 +149,9 @@ def create_intl_test_survey(phone_num, country_code, callback=False, inbound=Fal
     if outbound_number:
         prefix = VOIP_PREFIX
     else:
-        prefix = PREFIX + country_code
+        prefix = PREFIX 
+    
+    prefix += country_code
     s = Survey.objects.filter(name='GWS_INTL', number=phone_num, callback=callback, inbound=inbound, template=template)
     if bool(s):
         s = s[0]

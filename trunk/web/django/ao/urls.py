@@ -66,6 +66,8 @@ urlpatterns = patterns('',
     (r'^deletegroup/$', 'awaazde.streamit.views.deletegroup'),
     (r'^broadcastreports/(?P<group_id>\d+)/$', 'awaazde.streamit.views.broadcastreports'),
     (r'^balance/$', 'awaazde.streamit.views.updatebalance'),
+    # 2 is for gen2 console views
+    (r'^2/', include('awaazde.console.urls')),
 )
 
 if settings.DEVELOPMENT:
