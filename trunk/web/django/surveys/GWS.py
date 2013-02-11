@@ -755,8 +755,12 @@ def main():
         #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=True, inbound=True, includeid=True, countrycode='0055')
         #create_survey('ed', 'por', ['*2','2','3','2','3','2','2','2','3','2','3','*4dep11','2'], '7961555006', callback=False, inbound=False, includeid=True, countrycode='0055', template=True)
         
-        create_survey('mx', 'esp', ['2','*2','*2','3','4-goto{1:7,3:7}','3','3','3-goto{2:10,3:10}','7','4','3','6'], '7961555012', callback=True, inbound=True, outbound_number='0018006816738', includeid=True, countrycode='0052')
+        #create_survey('mx', 'esp', ['2','*2','*2','3','4-goto{1:7,3:7}','3','3','3-goto{2:10,3:10}','7','4','3','6'], '7961555012', callback=True, inbound=True, outbound_number='0018006816738', includeid=True, countrycode='0052')
         #create_survey('mx', 'esp', ['2','*2','*2','3','4-goto{1:7,3:7}','3','3','3-goto{2:10,3:10}','7','4','3','6'], '7961555012', callback=False, inbound=False, outbound_number='0018006816738', includeid=True, countrycode='0052', template=True)        
+
+        create_survey('au', 'chi', ['2','3','3','3','3','2','4','*1','4','4','3','4','3','3','*2'], '7961555008', callback=True, inbound=True, outbound_number='00864001200975', includeid=True, countrycode='0086')
+        create_survey('au', 'chi', ['2','3','3','3','3','2','4','*1','4','4','3','4','3','3','*2'], '7961555008', callback=False, inbound=False, outbound_number='00864001200975', includeid=True, countrycode='0086', template=True)        
+
 
 main()
         
