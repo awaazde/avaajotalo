@@ -134,7 +134,7 @@ def create_survey(prefix, language, options, phone_num, callback, inbound, templ
         l.forums.add(f)
         
         # create a blank template
-        templates.blank_template(phone_num, SUBDIR, dprefix, SUFFIX, name='BLANK_'+name[4:])
+        templates.blank_template(phone_num, SUBDIR, dprefix, SUFFIX, name='BLANK_'+name[4:], outbound_number=outbound_number)
         
         auth = AuthUser.objects.get(pk=GWS_AUTH_ID)
         # assume a single user for this auth
