@@ -467,6 +467,11 @@ def main():
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         monthly_calls(inbound, line.number, start, end)
+    elif '--standard_template' in sys.argv:
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
+        contenttype = sys.argv[3]
+        standard_template(line, contenttype)
     elif '--main' in sys.argv:
         fids =[29]
         for fid in fids:
