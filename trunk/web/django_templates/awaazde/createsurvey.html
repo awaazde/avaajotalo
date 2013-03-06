@@ -1,0 +1,61 @@
+{% extends 'registration/base_site.html' %}
+{% load crispy_forms_tags %}
+
+{% block extrahead %}
+<script src="{{ STATIC_URL }}js/bootstrap-alert.js" type="text/javascript"></script>
+<script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js" type="text/javascript"></script>
+<link rel="stylesheet" media="all" href="{{ STATIC_URL }}css/bootstrap.css" type="text/css" />
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css" />
+
+<style>
+/*
+	Override the style from base.css
+*/
+
+input[name="submit"] {
+	background: #0074CC;
+	border-style: solid;
+	border-color: #0074CC;
+	border-width: 1px;
+	color: 	#FFFFFF;
+	padding: 4px 10px; 
+}
+
+input[name="refresh"]{
+	background: #5BB75B;
+	border-style: solid;
+	border-color: #5BB75B;
+	border-width: 1px;
+	color: 	#FFFFFF;
+	padding: 4px 10px; 
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
+   	<form action="{% url awaazde.console.views.createsurvey %}" class="form-horizontal" method="post">
+   		{% crispy createform %}
+   		{% if question_formset %}
+   			{% crispy question_formset question_formset.form.helper %}
+   		{% endif %}
+   	</form>
+{% endblock %}
+
+{% block footer %}
+<script>
+	var $include_id = $('input[name="include_id"]'),
+    	$id_length = $('select[name="id_length"]');
+	$include_id.change(function() {
+    	if ($include_id.is(':checked')) {
+        	$id_length.removeAttr('disabled');
+    	} else {
+        	$id_length.attr('disabled', 'disabled').val('');
+        	$id_length.val(4);
+    	}
+	}).trigger('change'); // added trigger to calculate initial state
+
+</script>
+{% endblock %}
+
