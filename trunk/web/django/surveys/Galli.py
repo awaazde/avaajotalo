@@ -140,8 +140,12 @@ def monitoring_results(number, phone_num_filter=False, date_start=False, date_en
         calls = calls.filter(date__lt=date_end)
         
     for call in calls:
-        user = User.objects.get(number=call.subject.number)
-        result = [user.name or '', user.number, user.taluka or '', user.village or '', time_str(call.date), call.duration or '']
+        user = User.objects.filter(number=call.subject.number)
+        if bool(user):
+            user = user[0]
+            result = [user.name or '', user.number, user.taluka or '', user.village or '', time_str(call.date), call.duration or '']
+        else:
+            result = ['', call.subject.number, '', '', time_str(call.date), call.duration or '']
         
         inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
         
@@ -377,7 +381,7 @@ def main():
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         
         monitoring_results(out_num, date_start=start, date_end=end)
-    elif '--userinfo' in sys.argv:
+    elif '--add_users' in sys.argv:
         calleesfname = sys.argv[2]
         add_users(calleesfname)
     elif '--monitoring_survey' in sys.argv:
@@ -421,5 +425,7 @@ def main():
                 m.position = None
                 
                 m.save()
+    else:
+        print("Command not found.")
         
 main()
