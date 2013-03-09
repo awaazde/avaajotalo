@@ -26,7 +26,8 @@ import otalo_utils, num_calls
 ****************************************************************************
 '''
 LINEID=16
-OUTPUT_FILE_DIR='/home/galli/reports/'
+#OUTPUT_FILE_DIR='/home/galli/reports/'
+OUTPUT_FILE_DIR=''
 SOUND_EXT = ".wav"
 
 '''
@@ -127,111 +128,29 @@ def monitoring_template(line, questionname):
 ****************************************************************************
 '''
         
-def monitoring_results(number, filename, callees_info, phone_num_filter=False, date_start=False, date_end=False):
+def monitoring_results(number, phone_num_filter=False, date_start=False, date_end=False):
     all_calls = []
-    open_calls = {}
     questions = set()
-    
-    f = open(filename)
-
-    while(True):
-        line = f.readline()
-        if not line:
-            break
-        try:
+    calls = Call.objects.filter(survey__number=number, survey__broadcast=True, complete=True)
+    if phone_num_filter:
+        calls = calls.filter(subject__number__in=phone_num_filter)
+    if date_start:
+        calls = calls.filter(date__gte=date_start)
+    if date_end:
+        calls = calls.filter(date__lt=date_end)
         
-        #################################################
-        ## Use the calls here to determine what pieces
-        ## of data must exist for the line to be valid.
-        ## All of those below should probably always be.
+    for call in calls:
+        user = User.objects.get(number=call.subject.number)
+        result = [user.name or '', user.number, user.taluka or '', user.village or '', time_str(call.date), call.duration or '']
         
-            phone_num = otalo_utils.get_phone_num(line)
-            current_date = otalo_utils.get_date(line)        
-            dest = otalo_utils.get_destination(line)            
-        ##
-        ################################################
-            
-            if phone_num_filter and not phone_num in phone_num_filter:
-                continue
-                
-            if date_start:
-                if date_end:
-                    if not (current_date >= date_start and current_date < date_end):
-                        continue
-                    if current_date > date_end:
-                        break
-                else:
-                    if not current_date >= date_start:
-                        continue
-    
-            if line.find("Start call") != -1:
-                # check to see if this caller already has one open
-                if phone_num in open_calls:
-                    # close out call                
-                    open_call = open_calls[phone_num]    
-                    start = open_call['start']
-                    dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
-                    if bool(call):
-                        #if call.count()>1:
-                            #print("more than one call found: " + str(call))
-                        call = call[0]
-                        codenum = get_codenum(phone_num, callees_info)
-                        village = get_village(phone_num, callees_info)
-                        result = [call.subject.name or '', call.subject.number, codenum, village, time_str(call.date), str(dur.seconds)]
+        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
         
-                        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
-                        
-                        for input in inputs:
-                            result.append(input.input)
-                            prompt = input.prompt
-                            questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                        
-                        all_calls.append(result)
-                    #else:
-                        #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
-                    del open_calls[phone_num]
-                    
-                # add new call
-                #print("adding new call: " + phone_num)
-                open_calls[phone_num] = {'start':current_date}
-                
-            elif line.find("End call") != -1 or line.find("Abort call") != -1:
-                if phone_num in open_calls:
-                    open_call = open_calls[phone_num]    
-                    start = open_call['start']
-                    dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__gte=start-timedelta(minutes=10), date__lte=start+timedelta(minutes=10), complete=True)
-                    if bool(call):
-                        #if call.count()>1:
-                            #print("more than one call found: " + str(call))
-                        call = call[0]
-                        codenum = get_codenum(phone_num, callees_info)
-                        village = get_village(phone_num, callees_info)
-                        result = [call.subject.name or '', call.subject.number, codenum, village, time_str(call.date), str(dur.seconds)]
+        for input in inputs:
+            result.append(input.input)
+            prompt = input.prompt
+            questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                        
+        all_calls.append(result)
         
-                        inputs = Input.objects.select_related(depth=1).filter(call=call).order_by('id')
-                        
-                        for input in inputs:
-                            result.append(input.input)
-                            prompt = input.prompt
-                            questions.add(prompt.file[prompt.file.rfind('/')+1:prompt.file.find(SOUND_EXT)])                       
-                        all_calls.append(result)
-                    #else:
-                        #print("no call found: num=" +phone_num+ ";sessid ="+ otalo_utils.get_sessid(line)+ ";start="+start.strftime('%m-%d-%y %H:%M:%S'))
-                    del open_calls[phone_num]
-                    
-        except KeyError as err:
-            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
-            raise
-        except ValueError as err:
-            #print("ValueError: " + line)
-            continue
-        except IndexError as err:
-            continue
-        except otalo_utils.PhoneNumException:
-            #print("PhoneNumException: " + line)
-            continue
-    
     header = ['Name','Mobile Number', 'Code No', 'Village', 'Call start','Duration (s)']
     question = 'Response'
     if len(questions) == 1:
@@ -347,7 +266,7 @@ def get_callees_info(callee_filename):
     
     #print(info)
     return info
-        
+
 def get_number(line):
     # get last 10 digits only
     num = line[0][-10:]
@@ -370,27 +289,28 @@ def get_village(number, callees_info):
     if number in callees_info:
         village = callees_info[number][3].strip()
     return village
-    
+
 def add_users(callee_filename):
     added = 0
     modified = 0
     f = csv.reader(open(callee_filename, "rU"))
     
     for line in f:    
+        line = [elt.strip() for elt in line]
         number = line[0]
         user = User.objects.filter(number=number)
         if bool(user):
             user = user[0]
             user.allowed = 'y'
             user.indirect_bcasts_allowed = False
-            if user.name is None:
-                user.name = line[1]
+            user.name = line[1]
+            user.taluka = line[2]
             user.village = line[3]
             user.save()
             print("modified "+ str(user))
             modified += 1
         else:
-            user = User(number=number, name=line[1], village=line[3], allowed='y', indirect_bcasts_allowed=False)
+            user = User(number=number, name=line[1], taluka=line[2], village=line[3], allowed='y', indirect_bcasts_allowed=False)
             user.save()
             print("added "+ str(user))
             added += 1
@@ -413,17 +333,23 @@ def main():
     outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
         
     if '--weeklyreport' in sys.argv:
-        calleesfname = sys.argv[2]
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
+        out_num = line.outbound_number or line.number
+    
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
         start = today-timedelta(days=6)
         
-        callees_info = get_callees_info(calleesfname)
-        
-        monitoring_results(out_num, outbound, callees_info, date_start=start)
+        monitoring_results(out_num, date_start=start)
     
     elif '--monthlyreport' in sys.argv:
-        calleesfname = sys.argv[2]
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
+        calleesfname = sys.argv[3]
+        out_num = line.outbound_number or line.number
+        outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
+    
         now = datetime.now()
         # assume we want the report for the previous month
         year = now.year
@@ -439,18 +365,18 @@ def main():
         
         results_by_callee(out_num, callees_info, date_start=start)
     elif '--report' in sys.argv:
-        start=None  
-        calleesfname = sys.argv[2]
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
+        out_num = line.outbound_number or line.number
         
+        start=None  
         if len(sys.argv) > 3:
             start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
         end = None    
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
         
-        callees_info = get_callees_info(calleesfname)
-        
-        monitoring_results(out_num, outbound, callees_info, date_start=start, date_end=end)
+        monitoring_results(out_num, date_start=start, date_end=end)
     elif '--userinfo' in sys.argv:
         calleesfname = sys.argv[2]
         add_users(calleesfname)
