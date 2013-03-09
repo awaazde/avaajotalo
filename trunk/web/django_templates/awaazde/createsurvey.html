@@ -30,6 +30,13 @@ input[name="refresh"]{
 	padding: 4px 10px; 
 }
 
+div.qform
+{
+    border: 1px solid black;
+    border-radius:3px;
+    margin: 5px;
+    padding: 5px;
+}
 </style>
 {% endblock %}
 
@@ -39,7 +46,9 @@ input[name="refresh"]{
    		{% crispy createform %}
    		{% if question_formset %}
    			{% crispy question_formset question_formset.form.helper %}
+				<input id="submit-id-submit" class="btn btn-primary offset4" type="submit" value="Create Survey" name="submit">
    		{% endif %}
+   		
    	</form>
 {% endblock %}
 
@@ -51,11 +60,51 @@ input[name="refresh"]{
     	if ($include_id.is(':checked')) {
         	$id_length.removeAttr('disabled');
     	} else {
-        	$id_length.attr('disabled', 'disabled').val('');
-        	$id_length.val(4);
+        	$id_length.attr('disabled', 'disabled').val();
     	}
 	}).trigger('change'); // added trigger to calculate initial state
 
+	
+	$('input[type="radio"]').change(function() {
+		// set dynamism for Type for each questionform
+		
+		// parse out the index of this questionform
+		var formidx = this.id.split('-')[1];
+		if (this.id.indexOf('-type_') > -1)
+		{
+			$number_opts = $('#id_form-'+formidx+'-num_options');
+			if (this.value == 1 || this.value == 2)
+			{
+				$number_opts.removeAttr('disabled');
+			}
+			else if (this.value == 3)
+			{
+				$number_opts.attr('disabled', 'disabled');
+			}
+		}
+		else if (this.id.indexOf('-advanced_') > -1)
+		{
+			$skip_rule = $('#div_id_form-'+formidx+'-skip_rule_q');
+			$skip_opts = $skip_rule.closest('div.row')
+			$advanced_row = $skip_rule.closest('.advanced-row')
+			$advanced_row.show();
+			$alt_resp_opt = $('#div_id_form-'+formidx+'-alternative_response');
+			if (this.value == 1)
+			{
+				//skip options: show it and hide alternative response opt
+				$skip_opts.show();
+				$alt_resp_opt.hide();
+			}
+			else if (this.value == 2)
+			{
+				$skip_opts.hide();
+				$alt_resp_opt.show();
+			}
+		}
+	});
+	
+	$('.advanced-row').hide();
+	
 </script>
 {% endblock %}
 
