@@ -26,8 +26,7 @@ import otalo_utils, num_calls
 ****************************************************************************
 '''
 LINEID=16
-#OUTPUT_FILE_DIR='/home/galli/reports/'
-OUTPUT_FILE_DIR=''
+OUTPUT_FILE_DIR='/home/galli/reports/'
 SOUND_EXT = ".wav"
 
 '''
