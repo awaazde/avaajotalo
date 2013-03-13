@@ -370,7 +370,7 @@ def get_features_within_call(line, feature_list, filename, phone_num_filter=Fals
     output.writerow(header)
     output.writerows(all_calls)   
 
-def message(line, date_start=None, date_end=None, status=None, outputdir='.'):
+def messages(line, date_start=None, date_end=None, status=None, outputdir='.'):
     forums = Forum.objects.filter(line=line)
     results = []
     messages = Message_forum.objects.filter(forum__in=forums)
