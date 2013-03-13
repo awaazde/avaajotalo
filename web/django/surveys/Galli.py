@@ -284,7 +284,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     # close out current call
                     call = open_calls[phone_num]    
                     dur = current_date - call['start']
-                    call_info = [phone_num,date_str(call['start']),str(dur.seconds)]
+                    call_info = [phone_num,time_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
                             call_info.append(call[feature])
@@ -303,7 +303,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     # close out call                
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
-                    call_info = [phone_num,date_str(call['start']),str(dur.seconds)]
+                    call_info = [phone_num,time_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
                             call_info.append(call[feature])
