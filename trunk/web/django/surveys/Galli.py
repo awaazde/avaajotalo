@@ -559,7 +559,7 @@ def main():
         line = Line.objects.get(pk=int(lineid))
         contenttype = sys.argv[3]
         standard_template(line, contenttype)
-    elif '--calls_by_feature' in sys.argv:
+    elif '--features_report' in sys.argv:
         lineid = sys.argv[2]
         line = Line.objects.get(pk=int(lineid))
         inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
