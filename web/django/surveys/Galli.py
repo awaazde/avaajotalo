@@ -242,7 +242,119 @@ def monthly_calls(inboundf, number, date_start, date_end=False):
         call_lst = calls[date]
         print(time_str(date) + '\t' + '\t'.join(map(str, call_lst)) )
         
+def get_features_within_call(feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
+    all_calls = []
+    open_calls = {}
     
+    f = open(filename)
+    
+    while(True):
+        line = f.readline()
+        if not line:
+            break
+        try:
+        
+        #################################################
+        ## Use the calls here to determine what pieces
+        ## of data must exist for the line to be valid.
+        ## All of those below should probably always be.
+        
+            phone_num = otalo_utils.get_phone_num(line)
+            current_date = otalo_utils.get_date(line)        
+            dest = otalo_utils.get_destination(line)            
+        ##
+        ################################################
+            
+            if phone_num_filter and not phone_num in phone_num_filter:
+                continue
+                
+            if date_start:
+                if date_end:
+                    if not (current_date >= date_start and current_date < date_end):
+                        continue
+                    if current_date > date_end:
+                        break
+                else:
+                    if not current_date >= date_start:
+                        continue
+    
+            if line.find("Start call") != -1:
+                # check to see if this caller already has one open
+                if phone_num in open_calls:
+                    # close out current call
+                    call = open_calls[phone_num]    
+                    dur = current_date - call['start']
+                    call_info = [phone_num,date_str(call['start']),str(dur.seconds)]
+                    for feature in feature_list:
+                        if feature in call:
+                            call_info.append(call[feature])
+                        else:
+                            call_info.append('')
+                    
+                    all_calls.append(call_info)
+                    del open_calls[phone_num]
+                    
+                # add new call
+                #print("adding new call: " + phone_num)
+                open_calls[phone_num] = {'order':'','feature_chosen':False,'start':current_date,'last':current_date}
+                
+            elif line.find("End call") != -1:
+                if phone_num in open_calls:
+                    # close out call                
+                    call = open_calls[phone_num]
+                    dur = current_date - call['start']
+                    call_info = [phone_num,date_str(call['start']),str(dur.seconds)]
+                    for feature in feature_list:
+                        if feature in call:
+                            call_info.append(call[feature])
+                        else:
+                            call_info.append('')
+                    
+                    all_calls.append(call_info)
+                    del open_calls[phone_num]
+            elif phone_num in open_calls:
+                call = open_calls[phone_num]
+                feature = line[line.rfind('/')+1:line.find('.wav')]
+                if feature == "okyourreplies" or feature == "okplay_all" or feature == "okplay" or feature == "okrecord":
+                    if feature in call:
+                        call[feature] += 1
+                    else:
+                        call[feature] = 1
+                    call['order'] += feature+','
+                elif feature == "okyouwant_pre" or feature == "okplaytag_pre":
+                    # on the next go-around, look for the feature
+                    call['feature_chosen'] = True
+                elif call['feature_chosen']:
+                    if feature in call:
+                        call[feature] += 1
+                    else:
+                        call[feature] = 1
+                    call['order'] += feature+','
+                    call['feature_chosen'] = False
+                
+                call['last'] = current_date
+                    
+        except KeyError as err:
+            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
+            raise
+        except ValueError as err:
+            #print("ValueError: " + line)
+            continue
+        except IndexError as err:
+            continue
+        except otalo_utils.PhoneNumException:
+            #print("PhoneNumException: " + line)
+            continue
+        
+    header = ['number','date','duration'] + feature_list
+    if date_start:
+        outfilename='features_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='features.csv'
+    outfilename = OUTPUT_FILE_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+    output.writerows(all_calls)   
 
 '''
 ****************************************************************************
@@ -403,6 +515,18 @@ def main():
         line = Line.objects.get(pk=int(lineid))
         contenttype = sys.argv[3]
         standard_template(line, contenttype)
+    elif '--calls_by_feature' in sys.argv:
+        lineid = sys.argv[2]
+        inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
+        start=None  
+        if len(sys.argv) > 3:
+            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+            
+        features=['activityofweek', 'qna', 'suggesexp', 'okyourreplies', 'okrecord', 'okplay']
+        get_features_within_call(features, inbound, date_start=start, date_end=end)
     elif '--main' in sys.argv:
         f1 = Forum.objects.get(pk=360)
         f2 = Forum.objects.get(pk=361)
