@@ -16,7 +16,7 @@
 import sys, os, csv
 from datetime import datetime, timedelta
 from django.conf import settings
-from otalo.ao.models import Line, User, Forum, Message_forum
+from otalo.ao.models import Line, User, Forum, Message_forum, Tag, Forum_tag
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param, Input
 import otalo_utils, num_calls
 
@@ -384,6 +384,8 @@ def main():
         calleesfname = sys.argv[2]
         add_users(calleesfname)
     elif '--monitoring_survey' in sys.argv:
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=str(lineid))
         qnames = sys.argv[3]
         qnames = qnames.split(',')
         qnames = [name.strip() for name in qnames]
@@ -402,28 +404,39 @@ def main():
         contenttype = sys.argv[3]
         standard_template(line, contenttype)
     elif '--main' in sys.argv:
-        fids =[29]
-        for fid in fids:
-            f = Forum.objects.get(pk=fid)
-            messages = Message_forum.objects.filter(forum=f, status=Message_forum.STATUS_APPROVED).order_by('-position')
-            messages = messages[2:]
-            for m in messages:
-                print("rejecting "+str(m))
-                m.status = Message_forum.STATUS_REJECTED
-                # Reject all responses
-                if m.message.lft == 1:
-                    top = m.message
-                else:
-                    top = m.message.thread
-                responses = Message_forum.objects.filter(forum = m.forum, message__thread=top, message__lft__gt=m.message.lft, message__rgt__lt=m.message.rgt)
-                for msg in responses:
-                    print("rejecting response "+str(msg))
-                    msg.status = Message_forum.STATUS_REJECTED
-                    msg.save()
-        
-                m.position = None
+        f1 = Forum.objects.get(pk=360)
+        f2 = Forum.objects.get(pk=361)
+        tags = '1-Training Feedback,1.1-Aww feedback hyg training,1.2-Sup feedback hyg training,1.3-Aww feedback Nut training,1.4-Sup feedback Nut training,2-Songs & episodes,2.1-Hyg song,2.2-Hyg Episode,2.3-Nut Song,2.4-Nut Episode,3-Print material,3.1-Hand washing cards,3.2-Hyg Cut outs,3.3-Hyg story book,3.4-Hyg kit feedback,3.5-Hyg parent material,3.6-Food flash cards,3.7-Nut Board game,3.8-Nut Story books,3.9-Nut Parent material,3.1-Thali,3.11-Nut kit feedback,4-Questions & Suggestions,4.1-Supervisor- Question & Suggestion,4.2-Anganwadi worker- Question & Suggestion,5-Interaction,5.1-Song/ children,5.2-Material/ children,5.3-Ques & Ans/ children,5.4-Parent talking,6-Child Speaking,7-Enrollment,8-Blank calls,9-Test calls'
+        tags = tags.split(',')
+        for tag in tags:
+            tag1 = Tag.objects.filter(tag=tag)
+            if not bool(tag1):
+                tag1 = Tag.objects.create(tag=tag, type='agri-crop')
+                tag2 = Tag.objects.create(tag=tag, type='agri-topic')
                 
-                m.save()
+                Forum_tag.objects.create(forum=f1, tag=tag1)
+                Forum_tag.objects.create(forum=f1, tag=tag2)
+                print("adding "+str(tag1)+" to "+str(f1))
+                Forum_tag.objects.create(forum=f2, tag=tag1)
+                Forum_tag.objects.create(forum=f2, tag=tag2)
+                print("adding "+str(tag1)+" to "+str(f2))
+                
+        old_names = 'PMQ_H&H_230213,CMQ_H&H_20313,PMQ_H&H_90313,CMQ_H&H_160313,CMQ_H&H_230313,PMQ_H&H_300313,CMQ_H&H_60413,PMQ_H&H_130413,CMQ_H&H_200413,CMQ_H&H_270413,PMQ_H&H_110513'
+        old_names = old_names.split(',')
+        new_names = 'PMQ_H&H_20313,CMQ_H&H_90313,PMQ_H&H_160313,CMQ_H&H_230313,CMQ_H&H_300313,PMQ_H&H_60413,CMQ_H&H_130413,PMQ_H&H_200413,CMQ_H&H_270413,CMQ_H&H_40513,CMQ_H&H_110513'
+        new_names = new_names.split(',')
+        
+        for i in range(len(old_names)):
+            s = Survey.objects.filter(number='7967776066', name=old_names[i])
+            if bool(s):
+                s = s[0]
+                new_name = new_names[i]
+                print('changing name of '+str(s)+' to '+new_name)
+                s.name = new_name
+                s.save()
+            else:
+                print(old_names[i]+' survey not found')
+            
     else:
         print("Command not found.")
         
