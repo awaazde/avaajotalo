@@ -242,7 +242,7 @@ def monthly_calls(inboundf, number, date_start, date_end=False):
         call_lst = calls[date]
         print(time_str(date) + '\t' + '\t'.join(map(str, call_lst)) )
         
-def get_features_within_call(feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
+def get_features_within_call(line, feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
     all_calls = []
     open_calls = {}
     
@@ -361,18 +361,19 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
             continue
         
     header = ['Name', 'Number', 'Code No', 'Village', 'Date','Duration'] + feature_list
+    outfilename='features_'+line.number
     if date_start:
-        outfilename='features_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
-    else:
-        outfilename='features.csv'
-    outfilename = OUTPUT_FILE_DIR+outfilename
+        outfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+
+    outfilename = OUTPUT_FILE_DIR+outfilename+'.csv'
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
     output.writerows(all_calls)   
 
-def messages(forums, date_start=None, date_end=None, status=None, outputdir='.'):
+def message(line, date_start=None, date_end=None, status=None, outputdir='.'):
+    forums = Forum.objects.filter(line=line)
     results = []
-    messages = Message_forum.objects.filter(forum__in=forums, message__lft=1)
+    messages = Message_forum.objects.filter(forum__in=forums)
     if date_start:
         messages = messages.filter(message__date__gte=date_start)
     if date_end:
@@ -389,7 +390,7 @@ def messages(forums, date_start=None, date_end=None, status=None, outputdir='.')
         results.append(main)
     
     header = ['Date', 'Name', 'Number', 'Forum', 'Message ID',  'Tag1', 'Tag2']
-    outputfilename='messages'
+    outputfilename='messages_'+line.number
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
     if outputdir[-1:] != '/':
@@ -560,6 +561,7 @@ def main():
         standard_template(line, contenttype)
     elif '--calls_by_feature' in sys.argv:
         lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
         inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
         start=None  
         if len(sys.argv) > 3:
@@ -569,11 +571,10 @@ def main():
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
             
         features=['activityofweek', 'qna', 'suggesexp', 'okyourreplies', 'okrecord', 'okplay']
-        get_features_within_call(features, inbound, date_start=start, date_end=end)
+        get_features_within_call(line, features, inbound, date_start=start, date_end=end)
     elif '--messages_report':
-        forumids = sys.argv[2]
-        forumids = forumids.split(',')
-        forums = Forum.objects.filter(pk__in=forumids)
+        lineid = sys.argv[2]
+        line = Line.objects.get(pk=int(lineid))
         
         start=None  
         if len(sys.argv) > 3:
@@ -581,7 +582,7 @@ def main():
         end = None    
         if len(sys.argv) > 4:
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
-        messages(forums, date_start=start, date_end=end, outputdir=OUTPUT_FILE_DIR)
+        messages(line, date_start=start, date_end=end, outputdir=OUTPUT_FILE_DIR)
     elif '--main' in sys.argv:
         f1 = Forum.objects.get(pk=360)
         f2 = Forum.objects.get(pk=361)
