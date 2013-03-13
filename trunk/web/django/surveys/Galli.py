@@ -242,7 +242,7 @@ def monthly_calls(inboundf, number, date_start, date_end=False):
         call_lst = calls[date]
         print(time_str(date) + '\t' + '\t'.join(map(str, call_lst)) )
         
-def get_features_within_call(line, feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
+def features_report(line_obj, feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
     all_calls = []
     open_calls = {}
     
@@ -361,7 +361,7 @@ def get_features_within_call(line, feature_list, filename, phone_num_filter=Fals
             continue
         
     header = ['Name', 'Number', 'Code No', 'Village', 'Date','Duration'] + feature_list
-    outfilename='features_'+line.number
+    outfilename='features_'+line_obj.number
     if date_start:
         outfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
 
@@ -571,7 +571,7 @@ def main():
             end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
             
         features=['activityofweek', 'qna', 'suggesexp', 'okyourreplies', 'okrecord', 'okplay']
-        get_features_within_call(line, features, inbound, date_start=start, date_end=end)
+        features_report(line, features, inbound, date_start=start, date_end=end)
     elif '--messages_report':
         lineid = sys.argv[2]
         line = Line.objects.get(pk=int(lineid))
