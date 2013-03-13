@@ -370,6 +370,35 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
     output.writerow(header)
     output.writerows(all_calls)   
 
+def messages(forums, date_start=None, date_end=None, status=None, outputdir='.'):
+    results = []
+    messages = Message_forum.objects.filter(forum__in=forums, message__lft=1)
+    if date_start:
+        messages = messages.filter(message__date__gte=date_start)
+    if date_end:
+        messages = messages.filter(message__date__lt=date_end)
+    if status:
+        messages = messages.filter(status=status)
+        
+    for m in messages:
+        user = m.message.user
+        main = [time_str(m.message.date), user.name or '',user.number, m.forum.name, m.message.id]
+        tags = m.tags.all()
+        for t in tags:
+            main.append(t.tag)
+        results.append(main)
+    
+    header = ['Date', 'Name', 'Number', 'Forum', 'Message ID',  'Tag1', 'Tag2']
+    outputfilename='messages'
+    if date_start:
+        outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
+    if outputdir[-1:] != '/':
+        outputdir += '/'
+    outputfilename = outputdir+outputfilename+'.csv'
+    output = csv.writer(open(outputfilename, 'wb'))
+    output.writerow(header)            
+    output.writerows(results)
+    
 '''
 ****************************************************************************
 ******************* UTILS **************************************************
@@ -541,6 +570,18 @@ def main():
             
         features=['activityofweek', 'qna', 'suggesexp', 'okyourreplies', 'okrecord', 'okplay']
         get_features_within_call(features, inbound, date_start=start, date_end=end)
+    elif '--messages_report':
+        forumids = sys.argv[2]
+        forumids = forumids.split(',')
+        forums = Forum.objects.filter(pk__in=forumids)
+        
+        start=None  
+        if len(sys.argv) > 3:
+            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        end = None    
+        if len(sys.argv) > 4:
+            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        messages(forums, date_start=start, date_end=end, outputdir=OUTPUT_FILE_DIR)
     elif '--main' in sys.argv:
         f1 = Forum.objects.get(pk=360)
         f2 = Forum.objects.get(pk=361)
