@@ -284,7 +284,14 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     # close out current call
                     call = open_calls[phone_num]    
                     dur = current_date - call['start']
-                    call_info = [phone_num,time_str(call['start']),str(dur.seconds)]
+                    u = User.objects.filter(number=phone_num)
+                    name=code=village = None
+                    if bool(u):
+                        u = u[0]
+                        name = u.name or ''
+                        code = u.taluka or ''
+                        village = u.village or ''
+                    call_info = [name, phone_num, code, village, time_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
                             call_info.append(call[feature])
@@ -303,7 +310,14 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
                     # close out call                
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
-                    call_info = [phone_num,time_str(call['start']),str(dur.seconds)]
+                    u = User.objects.filter(number=phone_num)
+                    name=code=village = None
+                    if bool(u):
+                        u = u[0]
+                        name = u.name or ''
+                        code = u.taluka or ''
+                        village = u.village or ''
+                    call_info = [name, phone_num, code, village, time_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
                             call_info.append(call[feature])
@@ -346,7 +360,7 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
             #print("PhoneNumException: " + line)
             continue
         
-    header = ['number','date','duration'] + feature_list
+    header = ['Name', 'Number', 'Code No', 'Village', 'Date','Duration'] + feature_list
     if date_start:
         outfilename='features_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
