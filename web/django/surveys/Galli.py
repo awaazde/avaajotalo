@@ -559,29 +559,39 @@ def main():
         line = Line.objects.get(pk=int(lineid))
         contenttype = sys.argv[3]
         standard_template(line, contenttype)
-    elif '--features_report' in sys.argv:
+    elif '--features_report' or '--features_report_weekly' in sys.argv:
         lineid = sys.argv[2]
         line = Line.objects.get(pk=int(lineid))
         inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
-        start=None  
-        if len(sys.argv) > 3:
-            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
-        end = None    
-        if len(sys.argv) > 4:
-            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        
+        start=end=None
+        if '--features_report_weekly' in sys.argv:
+            now = datetime.now()
+            today = datetime(year=now.year, month=now.month, day=now.day)
+            start = today-timedelta(days=6)
+        else:
+            if len(sys.argv) > 3:
+                start = datetime.strptime(sys.argv[3], "%m-%d-%Y")    
+            if len(sys.argv) > 4:
+                end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
             
         features=['activityofweek', 'qna', 'suggesexp', 'okyourreplies', 'okrecord', 'okplay']
         features_report(line, features, inbound, date_start=start, date_end=end)
-    elif '--messages_report':
+    elif '--messages_report' or '--messages_report_weekly' in sys.argv:
         lineid = sys.argv[2]
         line = Line.objects.get(pk=int(lineid))
         
-        start=None  
-        if len(sys.argv) > 3:
-            start = datetime.strptime(sys.argv[3], "%m-%d-%Y")
-        end = None    
-        if len(sys.argv) > 4:
-            end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        start=end=None
+        if '--messages_report_weekly' in sys.argv:
+            now = datetime.now()
+            today = datetime(year=now.year, month=now.month, day=now.day)
+            start = today-timedelta(days=6)
+        else:
+            if len(sys.argv) > 3:
+                start = datetime.strptime(sys.argv[3], "%m-%d-%Y")    
+            if len(sys.argv) > 4:
+                end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+                
         messages(line, date_start=start, date_end=end, outputdir=OUTPUT_FILE_DIR)
     elif '--main' in sys.argv:
         f1 = Forum.objects.get(pk=360)
