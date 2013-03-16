@@ -371,6 +371,7 @@ def features_report(line_obj, feature_list, filename, phone_num_filter=False, da
     output.writerows(all_calls)   
 
 def messages(line, date_start=None, date_end=None, status=None, outputdir='.'):
+    statuses  = dict(Message_forum.STATUSES)
     forums = Forum.objects.filter(line=line)
     results = []
     messages = Message_forum.objects.filter(forum__in=forums)
@@ -383,13 +384,13 @@ def messages(line, date_start=None, date_end=None, status=None, outputdir='.'):
         
     for m in messages:
         user = m.message.user
-        main = [time_str(m.message.date), user.name or '',user.number, m.forum.name, m.message.id]
+        main = [time_str(m.message.date), user.name or '',user.number, m.forum.name, m.message.id, statuses[m.status]]
         tags = m.tags.all()
         for t in tags:
             main.append(t.tag)
         results.append(main)
     
-    header = ['Date', 'Name', 'Number', 'Forum', 'Message ID',  'Tag1', 'Tag2']
+    header = ['Date', 'Name', 'Number', 'Forum', 'Message ID', 'Status', 'Tag1', 'Tag2']
     outputfilename='messages_'+line.number
     if date_start:
         outputfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]

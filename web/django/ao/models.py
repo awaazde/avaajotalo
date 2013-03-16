@@ -189,10 +189,17 @@ class Message_forum(models.Model):
     message = models.ForeignKey(Message)
     forum = models.ForeignKey(Forum)
     
-    # Code in order of how they are declared in Message.java
+        # Code in order of how they are declared in Message.java
     STATUS_PENDING = 0
     STATUS_APPROVED = 1
     STATUS_REJECTED = 2
+    
+    STATUSES = (
+    (STATUS_PENDING, 'Pending'),
+    (STATUS_APPROVED, 'Approved'),
+    (STATUS_REJECTED, 'Rejected'),
+    )
+    
     status = models.IntegerField()
     
     position = models.IntegerField(blank=True, null=True)
