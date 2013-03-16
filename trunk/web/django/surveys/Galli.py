@@ -560,7 +560,7 @@ def main():
         line = Line.objects.get(pk=int(lineid))
         contenttype = sys.argv[3]
         standard_template(line, contenttype)
-    elif '--features_report' or '--features_report_weekly' in sys.argv:
+    elif '--features_report' in sys.argv or '--features_report_weekly' in sys.argv:
         lineid = sys.argv[2]
         line = Line.objects.get(pk=int(lineid))
         inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
@@ -578,7 +578,7 @@ def main():
             
         features=['activityofweek', 'qna', 'suggesexp', 'okyourreplies', 'okrecord', 'okplay']
         features_report(line, features, inbound, date_start=start, date_end=end)
-    elif '--messages_report' or '--messages_report_weekly' in sys.argv:
+    elif '--messages_report' in sys.argv or '--messages_report_weekly' in sys.argv:
         lineid = sys.argv[2]
         line = Line.objects.get(pk=int(lineid))
         
