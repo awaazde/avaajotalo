@@ -535,7 +535,7 @@ def tags(request, forum_id):
     params = request.GET
     
     forum = get_object_or_404(Forum, pk=forum_id)
-    tags = Tag.objects.filter(forum=forum).distinct()
+    tags = Tag.objects.filter(forum=forum).order_by('tag').distinct()
     
     if params.__contains__('type'):
         types = params['type'].split()
