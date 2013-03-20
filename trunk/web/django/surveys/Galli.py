@@ -605,13 +605,16 @@ def main():
         tags = [t.strip() for t in tags]
         
         for tag in tags:
-            tags = Tag.objects.filter(tag=tag)
+            code = tag[:tag.find('-')+1]
+            tags = Tag.objects.filter(tag__startswith=code, forum__in=forums)
             if not bool(tags):
                 tag1 = Tag.objects.create(tag=tag, type='agri-crop')
                 tag2 = Tag.objects.create(tag=tag, type='agri-topic')
             else:
                 tag1 = tags.filter(type='agri-crop')[0]
                 tag2 = tags.filter(type='agri-topic')[0]
+                # update the name
+                tags.update(tag=tag)
             
             for f in forums:
                 fts = Forum_tag.objects.filter(forum=f, tag=tag1)
