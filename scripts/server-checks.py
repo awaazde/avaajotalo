@@ -19,10 +19,11 @@ def check_pris():
 		
 		if 'Low' in out:
 			line = Line.objects.filter(dialstring_prefix__contains='grp'+str(i))
-			error_msg = 'PRI Line w'+str(i)+'g1 down'
+			error_msg = 'PRI line w'+str(i)+'g1'
 			if bool(line):
 				line = line[0]
-				error_msg += " "+line.name + '-' + line.number
+				error_msg += " ("+line.name + '-' + line.number + ")"
+			error_msg += ' is down!'
 			print("error "+error_msg)
 			report_error(error_msg)
 
