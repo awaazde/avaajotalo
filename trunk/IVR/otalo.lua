@@ -848,6 +848,7 @@ if (callback_allowed == 1 and (quota_imposed == 0 or (balance ~= nil and balance
 	vars = vars .. 'ignore_early_media=true';
 	vars = vars .. ',caller_id_number='..caller;
 	vars = vars .. ',origination_caller_id_number='..destination;
+	vars = vars .. ',origination_caller_id_name='..destination;
 	vars = vars .. '}'
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
