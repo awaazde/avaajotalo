@@ -59,7 +59,7 @@ logfilename = logfileroot .. "outbound_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
-CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
+CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..',origination_caller_id_name='..destination..'}';
 
 DIALSTRING_PREFIX = "";
 DIALSTRING_SUFFIX = "";

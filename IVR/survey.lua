@@ -167,6 +167,7 @@ if (callback_allowed == 1) then
 	vars = vars .. 'ignore_early_media=true';
 	vars = vars .. ',caller_id_number='..caller;
 	vars = vars .. ',origination_caller_id_number='.. (outbound_number or destination);
+	vars = vars .. ',origination_caller_id_name='.. (outbound_number or destination);
 	vars = vars .. '}'
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
