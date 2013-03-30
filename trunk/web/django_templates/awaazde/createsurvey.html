@@ -1,11 +1,31 @@
 {% extends 'registration/base_site.html' %}
 {% load crispy_forms_tags %}
+{% load upload_tags %}
 
 {% block extrahead %}
 <script src="{{ STATIC_URL }}js/bootstrap-alert.js" type="text/javascript"></script>
 <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>
+<script src="{{ STATIC_URL }}js/fileupload/tmpl.min.js"></script>
+<script src="{{ STATIC_URL }}js/fileupload/load-image.min.js"></script>
+<script src="{{ STATIC_URL }}js/fileupload/canvas-to-blob.min.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-image-gallery.min.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.iframe-transport.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.fileupload.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.fileupload-fp.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.fileupload-ui.js"></script>
+<script src="{{ STATIC_URL }}js/fileupload/locale.js"></script>
+<script src="{{ STATIC_URL }}js/fileupload/main.js"></script>
+<script src="{{ STATIC_URL }}js/fileupload/csrf.js"></script>
+
 <link rel="stylesheet" media="all" href="{{ STATIC_URL }}css/bootstrap.css" type="text/css" />
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css" />
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-image-gallery.min.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}css/jquery.fileupload-ui.css">
+<!-- Shim to make HTML5 elements usable in older Internet Explorer versions -->
+<!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
 <style>
 /*
@@ -37,22 +57,44 @@ div.qform
     margin: 5px;
     padding: 5px;
 }
+
+#dropzone
+{
+	/* 
+	* This elt hidden by default; made visible
+	* when we are in the question specification step
+	*/
+	display:none;
+	
+	text-align:center; 
+	width:950px; 
+	height:100px; 
+	border-style:dashed; 
+	border-width:5px; 
+	border-color:black;
+	border-radius:5px;
+	margin: 10px;
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
-   	<form action="{% url awaazde.console.views.createsurvey %}" class="form-horizontal" method="post">
+   	<form action="{% url awaazde.console.views.createsurvey %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">
    		{% crispy createform %}
    		{% if question_formset %}
    			{% crispy question_formset question_formset.form.helper %}
-				<input id="submit-id-submit" class="btn btn-primary offset4" type="submit" value="Create Survey" name="submit">
    		{% endif %}
    		
    	</form>
 {% endblock %}
 
+
 {% block footer %}
+
+{% upload_js %}
+
 <script>
 	var $include_id = $('input[name="include_id"]'),
     	$id_length = $('select[name="id_length"]');
@@ -98,12 +140,102 @@ div.qform
 			else if (this.value == 2)
 			{
 				$skip_opts.hide();
+				// remove any cloned skip rules
+				var $parent_form = $(this).parents('.qform');
+				$parent_form.find("[id*='skip_rule_clone']").remove();
 				$alt_resp_opt.show();
 			}
 		}
 	});
 	
 	$('.advanced-row').hide();
+	$('.form-actions').addClass('span10');
+	
+	$('#create-survey-form').fileupload();
+	var $dropzone = $('#dropzone');
+	$('#create-survey-form').fileupload(
+    	'option',
+   		{ 	
+    		dropZone:$dropzone,
+    		acceptFileTypes: /(\.|\/)(zip)$/i,
+    		autoUpload: true,
+    		url: '{{ fileupload_url }}',
+    		paramName: 'file',
+    		formData: {{ fileupload_data|default:"[]"|safe}}
+    	}
+	);
+	
+	
+	$(document).bind('dragover', function (e) {
+    	var dropZone = $('#dropzone'),
+        	timeout = window.dropZoneTimeout;
+        $label = dropZone.find('.label');
+        if (timeout) {
+        	clearTimeout(timeout);
+    	}
+    	if (e.target === dropZone[0]) {
+    		$label.removeClass('label-info');
+    		$label.addClass('label-success');
+        	
+    	} else {
+        	$label.addClass('label-info');
+    		$label.removeClass('label-success');
+    	}
+    	window.dropZoneTimeout = setTimeout(function () {
+        	window.dropZoneTimeout = null;
+        	$label.addClass('label-info');
+    		$label.removeClass('label-success');
+    	}, 100);
+	});
+	
+	/*
+	*	The add skip rule functionality
+	*/
+	function add_skip_rule($parent_form)
+	{
+		// get the form id for this skip rule
+		var $sib_elt = $parent_form.find('div').filter(function() {
+        						return this.id.match(/div_id_form-\d+-type/);
+    						});
+		var num_clones = $parent_form.find("[id*='skip_rule_clone']").length;
+		var formIdx = $sib_elt.attr("id").match(/form-(\d+)/)[1];
+		var cloneId = "skip_rule_clone_form-" + formIdx + "-" + num_clones;
+    	var $skip_rule = $parent_form.find(".skip-rule").clone()
+        	.appendTo($parent_form.find(".skip-rules"))
+        	.attr("id", cloneId)
+        	// remove the class so the clone above will
+        	// only duplicate the original element next time
+        	.removeClass('skip-rule');
+	}
+	
+	$(".skip-rules").on("click", 'input[name="add-skip-rule"]', function(){
+		// get the form id for this skip rule
+		var $parent_form = $(this).parents('.qform');
+		add_skip_rule($parent_form);
+	});
+	
+	{% if question_formset %}
+		// dropzone is hidden by default, so unhide it now
+   		$dropzone.css("display", "block");
+   		var $language = $('input[name="language"]');
+   		$language.attr('readonly', 'readonly');
+   		
+   		{% if advanced_opts %}
+   			/*
+			*	Load advanced options: this is done in JS, so can't expect crispy/django
+			*	to restore what was submitted after validation error 
+			*/
+			{% for opt in advanced_opts %}
+				var formIdx = {% opt %};
+				$parent_form = $(
+			{% endfor %}
+   		{% endif %}
+   	{% endif %}
+
+	
+	
+	
+	
 	
 </script>
 {% endblock %}
