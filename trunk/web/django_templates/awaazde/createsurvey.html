@@ -206,6 +206,7 @@ div.qform
         	// remove the class so the clone above will
         	// only duplicate the original element next time
         	.removeClass('skip-rule');
+        return $skip_rule;
 	}
 	
 	$(".skip-rules").on("click", 'input[name="add-skip-rule"]', function(){
@@ -213,6 +214,10 @@ div.qform
 		var $parent_form = $(this).parents('.qform');
 		add_skip_rule($parent_form);
 	});
+	
+	// Should be consistent with awaazde.console.forms.QuestionForm
+	var ADVANCED_OPTION_TYPE_SKIP=1
+    var ADVANCED_OPTION_TYPE_ALT=2
 	
 	{% if question_formset %}
 		// dropzone is hidden by default, so unhide it now
@@ -222,21 +227,41 @@ div.qform
    		
    		{% if advanced_opts %}
    			/*
-			*	Load advanced options: this is done in JS, so can't expect crispy/django
+			*	Load advanced options: they were orginally set in JS, so can't expect crispy/django
 			*	to restore what was submitted after validation error 
+			* 	advanced_opts looks something like {1: {type: 1, rules: {1: 2, 2: 3}}, 3: {type: 2, q: 3},...}
 			*/
-			{% for opt in advanced_opts %}
-				var formIdx = {% opt %};
-				$parent_form = $(
+			{% for formIdx, opts in advanced_opts.items %}
+				var formIdx = {{ formIdx }};
+				var $parent_form = $('#div_id_form-'+formIdx+'-type').parents(".qform");
+				// select the advanced option
+				var opt_type = {{ opts.type }};
+				var $advanced = $parent_form.find("input[name*='advanced'][value='"+opt_type+"']");
+				$advanced.attr('checked', true).trigger('change');
+				// init the original skip rul with the first vals 
+				$('#id_form-'+formIdx+'-skip_rule_q').val({{opts.firstq}}-1)
+				$('#id_form-'+formIdx+'-skip_rule_val').val({{opts.firstval}}-1)
+				if (opt_type == ADVANCED_OPTION_TYPE_SKIP)
+				{
+					{% for q, val in opts.rules.items %}
+						$skip_rule = add_skip_rule($parent_form);
+						// set values
+						$q = $skip_rule.find('select[id*="skip_rule_q"]');
+						$q.val({{q}});
+						$v = $skip_rule.find('select[id*="skip_rule_val"]');
+						$v.val({{val}});
+					{% endfor %}
+				} else if (opt_type == ADVANCED_OPTION_TYPE_ALT)
+				{
+					// assume only a single rule
+					$alt = $parent_form.find('select[id*="alternative_response"]');
+					$alt.val({{opts.q}});					
+				}
+				
 			{% endfor %}
    		{% endif %}
    	{% endif %}
 
-	
-	
-	
-	
-	
 </script>
 {% endblock %}
 
