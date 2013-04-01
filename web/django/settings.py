@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'crispy_forms',
     #'streamit',
+    'awaazde.console'
 )
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
@@ -132,6 +133,7 @@ SERIALIZATION_MODULES = {
     'json': 'wadofstuff.django.serializers.json'
 }
 
+CONSOLE_ROOT = 'AO'
 INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
 OUTBOUND_LOG_ROOT = '/Users/neil/Documents/outbound_'
 LOG_ROOT = '/Users/neil/Documents/'
