@@ -123,8 +123,6 @@ INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.staticfiles',
     'crispy_forms',
-    #'streamit',
-    'awaazde.console'
 )
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
