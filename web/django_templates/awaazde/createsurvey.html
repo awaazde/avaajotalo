@@ -131,7 +131,16 @@ div.qform
 			$advanced_row = $skip_rule.closest('.advanced-row')
 			$advanced_row.show();
 			$alt_resp_opt = $('#div_id_form-'+formidx+'-alternative_response');
-			if (this.value == 1)
+			if (this.value == 0)
+			{
+				// None; hide everything
+				$skip_opts.hide();
+				// remove any cloned skip rules
+				var $parent_form = $(this).parents('.qform');
+				$parent_form.find("[id*='skip_rule_clone']").remove();
+				$alt_resp_opt.hide();
+			}
+			else if (this.value == 1)
 			{
 				//skip options: show it and hide alternative response opt
 				$skip_opts.show();
