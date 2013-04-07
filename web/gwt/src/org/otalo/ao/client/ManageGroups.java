@@ -446,7 +446,7 @@ public class ManageGroups extends Composite {
 
 			public void onClick(ClickEvent event) {
 				String params = "/?reporttype=" + reports.getValue(reports.getSelectedIndex()) + "&month=" + month.getValue(month.getSelectedIndex()) + "&year=" + year.getValue(year.getSelectedIndex());
-				Window.open(AoAPI.DOWNLOAD_STREAM_REPORT + group.getId() + params, "Download Report", "");
+				Window.open(JSONRequest.BASE_URL+AoAPI.DOWNLOAD_STREAM_REPORT + group.getId() + params, "Download Report", "");
 				
 			}
 		});
@@ -872,7 +872,7 @@ public class ManageGroups extends Composite {
 
 			public void execute(Broadcast bcast) {
 				if (bcast.getReportLink() != null)
-					Window.open(AoAPI.DOWNLOAD_BCAST_REPORT + bcast.getId(), "Download Report", "");
+					Window.open(JSONRequest.BASE_URL+AoAPI.DOWNLOAD_BCAST_REPORT + bcast.getId(), "Download Report", "");
 				else
 				{
 					ConfirmDialog notAvailable = new ConfirmDialog("Report is currently unavailable. Check back after the broadcast completes");
