@@ -363,7 +363,7 @@ def features_report(line_obj, feature_list, filename, phone_num_filter=False, da
     header = ['Name', 'Number', 'Code No', 'Village', 'Date','Duration'] + feature_list
     outfilename='features_'+line_obj.number
     if date_start:
-        outfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        outfilename+='_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]
 
     outfilename = OUTPUT_FILE_DIR+outfilename+'.csv'
     output = csv.writer(open(outfilename, 'wb'))
