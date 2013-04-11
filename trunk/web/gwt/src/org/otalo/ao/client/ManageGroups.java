@@ -483,6 +483,7 @@ public class ManageGroups extends Composite {
     // hard-coding for now; stay consistent with forms.py:createacctform
     languageBox.addItem("Hindi", "hin");
     languageBox.addItem("Gujarati", "guj");
+    languageBox.addItem("Tamil", "tam");
     languageBox.addItem("English", "eng");
     
     Label deliveryLabel = new Label("Delivery Type");
