@@ -133,8 +133,10 @@ SERIALIZATION_MODULES = {
     'json': 'wadofstuff.django.serializers.json'
 }
 
-CONSOLE_ROOT = 'AO'
+CONSOLE_ROOT = '/AO'
 PROJECT_MOUNT_POINT = CONSOLE_ROOT
+LOGIN_URL = PROJECT_MOUNT_POINT + '/accounts/login'
+LOGOUT_URL = PROJECT_MOUNT_POINT + '/accounts/logout'
 INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
 OUTBOUND_LOG_ROOT = '/Users/neil/Documents/outbound_'
 LOG_ROOT = '/Users/neil/Documents/'
