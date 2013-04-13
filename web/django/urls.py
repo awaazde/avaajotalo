@@ -30,7 +30,6 @@ urlpatterns = patterns('',
    # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
-    (r'^logout/$', 'django.contrib.auth.views.logout', {'next_page':'/logout_page/'}),
-    (r'^logout_page/$', 'django.views.generic.simple.direct_to_template', {'template':'registration/logged_out.html'}),
+    (r'^logout/$', 'otalo.views.log_out'),
 
 )
