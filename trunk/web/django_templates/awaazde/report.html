@@ -1,5 +1,6 @@
 {% extends 'registration/base_site.html' %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
 {% block extrahead %}
 <script src="{{ STATIC_URL }}js/bootstrap-alert.js" type="text/javascript"></script>
@@ -26,7 +27,9 @@ input[type="submit"]{
 
 </style>
 {% endblock %}
-
+{% block pretitle %}
+<p class="offset11"><a href="/logout">{% trans 'Log out' %}</a></p>
+{% endblock %}
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
    	{% crispy form %}
