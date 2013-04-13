@@ -28,7 +28,7 @@ input[type="submit"]{
 </style>
 {% endblock %}
 {% block pretitle %}
-<p class="offset11"><a href="/logout">{% trans 'Log out' %}</a></p>
+<p class="offset11"><a href="{% settings_value "PROJECT_MOUNT_POINT" %}/logout">{% trans 'Log out' %}</a></p>
 {% endblock %}
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}

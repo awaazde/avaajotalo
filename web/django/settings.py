@@ -123,6 +123,8 @@ INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.staticfiles',
     'crispy_forms',
+    #'streamit',
+    'awaazde.console'
 )
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
@@ -132,6 +134,7 @@ SERIALIZATION_MODULES = {
 }
 
 CONSOLE_ROOT = 'AO'
+PROJECT_MOUNT_POINT = CONSOLE_ROOT
 INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
 OUTBOUND_LOG_ROOT = '/Users/neil/Documents/outbound_'
 LOG_ROOT = '/Users/neil/Documents/'
@@ -139,5 +142,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap'
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REPORTS_ROOT = '/Users/neil/Documents/'
