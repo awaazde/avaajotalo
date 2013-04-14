@@ -53,7 +53,6 @@ urlpatterns = patterns('',
     (r'^sendsms/$', 'otalo.ao.views.sendsms'),
     (r'^smsin/$', 'otalo.ao.views.smsin'),
     (r'^group/$', 'otalo.ao.views.group'),
-    (r'^signup/$', 'awaazde.streamit.views.signup'),
     (r'^createaccount/$', 'awaazde.streamit.views.createacct'),
     # s is for streams views
     (r'^s/', include('awaazde.streamit.urls')),
