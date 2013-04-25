@@ -21,7 +21,7 @@ input[type="submit"]{
 {% endblock %}
 
 {% block content %}
-	{% if already_exists %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ already_exists }}</strong></div>{% endif %}
+	{% if error %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ error }}</strong></div>{% endif %}
    	{% crispy form %}
 {% endblock %}
 
