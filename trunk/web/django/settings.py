@@ -64,6 +64,7 @@ USE_I18N = True
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = '/Users/neil/Development/media'
+#MEDIA_ROOT = '/home/awaazde/media'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -123,9 +124,12 @@ INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.staticfiles',
     'crispy_forms',
-    #'streamit',
+    'streamit',
     'awaazde.console'
 )
+# this needs to go first
+INSTALLED_APPS = ("longerusername",) + INSTALLED_APPS
+MAX_USERNAME_LENGTH = 100
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
 
@@ -134,7 +138,7 @@ SERIALIZATION_MODULES = {
 }
 
 CONSOLE_ROOT = '/AO'
-PROJECT_MOUNT_POINT = CONSOLE_ROOT
+PROJECT_MOUNT_POINT = ''
 LOGIN_URL = PROJECT_MOUNT_POINT + '/accounts/login'
 LOGOUT_URL = PROJECT_MOUNT_POINT + '/accounts/logout'
 INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
