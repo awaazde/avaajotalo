@@ -15,6 +15,7 @@
 #===============================================================================
 
 from django.conf.urls.defaults import *
+from longerusername.forms import AuthenticationForm
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -29,7 +30,7 @@ urlpatterns = patterns('',
 
    # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
-    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
+    (r'^accounts/login/$', 'django.contrib.auth.views.login', {'authentication_form': AuthenticationForm}),
     (r'^logout/$', 'otalo.views.log_out'),
 
 )
