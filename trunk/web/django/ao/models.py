@@ -292,12 +292,16 @@ class Transaction(models.Model):
     INBOUND_CALL = 1
     RECHARGE = 2
     SMS = 3
+    TRANSFER_OUT = 4
+    TRANSFER_IN = 5
     
     TYPE = (
     (BROADCAST_CALL, 'Broadcast'),
     (INBOUND_CALL, 'Inbound Call'),
     (RECHARGE, 'Recharge'),
     (SMS, 'SMS'),
+    (TRANSFER_OUT, 'Transfer out'),
+    (TRANSFER_IN, 'Transfer in'),
     )
     
     user = models.ForeignKey(User)
