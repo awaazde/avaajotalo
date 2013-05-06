@@ -132,7 +132,7 @@ function read(file, delay, len)
       logfile:write(sessid, "\t",
 		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
-      digits = session:read(len, len, file, delay, "#");
+      digits = session:read(1, len, file, delay, "#");
       if (digits ~= "") then
 	 logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end

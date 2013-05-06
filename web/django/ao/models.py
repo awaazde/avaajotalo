@@ -149,6 +149,7 @@ class Forum(models.Model):
     confirm_recordings = models.BooleanField(default=True)
     
     '''
+    '########################################################################################
     ' Begin group-related additions
     '''
     STATUS_BCAST_CALL_SMS = 1
@@ -163,7 +164,15 @@ class Forum(models.Model):
     backup_calls = models.IntegerField(blank=True, null=True)
     
     '''
+    '    Adapted fields (to avoid creating extra fields)
+    '    ----------------------------------------------
+    '    responses_allowed => reponse_type (voice = True, touchtone = False)
+    '    max_responder_len => maximum input length for touchtone input
+    '''
+    
+    '''
     ' End group-related additions
+    '########################################################################################
     '''
     
     def __unicode__(self):
