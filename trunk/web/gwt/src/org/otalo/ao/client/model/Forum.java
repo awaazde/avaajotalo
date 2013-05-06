@@ -127,4 +127,14 @@ public class Forum extends BaseModel {
 		return getField("backup_calls");
 	}
 	
+	public int getMaxInputLength()
+	{
+		String len = getField("max_responder_len");
+		if ("null".equals(len))
+			// return default
+			return 1;
+		else
+			return Integer.valueOf(len);
+	}
+	
 }

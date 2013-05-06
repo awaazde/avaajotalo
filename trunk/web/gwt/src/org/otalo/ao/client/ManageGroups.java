@@ -82,7 +82,7 @@ public class ManageGroups extends Composite {
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
 	private Button saveButton, cancelButton, addMembersButton, cancelAddMembers, deleteButton;
-	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox, reports, month, year, backupsBox;
+	private ListBox languageBox, deliveryBox, inputBox, statusFilterBox, reports, month, year, backupsBox, maxInputLengthBox;
 	private DataGrid<Membership> memberTable, joinsTable;
 	private DataGrid<Broadcast> reportTable;
 	private FormPanel manageGroupsForm;
@@ -94,7 +94,7 @@ public class ManageGroups extends Composite {
 	private HandlerRegistration submitHandler = null;
 	private AreYouSureDialog confirm;
 	private TextArea numbersArea, namesArea, publishersArea;
-	private Label groupNumber;
+	private Label groupNumber, maxInputLabel;
 	private HTML creditsLabel;
 	private RadioButton inboundOff, inboundMemsOnly, inboundAll;
 	private int reportStartIndex = 0, membersStartIndex = 0;
@@ -506,6 +506,41 @@ public class ManageGroups extends Composite {
     inputBox.addItem("Touchtone", "0");
     inputBox.addItem("Voice", "1");
     
+    maxInputLabel = new Label("Max Input Length");
+    maxInputLengthBox = new ListBox();
+    maxInputLengthBox.setName("max_input_len");
+    for(int i=1; i < 11; i++)
+		{
+    	maxInputLengthBox.addItem(String.valueOf(i));
+		}
+    
+    inputBox.addChangeHandler(new ChangeHandler() {
+			
+			public void onChange(ChangeEvent event) {
+				int idx = inputBox.getSelectedIndex();
+				if (idx == 0)
+				{
+					// touchtone
+					maxInputLabel.setVisible(true);
+					maxInputLengthBox.setItemSelected(0, true);
+					maxInputLengthBox.setVisible(true);
+					
+				}
+				else
+				{
+					// voice
+					maxInputLabel.setVisible(false);
+					maxInputLengthBox.setVisible(false);
+				}
+				
+			}
+		});
+    HorizontalPanel maxInputControls = new HorizontalPanel();
+    maxInputControls.setSpacing(8);
+    maxInputControls.add(inputBox);
+    maxInputControls.add(maxInputLabel);
+    maxInputControls.add(maxInputLengthBox);
+    
     Label freeInboundLabel = new Label("Missed Call");
     inboundOff = new RadioButton("freeinbound", "Off");
     inboundOff.setFormValue("inboundoff");
@@ -626,7 +661,7 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row, 0, deliveryLabel);
 		settingsTable.setWidget(row++, 1, deliveryPanel);
 		settingsTable.setWidget(row, 0, inputTypeLabel);
-		settingsTable.setWidget(row++, 1, inputBox);
+		settingsTable.setWidget(row++, 1, maxInputControls);
 		settingsTable.setWidget(row, 0, freeInboundLabel);
 		settingsTable.setWidget(row++, 1, inboundButtons);
 		settingsTable.setWidget(row, 0, backupsLabel);
@@ -985,6 +1020,22 @@ public class ManageGroups extends Composite {
 		 */
 		int inputType = group.responsesAllowed() ? 1 : 0;
 		inputBox.setSelectedIndex(inputType);
+		
+		if (inputType == 0)
+		{
+			// touchtone
+			maxInputLabel.setVisible(true);
+			int maxInputLength = group.getMaxInputLength();
+			maxInputLengthBox.setItemSelected(maxInputLength-1, true);
+			maxInputLengthBox.setVisible(true);
+			
+		}
+		else
+		{
+			// voice
+			maxInputLabel.setVisible(false);
+			maxInputLengthBox.setVisible(false);
+		}
 		
 		if (line.callback())
 		{

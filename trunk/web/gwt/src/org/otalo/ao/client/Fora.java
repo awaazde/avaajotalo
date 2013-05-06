@@ -225,6 +225,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			language.setName("language");
 			language.addItem("Hindi", "hin");
 			language.addItem("Gujarati", "guj");
+			language.addItem("Tamil", "tam");
 			language.addItem("English", "eng");
 			Label langLabel = new Label("Language:");
 			
