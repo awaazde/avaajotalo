@@ -506,7 +506,7 @@ public class ManageGroups extends Composite {
     inputBox.addItem("Touchtone", "0");
     inputBox.addItem("Voice", "1");
     
-    maxInputLabel = new Label("Max Input Length");
+    maxInputLabel = new Label("Max Number of Digits");
     maxInputLengthBox = new ListBox();
     maxInputLengthBox.setName("max_input_len");
     for(int i=1; i < 11; i++)
