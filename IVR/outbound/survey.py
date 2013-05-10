@@ -16,6 +16,9 @@
 import router
 from datetime import datetime, timedelta
 from otalo.surveys.models import Call, Subject
+# import added below to avoid this script failing
+# with the longerusername monkey patch added (not sure what the problem is)
+from django.contrib.admin import actions
 
 # This should match with how often the cron runs
 INTERVAL_MINS = 1
