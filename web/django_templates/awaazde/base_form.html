@@ -25,8 +25,11 @@ input[type="submit"]{
 {% block pretitle %}
 <p class="offset11"><a href="{% settings_value "PROJECT_MOUNT_POINT" %}/logout">{% trans 'Log out' %}</a></p>
 {% endblock %}
+
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
 	{% if error %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ error }}</strong></div>{% endif %}
+   	{% if preform %}{{ preform|safe }}{% endif %}
    	{% crispy form %}
+   	{% if postform %}{{ postform|safe }}{% endif %}
 {% endblock %}
