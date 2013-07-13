@@ -98,7 +98,7 @@ public class ManageGroups extends Composite {
 	private HTML creditsLabel;
 	private RadioButton inboundOff, inboundMemsOnly, inboundAll;
 	private int reportStartIndex = 0, membersStartIndex = 0;
-	private CheckBox welcomeSMS;
+	private CheckBox welcomeSMS, forwardAllowed;
 	
 	private Forum group;
 	private Line line;
@@ -426,6 +426,7 @@ public class ManageGroups extends Composite {
     
     reports = new ListBox();
     reports.addItem("Call-in report", "callin");
+    reports.addItem("Forwards report", "forward");
     String months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     month = new ListBox();
     for (int i=0; i<months.length; i++)
@@ -561,6 +562,10 @@ public class ManageGroups extends Composite {
     backupsBox.addItem("1");
     backupsBox.addItem("2");
     
+    Label forwardLabel = new Label("Allow Forwarding");
+    forwardAllowed = new CheckBox();
+    forwardAllowed.setName("forward");
+    
     Label emailLabel = new Label("Email Address");
     emailText = new TextBox();
     emailText.setName("email");
@@ -666,6 +671,8 @@ public class ManageGroups extends Composite {
 		settingsTable.setWidget(row++, 1, inboundButtons);
 		settingsTable.setWidget(row, 0, backupsLabel);
 		settingsTable.setWidget(row++, 1, backupsBox);
+		settingsTable.setWidget(row, 0, forwardLabel);
+		settingsTable.setWidget(row++, 1, forwardAllowed);
 		settingsTable.setWidget(row, 0, emailLabel);
 		settingsTable.setWidget(row++, 1, emailPanel);
 		settingsTable.setWidget(row, 0, senderLabel);
@@ -1052,6 +1059,8 @@ public class ManageGroups extends Composite {
 			backupsBox.setSelectedIndex(0);
 		else
 			backupsBox.setSelectedIndex(Integer.valueOf(backups));
+		
+		forwardAllowed.setValue(group.forwarding());
 		
 		String email = Messages.get().getModerator().getEmail();
 		emailText.setValue(email);

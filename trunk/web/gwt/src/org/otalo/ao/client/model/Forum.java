@@ -48,6 +48,8 @@ public class Forum extends BaseModel {
     }
   }  
   
+  //make the following constants consistent with ao:models.py:Forum
+  private static final String FORWARD = "1";
 	
 	public Forum(JSOModel data) 
 	{
@@ -135,6 +137,10 @@ public class Forum extends BaseModel {
 			return 1;
 		else
 			return Integer.valueOf(len);
+	}
+	
+	public boolean forwarding() {
+		return getField("forwarding").equals(FORWARD);
 	}
 	
 }
