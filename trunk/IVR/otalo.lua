@@ -22,6 +22,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
+dofile("/usr/local/freeswitch/scripts/AO/db.lua");
 
 script_name = "otalo.lua";
 digits = "";
@@ -30,7 +31,6 @@ arg = {};
 sessid = os.time();
 userid = nil;
 adminforums = {};
-opencursors = {};
 
 -- set the language, check if line is restricted
 destination = session:getVariable("destination_number");
@@ -820,7 +820,7 @@ while (adminforum ~= nil) do
 	adminforum = adminrows();
 end
 
-if (callback_allowed == 1 and (quota_imposed == 0 or (balance ~= nil and balance ~= 0))) then
+if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(userid))) then
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	api = freeswitch.API();

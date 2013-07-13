@@ -22,6 +22,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
+dofile("/usr/local/freeswitch/scripts/AO/db.lua");
 
 script_name = "responder.lua";
 digits = "";
@@ -33,7 +34,6 @@ userid = argv[1];
 -- on hangup event
 prevmsgs = {};
 adminforums = {};
-opencursors = {};
 
 freeswitch.consoleLog("info", script_name .. " : user id = " .. userid .. "\n");
 

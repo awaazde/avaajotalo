@@ -224,6 +224,17 @@ function playcontent (summary, content)
    return use();
 end
 
+--[[
+-------------------------------------------
+------------- play_prompt ---------------- 
+-------------------------------------------
+--]]
+function play_prompt(promptname, delay)
+	delay = delay or DEF_INPUT_DELAY;
+	local promptfile = promptname..PROMPT_SOUND_EXT;
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. sd .. promptfile .. "\n");
+	read(sd .. promptfile, delay);
+end
 -----------
 -- recordmessage
 -----------
@@ -706,7 +717,7 @@ end
 -----------
 
 function get_prompts(surveyid)
-	local query = 	"SELECT id, file, bargein, delay, inputlen, dependson_id ";
+	local query = 	"SELECT id, file, bargein, delay, inputlen, dependson_id, survey_id ";
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
@@ -780,12 +791,13 @@ function play_prompts (prompts)
    end
    
    while (current_prompt ~= nil) do
-   	  promptid = current_prompt[1];
-   	  promptfile = current_prompt[2];
-   	  bargein = current_prompt[3];
-   	  delay = current_prompt[4];
-   	  inputlen = tonumber(current_prompt[5]);
-   	  dependson = tonumber(current_prompt[6]);
+   	  local promptid = current_prompt[1];
+   	  local promptfile = current_prompt[2];
+   	  local bargein = current_prompt[3];
+   	  local delay = current_prompt[4];
+   	  local inputlen = tonumber(current_prompt[5]);
+   	  local dependson = tonumber(current_prompt[6]);
+   	  local surveyid = tonumber(current_prompt[7]);
    	  
    	  if (dependson ~= nil) then
    	  	local query = "SELECT input FROM surveys_input ";
@@ -857,25 +869,35 @@ function play_prompts (prompts)
       if (session:ready() == false) then
 		hangup();
       end
-      
-      if (action == OPTION_INPUT) then
+      -- keep together all options which have a goto IDX param
+      -- in order to avoid duplicating the code that checks the
+      -- param and sets the current_prompt_idx accordingly
+      if (action == OPTION_INPUT or action == OPTION_FORWARD) then
       	local params = nil;
       	if (optionid ~= nil) then
       		params = get_params(optionid);
       	end
-      	-- in case there is a data for this option
-      	-- that should be inputted instead of the raw dialed number.
-      	-- Used for passing prompt names for conditional prompts.
-	   	if (params ~= nil and params[OPARAM_NAME] ~= nil) then
-	   		input = params[OPARAM_NAME];
-	   	end
-	    query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
-   		query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..input.."')";
-   		con:execute(query);
-   		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
+      	
+      	if (action == OPTION_INPUT) then
+	      	-- in case there is a data for this option
+	      	-- that should be inputted instead of the raw dialed number.
+	      	-- Used for passing prompt names for conditional prompts.
+		   	if (params ~= nil and params[OPARAM_NAME] ~= nil) then
+		   		input = params[OPARAM_NAME];
+		   	end
+		    query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
+	   		query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..input.."')";
+	   		con:execute(query);
+	   		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+	   elseif (action == OPTION_FORWARD) then
+	   		-- required param
+	   		local mfid = params[OPARAM_MFID];
+	   		local msginfo = get_table_one_row("ao_message_forum mf", "mf.id = "..mfid, "mf.message_id, mf.forum_id")
+	   		forward(userid, msginfo[1], msginfo[2], surveyid);
+	   end
    		
    		local goto_idx = nil;
-   		if (params ~= nil) then
+   		if (params ~= nil and params[OPARAM_IDX] ~= nil) then
    			goto_idx = tonumber(params[OPARAM_IDX]);
    		end
    		
@@ -1106,6 +1128,23 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    
    read(recordsd .. "okrecorded.wav",500);
    return d;
+end
+
+--[[
+-------------------------------------------
+------------- is_sufficient_balance ------- 
+-------------------------------------------
+
+	Check the given user's balance and return
+	true or false if the person has sufficient
+	balance.
+
+	Method is required for forward.lua
+-------------------------------------------
+--]]
+function is_sufficient_balance(userid)
+	local balance = get_table_field("ao_user", "balance", "id="..userid);
+	return balance == nil or balance > 0;
 end
 
 --[[ 
