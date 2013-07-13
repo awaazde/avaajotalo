@@ -147,6 +147,20 @@ class Forum(models.Model):
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
     bcast_template = models.ForeignKey(Survey, blank=True, null=True)
     confirm_recordings = models.BooleanField(default=True)
+    # How messages from this forum can be user-forwarded
+    # On inbound calls, outbound calls, both, or neither?
+    NO_FORWARD = 0
+    FORWARD = 1
+    FORWARD_INBOUND_ONLY = 2
+    FORWARD_OUTBOUND_ONLY = 3
+    
+    FORWARD_TYPES = (
+    (NO_FORWARD, 'No forwarding'),
+    (FORWARD, 'All forwarding'),
+    (FORWARD_OUTBOUND_ONLY, 'Forwarding from inbound only'),
+    (FORWARD_OUTBOUND_ONLY, 'Forwarding from outbound only'),
+    )
+    forwarding = models.IntegerField(choices=FORWARD_TYPES, blank=True, null=True)
     
     '''
     '########################################################################################
@@ -166,7 +180,7 @@ class Forum(models.Model):
     '''
     '    Adapted fields (to avoid creating extra fields)
     '    ----------------------------------------------
-    '    responses_allowed => reponse_type (voice = True, touchtone = False)
+    '    responses_allowed => response_type (voice = True, touchtone = False)
     '    max_responder_len => maximum input length for touchtone input
     '''
     
@@ -198,7 +212,7 @@ class Message_forum(models.Model):
     message = models.ForeignKey(Message)
     forum = models.ForeignKey(Forum)
     
-        # Code in order of how they are declared in Message.java
+    # Code in order of how they are declared in Message.java
     STATUS_PENDING = 0
     STATUS_APPROVED = 1
     STATUS_REJECTED = 2
@@ -329,6 +343,17 @@ class Transaction(models.Model):
         
     def __unicode__(self):
         return unicode(self.user) + '_' + unicode(self.type) +"-"+ unicode(self.call) + "-" + unicode(self.amount)
+
+class Forward(models.Model):
+    created_on = models.DateTimeField(auto_now_add=True)
+    requestor = models.ForeignKey(User)
+    message = models.ForeignKey(Message)
+    survey = models.ForeignKey(Survey, blank=True, null=True)
+    forum = models.ForeignKey(Forum, blank=True, null=True)
+    recipients = models.ManyToManyField(User, related_name='recipients', blank=True, null=True)
+        
+    def __unicode__(self):
+        return unicode(self.requestor) + '_' + unicode(self.message)
     
 #class DoNotCall(models.Model):
 #    user = models.ForeignKey(User)
@@ -340,4 +365,4 @@ class Transaction(models.Model):
 #    health = models.NullBooleanField()
 #    consumergoods = models.NullBooleanField()
 #    tourism = models.NullBooleanField()
-#    communication = models.NullBooleanField()
+#    communication = models.NullBooleanField(
