@@ -57,16 +57,30 @@ class Survey(models.Model):
     status = models.IntegerField(default = 0);
     
     # For delayed broadcasts
-    # (when a scheduler needs to
-    # schedule calls for a bcast at
-    # a later date from when it's created)
-    # don't make auto in order to keep null where not needed
-    # and to allow manual setting in test suites
+    # (when a scheduler needs to schedule calls for a bcast at a later date from when it's created)
+    # Don't make auto in order to keep null where not needed and to allow manual setting in test suites
     created_on = models.DateTimeField(blank=True, null=True)
     
+    '''
+    '    FORWARD (added 'is' to avoid reverse query clash with ao.Forward)
+    '
+    '    Could have used a designator in the name, or could have simply inferred
+    '    from setting template and broadcast to False. Chose to do this because
+    '    adding an additional Boolean column doesn't cost a huge performance hit,
+    '    makes code more readable and understandable if you can declare a survey
+    '    as a forward (instead of inferring based on what it is not).
+    '    
+    '    Make nullable for backwards-compatibility... don't need to update all old
+    '    surveys; since this is a new feature, future forwards should just declare
+    '    themselves as such.
+    '
+    '    With all of these boolean designators, a rewrite may include consolidating
+    '    them all into a 'properties' bitmap field
+    '''
+    isforward = models.NullBooleanField()
     
     '''
-    ' For inbound surveys' callback with spoofed numbers (e.g. for VoIP calling)
+    '     For inbound surveys' callback with spoofed numbers (e.g. for VoIP calling)
     '''
     outbound_number = models.CharField(max_length=24, blank=True, null=True)
     
@@ -189,6 +203,7 @@ class Option(models.Model):
     RECORD = 5
     INPUT = 6
     TRANSFER = 7
+    FORWARD = 8
     
     action = models.IntegerField()
     
