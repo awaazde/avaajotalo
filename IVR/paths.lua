@@ -46,6 +46,7 @@ OPTION_GOTO = 4;
 OPTION_RECORD = 5;
 OPTION_INPUT = 6;
 OPTION_TRANSFER = 7;
+OPTION_FORWARD = 8;
 
 -- Should be consistent with Param model
 OPARAM_IDX = 'idx';

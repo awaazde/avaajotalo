@@ -29,6 +29,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
 dofile("/usr/local/freeswitch/scripts/AO/common.lua");
+dofile("/usr/local/freeswitch/scripts/AO/db.lua");
 
 script_name = "survey.lua";
 aosd = basedir .. "/scripts/AO/sounds/";
@@ -45,7 +46,6 @@ callstarttime = nil;
 -- The prompts_played queue. Make global to record listens
 -- on hangup event
 prevprompts = {};
-opencursors = {};
 
 -- survey phonenumber
 destination = session:getVariable("destination_number");
