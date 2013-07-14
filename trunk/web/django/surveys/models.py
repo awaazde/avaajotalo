@@ -223,6 +223,8 @@ class Param(models.Model):
     NUM = 'num'
     # For INPUT (optional)
     NAME = 'name'
+    # For FORWARD
+    FWD_PROMPT_PATH = 'fwdpath'
         
     name = models.CharField(max_length=24)
     
