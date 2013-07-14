@@ -131,7 +131,7 @@ function my_cb(s, type, obj, arg)
       if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
 	 	 read(aosd .. "okinstructions.wav", 500);
 		 read(anssd .. "instructions_full.wav", 500);
-		 digits = use();
+		 digits = input();
 		 return "break";
       end
       
@@ -143,7 +143,7 @@ function my_cb(s, type, obj, arg)
 
       if (obj['digit'] == GLOBAL_MENU_PAUSE) then
 	 	read(aosd .. "paused.wav", 500);
-	    digits = use();
+	    digits = input();
 	    if (digits == "") then
 	       digits = GLOBAL_MENU_PAUSE;
 	       return "pause";
@@ -349,7 +349,7 @@ function mainmenu ()
       read(aosd .. "digits/" .. responderidx .. ".wav", 1000);
    end
      
-   d = tonumber(use());
+   d = tonumber(input());
    
    if (d ~= nil and d > 0 and d <= numforums) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
@@ -364,11 +364,11 @@ function mainmenu ()
       playforum(forumids[d]);
    elseif (d == chkrepliesidx and personal_inbox == 1) then
       read(aosd .. "okyourreplies.wav", 0);
-      use();
+      input();
       playmessages(getusermessages(lineid), 'y');
    elseif (d == chkpendingidx and adminmode) then
       read(aosd .. "okpending.wav", 0);
-      use();
+      input();
       -- pending messages shouldn't have replies so
       -- leave the flag as 'n'
       playmessages(getpendingmessages(lineid), 'n');
@@ -378,7 +378,7 @@ function mainmenu ()
    	  else
    	  	read(aosd .. "okresponder.mp3", 0);
    	  end
-      use();
+      input();
    	  local rmsgs = get_responder_messages(userid);
       play_responder_messages(userid, rmsgs, adminforums);
    --elseif (d == GLOBAL_JUMP_MESSAGE) then
@@ -421,7 +421,7 @@ function playmessage (msg, listenreplies)
 
   if (status == MESSAGE_STATUS_PENDING and adminmode) then
      read(aosd .. "approvereject.wav", 2000);
-     d = use();
+     d = input();
      if (d == "1") then
      	local position = 'null';
      	local cur = con:execute("SELECT MAX(mf.position) from ao_message_forum mf, ao_message m WHERE mf.message_id = m.id AND m.lft = 1 AND mf.forum_id = " .. forumid .. " AND mf.status = " .. MESSAGE_STATUS_APPROVED );
@@ -447,12 +447,12 @@ function playmessage (msg, listenreplies)
   
   if (hasreplies(id) and listenreplies == 'y') then
      read(aosd .. "listenreplies.wav", 6000);
-     d = use();
+     d = input();
 	 
      if (d == "1") then
 		-- quicken pace by getting rid of confirmation
 		-- read(aosd .. "okreplies.wav", 500);
-		d = use();
+		d = input();
 		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
 		end
@@ -463,7 +463,7 @@ function playmessage (msg, listenreplies)
 		end
 		
 		read(aosd .. "backtoforum.wav", 500);
-		d = use();
+		d = input();
 		if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_INSTRUCTIONS) then
 		   return d;
 		end
@@ -479,7 +479,7 @@ function playmessage (msg, listenreplies)
   -- only between threads, not between replies
   if (listenreplies == 'y' and (responsesallowed == 'y' or adminmode)) then
 	  	read(aosd .. "instructions_between.wav", 4000)
-	  	d = use();
+	  	d = input();
 	  	
 	  	if (d ~= "") then
 			return d;
@@ -501,7 +501,7 @@ function playmessages (msgs, listenreplies)
    local adminmode = false;
    if (current_msg == nil) then
       read(aosd .. "nomessages.wav", 1000);
-      return use();
+      return input();
    end
 
    local prevmsgs = {};
@@ -529,7 +529,7 @@ function playmessages (msgs, listenreplies)
 	 	read(aosd .. "nextmessage.wav", 1000);
       end
 
-      d = use();
+      d = input();
       -- check if a pre-emptive action was taken
       if (d ~= GLOBAL_MENU_MAINMENU and d ~= GLOBAL_MENU_SKIP_BACK and d ~= GLOBAL_MENU_SKIP_FWD and d ~= GLOBAL_MENU_RESPOND and d ~= GLOBAL_MENU_INSTRUCTIONS) then
 	 	d = playmessage(current_msg, listenreplies);
@@ -558,7 +558,7 @@ function playmessages (msgs, listenreplies)
 		    end
 		 else
 		    read(aosd .. "responsesnotallowed.wav", 500);
-		    d = use();
+		    d = input();
 		 end
      elseif (d == GLOBAL_MENU_SKIP_BACK) then
 		 if (current_msg_idx > 1) then
@@ -569,7 +569,7 @@ function playmessages (msgs, listenreplies)
 	 	 read(aosd .. "okinstructions.wav", 500);
 		 read(aosd .. "instructions_full.wav", 500);
 		 
-		 d = use();
+		 d = input();
 	 elseif (d == GLOBAL_MENU_REPLAY) then
 	     -- do nothing
 	 	
@@ -584,7 +584,7 @@ function playmessages (msgs, listenreplies)
 		    --[[ 
 		    if (current_msg == nil) then
 		       read(aosd .. "lastmessage.wav", 1000);
-		       d = use(); 
+		       d = input(); 
 		       if (d == GLOBAL_MENU_SKIP_BACK) then
 			  current_msg_idx = current_msg_idx - 1;
 			  current_msg = prevmsgs[current_msg_idx];
@@ -682,7 +682,7 @@ function playforum (forumid)
 			 end
 		  end
 	  end 
-	  d = use();
+	  d = input();
 	  if (d == GLOBAL_MENU_MAINMENU) then
 	     return;
 	  end
@@ -741,14 +741,14 @@ function playforum (forumid)
    		read(aosd .. "instructions_short_noresponse.wav", 1000);
    end
    
-   d = use(); 
+   d = input(); 
    if (d == GLOBAL_MENU_MAINMENU) then
       return;
    elseif (d == GLOBAL_MENU_INSTRUCTIONS) then
    	  read(aosd .. "okinstructions.wav", 500);
 	  read(aosd .. "instructions_full.wav", 500);
 	 
-	  d = use();
+	  d = input();
    end
    
    playmessages(getmessages(forumid, tagid), 'y');
@@ -778,14 +778,14 @@ function jumptomessage()
    local d = "-1";
    repeat
       read(aosd .. "code.wav", 2000);   -- Expecting 1 digit forum ID or press Zero to return mainmenu
-      d = use();
+      d = input();
    until (d ~= "");
    if (d == GLOBAL_MENU_MAINMENU) then
       return;
    else
 	   id_forum = tonumber(d);
 	   get_msgid("", 2000)  -- Expecting 5 Digit Msg ID
-	   d = use();
+	   d = input();
 	   if (d ~= "") then
 	      id_msg = tonumber(d);
 	      id_msg = id_msg % 100000;
