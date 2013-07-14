@@ -62,6 +62,7 @@ MAX_FORWARD_RECIPIENTS = 5;
 -------------------------------------------
 --]]
 function read_phone_num(file, delay, invalid_num_file)
+	local callernum = callernum or caller;
 	file = file or sd .. "inputnumber" .. PROMPT_SOUND_EXT;
 	delay = delay or DEF_INPUT_DELAY;
 	invalid_num_file = invalid_num_file or sd.."invalidnumber"..PROMPT_SOUND_EXT;
