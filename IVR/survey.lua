@@ -52,6 +52,8 @@ destination = session:getVariable("destination_number");
 -- caller's number
 caller = session:getVariable("caller_id_number");
 caller = caller:sub(-10);
+-- added for forwarding (checking sufficient balance, creating forward request, etc.)
+userid = get_table_field('ao_user', 'id', 'number='..caller);
 
 -- get survey id
 query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback, survey.outbound_number ";

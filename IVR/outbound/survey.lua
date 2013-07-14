@@ -55,6 +55,8 @@ local subjectid = res[1];
 caller = res[2];
 local surveyid = res[3];
 destination = res[7] or "";
+-- added for forwarding (checking sufficient balance, creating forward request, etc.)
+userid = get_table_field('ao_user', 'id', 'number='..caller);
 
 logfilename = logfileroot .. "outbound_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
