@@ -239,6 +239,10 @@ end
 function play_prompt(promptname, delay, promptsd)
 	delay = delay or DEF_INPUT_DELAY;
 	promptsd = promptsd or sd;
+	if (promptsd:sub(-1) ~= '/') then
+		-- add trailing slash
+		promptsd = promptsd .. '/';
+	end
 	local promptfile = promptname..PROMPT_SOUND_EXT;
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptsd .. promptfile .. "\n");
 	read(promptsd .. promptfile, delay);
