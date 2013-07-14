@@ -30,7 +30,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 
 	DEPENDS ON:
 		db.lua
-		play_prompt(file) (in your common.lua)
+		play_prompt(file, delay, promptsd) (in your common.lua)
 		is_sufficient_balance(userid) (in your common.lua)
 		input() (in your common.lua)
 --------------------------------------------------------------------------------------
@@ -103,6 +103,7 @@ end
 ------------------------------------------- 
 --]]
 function forward(userid, messageid, forumid, surveyid, promptsd)
+	promptsd = promptsd or fwdsd;
 	local num_recipients = 0;
 	local d = nil;
 	
@@ -116,7 +117,7 @@ function forward(userid, messageid, forumid, surveyid, promptsd)
 			d = input();
 			if (d ~= nil and d ~= "") then
 				add_forward_recipient(forwardid, d)
-				play_prompt("okforwarded");
+				play_prompt("okforwarded", nil, promptsd);
 				num_recipients = num_recipients + 1;
 			else
 				-- if user is unable to successfully add a number, stop prompting
@@ -125,7 +126,7 @@ function forward(userid, messageid, forumid, surveyid, promptsd)
 			
 		end
 	else
-		play_prompt("recharge");
+		play_prompt("recharge", nil, promptsd);
 	end
 end
 
