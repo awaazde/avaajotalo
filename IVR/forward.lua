@@ -107,7 +107,7 @@ function forward(userid, messageid, forumid, surveyid)
 		while (d ~= GLOBAL_MENU_MAINMENU and num_recipients < MAX_FORWARD_RECIPIENTS) do
 			read_phone_num();
 			d = input();
-			if (d ~= nil) then
+			if (d ~= nil and d ~= "") then
 				add_forward_recipient(forwardid, d)
 				play_prompt("okforwarded");
 				num_recipients = num_recipients + 1;
