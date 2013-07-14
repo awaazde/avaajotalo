@@ -777,7 +777,7 @@ end
 function play_prompts (prompts)
    -- get the first prompt
    local current_prompt = prompts();
-   prevprompts = {};
+   local prevprompts = {};
    table.insert(prevprompts, current_prompt);
    local current_prompt_idx = 1;
    local d = "";
@@ -1143,8 +1143,15 @@ end
 -------------------------------------------
 --]]
 function is_sufficient_balance(userid)
-	local balance = get_table_field("ao_user", "balance", "id="..userid);
-	return balance == nil or balance > 0;
+	if (userid == nil) then
+		-- could happen if the survey app in question is pure
+		-- survey with no inbound app, hence no automatic
+		-- way to create a user
+		return false;
+	else
+		local balance = get_table_field("ao_user", "balance", "id="..userid);
+		return balance == nil or balance > 0;
+	end
 end
 
 --[[ 
