@@ -150,15 +150,22 @@ function read_no_bargein(file, delay)
     session:streamFile(file);
     sleep(delay);
     -- ignore all input
-    use();
+    input();
 end
 
-----------
--- use
-----------
+--[[
+-------------------------------------------
+----------------- input ------------------- 
+-------------------------------------------
 
-function use()
-   d = digits;
+	used to be use() 
+	changed for compatibility with forward.lua
+
+-------------------------------------------
+--]]
+
+function input()
+   local d = digits;
    digits = "";
    -- need the below so any input from the stream
    -- doesn't carry over to the next
@@ -265,7 +272,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 100 5");
       --sleep(1000);
-      d = use();
+      d = input();
       
       if (confirm == 1) then
 	      local review_cnt = 0;
@@ -274,7 +281,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 			 read(filename, 1000);
 			 read(aosd .. "notsatisfied.wav", 2000);
 			 sleep(6000)
-			 d = use();
+			 d = input();
 			 review_cnt = check_abort(review_cnt, 3)
 	      end
 	      
@@ -284,7 +291,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 			    return d;
 			 elseif (d == "3") then
 			    read(aosd .. "messagecancelled.wav", 500);
-			    return use();
+			    return input();
 			 end
 	     end
 	  else
@@ -344,7 +351,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
 
    read(okrecordedprompt, 500);
-   return use();
+   return input();
 end
 
 
@@ -551,7 +558,7 @@ function play_responder_message (msg)
   	return d;
   end
   
-  d = use();
+  d = input();
   if (d ~= "") then
   	return d;
   else
@@ -570,7 +577,7 @@ function play_responder_messages (userid, msgs, adminforums)
    local current_msg = msgs();
    if (current_msg == nil) then
       read(aosd .. "nomessages.wav", 1000);
-      return use();
+      return input();
    end
 
    prevmsgs = {};
@@ -594,7 +601,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	 	read(aosd .. "nextmessage.wav", 1000);
       end
 
-      d = use();
+      d = input();
       -- check if a pre-emptive action was taken
       -- don't listen for pre-emptive actions that require
       -- listening to the message at least a little. Make an
@@ -607,7 +614,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	  	 read(aosd .. "okinstructions.wav", 500);
 		 read(anssd .. "instructions_full.wav", 500);
 		 
-		 d = use();
+		 d = input();
 	  end
       
       if (d == GLOBAL_MENU_RESPOND) then
@@ -644,12 +651,12 @@ function play_responder_messages (userid, msgs, adminforums)
 	  elseif (d == GLOBAL_MENU_REFER) then
 
 	  	read_phone_num(anssd .. "referquestion.wav", 3000);
-		d = use();
+		d = input();
 		local phone_num_cnt = 0;
 	  	while (d ~= GLOBAL_MENU_CANCEL_REFERRAL and string.len(d) ~= 10) do
 		  	session:execute("playback", "tone_stream://%(500, 0, 620)");
 		  	read_phone_num("", 3000);
-		  	d = use();
+		  	d = input();
 		  	
 		  	if (d ~= GLOBAL_MENU_CANCEL_REFERRAL and string.len(d) ~= 10) then
 	  			read(anssd .. "invalidphonenum.wav",500)
@@ -678,7 +685,7 @@ function play_responder_messages (userid, msgs, adminforums)
 		    current_msg = msgs();
 		    if (current_msg == nil) then
 		       read(aosd .. "lastmessage.wav", 1000);
-		       d = use(); 
+		       d = input(); 
 		       if (d == GLOBAL_MENU_SKIP_BACK) then
 				  current_msg_idx = current_msg_idx - 1;
 				  current_msg = prevmsgs[current_msg_idx];
@@ -837,7 +844,7 @@ function play_prompts (prompts)
    	  	set_survey_complete(callid);
    	  end
    	  
-   	  d = use();
+   	  d = input();
    	  input = d;
    	  
    	  -- get option
@@ -1034,7 +1041,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
       if (firstiter == false and io.open(recordsd .. "pleaserecord.wav","rb") ~= nil) then
 	   	  read(recordsd .. "pleaserecord.wav", 1000);
 	  end
-      local d = use();
+      local d = input();
 	  
       if (d == GLOBAL_MENU_MAINMENU) then
 	 	  return d;
@@ -1047,7 +1054,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 		    os.time(), "\t", "Record", "\t", filename, "\n");
       session:execute("record", filename .. " " .. maxlength .. " 100 5");
       
-      d = use();
+      d = input();
       
       if (confirm == 1) then
 	      local review_cnt = 0;
@@ -1056,7 +1063,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 			 read(filename, 1000);
 			 read(recordsd .. "notsatisfied.wav", 2000);
 			 sleep(6000)
-			 d = use();
+			 d = input();
 			 review_cnt = check_abort(review_cnt, 3)
 	      end
 	      

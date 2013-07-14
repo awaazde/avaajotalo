@@ -85,7 +85,7 @@ function my_cb(s, type, obj, arg)
        if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
 		 read(aosd .. "okinstructions.wav", 500);
 		 read(anssd .. "instructions_full.wav", 500);
-		 digits = use();
+		 digits = input();
 		 return "break";
       end
       
@@ -98,7 +98,7 @@ function my_cb(s, type, obj, arg)
 
       if (obj['digit'] == GLOBAL_MENU_PAUSE) then
 	    read(aosd .. "paused.wav", 500);
-	    digits = use();
+	    digits = input();
 	    if (digits == "") then
 	       digits = GLOBAL_MENU_PAUSE;
 	       return "pause";
@@ -215,7 +215,7 @@ if (msg ~= nil) then
 		while (1) do
 		   read(anssd .. "welcome.wav", 500);
 		   -- ignore any barge-in and move on
-		   use();
+		   input();
 		   
 		   msgs = get_responder_messages(userid);
 

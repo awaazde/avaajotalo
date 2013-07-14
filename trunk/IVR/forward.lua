@@ -32,6 +32,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 		db.lua
 		play_prompt(file) (in your common.lua)
 		is_sufficient_balance(userid) (in your common.lua)
+		input() (in your common.lua)
 --------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------
 --]]
