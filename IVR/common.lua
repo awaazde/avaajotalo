@@ -899,8 +899,9 @@ function play_prompts (prompts)
 	   elseif (action == OPTION_FORWARD) then
 	   		-- required param
 	   		local mfid = params[OPARAM_MFID];
-	   		local msginfo = get_table_one_row("ao_message_forum mf", "mf.id = "..mfid, "mf.message_id, mf.forum_id")
-	   		forward(userid, msginfo[1], msginfo[2], surveyid);
+	   		local promptsd = params[OPARAM_FWD_PROMPT_PATH];
+	   		local msginfo = get_table_one_row("ao_message_forum mf", "mf.id = "..mfid, "mf.message_id, mf.forum_id");	   		
+	   		forward(userid, msginfo[1], msginfo[2], surveyid, promptsd);
 	   end
    		
    		local goto_idx = nil;

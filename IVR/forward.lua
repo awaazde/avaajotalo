@@ -23,10 +23,10 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 	Self-contained set of functionality for forward-2-friend.
 
 	IMPORTANT NOTE: In order to use this module, your importing
-	script *must* adhere to the follwing naming conventions:
+	script *must* adhere to the following naming conventions:
 
 		callernum => phone number of user (in or outbound caller)
-		sd -> directory where the sound files for forward are located
+		fwdsd -> default directory where the sound files for forward are located (not used if directory specified)
 
 	DEPENDS ON:
 		db.lua
@@ -62,11 +62,18 @@ MAX_FORWARD_RECIPIENTS = 5;
 --------- read_phone_num ------------------
 -------------------------------------------
 --]]
-function read_phone_num(file, delay, invalid_num_file)
-	local callernum = callernum or caller;
-	file = file or sd .. "inputnumber" .. PROMPT_SOUND_EXT;
+function read_phone_num(delay, promptsd)
 	delay = delay or DEF_INPUT_DELAY;
-	invalid_num_file = invalid_num_file or sd.."invalidnumber"..PROMPT_SOUND_EXT;
+	promptsd = promptsd or fwdsd;
+	if (promptsd:sub(-1) ~= '/') then
+		-- add trailing slash
+		promptsd = promptsd .. '/';
+	end
+	
+	local callernum = callernum or caller;
+	local file = promptsd .. "inputnumber" .. PROMPT_SOUND_EXT;
+	local invalid_num_file = promptsd.."invalidnumber"..PROMPT_SOUND_EXT;
+	
 	if (digits == "") then
 		logfile:write(sessid, "\t", callernum, "\t", destination, "\t", os.time(), "\t", "Prompt", "\t", file, "\n");
 	  	-- allow 10 only
@@ -95,7 +102,7 @@ end
 	inter 10-digit numbers one at a time, each time
 ------------------------------------------- 
 --]]
-function forward(userid, messageid, forumid, surveyid)
+function forward(userid, messageid, forumid, surveyid, promptsd)
 	local num_recipients = 0;
 	local d = nil;
 	
@@ -105,7 +112,7 @@ function forward(userid, messageid, forumid, surveyid)
 		-- because we don't know when the hangup will happen
 		local forwardid = create_forward_request(userid, messageid, forumid, surveyid);
 		while (d ~= GLOBAL_MENU_MAINMENU and num_recipients < MAX_FORWARD_RECIPIENTS) do
-			read_phone_num();
+			read_phone_num(nil, promptsd);
 			d = input();
 			if (d ~= nil and d ~= "") then
 				add_forward_recipient(forwardid, d)
