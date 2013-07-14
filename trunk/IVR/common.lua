@@ -236,11 +236,12 @@ end
 ------------- play_prompt ---------------- 
 -------------------------------------------
 --]]
-function play_prompt(promptname, delay)
+function play_prompt(promptname, delay, promptsd)
 	delay = delay or DEF_INPUT_DELAY;
+	promptsd = promptsd or sd;
 	local promptfile = promptname..PROMPT_SOUND_EXT;
-	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. sd .. promptfile .. "\n");
-	read(sd .. promptfile, delay);
+	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptsd .. promptfile .. "\n");
+	read(promptsd .. promptfile, delay);
 end
 -----------
 -- recordmessage
