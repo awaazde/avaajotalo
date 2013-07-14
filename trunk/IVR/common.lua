@@ -788,7 +788,7 @@ function play_prompts (prompts)
    table.insert(prevprompts, current_prompt);
    local current_prompt_idx = 1;
    local d = "";
-   local input = "";
+   local inputval = "";
    local replay_cnt = 0;
    local optionid = "";
    
@@ -845,14 +845,14 @@ function play_prompts (prompts)
    	  end
    	  
    	  d = input();
-   	  input = d;
+   	  inputval = d;
    	  
    	  -- get option
-   	  option = get_option(promptid, input);
+   	  option = get_option(promptid, inputval);
    	  if (option ~= nil) then
    	  	optionid = option[1];
    	  	action = option[2];
-   	  elseif (input ~= "" and inputlen ~= nil and inputlen > 0 and inputlen >= string.len(tostring(input))) then
+   	  elseif (inputval ~= "" and inputlen ~= nil and inputlen > 0 and inputlen >= string.len(tostring(inputval))) then
    	  	-- there is no specific option, it is a range
    	  	-- The check for input being non-empty means that on no input the prompt will
    	  	-- always repeat on a multiple-digit input prompt. This is actually correct. To
@@ -890,10 +890,10 @@ function play_prompts (prompts)
 	      	-- that should be inputted instead of the raw dialed number.
 	      	-- Used for passing prompt names for conditional prompts.
 		   	if (params ~= nil and params[OPARAM_NAME] ~= nil) then
-		   		input = params[OPARAM_NAME];
+		   		inputval = params[OPARAM_NAME];
 		   	end
 		    query = 		 "INSERT INTO surveys_input (call_id, prompt_id, input) ";
-	   		query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..input.."')";
+	   		query = query .. " VALUES ("..tostring(callid)..","..promptid..",'"..inputval.."')";
 	   		con:execute(query);
 	   		freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 	   elseif (action == OPTION_FORWARD) then
