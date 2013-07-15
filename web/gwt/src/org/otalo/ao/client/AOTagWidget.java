@@ -95,6 +95,17 @@ public class AOTagWidget extends TagWidget {
 			// now that tags have been loaded,
 			// check which have been selected
 			loadSelectedTags(mf);
+			
+			// now that tags have been loaded,
+			// set the widget in details accordingly
+			if (crop.getItemCount() + topic.getItemCount() > 2)
+			{
+				Messages.get().setTagable(true);
+			}
+			else
+			{
+				Messages.get().setTagable(false);
+			}
 
 		}
 	 }
@@ -148,11 +159,5 @@ public class AOTagWidget extends TagWidget {
 		tagsChanged.setValue("0");
 		 
 	}
-
-	@Override
-	public boolean hasTags() {
-		return crop.getItemCount() + topic.getItemCount() > 2;
-	}
-
 
 }

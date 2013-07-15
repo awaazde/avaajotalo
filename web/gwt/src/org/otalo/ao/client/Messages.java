@@ -93,6 +93,11 @@ public class Messages implements EntryPoint, ResizeHandler {
   	if (!canManage()) messageDetail.setItem(messageForum);
   }
   
+  public void setTagable(boolean tagable)
+  {
+  	messageDetail.setTagable(tagable);
+  }
+  
   /**
    * Display messages in this message's forum
    * with this message's status (to get the folder right)
