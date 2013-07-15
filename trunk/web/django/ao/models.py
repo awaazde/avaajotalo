@@ -353,7 +353,7 @@ class Forward(models.Model):
     recipients = models.ManyToManyField(User, related_name='recipients', blank=True, null=True)
         
     def __unicode__(self):
-        return unicode(self.requestor) + '_' + unicode(self.message)
+        return unicode(self.requestor) + '_' + datetime.strftime(self.created_on, '%b-%d-%Y')
     
 #class DoNotCall(models.Model):
 #    user = models.ForeignKey(User)
