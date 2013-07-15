@@ -245,7 +245,6 @@ public class MessageDetail extends Composite {
   	Forum f = messageForum.getForum();
   	setModerated(f.moderated());
   	setRouteable(f.routeable());
-  	setTagable(f);
   	
   	switch (messageForum.getStatus())
   	{
@@ -500,9 +499,9 @@ public class MessageDetail extends Composite {
 		routing.setVisible(isRouteable);
 	}
 	
-	private void setTagable(Forum f)
+	public void setTagable(boolean tagable)
 	{
-		tags.setVisible(tags.hasTags());
+		tags.setVisible(tagable);
 	}
 	
 	/**
