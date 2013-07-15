@@ -502,7 +502,7 @@ public class MessageDetail extends Composite {
 	
 	private void setTagable(Forum f)
 	{
-		tags.setVisible(f.postingAllowed() || f.responsesAllowed());
+		tags.setVisible(tags.hasTags());
 	}
 	
 	/**

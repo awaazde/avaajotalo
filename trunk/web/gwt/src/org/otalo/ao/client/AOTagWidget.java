@@ -149,5 +149,10 @@ public class AOTagWidget extends TagWidget {
 		 
 	}
 
+	@Override
+	public boolean hasTags() {
+		return crop.getItemCount() + topic.getItemCount() > 0;
+	}
+
 
 }
