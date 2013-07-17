@@ -200,20 +200,20 @@ function playcontent (summary, content)
       session:streamFile(sd .. summary);
       sleep(1000);
       
-      d = use();
+      d = input();
       if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
 	 return d;
       end
    
       read(aosd .. "morecontent.wav", 2000);
-      d = use();
+      d = input();
       if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
 	 return d;
       elseif (d ~= "1") then
 	 return GLOBAL_MENU_NEXT;
       else
 	 read(aosd .. "okcontent.wav", 500);
-	 d = use();
+	 d = input();
 	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
 	    return d;
 	 end
@@ -228,7 +228,7 @@ function playcontent (summary, content)
    session:streamFile(sd .. content);
    sleep(3000);
    
-   return use();
+   return input();
 end
 
 --[[
@@ -264,7 +264,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
-      local d = use();
+      local d = input();
 
       if (d == GLOBAL_MENU_MAINMENU) then
 	 return d;
