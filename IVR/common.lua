@@ -1163,7 +1163,7 @@ function is_sufficient_balance(userid)
 		return false;
 	else
 		local balance = get_table_field("ao_user", "balance", "id="..userid);
-		return balance == nil or balance > 0;
+		return balance == nil or balance > 0 or balance == -1;
 	end
 end
 
