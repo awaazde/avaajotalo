@@ -37,9 +37,25 @@ class Line(models.Model):
     callback = models.BooleanField(default=False)
     # does this line use quotas for free access?
     quota = models.BooleanField(default=False)
-    # for dialing out
+    
+    '''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '    DEPRECATED in favor of Dialer for dialing out
+    '''
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
+    '''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''
+    
+    '''
+    '    Next-gen outbound dialing support
+    '    Decouples a number (which is essentially what a line models)
+    '    from dialing resources, so you can connect a number to multiple
+    '    dialing resources, and a dialing resource to many numbers
+    ''' 
+    dialers = models.ManyToManyField('Dialer', blank=True, null=True)
+    
     # for personal inbox in the main menu
     personalinbox = models.BooleanField(default=True)
     checkpendingmsgs = models.BooleanField(default=True)
@@ -317,6 +333,7 @@ class Transaction(models.Model):
     SMS = 3
     TRANSFER_OUT = 4
     TRANSFER_IN = 5
+    FORWARD = 6
     
     TYPE = (
     (BROADCAST_CALL, 'Broadcast'),
@@ -325,6 +342,7 @@ class Transaction(models.Model):
     (SMS, 'SMS'),
     (TRANSFER_OUT, 'Transfer out'),
     (TRANSFER_IN, 'Transfer in'),
+    (FORWARD, 'Forward'),
     )
     
     user = models.ForeignKey(User)
@@ -344,10 +362,19 @@ class Transaction(models.Model):
     def __unicode__(self):
         return unicode(self.user) + '_' + unicode(self.type) +"-"+ unicode(self.call) + "-" + unicode(self.amount)
 
+'''
+'    Represents a forward request from a requestor to some number
+'    of recipients. Doesn't give any information on the actual calls
+'    (that should be done through Surveys)
+'''
 class Forward(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     requestor = models.ForeignKey(User)
     message = models.ForeignKey(Message)
+    '''
+    '    This is the survey the forward was made *from*,
+    '    not the survey that was created as a result of this fwd request
+    '''
     survey = models.ForeignKey(Survey, blank=True, null=True)
     forum = models.ForeignKey(Forum, blank=True, null=True)
     recipients = models.ManyToManyField(User, related_name='recipients', blank=True, null=True)
@@ -355,14 +382,20 @@ class Forward(models.Model):
     def __unicode__(self):
         return unicode(self.requestor) + '_' + datetime.strftime(self.created_on, '%b-%d-%Y %H:%M')
     
-#class DoNotCall(models.Model):
-#    user = models.ForeignKey(User)
-#    call = models.BooleanField()
-#    # Categorical SMS
-#    banking = models.NullBooleanField()
-#    realestate = models.NullBooleanField()
-#    education = models.NullBooleanField()
-#    health = models.NullBooleanField()
-#    consumergoods = models.NullBooleanField()
-#    tourism = models.NullBooleanField()
-#    communication = models.NullBooleanField(
+'''
+'    A dialer is an outbound calling resource.
+'    Could be PRI, GSM SIM, VoIP connection, etc.
+'    Modeled as a PRI line, which has a series
+'    of consecutive phone numbers and can make a set number
+'    of parallel calls
+'''
+class Dialer(models.Model):
+    base_number = models.CharField(max_length=24) 
+    maxnums = models.IntegerField(default=100)
+    maxparallel = models.IntegerField(default=30)
+    
+    dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
+    dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
+    
+    def __unicode__(self):
+        return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)

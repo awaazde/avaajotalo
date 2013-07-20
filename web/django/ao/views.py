@@ -670,31 +670,34 @@ def bcast(request):
     # Get name
     bcastname = params['bcastname']
     
-    if mf is not None:
-        responseprompt = params.__contains__('response')
-        survey = broadcast.thread(mf, template, responseprompt, bcastname)
-    else:
-        survey = broadcast.regular_bcast(line,template,bcastname)
-
+    num_backups = int(params["backup_calls"])
+    
     # Get schedule
     when = params['when']
     if when == 'now':
-        now = datetime.now()
-        start_date = datetime(year=now.year, month=now.month, day=now.day)
-        nexttwo = now.minute + 2
-        fromtime = timedelta(hours=now.hour, minutes = nexttwo)
+        start_date = datetime.now()
     elif when == 'date':
-        fromtime = timedelta(hours=int(params['fromtime']))
-        bcastdate = params['bcastdate']
-        start_date = datetime.strptime(bcastdate, '%b-%d-%Y')
+        start_date = params['date']
+        try:
+            start_date = datetime.strptime(bcastdate, '%b-%d-%Y')
+        except ValueError as err:
+            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_DATE+', "message":"invalid date"}]')
+            response['Pragma'] = "no cache"
+            response['Cache-Control'] = "no-cache, must-revalidate"
+            return response
         
-    tilltime = timedelta(hours=int(params['tilltime']))
-    blocksize = int(params['blocksize'])
-    interval = int(params['interval'])
-    duration = int(params['duration'])
-    backups = params.__contains__("backups")
+        hour = int(params['hour'])
+        min = int(params['min'])
+        start_date = datetime(year=start_date.year,month=start_date.month,day=start_date.day,hour=hour,minute=min)
 
-    broadcast.broadcast_calls(survey, subjects, start_date, fromtime, tilltime, blocksize, interval, duration, backups)
+    if mf is not None:
+        responseprompt = params.__contains__('response')
+        survey = broadcast.thread(mf, template, responseprompt, num_backups, start_date, bcastname)
+    else:
+        survey = broadcast.regular_bcast(template, num_backups, start_date, bcastname)
+        
+    for su in subjects:
+        survey.subjects.add(su)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(params['messageforumid']),)))
@@ -758,23 +761,28 @@ def cancelsurvey(request, survey_id):
 
 def surveydetails(request, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id)
+    
     calls = Call.objects.filter(survey=survey)
     
-    firstcalldate = calls.aggregate(Min('date'))
-    firstcalldate = firstcalldate.values()[0]
+    firstcalldate = 'Not started'
+    if calls:
+        firstcalldate = calls.aggregate(Min('date'))
+        firstcalldate = firstcalldate.values()[0]
     
-    lastcalldate = calls.aggregate(Max('date'))
-    lastcalldate = lastcalldate.values()[0]
+    if survey.subjects.all():
+        numbers = survey.subjects.all()
+        numbers = [su.number for su in numbers]
+    else:
+        numpairs = calls.values('subject__number').distinct()
+        numbers = [pair.values()[0] for pair in numpairs]
     
-    numpairs = calls.values('subject__number').distinct()
     numpairscomplete = calls.filter(complete=True).values('subject__number').distinct()
-    numbers = [pair.values()[0] for pair in numpairs]
     completed_numbers = [pair.values()[0] for pair in numpairscomplete]
     pending_numbers = list(set(numbers) - set(completed_numbers))
     completed = ', '.join(completed_numbers)
     pending = ', '.join(pending_numbers)
     
-    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","enddate":"'+str(lastcalldate)+'","completed":"'+completed+'","pending":"'+pending+'"}]')
+    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","completed":"'+completed+'","pending":"'+pending+'"}]')
     response['Pragma'] = "no cache"
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response
