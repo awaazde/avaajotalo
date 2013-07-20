@@ -23,6 +23,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -40,6 +41,7 @@ import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
 public class BroadcastInterface extends Composite {
@@ -48,10 +50,10 @@ public class BroadcastInterface extends Composite {
 	private VerticalPanel outer, who, what, when;
 	private HorizontalPanel controls = new HorizontalPanel();
 	private Button sendButton, cancelButton;
-	private TextBox sinceField, bcastDateField, bcastNameField;
-	private DatePicker since, bcastDate;
-	private ListBox tags, lastNCallers, templates, from, till, duration, blockSize, interval;
-	private Hidden messageforumid, lineid;
+	private TextBox sinceField, bcastNameField;
+	private DatePicker since;
+	private ListBox tags, lastNCallers, templates, hour, backupsBox;
+	private Hidden messageforumid, lineid, dateField;
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
 	//private FileUpload fileUpload;
@@ -199,144 +201,101 @@ public class BroadcastInterface extends Composite {
   	what.add(surveyPanel);
   	what.add(bcastNamePanel);
   	
-  	HorizontalPanel whenPanel = new HorizontalPanel();
-  	whenPanel.setSpacing(10);
-  	now = new RadioButton("when","Start now");
+  	// Start now option
+  	now = new RadioButton("when","Now");
   	now.setFormValue("now");
-  	now.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				from.setEnabled(false);
-				from.insertItem("NOW", "-1", 0);
-				from.setSelectedIndex(0);
-			}
-		});
-		date = new RadioButton("when","Date:");
+  	
+  	date = new RadioButton("when");
 		date.setFormValue("date");
-		date.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				from.setEnabled(true);
-				from.clear();
-				for(int i=1; i < 24; i++)
-				{
-					String time = String.valueOf(i) + ":00";
-					from.addItem(time, String.valueOf(i));
-				}
-				from.setSelectedIndex(7);
+		
+		// Date Box
+		DateTimeFormat dateFormat = DateTimeFormat.getFormat("MMM-dd-yyyy");
+    DateBox dateBox = new DateBox();
+    dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
+    dateBox.addValueChangeHandler(new ValueChangeHandler<Date>() {
+			
+			public void onValueChange(ValueChangeEvent<Date> event) {
+				now.setValue(false);
+				date.setValue(true);
+				Date d = event.getValue();
+				dateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
 			}
 		});
-		
-		bcastDateField = new TextBox();
-		bcastDateField.setName("bcastdate");
-		bcastDate = new DatePicker();
-		bcastDate.addValueChangeHandler(new ValueChangeHandler<Date>() {
-
-			public void onValueChange(ValueChangeEvent<Date> event) {
-				Date d = event.getValue();
-				bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
-				bcastDate.setVisible(false);
+    
+    // Hour box
+    hour = new ListBox();
+    hour.setName("hour");
+    for(int i=0; i < 24; i++)
+    {
+    	String hourStr;
+    	if (i < 10)
+    		hourStr = "0"+String.valueOf(i);
+    	else
+    		hourStr = String.valueOf(i);
+    	
+			hour.addItem(hourStr);
+    }
+    hour.addChangeHandler(new ChangeHandler() {
+			
+			public void onChange(ChangeEvent event) {
 				now.setValue(false);
 				date.setValue(true);
 				
 			}
 		});
-		
-		bcastDateField.addFocusHandler(new FocusHandler() {
+    
+    // Minute box
+    ListBox min = new ListBox();
+    min.setName("min");
+    for(int i=0; i < 60; i+=5)
+		{
+			String minStr;
+    	if (i < 10)
+				minStr = "0"+String.valueOf(i);
+    	else
+    		minStr = String.valueOf(i);
+    	
+    	min.addItem(minStr);
+		}
+    min.addChangeHandler(new ChangeHandler() {
 			
-			public void onFocus(FocusEvent event) {
-				bcastDate.setVisible(true);
+			public void onChange(ChangeEvent event) {
 				now.setValue(false);
 				date.setValue(true);
+				
 			}
 		});
-  	
-		Label fromLbl = new Label("From");
-		from = new ListBox();
-		from.setName("fromtime");	
-		Label tillLbl = new Label("till");
-		till = new ListBox();
-		till.setName("tilltime");
-		for(int i=1; i < 24; i++)
-		{
-			String time = String.valueOf(i) + ":00";
-			from.addItem(time, String.valueOf(i));
-			till.addItem(time, String.valueOf(i));
-		}
+    
+    HorizontalPanel nowPanel = new HorizontalPanel();
+    //nowPanel.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
+    nowPanel.setSpacing(4);
+    nowPanel.add(now);
+    
+    HorizontalPanel datePicker = new HorizontalPanel();
+    datePicker.setSpacing(4);
+    datePicker.add(date);
+    datePicker.add(dateBox);
+    datePicker.add(hour);
+    datePicker.add(new Label(":"));
+    datePicker.add(min);
+    
+    dateField = new Hidden("date");
 		
-		Label makeLbl = new Label("Make");
-		blockSize = new ListBox();
-		blockSize.setName("blocksize");
-		int maxBlockSize = 30;
-		// check to see if need to restrict
-		// broadcast intensity
-		Line line = Messages.get().getLine();
-		if (line.getMaxBlocksize() != null)
-			maxBlockSize = line.getMaxBlocksize().intValue();		
-		for (int size=5; size<=maxBlockSize; size+=5)
-			blockSize.addItem(String.valueOf(size));
-		
-		Label everyLbl = new Label("calls at a time, every");
-		interval = new ListBox();
-		interval.setName("interval");
-		int minInterval = 2;
-		if (line.getMinInterval() != null)
-			minInterval = line.getMinInterval().intValue();			
-		for (int inter=minInterval; inter<=10; inter++)
-			interval.addItem(String.valueOf(inter));
-		
-		Label minLbl = new Label("minutes");
-		
-		Label durationLbl = new Label("Duration (days):");
-		duration = new ListBox();
-		duration.setName("duration");
-		for(int i=1; i < 7; i++)
-		{
-			duration.addItem(String.valueOf(i), String.valueOf(i));
-		}
-		HorizontalPanel fromTillPanel = new HorizontalPanel();
-		fromTillPanel.setSpacing(10);
-		fromTillPanel.add(fromLbl);
-		fromTillPanel.add(from);
-		fromTillPanel.add(tillLbl);
-		fromTillPanel.add(till);
-		
-		HorizontalPanel blockPanel = new HorizontalPanel();
-		blockPanel.setSpacing(10);
-		blockPanel.add(makeLbl);
-		blockPanel.add(blockSize);
-		blockPanel.add(everyLbl);
-		blockPanel.add(interval);
-		blockPanel.add(minLbl);
-		
-		CheckBox backups = new CheckBox("Backup Calls");
-		backups.setName("backups");
-		
-		HorizontalPanel nowPanel = new HorizontalPanel();
-		nowPanel.setSpacing(10);
-		nowPanel.add(now);
-		
-		HorizontalPanel datePanel = new HorizontalPanel();
-		datePanel.setSpacing(10);
-		datePanel.add(date);
-		datePanel.add(bcastDateField);
-		bcastDate.setVisible(false);
-		datePanel.add(bcastDate);
-		
-		HorizontalPanel ftBlockPanel = new HorizontalPanel();
-		ftBlockPanel.setWidth("65%");
-		ftBlockPanel.add(fromTillPanel);
-		ftBlockPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-		ftBlockPanel.add(blockPanel);
-		
-		HorizontalPanel durationPanel = new HorizontalPanel();
-		durationPanel.setSpacing(10);
-		durationPanel.add(durationLbl);
-		durationPanel.add(duration);
-		durationPanel.add(backups);
-		
+    Label backupsLabel = new Label("Backup Calls");
+    backupsBox = new ListBox();
+    backupsBox.setName("backup_calls");
+    backupsBox.addItem("0");
+    backupsBox.addItem("1");
+    backupsBox.addItem("2");
+    HorizontalPanel backupsPanel = new HorizontalPanel();
+    backupsPanel.setSpacing(10);
+    backupsPanel.add(backupsLabel);
+    backupsPanel.add(backupsBox);
+    
 		when.add(nowPanel);
-		when.add(datePanel);
-		when.add(ftBlockPanel);
-		when.add(durationPanel);
+		when.add(datePicker);
+		when.add(backupsPanel);
+		when.add(dateField);
 		
 		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
 		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Template"), true);
@@ -498,30 +457,12 @@ public class BroadcastInterface extends Composite {
 		 usersByLog.setValue(false);
 		 thread = mf;
 		 bcastNameField.setText(getDefaultBcastName());
-		 // Select 7am-7pm by default
-		 from.setEnabled(true);
-		 from.clear();
-		 for(int i=1; i < 24; i++)
-			{
-				String time = String.valueOf(i) + ":00";
-				from.addItem(time, String.valueOf(i));
-			}
-		 from.setItemSelected(6, true);
-		 till.setItemSelected(18, true);
-		 blockSize.setSelectedIndex(Math.min(1, blockSize.getItemCount()-1));
-		 interval.setSelectedIndex(interval.getItemCount()-1);
-		 lastNCallers.setItemSelected(3, true);
-		 duration.setItemSelected(1,true);
+		 now.setValue(true);
+		 hour.setSelectedIndex(9);
 		 
 		 Date today = new Date();
 		 since.setValue(today);
 		 since.setVisible(false);
-		 today.setDate(today.getDate() + 1);
-		 bcastDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(today));
-		 bcastDate.setValue(today);
-		 bcastDate.setVisible(false);
-
-		 date.setValue(true);
 		 
 		 stackPanel.showStack(0);
 	 }

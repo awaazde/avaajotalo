@@ -77,7 +77,7 @@ function read_phone_num(delay, promptsd)
 	if (digits == "") then
 		logfile:write(sessid, "\t", callernum, "\t", destination, "\t", os.time(), "\t", "Prompt", "\t", file, "\n");
 	  	-- allow 10 only
-	  	digits = session:playAndGetDigits(10, 10, PHONE_NUM_TIMEOUTS, delay, "#", file, invalid_num_file, "\\d+")
+	  	digits = session:playAndGetDigits(10, 10, PHONE_NUM_TIMEOUTS, delay, "#", file, invalid_num_file, "\\d+");
       	if (digits ~= "") then
 	 		logfile:write(sessid, "\t", callernum, "\t", destination, "\t", os.time(), "\t", "phnum", "\t", file, "\t", digits, "\n"); 
       	end

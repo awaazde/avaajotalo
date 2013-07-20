@@ -288,12 +288,10 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 
 	    // Create the 'about' text and set a style name so we can style it with CSS.
 	    String startdate = details.get("startdate");
-	    String enddate = details.get("enddate");
 			String completed = details.get("completed");
 			String pending = details.get("pending");
 			
 			String surveyDetails = "<b>Start: </b> " + startdate + "<br><br>";
-			surveyDetails += "<b>End: </b> " + enddate + "<br><br>";
 			int numrecipients = completed.split(", ").length+pending.split(", ").length;
 			// For some reason, the above line creates an array of length one if
 			// one of the strings is empty

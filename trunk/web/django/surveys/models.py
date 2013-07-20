@@ -33,8 +33,16 @@ class Subject(models.Model):
 class Survey(models.Model):
     name = models.CharField(max_length=128)
     complete_after = models.IntegerField(blank=True, null=True)
+    
+    '''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '    DEPRECATED in favor of Dialer for dialing out
+    ''' 
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
+    '''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''
     number = models.CharField(max_length=24, blank=True, null=True)
     broadcast = models.BooleanField(default=False)
     # This is only relevant for inbound surveys. Make it a nullable for that reason.
@@ -62,9 +70,9 @@ class Survey(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     
     '''
-    '    FORWARD (added 'is' to avoid reverse query clash with ao.Forward)
+    '    ISFORWARD (added 'is' to avoid reverse query clash with ao.Forward)
     '
-    '    Could have used a designator in the name, or could have simply inferred
+    '    Could have used a designator in survey name, or could have simply inferred
     '    from setting template and broadcast to False. Chose to do this because
     '    adding an additional Boolean column doesn't cost a huge performance hit,
     '    makes code more readable and understandable if you can declare a survey
@@ -84,9 +92,34 @@ class Survey(models.Model):
     '''
     outbound_number = models.CharField(max_length=24, blank=True, null=True)
     
+    '''
+    '############################################################################
+    '    For dynamic scheduling support
+    '''
+    subjects = models.ManyToManyField(Subject, blank=True, null=True)
+    backup_calls = models.IntegerField(blank=True, null=True)
+    '''
+    '    Next-gen outbound dialing support
+    '    Associating a survey with a registered dialer(s)
+    '    will let a batch scheduler dynamically schedule
+    '    calls for all surveys associated with that dialing
+    '    resource with a given scheduling algorithm. Here,
+    '    dynamic means at the actual time the survey should blast
+    ''' 
+    dialers = models.ManyToManyField('ao.Dialer', blank=True, null=True)
+    '''
+    '############################################################################
+    '''
+    
     def getstatus(self):
         now = datetime.now()
-        pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()
+        
+        if self.subjects.all():
+            attemptscnt = Call.objects.filter(survey=self, subject__in=self.subjects.all(), priority=1).count()
+            pendingcallcnt = self.subjects.all().count() - attemptscnt
+        else:
+            # for legacy (pre-survey.subjects) purposes
+            pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()
         if pendingcallcnt == 0 and not self.status == Survey.STATUS_CANCELLED:
             self.status = Survey.STATUS_EXPIRED
             self.save()

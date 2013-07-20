@@ -13,19 +13,36 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import sys, os
+import sys, os, operator
+from operator import itemgetter
 from datetime import datetime, timedelta
 from django.conf import settings
-from django.db.models import Q
-from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag
+from django.db.models import Q, Max, Min
+from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag, Dialer
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
+
+class NullDevice():
+    def write(self, s):
+        pass
 
 SOUND_EXT = ".wav"
 # Minimum number of times a caller
 # must have called in to count in outbound broadcast
 # (if getting subjects by log)
 DEFAULT_CALL_THRESHOLD = 2
+
+# should match the frequency at which the 
+# cron job is scheduling broadcasts
+INTERVAL_MINS = 5
+# Should be AT LEAST the interval, or else 
+# A broadcast could be missed to get scheduled
+# subtract one in order to account for one min
+# round up to avoid race condition in schedule_bcasts
+# NOTE BUFFER_MINS and INTERVAL_MINS should *add up*
+# to the desired window period. So if you want a 10
+# min delay and INTERVAL is 3, then BUFFER sh be 7
+BUFFER_MINS = INTERVAL_MINS - 1 + 5
 
 def subjects_by_numbers(numbers):
     subjects = []
@@ -168,7 +185,7 @@ def create_bcast_survey(line, filenames, surveyname):
 
 # Assumes the messageforum is a top-level message
 # and you want to bcast the whole thread (flattened)
-def thread(messageforum, template, responseprompt, bcastname=None):
+def thread(messageforum, template, responseprompt, num_backups, start_date, bcastname=None):
     line = messageforum.forum.line_set.all()[0]
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
@@ -197,7 +214,7 @@ def thread(messageforum, template, responseprompt, bcastname=None):
     if not newname or newname == '':
         newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
     newname = newname[:128]
-    bcast = clone_template(template, newname)
+    bcast = clone_template(template, newname, num_backups, start_date)
     
     # shift the old prompts before we add new ones to override the order
     toshift = Prompt.objects.filter(survey=bcast, order__gt=thread_start)
@@ -279,24 +296,16 @@ def thread(messageforum, template, responseprompt, bcastname=None):
     
     return bcast
 
-def regular_bcast(line, template, bcastname=None):
-    prefix = line.dialstring_prefix
-    suffix = line.dialstring_suffix
-    language = line.language
-    if line.outbound_number:
-        num = line.outbound_number
-    else:
-        num = line.number
-        
+def regular_bcast(template, num_backups, start_date, bcastname=None):
     # create a clone from the template
     now = datetime.now()
     newname = bcastname
     if not newname or newname=='':
         newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + datetime.strftime(now, '%b-%d-%Y')
     newname = newname[:128]
-    return clone_template(template, newname)
+    return clone_template(template, newname, num_backups, start_date)
 
-def clone_template(template, newname):
+def clone_template(template, newname, num_backups, start_date):
     # avoid duplicating forums that point to the template
     forums = Forum.objects.filter(bcast_template=template)
     for forum in forums:
@@ -310,78 +319,199 @@ def clone_template(template, newname):
         
     bcast.template = False
     bcast.broadcast = True
+    bcast.backup_calls = num_backups
+    bcast.created_on = start_date
     bcast.save()
     
     return bcast
 
-def broadcast_calls(survey, subjects, bcast_start_date, bcast_start_time, bcast_end_time, blocksize, interval, duration, backups):
-    count = 0
-    # This is the only survey to send, so the
-    # block is the entire duration period
-    survey_block_days = duration
-    
-    survey_start_day = bcast_start_date
-    assigned_p1s = []
-    for survey_block_day in range(survey_block_days):
-        survey_day = survey_start_day + timedelta(days=survey_block_day)
-        call_time = survey_day + bcast_start_time
-        
-        if len(assigned_p1s) < len(subjects):
-            pending_p1s = [subj for subj in subjects if subj not in assigned_p1s]
-            i = 0
-            while i < len(pending_p1s):
-                subj_block = pending_p1s[i:i+blocksize]
-                for subject in subj_block:
-                    call = Call.objects.filter(survey=survey, subject=subject, priority=1)
-                    if not bool(call):
-                        call = Call(survey=survey, subject=subject, date=call_time, priority=1)
-                        #print ("adding call " + str(call))
-                        call.save()
-                        count += 1
-                        assigned_p1s.append(subject)
-                    
-                i += blocksize
-                call_time += timedelta(minutes=interval)
-                
-                if call_time > survey_day + bcast_end_time:
-                    break
-        
-        # end P1 assignments
-        # with any remaining time left, assign P2's
-        if backups:
-            backup_calls(survey, subjects, survey_day + bcast_start_time, survey_day + bcast_end_time, blocksize, interval)   
+'''
+'    This function is meant to wake up every
+'    INTERVAL_MINS and run scheduling
+'    algorithm on all pending bcasts
+'''
 
-# keep adding, as many times as possible,
-# backup phone calls in the given range
-def backup_calls(survey, subjects, start_time, end_time, blocksize, interval):
-    scheduled_calls = []
-    count = 0
-    call_time = start_time
-    i = 0
-    while i < len(subjects):
-        scheduled_cnt = Call.objects.filter(survey=survey, date=call_time).count()
-        if scheduled_cnt < blocksize:
-            # get a block of numbers to call
-            subj_block = subjects[i:i+blocksize]
-            for subject in subj_block:
-                call = Call.objects.filter(survey=survey, subject=subject, date=call_time, priority=2)
-                if not bool(call):
-                    call = Call(survey=survey, subject=subject, date=call_time, priority=2)
-                    #print ("adding call " + str(call))
-                    call.save()
-                    count += 1
-                    scheduled_calls.append(subject)
+def  schedule_bcasts(time=None, dialers=None):
+    # gather all bcasts pending as of bcasttime
+    # This is a comparison between group recipients and calls scheduled
+    if not dialers:
+        dialers = Dialer.objects.all()
+    
+    for dialer in dialers:
+        bcasttime = time
+        if bcasttime is None:
+            bcasttime = get_most_recent_interval(dialer)
             
-            i += blocksize
-            # keep adding the numbers over and over
-            if i >= len(subjects):
-                i = 0
-                
-        call_time += timedelta(minutes=interval)
+        print("Scheduling bcasts for time: "+ date_str(bcasttime))
+        '''
+        '    Gather all bcasts in the last 12 hours (rolling)
+        '    Limit the search since we can assume
+        '    our scheduler is good enough (and we have enough
+        '    capacity) to schedule a bcast within that time
+        '''
+        new_bcasts = {}
+        backups = {}
         
-        if call_time > end_time:
+        lines = Line.objects.filter(dialers=dialer)
+        nums = [line.outbound_number or line.number for line in lines]
+        bcasts = Survey.objects.filter(broadcast=True, created_on__gte=bcasttime-timedelta(hours=12), number__in=nums)   
+        for bcast in bcasts:
+            #print("pending bcast: "+ str(bcast))
+            scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
+            # next line purely for query optimization purposes
+            scheduled_subjs = [subj.values()[0] for subj in scheduled_subjs]
+            recipients = bcast.subjects.all()
+            to_sched = recipients.exclude(number__in=scheduled_subjs)
+            num_backup_calls = bcast.backup_calls or 0
+            #print("to schedule: "+ str(to_sched))
+            if to_sched:
+                new_bcasts[bcast] = to_sched
+            elif num_backup_calls > 0:
+                #print("checking backup calls for " + str(group))
+                '''
+                '     Find out if there are any backup calls left to do
+                '     Exclude subjects with a complete call, or who have scheduled a call up to max number of backups
+                '     Do the exclude manually since Django doesn't correctly exclude on a relationship that was previously filtered on
+                '     e.g. Subject.objects.filter(call__survey=bcast).exclude(call__survey=bcast, call__complete=True) doesn't work!
+                '''
+                to_sched = get_pending_backup_calls(bcast, num_backup_calls)
+                
+                if to_sched:
+                    backups[bcast] = to_sched
+                    
+        '''            
+        ' Implementing Shortest Remaining Finish Time discipline (non-preemptive)
+        ' Sort the lists in ascending order
+        ' Sort by priority first, so P1 bcasts always happen first
+        ' NOTE that this SRFT will respect finish time above backup call priority.
+        ' So a task with 5 P3 calls will get scheduled ahead of a task with 10 P2s
+        '''
+        sorted_newbcasts = sorted(new_bcasts.iteritems(), key=lambda (k,v): v.count())
+        sorted_backups = sorted(backups.iteritems(), key=lambda (k,v): len(v))
+        sorted_bcasts = sorted_newbcasts + sorted_backups
+        
+        # sorted_bcasts is a list of tuples: [(s1, [u1,u2]), (s2, [u3,u4,u5,u6,u7]), ...]
+        # now flatten it out to just get bcast-user pairs
+        flat = []
+        for s,subjects in sorted_bcasts:
+            for sub in subjects:            
+                flat.append([s,sub])
+
+        #print("sorted list: "+str(flat))       
+        
+        # assign calls as they are
+        # found to be available
+        scheduled = {}
+        num_available = dialer.maxparallel - Call.objects.filter(dialstring_prefix=dialer.dialstring_prefix, date=bcasttime).count()
+        #print("prefix "+prefix+" maxpara="+str(PROFILES[prefix]['maxparallel'])+" existing call count="+str(Call.objects.filter(dialstring_prefix=prefix, date=bcasttime).count()))
+        to_sched = flat[:num_available]
+        for survey, subject in to_sched:            
+            priority = Call.objects.filter(survey=survey, subject=subject).aggregate(Max('priority'))
+            priority = priority.values()[0]
+            if priority:
+                priority += 1
+            else:
+                priority = 1
+            call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix, subject=subject, date=bcasttime, priority=priority)
+            print('Scheduled call '+ str(call))
+            
+'''
+****************************************************************************
+************************** UTILS *******************************************
+****************************************************************************
+'''
+        
+def get_most_recent_interval(dialer):
+    interval = datetime.now()
+    # round up to nearest minute
+    if interval.second != 0 or interval.microsecond != 0:
+        interval = datetime(year=interval.year, month=interval.month, day=interval.day, hour=interval.hour, minute=interval.minute)
+        # go into the future in order to avoid
+        # race conditions with survey.py
+        interval += timedelta(minutes=2)
+        
+    # Locate most recent stack of
+    # scheduled messages
+    for i in range(INTERVAL_MINS-1,-1,-1):
+        nums = get_dialer_numbers(dialer)
+        if bool(Call.objects.filter(survey__number__in=nums, survey__broadcast=True, date=interval-timedelta(minutes=i))):
+            interval -= timedelta(minutes=i)
             break
+    print("Found most recent interval: "+date_str(interval)) 
+    return interval
+
+'''
+' Utility function to check which members need backup calls scheduled
+'''
+def get_pending_backup_calls(survey, max_backup_calls):        
+    to_exclude = Subject.objects.filter(Q(call__complete=True) | Q(call__priority=max_backup_calls+1), call__survey=survey).values('id')
+    to_exclude = [s.values()[0] for s in to_exclude]
+    to_sched = Subject.objects.filter(call__survey=survey).exclude(pk__in=to_exclude).annotate(max_pri=Max('call__priority')).values('number','max_pri')
+    #print('to_sched: ' + str(to_sched))
+    to_sched = [tuple(s.values()) for s in to_sched]
+    #print('to_sched tuples: ' + str(to_sched))
+    # add to schedule queue ordered by priority so that all nth backups go out before n+1
+    to_sched = sorted(to_sched, key=itemgetter(1))
+    #print('to_sched sorted: ' + str(to_sched))
+    to_sched = [Subject.objects.filter(number=s[0])[0] for s in to_sched]
+    #print('backups to sched: '+str(to_sched))
     
-    #print(str(count) + " new backup calls added.")   
+    return to_sched
+
+
+'''
+'    Get all possible numbers associated with this dialer
+'''
+def get_dialer_numbers(dialer):
+    nums = []
+    if dialer.maxnums:
+        for i in range(dialer.maxnums):
+            nums.append(str(int(dialer.base_number)+1))
+        return nums
+    else:
+        return [dialer.base_number]
     
-    return scheduled_calls
+def date_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%m-%d-%y %H:%M')
+    
+'''
+****************************************************************************
+*************************** MAIN *******************************************
+****************************************************************************
+'''
+if __name__=="__main__":
+    if "--schedule_bcasts" in sys.argv:
+        dialers = []
+        if len(sys.argv) > 2:
+            slots = sys.argv[2].split(',')
+            slots = ['grp'+slot for slot in slots]
+            dialers = Dialer.objects.filter(reduce(operator.or_, (Q(dialstring_prefix__contains=slot) for slot in slots)))
+        
+        schedule_bcasts(dialers=dialers)
+    elif "--main" in sys.argv:
+        bases = {1:'7961907700', 2:'7967776000', 3:'7967775500', 5:'7961555000', 6:'7967776100', 7:'7967776200', 8:'7930118999'}
+        bases = {2:'7930142000'}
+        dialers=[]
+        
+        for slot,base in bases.iteritems():
+            d = Dialer.objects.create(base_number=base, maxparallel=25, maxnums=100, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
+            print("Created dialer "+ str(d))
+            dialers.append(d)
+        
+        lines = {1:['61907700', '61907707', '61907711', '61907788', '61907754', '61907755', '61907744'], 2:['67776000', '67776066'], 6:['67776177'], 7:['67776222']}
+        lines = {2: ['30142000', '30142011']}
+        for slot,nums in lines.iteritems():
+            d = Dialer.objects.filter(dialstring_prefix__contains='grp'+str(slot))[0]
+            for num in nums:
+                lines = Line.objects.filter(number__contains=num)
+                if bool(lines):
+                    for l in lines: 
+                        l.dialers.add(d)
+                        print ("added dialer "+str(d) + " to line " + str(l))
+                else:
+                    print("line not found: "+str(num))
+    else:
+        print("Command not found.")
+else:
+    sys.stdout = NullDevice()
