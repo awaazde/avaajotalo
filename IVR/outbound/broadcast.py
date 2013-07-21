@@ -22,10 +22,6 @@ from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag, Dial
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
 
-class NullDevice():
-    def write(self, s):
-        pass
-
 SOUND_EXT = ".wav"
 # Minimum number of times a caller
 # must have called in to count in outbound broadcast
@@ -489,6 +485,8 @@ if __name__=="__main__":
             dialers = Dialer.objects.filter(reduce(operator.or_, (Q(dialstring_prefix__contains=slot) for slot in slots)))
         
         schedule_bcasts(dialers=dialers)
+#    elif "--gws_dialers" in sys.argv:
+        
     elif "--main" in sys.argv:
         bases = {1:'7961907700', 2:'7967776000', 3:'7967775500', 5:'7961555000', 6:'7967776100', 7:'7967776200', 8:'7930118999'}
         bases = {2:'7930142000'}
@@ -513,5 +511,3 @@ if __name__=="__main__":
                     print("line not found: "+str(num))
     else:
         print("Command not found.")
-else:
-    sys.stdout = NullDevice()
