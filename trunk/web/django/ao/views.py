@@ -764,7 +764,7 @@ def surveydetails(request, survey_id):
     
     calls = Call.objects.filter(survey=survey)
     
-    firstcalldate = 'Not started'
+    firstcalldate = 'Not Started (scheduled for '+str(survey.created_on)+ ')' if survey.created_on else 'Not Started'
     if calls:
         firstcalldate = calls.aggregate(Min('date'))
         firstcalldate = firstcalldate.values()[0]
