@@ -679,7 +679,7 @@ def bcast(request):
     elif when == 'date':
         start_date = params['date']
         try:
-            start_date = datetime.strptime(bcastdate, '%b-%d-%Y')
+            start_date = datetime.strptime(start_date, '%b-%d-%Y')
         except ValueError as err:
             response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_DATE+', "message":"invalid date"}]')
             response['Pragma'] = "no cache"
@@ -982,9 +982,8 @@ def sendsms(request):
     # now by default
     send_date = None
     if when == 'date':
-        hour = timedelta()
         bcastday = params['smsday']
-        send_date = datetime.strptime(bcastdate, '%b-%d-%Y')
+        send_date = datetime.strptime(bcastday, '%b-%d-%Y')
         send_date = send_date + timedelta(hours=int(params['hour']), minutes=int(params['min']))
         
     sms_utils.send_sms_from_line(line, recipients, smstext, send_date)
