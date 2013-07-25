@@ -390,9 +390,24 @@ class Forward(models.Model):
 '    of parallel calls
 '''
 class Dialer(models.Model):
-    base_number = models.CharField(max_length=24) 
-    maxnums = models.IntegerField(default=100)
-    maxparallel = models.IntegerField(default=30)
+    DIALER_TYPE_PRI = 0
+    DIALER_TYPE_VOIP = 1
+    
+    TYPE = (
+    (DIALER_TYPE_PRI, 'PRI'),
+    (DIALER_TYPE_VOIP, 'VoIP'),
+    )
+    
+    base_number = models.CharField(max_length=24)
+    max_nums = models.IntegerField()
+    type = models.IntegerField(choices=TYPE)
+    max_parallel = models.IntegerField(blank=True, null=True)
+    # How far apart should calls be spread out
+    # between bursts? Depends on the expected
+    # length of calls
+    interval_mins = models.IntegerField(blank=True, null=True)
+    # Should be set to how often your broadcaster cron runs
+    MIN_INTERVAL_MINS = 3
     
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)

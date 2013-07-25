@@ -824,13 +824,35 @@ if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(useri
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
 	api = freeswitch.API();
+	
+	-- do this only if missed call happening, to save the
+	-- db and processing hits in the non-missed call case
+	if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
+		-- get from dialer
+		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.maxparallel");
+		local prefixes = {};
+		local suffixes = {};
+		local maxparallels = {};
+		local dialstring = dialstrings();
+		while (dialstring ~= nil) do
+			table.insert(prefixes, dialstring[1]);
+			suffixes[dialstring[1]] = dialstring[2];
+			table.insert(maxparallels, dialstring[3]);
+			dialstring = dialstrings();
+	    end	    
+	    -- find a dialer that is available
+	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
+	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX];
+	end
+	
+	
 	local uuid = session:getVariable('uuid');
 	local mc_cnt = 0;
     while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
 	 	session:sleep(3000);
 	 	mc_cnt = check_abort(mc_cnt, 11)
   	end
-		freeswitch.consoleLog("info", script_name .. " : woke up \n");
+	freeswitch.consoleLog("info", script_name .. " : woke up \n");
 	
 	-- decrease the caller's balance if necessary
 	if (quota_imposed == 1 and balance > 0) then
