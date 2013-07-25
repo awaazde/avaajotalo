@@ -465,7 +465,7 @@ def date_str(date):
 '''
 if __name__=="__main__":
     if "--schedule_bcasts_by_dialers" in sys.argv:
-        dialers = Dialers.objects.all()
+        dialers = Dialer.objects.all()
         if len(sys.argv) > 2:
             dialerids = sys.argv[2].split(',')
             dialerids = [int(id.strip()) for id in dialerids]
