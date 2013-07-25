@@ -72,8 +72,8 @@ logfilename = logfileroot .. "survey_in_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
-local DIALSTRING_PREFIX = "";
-local DIALSTRING_SUFFIX = "";
+local DIALSTRING_PREFIX = nil;
+local DIALSTRING_SUFFIX = nil;
 if (res[2] ~= nil) then
 	DIALSTRING_PREFIX = res[2];
 end
@@ -153,7 +153,28 @@ if (callback_allowed == 1) then
 	freeswitch.consoleLog("info", script_name .. " : in main \n");
 	-- Allow for missed calls to be made
 	session:execute("ring_ready");
-	api = freeswitch.API();
+	local api = freeswitch.API();
+	
+	-- do this only if missed call happening, to save the
+	-- db and processing hits in the non-missed call case
+	if (DIALSTRING_PREFIX == nil and DIALSTRING_SUFFIX == nil) then
+		-- get from dialer
+		local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey__dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.maxparallel");
+		local prefixes = {};
+		local suffixes = {};
+		local maxparallels = {};
+		local dialstring = dialstrings();
+		while (dialstring ~= nil) do
+			table.insert(prefixes, dialstring[1]);
+			suffixes[dialstring[1]] = dialstring[2];
+			table.insert(maxparallels, dialstring[3]);
+			dialstring = dialstrings();
+	    end
+	    -- find a dialer that is available
+	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
+	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX];
+	end
+
 	local uuid = session:getVariable('uuid');
 	local mc_cnt = 0;
     while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do

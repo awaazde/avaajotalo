@@ -398,6 +398,76 @@ function trim (s)
 	return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
 end
 
+--[[
+-------------------------------------------
+------------- is_sufficient_balance ------- 
+-------------------------------------------
+
+	Check the given user's balance and return
+	true or false if the person has sufficient
+	balance.
+
+	Method is required for forward.lua
+-------------------------------------------
+--]]
+function is_sufficient_balance(userid)
+	if (userid == nil) then
+		-- could happen if the survey app in question is pure
+		-- survey with no inbound app, hence no automatic
+		-- way to create a user
+		return false;
+	else
+		local balance = get_table_field("ao_user", "balance", "id="..userid);
+		return balance == nil or balance > 0 or balance == -1;
+	end
+end
+
+--[[
+-------------------------------------------
+------------- get_num_channels ------------ 
+-------------------------------------------
+
+	Given a profile, return the number of
+	current open channels
+-------------------------------------------
+--]]
+function get_num_channels(api, prefix)
+	local status_str = "show channels like " .. prefix;
+	--freeswitch.consoleLog("info", script_name .. " : executing " .. status_str .."\n");
+	local reply = api:executeString(status_str);
+	--freeswitch.consoleLog("info", script_name .. " : reply =  " .. reply);
+ 	reply = trim(reply);
+	
+	local pattern = "(%d+) total.";
+	local num = reply:match(pattern);
+	
+	freeswitch.consoleLog("info", script_name .. " : num channels for " .. prefix ..": " .. num .. "\n");
+	return tonumber(num);
+end
+
+--[[
+-------------------------------------------
+------- get_available_inbound_line --------
+-------------------------------------------
+
+	Find an available channel from the given
+	set of dialer db rows
+-------------------------------------------
+--]]
+function get_available_line(api, prefixes, maxparallels)
+	local nchannels = nil;
+	
+	for i,prefix in ipairs(prefixes) do
+		nchannels = get_num_channels(api, prefix);
+		if (nchannels < maxparallels[i]) then
+			return prefix;
+		end
+	end
+	
+	-- return the first prefix by default
+	return prefixes[1]
+end
+
 --[[ 
 **********************************************************
 ********* BEGIN COMMON RESPONDER FUNCTIONS
@@ -1141,30 +1211,6 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    
    read(recordsd .. "okrecorded.wav",500);
    return d;
-end
-
---[[
--------------------------------------------
-------------- is_sufficient_balance ------- 
--------------------------------------------
-
-	Check the given user's balance and return
-	true or false if the person has sufficient
-	balance.
-
-	Method is required for forward.lua
--------------------------------------------
---]]
-function is_sufficient_balance(userid)
-	if (userid == nil) then
-		-- could happen if the survey app in question is pure
-		-- survey with no inbound app, hence no automatic
-		-- way to create a user
-		return false;
-	else
-		local balance = get_table_field("ao_user", "balance", "id="..userid);
-		return balance == nil or balance > 0 or balance == -1;
-	end
 end
 
 --[[ 

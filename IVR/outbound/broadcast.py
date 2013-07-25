@@ -28,17 +28,7 @@ SOUND_EXT = ".wav"
 # (if getting subjects by log)
 DEFAULT_CALL_THRESHOLD = 2
 
-# should match the frequency at which the 
-# cron job is scheduling broadcasts
-INTERVAL_MINS = 5
-# Should be AT LEAST the interval, or else 
-# A broadcast could be missed to get scheduled
-# subtract one in order to account for one min
-# round up to avoid race condition in schedule_bcasts
-# NOTE BUFFER_MINS and INTERVAL_MINS should *add up*
-# to the desired window period. So if you want a 10
-# min delay and INTERVAL is 3, then BUFFER sh be 7
-BUFFER_MINS = INTERVAL_MINS - 1 + 5
+DEF_INTERVAL_MINS = 5
 
 def subjects_by_numbers(numbers):
     subjects = []
@@ -350,7 +340,7 @@ def  schedule_bcasts(time=None, dialers=None):
         
         lines = Line.objects.filter(dialers=dialer)
         nums = [line.outbound_number or line.number for line in lines]
-        bcasts = Survey.objects.filter(broadcast=True, created_on__gte=bcasttime-timedelta(hours=12), number__in=nums)   
+        bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums)   
         for bcast in bcasts:
             #print("pending bcast: "+ str(bcast))
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
@@ -398,7 +388,7 @@ def  schedule_bcasts(time=None, dialers=None):
         # assign calls as they are
         # found to be available
         scheduled = {}
-        num_available = dialer.maxparallel - Call.objects.filter(dialstring_prefix=dialer.dialstring_prefix, date=bcasttime).count()
+        num_available = dialer.max_parallel - Call.objects.filter(dialstring_prefix=dialer.dialstring_prefix, date=bcasttime).count()
         #print("prefix "+prefix+" maxpara="+str(PROFILES[prefix]['maxparallel'])+" existing call count="+str(Call.objects.filter(dialstring_prefix=prefix, date=bcasttime).count()))
         to_sched = flat[:num_available]
         for survey, subject in to_sched:            
@@ -428,7 +418,7 @@ def get_most_recent_interval(dialer):
         
     # Locate most recent stack of
     # scheduled messages
-    for i in range(INTERVAL_MINS-1,-1,-1):
+    for i in range(dialer.interval_mins or DEF_INTERVAL_MINS,-1,-1,-1):
         nums = get_dialer_numbers(dialer)
         if bool(Call.objects.filter(survey__number__in=nums, survey__broadcast=True, date=interval-timedelta(minutes=i))):
             interval -= timedelta(minutes=i)
@@ -460,12 +450,9 @@ def get_pending_backup_calls(survey, max_backup_calls):
 '''
 def get_dialer_numbers(dialer):
     nums = []
-    if dialer.maxnums:
-        for i in range(dialer.maxnums):
-            nums.append(str(int(dialer.base_number)+1))
-        return nums
-    else:
-        return [dialer.base_number]
+    for i in range(dialer.max_nums):
+        nums.append(str(int(dialer.base_number)+1))
+    return nums
     
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
@@ -477,28 +464,53 @@ def date_str(date):
 ****************************************************************************
 '''
 if __name__=="__main__":
-    if "--schedule_bcasts" in sys.argv:
-        dialers = []
+    if "--schedule_bcasts_by_dialers" in sys.argv:
+        dialers = Dialers.objects.all()
         if len(sys.argv) > 2:
-            slots = sys.argv[2].split(',')
-            slots = ['grp'+slot for slot in slots]
-            dialers = Dialer.objects.filter(reduce(operator.or_, (Q(dialstring_prefix__contains=slot) for slot in slots)))
+            dialerids = sys.argv[2].split(',')
+            dialerids = [int(id.strip()) for id in dialerids]
+            dialers = dialers.filter(pk__in=dialerids)
         
         schedule_bcasts(dialers=dialers)
-#    elif "--gws_dialers" in sys.argv:
+    if "--schedule_bcasts_by_base_numbers" in sys.argv:
+        numbers = sys.argv[2].split(',')
+        numbers = [num.strip() for num in numbers]
+        dialers = Dialer.objects.filter(base_number__in=numbers)
+        schedule_bcasts(dialers=dialers)
+    elif "--gws_dialers" in sys.argv:
+        authid = sys.argv[2]
+        pri_dialer = Dialer.objects.get(pk=int(sys.argv[3]))
+        print("PRI Dialer: " + str(pri_dialer))
+        lines = Line.objects.filter(forums__admin__auth_user__pk=int(authid))
+        
+        for l in lines:
+            #print('line '+str(l))
+            if 'freetdm' in l.dialstring_prefix:
+                l.dialers.add(pri_dialer)
+                print("Adding PRI dialer to line "+ str(l))
+            else:
+                d = Dialer.objects.filter(dialstring_prefix=l.dialstring_prefix)
+                if bool(d):
+                    d = d[0]
+                    print("Found VoIP dialer "+str(d)+" for line "+str(l))
+                else:
+                    d = Dialer.objects.create(base_number=pri_dialer.base_number, type=Dialer.DIALER_TYPE_VOIP, max_nums=pri_dialer.max_nums, max_parallel=9999, interval_mins=Dialer.MIN_INTERVAL_MINS, dialstring_prefix=l.dialstring_prefix)                
+                    print("Created VoIP dialer "+str(d)+" for line "+str(l))
+                    
+                l.dialers.add(d)     
         
     elif "--main" in sys.argv:
         bases = {1:'7961907700', 2:'7967776000', 3:'7967775500', 5:'7961555000', 6:'7967776100', 7:'7967776200', 8:'7930118999'}
-        bases = {2:'7930142000'}
+        #bases = {2:'7930142000'}
         dialers=[]
         
         for slot,base in bases.iteritems():
-            d = Dialer.objects.create(base_number=base, maxparallel=25, maxnums=100, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
+            d = Dialer.objects.create(base_number=base, type=Dialer.DIALER_TYPE_PRI, max_parallel=25, max_nums=100, interval_mins=Dialer.MIN_INTERVAL_MINS, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
             print("Created dialer "+ str(d))
             dialers.append(d)
         
         lines = {1:['61907700', '61907707', '61907711', '61907788', '61907754', '61907755', '61907744'], 2:['67776000', '67776066'], 6:['67776177'], 7:['67776222']}
-        lines = {2: ['30142000', '30142011']}
+        #lines = {2: ['30142000', '30142011']}
         for slot,nums in lines.iteritems():
             d = Dialer.objects.filter(dialstring_prefix__contains='grp'+str(slot))[0]
             for num in nums:

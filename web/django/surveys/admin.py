@@ -23,6 +23,9 @@ class OrderingAdmin(admin.ModelAdmin):
 class NameSearchAdmin(OrderingAdmin):
    search_fields = ['name', 'number']
    
+class SurveyAdmin(NameSearchAdmin):
+    exclude = ('subjects',)
+   
 
 class DateDisplayAdmin(OrderingAdmin):
     list_display = ('call', 'date', 'subject')
@@ -30,7 +33,7 @@ class DateDisplayAdmin(OrderingAdmin):
     def call(self, obj):
         return unicode(obj)
 
-admin.site.register(Survey, NameSearchAdmin)
+admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Subject, NameSearchAdmin)
 admin.site.register(Call, DateDisplayAdmin)
 admin.site.register(Prompt, OrderingAdmin)
