@@ -505,7 +505,7 @@ if __name__=="__main__":
         dialers=[]
         
         for slot,base in bases.iteritems():
-            d = Dialer.objects.create(base_number=base, type=Dialer.DIALER_TYPE_PRI, max_parallel=25, max_nums=100, interval_mins=Dialer.MIN_INTERVAL_MINS, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
+            d = Dialer.objects.create(base_number=base, type=Dialer.DIALER_TYPE_PRI, max_parallel=25, max_nums=100, interval_mins=DEF_INTERVAL_MINS, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
             print("Created dialer "+ str(d))
             dialers.append(d)
         
