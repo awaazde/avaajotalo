@@ -418,7 +418,7 @@ def get_most_recent_interval(dialer):
         
     # Locate most recent stack of
     # scheduled messages
-    for i in range(dialer.interval_mins or DEF_INTERVAL_MINS,-1,-1,-1):
+    for i in range((dialer.interval_mins or DEF_INTERVAL_MINS)-1,-1,-1):
         nums = get_dialer_numbers(dialer)
         if bool(Call.objects.filter(survey__number__in=nums, survey__broadcast=True, date=interval-timedelta(minutes=i))):
             interval -= timedelta(minutes=i)
