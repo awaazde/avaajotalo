@@ -72,8 +72,8 @@ logfilename = logfileroot .. "survey_in_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
-local DIALSTRING_PREFIX = nil;
-local DIALSTRING_SUFFIX = nil;
+local DIALSTRING_PREFIX = "";
+local DIALSTRING_SUFFIX = "";
 if (res[2] ~= nil) then
 	DIALSTRING_PREFIX = res[2];
 end
@@ -157,7 +157,7 @@ if (callback_allowed == 1) then
 	
 	-- do this only if missed call happening, to save the
 	-- db and processing hits in the non-missed call case
-	if (DIALSTRING_PREFIX == nil and DIALSTRING_SUFFIX == nil) then
+	if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
 		-- get from dialer
 		local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey__dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.maxparallel");
 		local prefixes = {};
