@@ -418,7 +418,7 @@ function is_sufficient_balance(userid)
 		return false;
 	else
 		local balance = get_table_field("ao_user", "balance", "id="..userid);
-		return balance == nil or balance > 0 or balance == -1;
+		return balance ~= nil and (balance > 0 or balance == -1);
 	end
 end
 
@@ -432,8 +432,10 @@ end
 -------------------------------------------
 --]]
 function get_num_channels(api, prefix)
-	local status_str = "show channels like " .. prefix;
-	--freeswitch.consoleLog("info", script_name .. " : executing " .. status_str .."\n");
+	local pri = string.match(prefix,'grp(%d+)')
+	local profile = 'FreeTDM/'.. pri
+	local status_str = "show channels like " .. profile;
+	freeswitch.consoleLog("info", script_name .. " : executing " .. status_str .."\n");
 	local reply = api:executeString(status_str);
 	--freeswitch.consoleLog("info", script_name .. " : reply =  " .. reply);
  	reply = trim(reply);
