@@ -153,7 +153,7 @@ local d = "";
 while (d ~= "1" and d ~= "2") do
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. promptfile .. "\n");
 	read(bsd .. promptfile, delay);
-	d = use();
+	d = input();
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
 end
    	 
@@ -178,7 +178,7 @@ d = "";
 while (string.len(tostring(d)) < MIN_STD_LEN) do
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read(bsd .. lang .. promptfile, delay, MAX_STD_LEN);
-	d = use();
+	d = input();
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
 end
 local std = d;
@@ -191,7 +191,7 @@ d = "0";
 while (d == "" or tonumber(d) < MIN_BGROUP_ID or tonumber(d) > MAX_BGROUP_ID) do
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read(bsd .. lang .. promptfile, delay);
-	d = use();
+	d = input();
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
 end
 local bgroupid = d;
