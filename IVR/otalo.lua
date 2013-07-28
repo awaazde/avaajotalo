@@ -829,7 +829,7 @@ if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(useri
 	-- db and processing hits in the non-missed call case
 	if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
 		-- get from dialer
-		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.maxparallel");
+		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in");
 		local prefixes = {};
 		local suffixes = {};
 		local maxparallels = {};

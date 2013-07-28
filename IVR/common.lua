@@ -428,14 +428,14 @@ end
 -------------------------------------------
 
 	Given a profile, return the number of
-	current open channels
+	current occupied channels
 -------------------------------------------
 --]]
 function get_num_channels(api, prefix)
-	local pri = string.match(prefix,'grp(%d+)')
-	local profile = 'FreeTDM/'.. pri
+	local pri = string.match(prefix,'grp(%d+)');
+	local profile = 'FreeTDM/'.. tostring(pri);
 	local status_str = "show channels like " .. profile;
-	freeswitch.consoleLog("info", script_name .. " : executing " .. status_str .."\n");
+	--freeswitch.consoleLog("info", script_name .. " : executing " .. status_str .."\n");
 	local reply = api:executeString(status_str);
 	--freeswitch.consoleLog("info", script_name .. " : reply =  " .. reply);
  	reply = trim(reply);
@@ -443,7 +443,7 @@ function get_num_channels(api, prefix)
 	local pattern = "(%d+) total.";
 	local num = reply:match(pattern);
 	
-	freeswitch.consoleLog("info", script_name .. " : num channels for " .. prefix ..": " .. num .. "\n");
+	--freeswitch.consoleLog("info", script_name .. " : num channels for " .. profile ..": " .. num .. "\n");
 	return tonumber(num);
 end
 

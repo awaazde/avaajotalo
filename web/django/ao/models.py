@@ -401,7 +401,37 @@ class Dialer(models.Model):
     base_number = models.CharField(max_length=24)
     max_nums = models.IntegerField()
     type = models.IntegerField(choices=TYPE)
-    max_parallel = models.IntegerField(blank=True, null=True)
+    
+    '''
+    '****************************************************************************************************
+    '    Set up dialers to allow for varying levels of inbound (missed call) and outbound traffic.
+    '    In a scenario where one line has multiple dialers (or one dialer has multiple lines), 
+    '    you can allocate some of the dialers (or parts of dialers) for inbound, and some for broadcasting.
+    '
+    '    Pure inbound lines (i.e. no missed call) does not need this number, since the call
+    '    will simply find an available channel automatically if there is one, be go busy if not.
+    '
+    '    In the case of missed call lines, the inbound call will use the max_parallel_in value to determine
+    '    the capacity of the dialer. Since these calls are not scheduled and thus simply look for a spare channel, 
+    '    the max_in number should specify *total* inbound capacity, not the number of total channels minus the max_outbound. 
+    '    So the max_in and max_out need not add up to the total number of available channels.
+    '
+    '    Making max_in lower than full capacity can be done to direct missed call traffic toward
+    '    some dialers and not others (in the case, for e.g., that a dialer is dedicated for outbound bcasts and
+    '    it is under heavy load. In that case you don't even want a missed call to sneak in since there is a
+    '    batch of bcast calls to be scheduled that need all the channels).
+    '
+    '    In the case of a VoIP line, both in and out capacity can be set to very high, since there is no
+    '    restriction as with PRIs to limit to a certain number of channels.
+    '''
+    # How many inbound calls can this dialer allow at one time?
+    max_parallel_in = models.IntegerField(blank=True, null=True)
+    # How many broadcast calls can this dialer make at one time?
+    max_parallel_out = models.IntegerField(blank=True, null=True)
+    '''
+    ****************************************************************************************************
+    '''
+    
     # How far apart should calls be spread out
     # between bursts? Depends on the expected
     # length of calls
