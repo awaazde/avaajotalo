@@ -172,7 +172,7 @@ if (callback_allowed == 1) then
 	    end
 	    -- find a dialer that is available
 	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
-	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX];
+	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
 	end
 
 	local uuid = session:getVariable('uuid');
