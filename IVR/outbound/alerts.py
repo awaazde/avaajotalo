@@ -37,6 +37,16 @@ def unsent_responses():
     for response in responses:
         if not Prompt.objects.filter(file__contains=response.message.content_file):
             answer_call(response.forum.line_set.all()[0], response)
+    
+    # Make backup calls for response calls that weren't completed the first time at least an hour ago
+    surveys = Survey.objects.filter(name__contains=Survey.ANSWER_CALL_DESIGNATOR, call__priority=1, call__date__lte=now-timedelta(hours=1), created_on__gte=now-timedelta(hours=12))
+    for s in surveys:
+        if not bool(Call.objects.filter(priority=2, survey=s)):
+            c = Call.objects.get(survey=s, priority=1)
+            c.pk = None
+            c.priority = 2
+            c.save() 
+    
             
 def hangup(uid):
 	# hangup call
@@ -74,9 +84,6 @@ def missed_call(line, user_ids):
 	con.disconnect()
 
 def answer_call(line, answer):
-    prefix = line.dialstring_prefix
-    suffix = line.dialstring_suffix
-    
     # get the immediate parent of this message
     fullthread = Message.objects.filter(Q(thread=answer.message.thread) | Q(pk=answer.message.thread.pk))
     ancestors = fullthread.filter(lft__lt=answer.message.lft, rgt__gt=answer.message.rgt).order_by('-lft')
@@ -84,101 +91,62 @@ def answer_call(line, answer):
 
     asker = Subject.objects.filter(number=parent.user.number)
     if not bool(asker):
-    	asker = Subject(name=parent.user.name, number=parent.user.number)
-    	asker.save()
+    	asker = Subject.objects.create(name=parent.user.name, number=parent.user.number)
     else:
 	    asker = asker[0]
         
     now = datetime.now()
-    
-    if line.outbound_number:
-        num = line.outbound_number
-    else:
-        num = line.number
+    num = line.outbound_number or line.number
         
-    s = Survey(name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num)
+    s = Survey.objects.create(name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now)
+    for d in line.dialers.all():
+        s.dialers.add(d)
     #print ("adding announcement survey " + str(s))
-    s.save()
     order = 1
     
     # welcome
-    welcome = Prompt(file=line.language+"/welcome_responsecall.wav", order=order, bargein=True, survey=s)
-    welcome.save()
-    welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
-    welcome_opt.save()
-    welcome_opt2 = Option(number="1", action=Option.NEXT, prompt=welcome)
-    welcome_opt2.save()
+    welcome = Prompt.objects.create(file=line.language+"/welcome_responsecall.wav", order=order, bargein=True, survey=s)
+    welcome_opt = Option.objects.create(number="", action=Option.NEXT, prompt=welcome)
+    welcome_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=welcome)
     order += 1
     
-    original = Prompt(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
-    original.save()
-    original_opt = Option(number="", action=Option.NEXT, prompt=original)
-    original_opt.save()
-    original_opt2 = Option(number="1", action=Option.NEXT, prompt=original)
-    original_opt2.save()
+    original = Prompt.objects.create(file=MEDIA_ROOT+'/'+parent.content_file, order=order, bargein=True, survey=s)
+    original_opt = Option.objects.create(number="", action=Option.NEXT, prompt=original)
+    original_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=original)
     order += 1
     
-    response = Prompt(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
-    response.save()
-    response_opt = Option(number="", action=Option.NEXT, prompt=response)
-    response_opt.save()
-    response_opt2 = Option(number="1", action=Option.NEXT, prompt=response)
-    response_opt2.save()
+    response = Prompt.objects.create(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
+    response_opt = Option.objects.create(number="", action=Option.NEXT, prompt=response)
+    response_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=response)
     order += 1
         
 
-    a = Prompt(file=MEDIA_ROOT+'/'+answer.message.content_file, order=order, bargein=True, survey=s)
-    a.save()
-    a_opt = Option(number="", action=Option.NEXT, prompt=a)
-    a_opt.save()
-    a_opt2 = Option(number="1", action=Option.NEXT, prompt=a)
-    a_opt2.save()
+    a = Prompt.objects.create(file=MEDIA_ROOT+'/'+answer.message.content_file, order=order, bargein=True, survey=s)
+    a_opt = Option.objects.create(number="", action=Option.NEXT, prompt=a)
+    a_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=a)
     order += 1
     
     if answer.forum.respondtoresponse_allowed:
-        record = Prompt(file=line.language+"/record_responsecall.wav", order=order, bargein=True, survey=s, delay=3000)
-        record.save()
-        record_opt = Option(number="", action=Option.GOTO, prompt=record)
-        record_opt.save()
-        param = Param(option=record_opt, name=Param.IDX, value=order+2)
-        param.save()
-        record_opt2 = Option(number="1", action=Option.RECORD, prompt=record)
-        record_opt2.save()
-        param2 = Param(option=record_opt2, name=Param.MFID, value=answer.id)
-        param2.save()
-        param3 = Param(option=record_opt2, name=Param.ONCANCEL, value=order+2)
-        param3.save()
+        record = Prompt.objects.create(file=line.language+"/record_responsecall.wav", order=order, bargein=True, survey=s, delay=3000)
+        record_opt = Option.objects.create(number="", action=Option.GOTO, prompt=record)
+        param = Param.objects.create(option=record_opt, name=Param.IDX, value=order+2)
+        record_opt2 = Option.objects.create(number="1", action=Option.RECORD, prompt=record)
+        param2 = Param.objects.create(option=record_opt2, name=Param.MFID, value=answer.id)
+        param3 = Param.objects.create(option=record_opt2, name=Param.ONCANCEL, value=order+2)
         order += 1
         
-        recordthanks = Prompt(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s, delay=0)
-        recordthanks.save()
-        recordthanks_opt = Option(number="", action=Option.NEXT, prompt=recordthanks)
-        recordthanks_opt.save()
+        recordthanks = Prompt.objects.create(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s, delay=0)
+        recordthanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=recordthanks)
         order += 1
     
     # thanks
-    thanks = Prompt(file=line.language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
-    thanks.save()
-    thanks_opt = Option(number="", action=Option.NEXT, prompt=thanks)
-    thanks_opt.save()
+    thanks = Prompt.objects.create(file=line.language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
+    thanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=thanks)
     order += 1
     
     #create a call
-    call = Call(survey=s, subject=asker, date=now, priority=1)
+    call = Call.objects.create(survey=s, subject=asker, date=now, priority=1)
     #print ("adding call " + str(call))
-    call.save()
-    
-    # create calls little while from now and tommorow as backups
-    onehour = timedelta(hours=1)
-    call = Call(survey=s, subject=asker, date=now+onehour, priority=2)
-    #print ("adding backup call " + str(call))
-    call.save()
-    
-    tomorrow_morn = datetime(year=now.year, month=now.month, day=now.day) + timedelta(days=1, hours=9)
-    call = Call(survey=s, subject=asker, date=tomorrow_morn, priority=2)
-    #print ("adding backup call " + str(call))
-    call.save()
-    
 	
 def main():
 	unsent_responses()

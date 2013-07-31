@@ -317,7 +317,7 @@ def clone_template(template, newname, num_backups, start_date):
 '    algorithm on all pending bcasts
 '''
 
-def  schedule_bcasts(time=None, dialers=None):
+def schedule_bcasts(time=None, dialers=None):
     # gather all bcasts pending as of bcasttime
     # This is a comparison between group recipients and calls scheduled
     if not dialers:
