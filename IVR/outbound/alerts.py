@@ -41,11 +41,8 @@ def unsent_responses():
     # Make backup calls for response calls that weren't completed the first time at least an hour ago
     surveys = Survey.objects.filter(name__contains=Survey.ANSWER_CALL_DESIGNATOR, call__priority=1, call__date__lte=now-timedelta(hours=1), created_on__gte=now-timedelta(hours=12))
     for s in surveys:
-        if not bool(Call.objects.filter(priority=2, survey=s)):
-            c = Call.objects.get(survey=s, priority=1)
-            c.pk = None
-            c.priority = 2
-            c.save() 
+        s.backup_calls = 1
+        s.save()
     
             
 def hangup(uid):
@@ -98,7 +95,7 @@ def answer_call(line, answer):
     now = datetime.now()
     num = line.outbound_number or line.number
         
-    s = Survey.objects.create(name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now)
+    s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now)
     for d in line.dialers.all():
         s.dialers.add(d)
     #print ("adding announcement survey " + str(s))
@@ -143,10 +140,6 @@ def answer_call(line, answer):
     thanks = Prompt.objects.create(file=line.language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
     thanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=thanks)
     order += 1
-    
-    #create a call
-    call = Call.objects.create(survey=s, subject=asker, date=now, priority=1)
-    #print ("adding call " + str(call))
 	
 def main():
 	unsent_responses()
