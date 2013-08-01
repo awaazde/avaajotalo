@@ -155,7 +155,7 @@ def main():
 	print("<div><h4>Answer Calls</h4></div>")
 	print("<table>")
 	print("<tr>")
-	print("<td width='150px'><u>Recipient</u></td>")
+	print("<td width='250px'><u>Recipient</u></td>")
 	print("<td width='150px'><u>Attempted</u></td>")
 	print("<td width='50px'><u>Pickup?</u></td>")
 	print("</tr>")
@@ -171,7 +171,7 @@ def main():
 		othercalls = Call.objects.filter(survey=call.survey, priority__gt=1).order_by('date')
 		times = call.date.strftime("%H:%M")
 		for c in othercalls:
-			times += ', '+c.date.strftime("%H:%M")
+			times += ','+c.date.strftime("%H:%M")
 		
 		complete = call.complete or bool(othercalls.filter(complete=True))
 		complete = 'Yes' if complete else 'No'
