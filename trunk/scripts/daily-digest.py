@@ -174,12 +174,14 @@ def main():
 			times += ', '+c.date.strftime("%H:%M")
 		
 		complete = call.complete or bool(othercalls.filter(complete=True))
-		
+		complete = 'Yes' if complete else 'No'
 		print("<tr>")
 		print("<td>"+name+"</td>")
 		print("<td>"+times+"</td>")
-		print("<td>"+'Yes' if complete else 'No'+"</td>")
+		print("<td>"+complete+"</td>")
 		print("</tr>")
+	
+	print("</table>")
 	
 	print("<div><h4>Today's Broadcasts</h4></div>")
 	print("<table>")
