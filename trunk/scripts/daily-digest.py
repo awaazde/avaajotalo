@@ -152,28 +152,35 @@ def main():
 	print("</table>")
 	
 	# Answer Calls
-	answercalls = Call.objects.filter(survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, survey__number__in=[line.number, line.outbound_number], date__gte=today, date__lt=today+oneday)
-	unique_answercalls = answercalls.values('subject', 'survey').distinct()
-	n_recipients = 0
-	n_completed = 0
-	for answercall in unique_answercalls:
-		if answercalls.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True):
-			n_recipients += 1
-			n_completed += 1
-		elif Call.objects.filter(subject=answercall['subject'], survey=answercall['survey'], complete=True).count() == 0:
-			n_recipients += 1
-	n_response_to_response = Input.objects.filter(call__in=answercalls).count()
+	print("<div><h4>Answer Calls</h4></div>")
+	print("<table>")
+	print("<tr>")
+	print("<td width='150px'><u>Recipient</u></td>")
+	print("<td width='150px'><u>Attempted</u></td>")
+	print("<td width='50px'><u>Pickup?</u></td>")
+	print("</tr>")
 	
-	print("<br/><div>")
-	print("<b>Response calls attempted:</b> ")
-	print(n_recipients)
-	print("<br/>")
-	print("<b>Response calls matured:</b> ")
-	print(n_completed)
-	print("<br/>")
-	print("<b>Responses to response:</b> ")
-	print(n_response_to_response)
-	print("</div>")
+	answercalls = Call.objects.filter(survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, survey__number__in=[line.number, line.outbound_number], date__gte=today, date__lt=today+oneday, priority=1)
+	unique_answercalls = answercalls.values('subject', 'survey').distinct()
+	for call in answercalls:
+		u = User.objects.filter(number=subject.number)
+		name = subject.number
+		if bool(u):
+			u = u[0]
+			if u.name:
+				name = u.name + ' (' + u.number + ')'
+		othercalls = Call.objects.filter(survey=call.survey, priority__gt=1).order_by('date')
+		times = call.date.strftime("%H:%M")
+		for c in othercalls:
+			times += ', '+c.date.strftime("%H:%M")
+		
+		complete = call.complete or bool(othercalls.filter(complete=True))
+		
+		print("<tr>")
+		print("<td>"+name+"</td>")
+		print("<td>"+times+"</td>")
+		print("<td>"+'Yes' if complete else 'No'+"</td>")
+		print("</tr>")
 	
 	print("<div><h4>Today's Broadcasts</h4></div>")
 	print("<table>")
