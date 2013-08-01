@@ -161,10 +161,9 @@ def main():
 	print("</tr>")
 	
 	answercalls = Call.objects.filter(survey__name__contains=Survey.ANSWER_CALL_DESIGNATOR, survey__number__in=[line.number, line.outbound_number], date__gte=today, date__lt=today+oneday, priority=1)
-	unique_answercalls = answercalls.values('subject', 'survey').distinct()
 	for call in answercalls:
-		u = User.objects.filter(number=subject.number)
-		name = subject.number
+		u = User.objects.filter(number=call.subject.number)
+		name = call.subject.number
 		if bool(u):
 			u = u[0]
 			if u.name:
