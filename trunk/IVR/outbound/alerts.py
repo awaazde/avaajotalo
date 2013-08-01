@@ -96,8 +96,7 @@ def answer_call(line, answer):
     num = line.outbound_number or line.number
         
     s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now)
-    for d in line.dialers.all():
-        s.dialers.add(d)
+    s.subjects.add(asker)
     #print ("adding announcement survey " + str(s))
     order = 1
     
