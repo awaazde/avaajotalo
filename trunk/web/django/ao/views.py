@@ -496,13 +496,12 @@ def updatestatus(request, action):
             if msgs.count() > 0 and msgs[0].position != None:
                 m.position = msgs[0].position + 1
         else:
-            # XXXX TO DO - TO ACTIVATE NOTIFICATION, uncomment 2 following lines
-            # from otalo.notification import notification_utils as notut
-            # if m.thread and m.thread.message_forum_set.count()>=1:
-            #     parent = m.thread.message_forum_set.all()[0]
-            #     notut.process_notification(m, parent)
-            #alerts.missed_call(m.forum.line_set.all()[0], [userid])
-            if not Prompt.objects.filter(file__contains=m.message.content_file) and m.forum.response_calls:
+            '''
+            '    Deliberately not checking if response call has already been created
+            '    (not Prompt.objects.filter(file__contains=m.message.content_file)
+            '    to allow moderator to re-send response call by rejecting and re-approving msg
+            '''
+            if m.forum.response_calls:
                 alerts.answer_call(m.forum.line_set.all()[0], m)
             
             
