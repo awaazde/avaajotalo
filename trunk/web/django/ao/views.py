@@ -593,7 +593,7 @@ def survey(request):
     auth_user = request.user
     start = int(params['start'])
     
-    surveys = Survey.objects.filter(broadcast=True).order_by('-id')
+    surveys = Survey.objects.filter(broadcast=True).exclude(name__contains=Survey.ANSWER_CALL_DESIGNATOR).order_by('-id')
     if not auth_user.is_superuser:
         # get all lines associated with this login
         lines = Line.objects.filter(forums__admin__auth_user=auth_user).distinct()
