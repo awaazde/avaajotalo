@@ -463,4 +463,7 @@ class Dialer(models.Model):
     '''
     
     def __unicode__(self):
-        return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)
+        if self.country_code:
+            return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix) + '_' + unicode(self.country_code)
+        else:
+            return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)
