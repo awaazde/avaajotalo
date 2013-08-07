@@ -49,11 +49,6 @@ prevprompts = {};
 
 -- survey phonenumber
 destination = session:getVariable("destination_number");
--- caller's number
-caller = session:getVariable("caller_id_number");
-caller = caller:sub(-10);
--- added for forwarding (checking sufficient balance, creating forward request, etc.)
-userid = get_table_field('ao_user', 'id', 'number='..caller);
 
 -- get survey id
 query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback, survey.outbound_number ";
@@ -84,6 +79,56 @@ end
 complete_after_idx = tonumber(res[4]);
 local callback_allowed = tonumber(res[5]);
 local outbound_number = tonumber(res[6]);
+
+-- caller's number
+caller = session:getVariable("caller_id_number");
+-- get the dialer now to check for whether this
+-- is survey has a dialer with a country code associated with it;
+-- if so, parse the inbound phone number accordingly
+local prefixes = {};
+local suffixes = {};
+local maxparallels = {};
+local country_code = nil;
+if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
+	-- get from dialer
+	local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey_dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.country_code, dialer.min_number_len");
+	local dialstring = dialstrings();
+	local min_len = nil;
+	local phone_num = nil;
+	local pattern = nil;
+	while (dialstring ~= nil) do
+		table.insert(prefixes, dialstring[1]);
+		suffixes[dialstring[1]] = dialstring[2];
+		table.insert(maxparallels, dialstring[3]);
+
+		if (phone_num == nil) then
+			country_code = dialstring[4];
+			min_len = dialstring[5];
+			if (country_code ~= nil and min_len ~= nil) then
+				pattern = '('..string.rep('%d', min_len)..'%d*)';			
+				phone_num = string.match(caller, '1?'..country_code..pattern) or string.match(caller, pattern);
+				--freeswitch.consoleLog("info", script_name .. ": country code = " .. country_code .. " , minlen = " .. tostring(min_len) .. " , pattern = " .. pattern .. " , phone_num = " .. phone_num .."\n");
+			end
+		end
+		
+		dialstring = dialstrings();
+    end
+    
+    if (phone_num ~= nil) then
+    	caller = phone_num
+    else
+    	-- default
+    	caller = caller:sub(-10);
+    	country_code = '';
+    end
+else
+	-- default
+	caller = caller:sub(-10);
+	country_code = '';
+end
+
+-- added for forwarding (checking sufficient balance, creating forward request, etc.)
+userid = get_table_field('ao_user', 'id', 'number='..caller);
 
 -- create a call in order to track any inputs made to this survey
 -- first get subject id
@@ -155,23 +200,9 @@ if (callback_allowed == 1) then
 	session:execute("ring_ready");
 	local api = freeswitch.API();
 	
-	-- do this only if missed call happening, to save the
-	-- db and processing hits in the non-missed call case
-	if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
-		-- get from dialer
-		local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey_dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in");
-		local prefixes = {};
-		local suffixes = {};
-		local maxparallels = {};
-		local dialstring = dialstrings();
-		while (dialstring ~= nil) do
-			table.insert(prefixes, dialstring[1]);
-			suffixes[dialstring[1]] = dialstring[2];
-			table.insert(maxparallels, dialstring[3]);
-			dialstring = dialstrings();
-	    end
-	    -- find a dialer that is available
-	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
+	 -- find a dialer that is available
+	if (DIALSTRING_PREFIX == '' and DIALSTRING_SUFFIX == '') then
+	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels)..country_code;
 	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
 	end
 

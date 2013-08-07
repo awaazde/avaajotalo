@@ -442,5 +442,25 @@ class Dialer(models.Model):
     dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     
+    '''
+    '****************************************************************************************************
+    '    Support for variable length dialing. Need this for phone numbers of varying lengths. Before
+    '    we were simply capturing the last 10 digits of incoming caller. But what if the number is longer?
+    '    To properly capture varying length numbers, need to pattern match out the preamble (country_code)
+    '    and capture the remainder as a variable length phone number.
+    '    
+    '    contry_code => preamble for the base phone number. Usually country_code in international dialing case
+    '
+    '    min_number_len => minimum number of digits in a valid phone number. Don't need to specify
+    '                        max since the pattern matcher will just capture all digits following
+    '                        the minimum using %d*
+    '    
+    '''
+    country_code = models.CharField(max_length=24, blank=True, null=True)
+    min_number_len = models.IntegerField(blank=True, null=True)
+    '''
+    ****************************************************************************************************
+    '''
+    
     def __unicode__(self):
         return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)
