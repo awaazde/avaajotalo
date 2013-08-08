@@ -15,6 +15,7 @@
 #===============================================================================
 
 from django.db import models
+from django.db.models import Q
 from django.db.models.deletion import Collector
 from django.db.models.fields.related import ForeignKey
 from datetime import datetime
@@ -115,11 +116,13 @@ class Survey(models.Model):
         now = datetime.now()
         
         if self.subjects.all():
-            attemptscnt = Call.objects.filter(survey=self, subject__in=self.subjects.all(), priority=1).count()
-            pendingcallcnt = self.subjects.all().count() - attemptscnt
+            backup_calls = self.backup_calls or 0
+            complete_cnt = self.subjects.filter(Q(call__complete=True) | Q(call__priority=self.backup_calls+1), call__survey=self).distinct().count()
+            pendingcallcnt = self.subjects.all().count() - complete_cnt
         else:
             # for legacy (pre-survey.subjects) purposes
             pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()
+            
         if pendingcallcnt == 0 and not self.status == Survey.STATUS_CANCELLED:
             self.status = Survey.STATUS_EXPIRED
             self.save()
