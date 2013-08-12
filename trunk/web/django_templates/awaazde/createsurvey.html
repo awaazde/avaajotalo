@@ -109,6 +109,18 @@ div.qform
         	$id_length.attr('disabled', 'disabled').val();
     	}
 	}).trigger('change'); // added trigger to calculate initial state
+	
+	var DEFAULT_MIN_DIGITS = '10';
+	var $country_code = $('input[name="country_code"]'),
+    	$min_digits = $('select[name="min_digits"]');
+	$country_code.change(function() {
+    	if ($country_code.val()) {
+        	$min_digits.removeAttr('disabled');
+    	} else {
+        	$min_digits.attr('disabled', 'disabled').val();
+        	$min_digits.val(DEFAULT_MIN_DIGITS);
+    	}
+	}).trigger('change'); // added trigger to calculate initial state
 
 	
 	$('input[type="radio"]').change(function() {
