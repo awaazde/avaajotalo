@@ -414,7 +414,7 @@ def get_most_recent_interval(dialer):
         interval = datetime(year=interval.year, month=interval.month, day=interval.day, hour=interval.hour, minute=interval.minute)
         # go into the future in order to avoid
         # race conditions with survey.py
-        interval += timedelta(minutes=2)
+        interval += timedelta(minutes=5)
         
     # Locate most recent stack of
     # scheduled messages
