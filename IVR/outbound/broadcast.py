@@ -414,15 +414,16 @@ def get_most_recent_interval(dialer):
         interval = datetime(year=interval.year, month=interval.month, day=interval.day, hour=interval.hour, minute=interval.minute)
     # go into the future in order to avoid
     # race conditions with survey.py
-    interval += timedelta(minutes=5)
+    interval += timedelta(minutes=2)
         
     # Locate most recent stack of
     # scheduled messages
-    for i in range((dialer.interval_mins or DEF_INTERVAL_MINS)-1,-1,-1):
-        nums = get_dialer_numbers(dialer)
-        if bool(Call.objects.filter(survey__number__in=nums, survey__broadcast=True, date=interval-timedelta(minutes=i))):
-            interval -= timedelta(minutes=i)
-            break
+    interval_mins = dialer.interval_mins or DEF_INTERVAL_MINS
+    nums = get_dialer_numbers(dialer)
+    dates = Call.objects.filter(survey__number__in=nums, survey__broadcast=True, date__gt=interval-timedelta(minutes=interval_mins), date__lte=interval).order_by('date').values('date')
+    dates = [d.values()[0] for d in dates]
+    if dates:
+        interval = dates[0]
     print("Found most recent interval: "+date_str(interval)) 
     return interval
 
