@@ -451,7 +451,7 @@ def get_pending_backup_calls(survey, max_backup_calls):
 def get_dialer_numbers(dialer):
     nums = []
     for i in range(dialer.max_nums):
-        nums.append(str(int(dialer.base_number)+1))
+        nums.append(str(int(dialer.base_number)+i))
     return nums
     
 def date_str(date):
