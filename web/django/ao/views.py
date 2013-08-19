@@ -753,8 +753,6 @@ def cancelsurvey(request, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id)
     survey.status = Survey.STATUS_CANCELLED
     survey.save()
-    now = datetime.now()
-    Call.objects.filter(survey=survey, date__gt=now).delete()
         
     return send_response([survey])
 
