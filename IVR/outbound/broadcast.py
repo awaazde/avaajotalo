@@ -340,7 +340,7 @@ def schedule_bcasts(time=None, dialers=None):
         
         lines = Line.objects.filter(dialers=dialer)
         nums = [line.outbound_number or line.number for line in lines]
-        bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums).exclude(status==Survey.STATUS_CANCELLED)   
+        bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums).exclude(status=Survey.STATUS_CANCELLED)   
         for bcast in bcasts:
             #print("pending bcast: "+ str(bcast))
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
