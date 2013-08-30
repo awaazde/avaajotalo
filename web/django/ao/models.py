@@ -390,17 +390,17 @@ class Forward(models.Model):
 '    of parallel calls
 '''
 class Dialer(models.Model):
-    DIALER_TYPE_PRI = 0
-    DIALER_TYPE_VOIP = 1
+    TYPE_PRI = 0
+    TYPE_VOIP = 1
     
-    TYPE = (
-    (DIALER_TYPE_PRI, 'PRI'),
-    (DIALER_TYPE_VOIP, 'VoIP'),
+    TYPES = (
+    (TYPE_PRI, 'PRI'),
+    (TYPE_VOIP, 'VoIP'),
     )
     
     base_number = models.CharField(max_length=24)
     max_nums = models.IntegerField()
-    type = models.IntegerField(choices=TYPE)
+    type = models.IntegerField(choices=TYPES)
     
     '''
     '****************************************************************************************************
@@ -408,7 +408,7 @@ class Dialer(models.Model):
     '    In a scenario where one line has multiple dialers (or one dialer has multiple lines), 
     '    you can allocate some of the dialers (or parts of dialers) for inbound, and some for broadcasting.
     '
-    '    Pure inbound lines (i.e. no missed call) does not need this number, since the call
+    '    Pure inbound lines (i.e. no missed call) does not need max_parallel_in, since the call
     '    will simply find an available channel automatically if there is one, be go busy if not.
     '
     '    In the case of missed call lines, the inbound call will use the max_parallel_in value to determine
@@ -461,6 +461,28 @@ class Dialer(models.Model):
     '''
     ****************************************************************************************************
     '''
+    
+    '''
+    '****************************************************************************************************
+    '    Support for multi-tenancy telephony servers. Before this field was added, we assumed a single
+    '    telephony server would be making all outbound calls. So when a dialer created a call with prefix
+    '    freetdm/grp3/a/XXX, there was no ambiguity about the PRI line that is to make the call.
+    '    But if multiple servers are hooked up to the db, both may have grp3 and so both may try to make the
+    '    call. To address this we can identify machines by their machine_id. MACHINE_ID is set on the machine
+    '    in survey.lua, so your dialer's ID must correspond.
+    '    
+    '    We could model machines in the DB, but it doesn't seem necessary at this point since all we need
+    '    to do is differentiate machines from each other
+    '
+    '    Now there are two redundant fields between dialers and calls: dialstring_prefix, suffix, and machine_id
+    '    Could consider passing a dialer as a foreign key to Call, but that would mean an extra db lookup on each call
+    '    in survey.lua. So cache it for now, if the fields pile up further we can make a change.
+    '''
+    #machine_id = models.IntegerField()
+    '''
+    ****************************************************************************************************
+    '''
+    
     
     def __unicode__(self):
         if self.country_code:

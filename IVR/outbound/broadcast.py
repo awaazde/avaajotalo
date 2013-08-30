@@ -338,8 +338,13 @@ def schedule_bcasts(time=None, dialers=None):
         new_bcasts = {}
         backups = {}
         
-        lines = Line.objects.filter(dialers=dialer)
-        nums = [line.outbound_number or line.number for line in lines]
+        '''
+        '    Get all possible numbers rather than relying on
+        '    connected lines. This is in case there are surveys connected
+        '    to numbers that aren't inbound lines (forum apps), like Xact numbers
+        '
+        '''
+        nums = get_dialer_numbers(dialer)
         bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums).exclude(status=Survey.STATUS_CANCELLED)   
         for bcast in bcasts:
             #print("pending bcast: "+ str(bcast))
@@ -450,10 +455,7 @@ def get_pending_backup_calls(survey, max_backup_calls):
 '    Get all possible numbers associated with this dialer
 '''
 def get_dialer_numbers(dialer):
-    nums = []
-    for i in range(dialer.max_nums):
-        nums.append(str(int(dialer.base_number)+i))
-    return nums
+    return map(str, range(int(dialer.base_number),int(dialer.base_number)+dialer.max_nums))
     
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
@@ -495,7 +497,7 @@ if __name__=="__main__":
                     d = d[0]
                     print("Found VoIP dialer "+str(d)+" for line "+str(l))
                 else:
-                    d = Dialer.objects.create(base_number=pri_dialer.base_number, type=Dialer.DIALER_TYPE_VOIP, max_nums=pri_dialer.max_nums, max_parallel_out=9999, max_parallel_in=9999, interval_mins=Dialer.MIN_INTERVAL_MINS, dialstring_prefix=l.dialstring_prefix)                
+                    d = Dialer.objects.create(base_number=pri_dialer.base_number, type=Dialer.TYPE_VOIP, max_nums=pri_dialer.max_nums, max_parallel_out=9999, max_parallel_in=9999, interval_mins=Dialer.MIN_INTERVAL_MINS, dialstring_prefix=l.dialstring_prefix)                
                     print("Created VoIP dialer "+str(d)+" for line "+str(l))
                     
                 l.dialers.add(d)     
@@ -506,7 +508,7 @@ if __name__=="__main__":
         dialers=[]
         
         for slot,base in bases.iteritems():
-            d = Dialer.objects.create(base_number=base, type=Dialer.DIALER_TYPE_PRI, max_parallel_out=25, max_parallel_in=30, max_nums=100, interval_mins=DEF_INTERVAL_MINS, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
+            d = Dialer.objects.create(base_number=base, type=Dialer.TYPE_PRI, max_parallel_out=25, max_parallel_in=30, max_nums=100, interval_mins=DEF_INTERVAL_MINS, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
             print("Created dialer "+ str(d))
             dialers.append(d)
         
