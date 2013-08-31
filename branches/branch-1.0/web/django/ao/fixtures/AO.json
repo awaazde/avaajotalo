@@ -1,0 +1,702 @@
+[
+   {
+        "pk": 1, 
+        "model": "AO.line", 
+        "fields": {
+            "number": "5000", 
+            "name": "DSC's Avaaj Otalo",
+            "language": "eng",
+            "dialstring_prefix": "user/"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "name": "Question and Answer", 
+            "moderated": "y", 
+            "maxlength": 3000, 
+            "responses_allowed": "n", 
+            "routeable": "y", 
+            "name_file": "qna.wav"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "name": "Announcements", 
+            "moderated": "y", 
+            "maxlength": 60000, 
+            "responses_allowed": "y",
+            "routeable": "n",  
+            "name_file": "announcements.wav"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "n", 
+            "name": "Radio", 
+            "moderated": "n", 
+            "maxlength": 40000, 
+            "responses_allowed": "n", 
+            "routeable": "n",
+            "name_file": "radio.wav"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.forum", 
+        "fields": {
+            "posting_allowed": "y", 
+            "name": "Experiences", 
+            "moderated": "y", 
+            "maxlength": 6666, 
+            "responses_allowed": "y", 
+            "routeable": "n",
+            "name_file": "experiences.wav"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "ADMIN", 
+            "district": "", 
+            "number": "1000",         
+            "taluka": "",  
+            "village": "", 
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Neil Patel", 
+            "number": "1001",
+            "district": "Anand",            
+            "taluka_file": "foo.wav", 
+            "taluka": "Anand", 
+            "village": "Patli", 
+            "allowed" : "y"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Paresh Dave", 
+            "district": "", 
+            "number": "1002",            
+            "taluka": "", 
+            "village": "", 
+            "allowed" : "y"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Amit Nanavati", 
+            "district": "", 
+            "number": "1003",            
+            "taluka": "", 
+            "village": "", 
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "AO.user", 
+        "fields": {
+            "name": "Nitendra Rajput", 
+            "district": "", 
+            "number": "1004",            
+            "taluka": "", 
+            "village": "", 
+            "allowed" : "y"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "AO.message", 
+        "fields": {          
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-10-27 20:05:59", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 6  
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "position": 1, 
+            "message":1,
+            "forum": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.message", 
+        "fields": {                                 
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 20:45:24", 
+            "summary_file": "",
+            "thread": 1,
+            "lft": 2, 
+            "rgt": 3
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "message":2,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "AO.message", 
+        "fields": {                                       
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:16", 
+            "summary_file": "",
+            "thread": 1,
+            "lft": 4,
+            "rgt": 5 
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "message":3,
+            "forum": 1
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.message", 
+        "fields": {                                       
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:27", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":5,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "AO.message", 
+        "fields": {                                       
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:38", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":4,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "AO.message", 
+        "fields": {                                       
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:46",  
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":6,
+            "forum": 1
+        }
+    },
+    {
+        "pk": 7, 
+        "model": "AO.message", 
+        "fields": {                                       
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:46", 
+            "summary_file": "",         
+            "lft": 1,
+            "rgt": 2
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "position": 1, 
+            "message":7,
+            "forum": 3
+        }
+    },
+    {
+        "pk": 8, 
+        "model": "AO.message", 
+        "fields": {                          
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 20:45:24", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 6
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "position": 1, 
+            "message":8,
+            "forum": 2
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "AO.message", 
+        "fields": {                          
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:16", 
+            "summary_file": "",
+            "lft": 2,
+            "rgt": 3,
+            "thread": 8
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":9,
+            "forum": 2
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "AO.message", 
+        "fields": {                           
+            "content_file": "test2.mp3", 
+            "user": 1, 
+            "date": "2009-11-01 23:13:27", 
+            "summary_file": "",
+            "lft": 4,
+            "rgt": 5,
+            "thread": 8
+        }
+    }, 
+    {
+        "pk": 10, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":10,
+            "forum": 2
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "AO.message", 
+        "fields": {                          
+            "content_file": "test2.mp3", 
+            "user": 2, 
+            "date": "2009-11-23 07:22:42", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 1, 
+            "message":11,
+            "forum": 3
+        }
+    },
+     {
+        "pk": 12, 
+        "model": "AO.message", 
+        "fields": {                          
+            "content_file": "test2.mp3", 
+            "user": 2, 
+            "date": "2009-11-23 07:22:42", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":12,
+            "forum": 1
+        }
+    },
+     {
+        "pk": 13, 
+        "model": "AO.message", 
+        "fields": {                          
+            "content_file": "test2.mp3", 
+            "user": 2, 
+            "date": "2009-11-23 07:22:44", 
+            "summary_file": "",
+            "lft": 1,
+            "rgt": 2
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "AO.message_forum", 
+        "fields": {
+            "status": 0, 
+            "message":13,
+            "forum": 1
+        }
+    },
+     {
+        "pk": 1, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cotton",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Wheat",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cumin",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Castor",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Mustard",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Millet",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Groundnut",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Maize",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Paddy",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Crop Planning",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Seeds",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Soil Care",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Pests",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 14, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Diseases",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 15, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Weeding",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Irrigation",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 17, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Animal Husbandry",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 18, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Onion",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 19, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tobacco",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 20, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sesame",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 21, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chilli",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 22, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sorghum",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 23, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Garlic",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 24, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Brinjal",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 25, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Gram",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 26, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chickpea",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 27, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Banana",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 28, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Papaya",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 29, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tumeric",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 30, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Other",
+            "forum" : 2
+        }
+    },
+     {
+        "pk": 31, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Harvesting",
+            "forum" : 2
+        }
+    },
+     {
+        "pk": 32, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Marketing",
+            "forum" : 2
+        }
+    },
+    {
+        "pk": 33, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Other",
+            "forum" : 2
+        }
+    }
+]
