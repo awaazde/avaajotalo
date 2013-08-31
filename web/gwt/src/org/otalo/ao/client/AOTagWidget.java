@@ -160,4 +160,8 @@ public class AOTagWidget extends TagWidget {
 		 
 	}
 
+	@Override
+	public void setSelectedTagData() {
+		//nothing to do here
+	}
 }
