@@ -20,7 +20,7 @@ from django.shortcuts import render_to_response, get_object_or_404, get_list_or_
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext
-from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin, Membership
+from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
@@ -210,20 +210,39 @@ def updatemessage(request):
         m.save()
         
     # Save tags
-    tags_changed = int(params['tags_changed'])
-    if tags_changed:
-        crop = params['crop']
-        topic = params['topic']
-        
-        m.tags.clear()
+    tags_changed = params['tags_changed']
+    m.tags.clear()
     
-        if crop != '-1':
-            crop_tag = Tag.objects.get(pk=crop)
-            m.tags.add(crop_tag)
+    if tags_changed != '':
+        #crop = params['crop']
+        #topic = params['topic']
+             
         
-        if topic != '-1':
-            topic_tag = Tag.objects.get(pk=topic)
-            m.tags.add(topic_tag)
+        selected_tags = tags_changed.split("##");
+        for sel_tag in selected_tags:
+            try: 
+                tag_ref = Tag.objects.get(tag=sel_tag)
+                #print tag_ref
+                m.tags.add(tag_ref)
+            except Tag.DoesNotExist:
+                # we have no tag with given name, so first creating new Tag
+                #new_tag = Tag(tag=sel_tag, type=None, tag_file=sel_tag)
+                #new_tag.save()
+                new_tag = Tag.objects.create(tag=sel_tag, type=None, tag_file=sel_tag)
+                #also we need associate it with forum
+                Forum_tag.objects.create(forum=m.forum, tag=new_tag)
+                m.tags.add(new_tag)
+            
+    
+        #if selectedtags != '':
+         #  sel_tag = Tag.objects.get(pk=crop)
+          # m.tags.add(sel_tag)
+        
+        #if topic != '-1':
+         #   topic_tag = Tag.objects.get(pk=topic)
+          #  m.tags.add(topic_tag)
+    if tags_changed == '':
+        m.tags.remove()
     
     if m.forum.routeable == 'y':
         # Only run routing algorithm if tags have been updated.
