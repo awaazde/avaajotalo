@@ -214,35 +214,19 @@ def updatemessage(request):
     m.tags.clear()
     
     if tags_changed != '':
-        #crop = params['crop']
-        #topic = params['topic']
-             
         
         selected_tags = tags_changed.split("##");
         for sel_tag in selected_tags:
             try: 
                 tag_ref = Tag.objects.get(tag=sel_tag)
-                #print tag_ref
                 m.tags.add(tag_ref)
             except Tag.DoesNotExist:
                 # we have no tag with given name, so first creating new Tag
-                #new_tag = Tag(tag=sel_tag, type=None, tag_file=sel_tag)
-                #new_tag.save()
-                new_tag = Tag.objects.create(tag=sel_tag, type=None, tag_file=sel_tag)
+                new_tag = Tag.objects.create(tag=sel_tag)
                 #also we need associate it with forum
                 Forum_tag.objects.create(forum=m.forum, tag=new_tag)
                 m.tags.add(new_tag)
-            
-    
-        #if selectedtags != '':
-         #  sel_tag = Tag.objects.get(pk=crop)
-          # m.tags.add(sel_tag)
         
-        #if topic != '-1':
-         #   topic_tag = Tag.objects.get(pk=topic)
-          #  m.tags.add(topic_tag)
-    if tags_changed == '':
-        m.tags.remove()
     
     if m.forum.routeable == 'y':
         # Only run routing algorithm if tags have been updated.
