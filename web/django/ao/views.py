@@ -56,6 +56,9 @@ INVALID_GROUP_SETTING = "6"
 INVALID_FILE_FORMAT = "7"
 INVALID_SUMMARY_FILE_FORMAT = "8"
 
+
+#Tags related constants
+TAG_SEPERATOR = "##"
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
 
@@ -210,22 +213,27 @@ def updatemessage(request):
         m.save()
         
     # Save tags
-    tags_changed = params['tags_changed']
+    selected_tags_input = params['selected_tags']
     m.tags.clear()
     
-    if tags_changed != '':
-        
-        selected_tags = tags_changed.split("##");
+    if selected_tags_input != '':
+        selected_tags = selected_tags_input.split(TAG_SEPERATOR);
         for sel_tag in selected_tags:
-            try: 
-                tag_ref = Tag.objects.get(tag=sel_tag)
-                m.tags.add(tag_ref)
-            except Tag.DoesNotExist:
+            # getting all the tags reference having tag name
+            tag_refs = Tag.objects.filter(tag=sel_tag)
+            if bool(tag_refs): #if existing then taking first one
+                m.tags.add(tag_refs[0]) # adding it into message forum
+                # now checking if forum tag is existing or not
+                try:
+                    forum_tag = Forum_tag.objects.get(forum=m.forum, tag=tag_refs[0])
+                except Forum_tag.DoesNotExist:
+                    #also we need associate it with forum
+                    Forum_tag.objects.create(forum=m.forum, tag=tag_refs[0])
+            else:
                 # we have no tag with given name, so first creating new Tag
                 new_tag = Tag.objects.create(tag=sel_tag)
-                #also we need associate it with forum
-                Forum_tag.objects.create(forum=m.forum, tag=new_tag)
                 m.tags.add(new_tag)
+                Forum_tag.objects.create(forum=m.forum, tag=new_tag)
         
     
     if m.forum.routeable == 'y':
@@ -233,7 +241,7 @@ def updatemessage(request):
         # But don't override manual setting of responders if they
         # were also made
         responders_changed = int(params['responders_changed'])
-        if responders_changed or tags_changed:
+        if responders_changed or selected_tags_input:
             if responders_changed:
                 responders = []
                 if params.__contains__('responders'):
