@@ -32,5 +32,7 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^accounts/login/$', 'django.contrib.auth.views.login', {'authentication_form': AuthenticationForm}),
     (r'^logout/$', 'otalo.views.log_out'),
+    (r'^xact/', include('awaazde.xact.urls')),
+    (r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
 )
