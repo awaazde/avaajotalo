@@ -89,7 +89,7 @@ public class MessageDetail extends Composite {
   	metadata = new VerticalPanel();
   	metadata.setHeight("100%");
   	//tags = new AOTagWidget();
-  	tags = new AOAutoCompleteTagWidget();
+  	tags = new AutoCompleteTagWidget();
   	routing = new AORoutingWidget();
   	metadata.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
   	metadata.add(tags);
