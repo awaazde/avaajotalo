@@ -30,6 +30,10 @@ DEFAULT_CALL_THRESHOLD = 2
 
 DEF_INTERVAL_MINS = 5
 
+# Wait at least this many
+# mins before sending a backup call
+BACKUP_THRESH_MINS = 30
+
 def subjects_by_numbers(numbers):
     subjects = []
     
@@ -359,12 +363,6 @@ def schedule_bcasts(time=None, dialers=None):
                 new_bcasts[bcast] = to_sched
             elif num_backup_calls > 0:
                 #print("checking backup calls for " + str(group))
-                '''
-                '     Find out if there are any backup calls left to do
-                '     Exclude subjects with a complete call, or who have scheduled a call up to max number of backups
-                '     Do the exclude manually since Django doesn't correctly exclude on a relationship that was previously filtered on
-                '     e.g. Subject.objects.filter(call__survey=bcast).exclude(call__survey=bcast, call__complete=True) doesn't work!
-                '''
                 to_sched = get_pending_backup_calls(bcast, num_backup_calls)
                 
                 if to_sched:
@@ -397,12 +395,16 @@ def schedule_bcasts(time=None, dialers=None):
         #print("prefix "+prefix+" maxpara="+str(PROFILES[prefix]['maxparallel'])+" existing call count="+str(Call.objects.filter(dialstring_prefix=prefix, date=bcasttime).count()))
         to_sched = flat[:num_available]
         for survey, subject in to_sched:            
-            priority = Call.objects.filter(survey=survey, subject=subject).aggregate(Max('priority'))
-            priority = priority.values()[0]
-            if priority:
-                priority += 1
-            else:
-                priority = 1
+            latest_call = Call.objects.filter(survey=survey, subject=subject).order_by('-priority')
+            priority = 1
+            if bool(latest_call):
+                latest_call = latest_call[0]
+                # don't make this call if last call was made
+                # less than BACKUP_THRESH_MINS ago
+                if latest_call.date > bcasttime - timedelta(minutes=BACKUP_THRESH_MINS):
+                    continue
+                priority = latest_call.priority + 1
+            
             call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix, subject=subject, date=bcasttime, priority=priority)
             print('Scheduled call '+ str(call))
             
@@ -433,7 +435,10 @@ def get_most_recent_interval(dialer):
     return interval
 
 '''
-' Utility function to check which members need backup calls scheduled
+'     Find out if there are any backup calls left to do
+'     Exclude subjects with a complete call, or who have scheduled a call up to max number of backups
+'     Do the exclude manually since Django doesn't correctly exclude on a relationship that was previously filtered on
+'     e.g. Subject.objects.filter(call__survey=bcast).exclude(call__survey=bcast, call__complete=True) doesn't work!
 '''
 def get_pending_backup_calls(survey, max_backup_calls):        
     to_exclude = Subject.objects.filter(Q(call__complete=True) | Q(call__priority=max_backup_calls+1), call__survey=survey).values('id')
