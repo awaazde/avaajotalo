@@ -37,13 +37,6 @@ def unsent_responses():
     for response in responses:
         if not Prompt.objects.filter(file__contains=response.message.content_file):
             answer_call(response.forum.line_set.all()[0], response)
-    
-    # Make backup calls for response calls that weren't completed the first time at least an hour ago
-    surveys = Survey.objects.filter(name__contains=Survey.ANSWER_CALL_DESIGNATOR, call__priority=1, call__date__lte=now-timedelta(hours=1), created_on__gte=now-timedelta(hours=12))
-    for s in surveys:
-        s.backup_calls = 1
-        s.save()
-    
             
 def hangup(uid):
 	# hangup call
@@ -95,7 +88,7 @@ def answer_call(line, answer):
     now = datetime.now()
     num = line.outbound_number or line.number
         
-    s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now)
+    s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now, backup_calls=1)
     s.subjects.add(asker)
     #print ("adding announcement survey " + str(s))
     order = 1
