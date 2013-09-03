@@ -125,7 +125,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'crispy_forms',
     'streamit',
-    'awaazde.console'
+    'awaazde.console',
+    'awaazde.xact',
+    'rest_framework',
 )
 # this needs to go first
 INSTALLED_APPS = ("longerusername",) + INSTALLED_APPS
