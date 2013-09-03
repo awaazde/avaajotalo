@@ -1,22 +1,38 @@
 /*
- * Copyright (C) 2012 Julien Dramaix
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * Copyright (c) 2013 Regents of the University of California, Stanford University, and others
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
-package com.watopi.chosen.client.gwt;
+package org.otalo.ao.client.widget.chlist.gwt;
+
+import static com.google.gwt.query.client.GQuery.$;
+
+import org.otalo.ao.client.widget.chlist.client.Chosen;
+import org.otalo.ao.client.widget.chlist.client.ChosenImpl;
+import org.otalo.ao.client.widget.chlist.client.ChosenOptions;
+import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent;
+import org.otalo.ao.client.widget.chlist.event.HasAllChosenHandlers;
+import org.otalo.ao.client.widget.chlist.event.HidingDropDownEvent;
+import org.otalo.ao.client.widget.chlist.event.MaxSelectedEvent;
+import org.otalo.ao.client.widget.chlist.event.ReadyEvent;
+import org.otalo.ao.client.widget.chlist.event.ShowingDropDownEvent;
+import org.otalo.ao.client.widget.chlist.event.UpdatedEvent;
+import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent.ChosenChangeHandler;
+import org.otalo.ao.client.widget.chlist.event.HidingDropDownEvent.HidingDropDownHandler;
+import org.otalo.ao.client.widget.chlist.event.MaxSelectedEvent.MaxSelectedHandler;
+import org.otalo.ao.client.widget.chlist.event.ReadyEvent.ReadyHandler;
+import org.otalo.ao.client.widget.chlist.event.ShowingDropDownEvent.ShowingDropDownHandler;
+import org.otalo.ao.client.widget.chlist.event.UpdatedEvent.UpdatedHandler;
 
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
@@ -35,25 +51,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
-import com.watopi.chosen.client.ChosenImpl;
-import com.watopi.chosen.client.ChosenOptions;
-import com.watopi.chosen.client.event.ChosenChangeEvent;
-import com.watopi.chosen.client.event.ChosenChangeEvent.ChosenChangeHandler;
-import com.watopi.chosen.client.event.HasAllChosenHandlers;
-import com.watopi.chosen.client.event.HidingDropDownEvent;
-import com.watopi.chosen.client.event.HidingDropDownEvent.HidingDropDownHandler;
-import com.watopi.chosen.client.event.MaxSelectedEvent;
-import com.watopi.chosen.client.event.MaxSelectedEvent.MaxSelectedHandler;
-import com.watopi.chosen.client.event.ReadyEvent;
-import com.watopi.chosen.client.event.ReadyEvent.ReadyHandler;
-import com.watopi.chosen.client.event.ShowingDropDownEvent;
-import com.watopi.chosen.client.event.ShowingDropDownEvent.ShowingDropDownHandler;
-import com.watopi.chosen.client.event.UpdatedEvent;
-import com.watopi.chosen.client.event.UpdatedEvent.UpdatedHandler;
-
-import static com.google.gwt.query.client.GQuery.$;
-import static com.watopi.chosen.client.Chosen.CHOSEN_DATA_KEY;
-import static com.watopi.chosen.client.Chosen.Chosen;
 
 public class  ChosenListBox extends ListBox implements HasAllChosenHandlers {
 
@@ -64,7 +61,7 @@ public class  ChosenListBox extends ListBox implements HasAllChosenHandlers {
      * @return
      */
     public static boolean isSupported() {
-        return com.watopi.chosen.client.Chosen.isSupported();
+        return org.otalo.ao.client.widget.chlist.client.Chosen.isSupported();
     }
 
     /**
@@ -262,12 +259,12 @@ public class  ChosenListBox extends ListBox implements HasAllChosenHandlers {
     }
 
     public void forceRedraw() {
-        $(getElement()).as(Chosen).destroy()
+        $(getElement()).as(Chosen.Chosen).destroy()
                 .chosen(options, ensureChosenHandlers());
     }
 
     public GQuery getChosenElement() {
-        ChosenImpl impl = $(getElement()).data(CHOSEN_DATA_KEY,
+        ChosenImpl impl = $(getElement()).data(Chosen.CHOSEN_DATA_KEY,
                 ChosenImpl.class);
         if (impl != null) {
             return impl.getContainer();
@@ -598,14 +595,14 @@ public class  ChosenListBox extends ListBox implements HasAllChosenHandlers {
     @Override
     protected void onLoad() {
         super.onLoad();
-        $(getElement()).as(Chosen).chosen(options, ensureChosenHandlers());
+        $(getElement()).as(Chosen.Chosen).chosen(options, ensureChosenHandlers());
         setVisible(visible);	
     }
 
     @Override
     protected void onUnload() {
         super.onUnload();
-        $(getElement()).as(Chosen).destroy();
+        $(getElement()).as(Chosen.Chosen).destroy();
     }
 
     private GQuery getFocusableElement() {

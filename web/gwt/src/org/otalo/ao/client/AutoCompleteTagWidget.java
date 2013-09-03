@@ -1,6 +1,17 @@
 /*
- * Copyright (c) 2013 Awaaz.De Infosystem Pvt Ltd.
- *  
+ * Copyright (c) 2009 Regents of the University of California, Stanford University, and others
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.otalo.ao.client;
 
@@ -10,24 +21,25 @@ import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Tag;
+import org.otalo.ao.client.widget.chlist.client.ChosenOptions;
+import org.otalo.ao.client.widget.chlist.gwt.ChosenListBox;
 
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
-import com.watopi.chosen.client.ChosenOptions;
-import com.watopi.chosen.client.gwt.ChosenListBox;
 
 /**
  * @author nikhil
  * This is class which provides an auto complete kind of tag widget
  */
-public class AOAutoCompleteTagWidget extends TagWidget{
+public class AutoCompleteTagWidget extends TagWidget{
 
-	private Hidden tagsChanged;
+	public static final String TAG_SEPERATOR = "##";
+	private Hidden selectedTags;
 	private MessageForum mf;
 	private ChosenListBox tagInput;
 	
-	public AOAutoCompleteTagWidget() {
+	public AutoCompleteTagWidget() {
 		ChosenOptions options = new ChosenOptions();
 		options.setPlaceholderTextSingle("Select a tag...");
 		options.setPlaceholderTextMultiple("Select tags...");
@@ -43,12 +55,12 @@ public class AOAutoCompleteTagWidget extends TagWidget{
 		tagInput.setName("tags");
 				
 		Label tagLabel = new Label("Tags");
-		tagsChanged = new Hidden("tags_changed", "");
+		selectedTags = new Hidden("selected_tags", "");
 
 		FlexTable tagTable = new FlexTable();
 		tagTable.setWidget(0, 0, tagLabel);
 		tagTable.setWidget(0, 1, tagInput);
-		tagTable.setWidget(1, 0, tagsChanged);
+		tagTable.setWidget(1, 0, selectedTags);
 		initWidget(tagTable);
 	}
 
@@ -56,26 +68,26 @@ public class AOAutoCompleteTagWidget extends TagWidget{
 	public void loadTags(MessageForum messageForum) {
 		mf = messageForum;
 		JSONRequest request = new JSONRequest();
-		String tagSourceURL = AoAPI.TAGS + mf.getForum().getId(); // + "/?type=" + AoAPI.TAG_TYPE_CROP + " " + AoAPI.TAG_TYPE_TOPIC;
+		String tagSourceURL = AoAPI.TAGS + mf.getForum().getId();
 		request.doFetchURL(tagSourceURL, new TagRequestor());
 	}	
 
 	@Override
 	public void reset() {
-		tagsChanged.setValue("");
+		selectedTags.setValue("");
 		tagInput.clear();
 	}
 	
 	@Override
 	public void setSelectedTagData() {
-		String selectedTags = "";
+		String selectedTagsStr = "";
 		String [] tagVals = tagInput.getValues();
 		for(int i=0;i<tagVals.length;i++) {
-			selectedTags += tagVals[i] + "##";
+			selectedTagsStr += tagVals[i] + TAG_SEPERATOR;
 		}
-		if(selectedTags.length() > 0)
-			selectedTags = selectedTags.substring(0, selectedTags.length()-2);
-		tagsChanged.setValue(selectedTags);
+		if(selectedTagsStr.length() > 0)
+			selectedTagsStr = selectedTagsStr.substring(0, selectedTagsStr.length()-2);
+		selectedTags.setValue(selectedTagsStr);
 	}
 
 	/**
