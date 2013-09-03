@@ -58,6 +58,8 @@ urlpatterns = patterns('',
     (r'^s/', include('awaazde.streamit.urls')),
     # 2 is for gen2 console views
     (r'^2/', include('awaazde.console.urls')),
+    (r'^xact/', include('awaazde.xact.urls')),
+    (r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 )
 
 if settings.DEVELOPMENT:
