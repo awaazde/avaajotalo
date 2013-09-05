@@ -26,7 +26,7 @@ ADMINS = (
 
 # for security purposes
 # should be set in production
-ALLOWED_HOSTS ['*']
+ALLOWED_HOSTS = ['*']
 
 MANAGERS = ADMINS
 
