@@ -24,6 +24,10 @@ ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
 
+# for security purposes
+# should be set in production
+ALLOWED_HOSTS ['*']
+
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
