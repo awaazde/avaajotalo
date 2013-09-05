@@ -20,7 +20,7 @@ from django.shortcuts import render_to_response, get_object_or_404, get_list_or_
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext
-from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Message_responder, Admin, Membership
+from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
@@ -56,6 +56,11 @@ INVALID_GROUP_SETTING = "6"
 INVALID_FILE_FORMAT = "7"
 INVALID_SUMMARY_FILE_FORMAT = "8"
 
+
+#Tags related constants
+#This is separator for all the selected tags. From the client side, all the selected tags are coming with this seperatar.
+#Also this constant must be consistent with the same constant in AutoCompleteWidget.java 
+TAG_SEPERATOR = "##"
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
 
@@ -210,38 +215,41 @@ def updatemessage(request):
         m.save()
         
     # Save tags
-    tags_changed = int(params['tags_changed'])
-    if tags_changed:
-        crop = params['crop']
-        topic = params['topic']
-        
-        m.tags.clear()
+    selected_tags_input = params['selected_tags']
+    m.tags.clear()
     
-        if crop != '-1':
-            crop_tag = Tag.objects.get(pk=crop)
-            m.tags.add(crop_tag)
-        
-        if topic != '-1':
-            topic_tag = Tag.objects.get(pk=topic)
-            m.tags.add(topic_tag)
+    if selected_tags_input != '':
+        selected_tags = selected_tags_input.split(TAG_SEPERATOR);
+        for sel_tag in selected_tags:
+            # getting all the tags reference having tag name
+            tag_refs = Tag.objects.filter(tag=sel_tag)
+            if bool(tag_refs):
+                #if existing then taking first one
+                tag = tag_refs[0]
+            else:
+                tag = Tag.objects.create(tag=sel_tag)
+            
+            m.tags.add(tag)
+            #now checking into forum_tags whether this is existing or not    
+            forum_tag = Forum_tag.objects.filter(forum=m.forum, tag=tag)
+            if not bool(forum_tag):
+                Forum_tag.objects.create(forum=m.forum, tag=tag)
+            
     
     if m.forum.routeable == 'y':
         # Only run routing algorithm if tags have been updated.
         # But don't override manual setting of responders if they
         # were also made
         responders_changed = int(params['responders_changed'])
-        if responders_changed or tags_changed:
-            if responders_changed:
-                responders = []
-                if params.__contains__('responders'):
-                    responder_ids = params.getlist('responders')
-                    for responder_id in responder_ids:
-                        responder = User.objects.get(pk=responder_id)
-                        responders.append(responder)
-            else: #get responders based on new tags
-                responders = get_responders(m)
+        if responders_changed:
+            responders = []
+            if params.__contains__('responders'):
+                responder_ids = params.getlist('responders')
+                for responder_id in responder_ids:
+                    responder = User.objects.get(pk=responder_id)
+                    responders.append(responder)
             
-            # must do this delete after get_responders so the routing algorithm
+            
             # can take into account previous pass and listen histories
             Message_responder.objects.filter(message_forum=m).delete()
             t = datetime.now()
@@ -804,20 +812,6 @@ def promptresponses(request, prompt_id):
     
     return resp
     
-def get_responders(message_forum):
-    
-    tags = Tag.objects.filter(message_forum = message_forum)
-    
-    # Find users who match at least one of the tags for this message, excluding
-    # those who have already passed on this message and have listened to it beyond the listen threshold
-    # (the excludes for if a question is re-run for responders), and pick the ones with the least pending questions
-    responder_ids = User.objects.filter(tags__in = tags, forum = message_forum.forum).exclude(message_responder__message_forum=message_forum, message_responder__passed_date__isnull=False).exclude(message_responder__message_forum=message_forum, message_responder__listens__gt=LISTEN_THRESH).values("id").annotate(num_assigned=Count('message_responder__message_forum')).filter(num_assigned__lte=MAX_QUESTIONS_PER_RESPONDER).order_by('num_assigned')[:MAX_RESPONDERS]    
-    responder_ids = [row['id'] for row in responder_ids]
-    
-    # don't do any minimum checking, since tags are optional and manual assignment is possible
-
-    return User.objects.filter(id__in=responder_ids) 
-  
 def get_console_user(request):
    auth_user = request.user
    u = User.objects.filter(admin__auth_user=auth_user).distinct()
