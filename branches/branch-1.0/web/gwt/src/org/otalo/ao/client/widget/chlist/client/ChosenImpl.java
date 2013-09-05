@@ -759,21 +759,25 @@ public class ChosenImpl {
                 break;
 
             case 13: // enter
-            	//checking if user allows to add new option value
-            	if(options.isAddNewOptionVal()) {
-            		//if user is allowing to add new value then getting and checking for searchField value
-            		String newItemVal = searchField.val();
-            		if(newItemVal != null && !newItemVal.isEmpty()) {
-            	        //If already exist into list, don't add it
-            	        if(!isAlreadyExist(newItemVal)) {
-            	        	addNewItem(newItemVal,newItemVal);
-            	        	searchField.val("");
-            	        }
-            		}
-            	}
-                if (resultsShowing) {
-                    resultSelect(e);
-                }
+            	//if any result is being shown then it should select option from result first
+            	 if (resultsShowing) {
+                     resultSelect(e);
+                 }
+            	 
+	            //checking if user allows to add new option value
+	            if(options.isAddNewOptionVal()) {
+	            	//if user is allowing to add new value then getting and checking for searchField value
+	            	String newItemVal = defaultText.equals(searchField.val()) ? "" : searchField.val().trim();
+	            	newItemVal = SafeHtmlUtils.htmlEscape(newItemVal);
+	            	int results = getResults(newItemVal);
+	            	if(results < 1 && newItemVal != null && !newItemVal.isEmpty()) {
+	                    //If already exist into list, don't add it
+	                    if(!isAlreadyExist(newItemVal)) {
+	                    	addNewItem(newItemVal,newItemVal);
+	                    	searchField.val("");
+	                    }
+	            	}
+            	 }
                 return true;
             case 27: // escape
                 if (resultsShowing) {
@@ -1399,79 +1403,11 @@ public class ChosenImpl {
 
     private void winnowResults() {
 
-        noResultClear();
-
-        int results = 0;
-
-        String searchText = defaultText.equals(searchField.val()) ? "" : searchField.val().trim();
-        searchText = SafeHtmlUtils.htmlEscape(searchText);
-
-        String regexAnchor = options.isSearchContains() ? "" : "^";
-        // escape reg exp special chars
-        String escapedSearchText = regExpChars.replace(searchText, "\\$&");
-        String test2 = "test";
-        test2.substring(1);
-        RegExp regex = RegExp.compile(regexAnchor + escapedSearchText, "i");
-        RegExp zregex = RegExp.compile("(" + escapedSearchText + ")", "i");
-
-        for (int i = 0; i < selectItems.length(); i++) {
-            SelectItem item = selectItems.get(i);
-
-            if (item.isDisabled() || item.isEmpty()) {
-                continue;
-            }
-
-            if (item.isGroup()) {
-                $('#' + item.getDomId()).css("display", "none");
-            } else {
-                OptionItem option = (OptionItem) item;
-
-                if (!(isMultiple && option.isSelected())) {
-                    boolean found = false;
-                    String resultId = option.getDomId();
-                    GQuery result = $("#" + resultId);
-                    String optionContent = option.getHtml();
-
-                    if (regex.test(optionContent)) {
-                        found = true;
-                        results++;
-                    } else if (optionContent.indexOf(" ") >= 0 || optionContent.indexOf("[") == 0) {
-                        String[] parts = optionContent.replaceAll("\\[|\\]", "").split(" ");
-                        for (String part : parts) {
-                            if (regex.test(part)) {
-                                found = true;
-                                results++;
-                            }
-                        }
-                    }
-
-                    if (found) {
-                        String text;
-                        if (searchText.length() > 0) {
-                            text = zregex.replace(optionContent, "<em>$1</em>");
-                        } else {
-                            text = optionContent;
-                        }
-
-                        result.html(text);
-                        resultActivate(result);
-
-                        if (option.getGroupArrayIndex() != -1) {
-                            $("#" + selectItems.get(option.getGroupArrayIndex()).getDomId()).css("display",
-                                    "list-item");
-                        }
-                    } else {
-                        if (resultHighlight != null && resultId.equals(resultHighlight.attr("id"))) {
-                            resultClearHighlight();
-                        }
-                        resultDeactivate(result);
-                    }
-
-                }
-
-            }
-
-        }
+    	noResultClear();
+    	String searchText = defaultText.equals(searchField.val()) ? "" : searchField.val().trim();
+    	searchText = SafeHtmlUtils.htmlEscape(searchText);
+    	
+        int results = getResults(searchText);
 
         if (results < 1 && searchText.length() > 0) {
             noResults(searchText);
@@ -1479,7 +1415,79 @@ public class ChosenImpl {
             winnowResultsSetHighlight();
         }
     }
+    
+    private int getResults(String searchText) {
+    	int results = 0;
+    	
+    	String regexAnchor = options.isSearchContains() ? "" : "^";
+    	// escape reg exp special chars
+    	String escapedSearchText = regExpChars.replace(searchText, "\\$&");
+    	String test2 = "test";
+    	test2.substring(1);
+    	RegExp regex = RegExp.compile(regexAnchor + escapedSearchText, "i");
+    	RegExp zregex = RegExp.compile("(" + escapedSearchText + ")", "i");
 
+    	for (int i = 0; i < selectItems.length(); i++) {
+    		SelectItem item = selectItems.get(i);
+
+    		if (item.isDisabled() || item.isEmpty()) {
+    			continue;
+    		}
+
+    		if (item.isGroup()) {
+    			$('#' + item.getDomId()).css("display", "none");
+    		} else {
+    			OptionItem option = (OptionItem) item;
+
+    			if (!(isMultiple && option.isSelected())) {
+    				boolean found = false;
+    				String resultId = option.getDomId();
+    				GQuery result = $("#" + resultId);
+    				String optionContent = option.getHtml();
+
+    				if (regex.test(optionContent)) {
+    					found = true;
+    					results++;
+    				} else if (optionContent.indexOf(" ") >= 0 || optionContent.indexOf("[") == 0) {
+    					String[] parts = optionContent.replaceAll("\\[|\\]", "").split(" ");
+    					for (String part : parts) {
+    						if (regex.test(part)) {
+    							found = true;
+    							results++;
+    						}
+    					}
+    				}
+
+    				if (found) {
+    					String text;
+    					if (searchText.length() > 0) {
+    						text = zregex.replace(optionContent, "<em>$1</em>");
+    					} else {
+    						text = optionContent;
+    					}
+
+    					result.html(text);
+    					resultActivate(result);
+
+    					if (option.getGroupArrayIndex() != -1) {
+    						$("#" + selectItems.get(option.getGroupArrayIndex()).getDomId()).css("display",
+    								"list-item");
+    					}
+    				} else {
+    					if (resultHighlight != null && resultId.equals(resultHighlight.attr("id"))) {
+    						resultClearHighlight();
+    					}
+    					resultDeactivate(result);
+    				}
+
+    			}
+
+    		}
+
+    	}
+    	return results;
+    }
+    
     private void winnowResultsClear() {
         searchField.val("");
         GQuery lis = searchResults.find("li");
