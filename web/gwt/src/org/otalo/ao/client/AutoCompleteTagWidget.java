@@ -34,6 +34,9 @@ import com.google.gwt.user.client.ui.Label;
  */
 public class AutoCompleteTagWidget extends TagWidget{
 
+	/*
+	 * This is separator for all the selected tags. On server side, value for selectedTags is splitted using this.
+	 */
 	public static final String TAG_SEPERATOR = "##";
 	private Hidden selectedTags;
 	private MessageForum mf;
@@ -47,6 +50,7 @@ public class AutoCompleteTagWidget extends TagWidget{
 		options.setSingleBackstrokeDelete(true);
 		options.setHideNoResult(true);
 		options.setAddNewOptionVal(true);
+		options.setSearchContains(true);
 
 		tagInput = new ChosenListBox(true, options);
 		tagInput.setWidth("390px");

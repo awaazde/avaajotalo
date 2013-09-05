@@ -159,8 +159,7 @@ public class AOTagWidget extends TagWidget {
 		tagsChanged.setValue("0");
 		 
 	}
-
-	@Override
+	
 	public void setSelectedTagData() {
 		//nothing to do here
 	}
