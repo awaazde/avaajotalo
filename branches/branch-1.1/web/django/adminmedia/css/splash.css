@@ -1,0 +1,91 @@
+#main
+{
+	background:url('../img/splash.jpg');
+	background-repeat:no-repeat;
+	width:1024px;
+	height:768px;
+	margin:auto;
+	position: relative;
+}
+body
+{
+	background:#BFEAFB;
+}
+#signup
+{
+	position:relative;
+	left:70px;
+	top:130px;
+	width:180px;
+	background:#F26422;
+	-moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+	border:1px dashed black;
+	height:310px;
+}
+#signup-form
+{
+	line-height:16px;
+	color:white;
+	font-size:15px;
+	font-family:"bodoni MT";
+	
+}
+#form-title
+{
+	font-size:17px;
+	padding-bottom:3px;
+	padding-left:15px;
+	padding-top:17px;
+}
+#signup-form label
+{
+	padding-left:20px;
+	margin-top: 8px;
+	margin-bottom: 0px;
+}
+#signup-form input
+{
+	margin-bottom:6px;
+	margin-left:20px;
+}
+#signup-form button
+{
+	margin-bottom:6px;
+	margin-left:50px;
+	margin-top:10px;
+}
+
+#about
+{
+	font-family:"bodoni MT";
+	font-size:12px;
+	position: absolute;
+	top: 280px;
+	left: 45px;
+	color: white;
+}
+
+#logo-link 
+{ 
+		position: absolute; 
+		top: 30px; 
+		left: 300px; 
+		width: 600px; 
+		height: 280px; 
+		background-color: transparent; 
+}
+
+#thankyou
+{
+	line-height:16px;
+	color:white;
+	font-family:"bodoni MT";
+	font-size:17px;
+	padding-bottom:3px;
+	padding-left:30px;
+	padding-right:20px;
+	padding-top:80px;
+	height:50px;
+}
