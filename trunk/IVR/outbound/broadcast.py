@@ -405,7 +405,7 @@ def schedule_bcasts(time=None, dialers=None):
                     continue
                 priority = latest_call.priority + 1
             
-            call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix, subject=subject, date=bcasttime, priority=priority)
+            call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix, machine_id=dialer.machine_id, subject=subject, date=bcasttime, priority=priority)
             print('Scheduled call '+ str(call))
             
 '''

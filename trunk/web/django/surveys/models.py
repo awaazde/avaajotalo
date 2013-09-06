@@ -27,9 +27,9 @@ class Subject(models.Model):
     
     def __unicode__(self):
         if self.name:
-            return self.name + '-' + self.number + '-g' + str(self.group)
+            return self.name + '-' + self.number
         else:
-            return self.number+ '-g' + str(self.group)
+            return self.number
     
 class Survey(models.Model):
     name = models.CharField(max_length=128)
@@ -102,10 +102,10 @@ class Survey(models.Model):
     '''
     '    Next-gen outbound dialing support
     '    Associating a survey with a registered dialer(s)
-    '    will let a batch scheduler dynamically schedule
-    '    calls for all surveys associated with that dialing
-    '    resource with a given scheduling algorithm. Here,
-    '    dynamic means at the actual time the survey should blast
+    '    let's an inbound survey have dialing resources to do
+    '    call back on a missed call. Since we schedule outbound
+    '    broadcasts by finding surveys from dialers themselves,
+    '    this collection isn't useful for outbound calling
     ''' 
     dialers = models.ManyToManyField('ao.Dialer', blank=True, null=True)
     '''
@@ -128,12 +128,6 @@ class Survey(models.Model):
             self.save()
         
         return self.status
-    
-    def __unicode__(self):
-        if self.name:
-            return self.name
-        else:
-            return str(self.id)
     
     def deepcopy(self, newname, value=None, field=None, duplicate_order=None):
         """
@@ -189,6 +183,12 @@ class Survey(models.Model):
                     root_obj = obj
         setattr(root_obj, 'name', newname)
         return root_obj
+        
+    def __unicode__(self):
+        if self.name:
+            return self.name
+        else:
+            return str(self.id)
     
 class Call(models.Model):
     subject = models.ForeignKey(Subject)
@@ -205,6 +205,30 @@ class Call(models.Model):
     dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
     
     duration = models.IntegerField(blank=True, null=True)
+    
+    '''
+    '****************************************************************************************************
+    '    Support for multi-tenancy telephony servers. Before this field was added, we assumed a single
+    '    telephony server would be making all outbound calls. So when a dialer created a call with prefix
+    '    freetdm/grp3/a/XXX, there was no ambiguity about the PRI line that is to make the call.
+    '    But if multiple servers are hooked up to the db, both may have grp3 and so both may try to make the
+    '    call. To address this we can identify machines by their machine_id. MACHINE_ID is set on the machine
+    '    in survey.lua, so the call's ID must correspond.
+    '    
+    '    This field is passed in here in the call from the dialer that is to be making the call. We associate
+    '    Dialers with machines, and dialers will pass on the machine identification to the call at call creation
+    '    (see broadcast.py:schedule_calls
+    '
+    '    Now there are three redundant fields between dialers and calls: dialstring_prefix, suffix, and machine_id
+    '    Could consider passing a dialer as a foreign key to Call, but that would mean an extra db lookup on each call
+    '    in survey.lua. So cache it for now, if the fields pile up further we can make a change.
+    '
+    '    In many setups, multi-tenant telephony servers won't be needed, so make this a nullable field
+    '''
+    machine_id = models.IntegerField(blank=True, null=True)
+    '''
+    ****************************************************************************************************
+    '''
     
     def __unicode__(self):
         return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
