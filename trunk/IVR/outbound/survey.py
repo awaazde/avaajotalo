@@ -20,11 +20,6 @@ from otalo.surveys.models import Call, Subject
 # with the longerusername monkey patch added (not sure what the problem is)
 from django.contrib.admin import actions
 
-'''
-'    For multi-server dialing setups. If you don't have multiple
-'    servers making calls, you don't need to change this
-'''
-MACHINE_ID = None
 # This should match with how often the cron runs
 INTERVAL_MINS = 1
 IVR_SCRIPT = 'AO/outbound/survey.lua'
