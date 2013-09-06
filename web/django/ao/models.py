@@ -477,8 +477,10 @@ class Dialer(models.Model):
     '    Now there are two redundant fields between dialers and calls: dialstring_prefix, suffix, and machine_id
     '    Could consider passing a dialer as a foreign key to Call, but that would mean an extra db lookup on each call
     '    in survey.lua. So cache it for now, if the fields pile up further we can make a change.
+    '
+    '    In many setups, multi-tenant telephony servers won't be needed, so make this a nullable field
     '''
-    #machine_id = models.IntegerField()
+    machine_id = models.IntegerField(blank=True, null=True)
     '''
     ****************************************************************************************************
     '''
