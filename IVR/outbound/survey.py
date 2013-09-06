@@ -15,6 +15,7 @@
 #===============================================================================
 import router
 from datetime import datetime, timedelta
+from django.conf import settings
 from otalo.surveys.models import Call, Subject
 # import added below to avoid this script failing
 # with the longerusername monkey patch added (not sure what the problem is)
@@ -33,7 +34,7 @@ def make_calls():
      now = datetime.now()
  
      # get calls in the last INTERVAL
-     calls = Call.objects.filter(complete=False, date__gte=now-interval, date__lt=now, machine_id=MACHINE_ID).order_by('priority')
+     calls = Call.objects.filter(complete=False, date__gte=now-interval, date__lt=now, machine_id=settings.MACHINE_ID).order_by('priority')
      for call in calls:
          # The way it works with backups: If we encounter a call scheduled for this run for this
          # subject, only use it if the first priority call time(s) up until this point were not
@@ -43,8 +44,8 @@ def make_calls():
              call_ids.append(call.id)
          else:
              # only make a P2 call if there have been unfullfilled P1s for this survey
-             past_p1_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, priority=1, date__lt=now-interval, machine_id=MACHINE_ID).count()
-             past_complete_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, date__lt=now-interval, complete=True, machine_id=MACHINE_ID).count()
+             past_p1_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, priority=1, date__lt=now-interval, machine_id=settings.MACHINE_ID).count()
+             past_complete_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, date__lt=now-interval, complete=True, machine_id=settings.MACHINE_ID).count()
              if past_p1_cnt > past_complete_cnt:
                  call_ids.append(call.id)      
      
