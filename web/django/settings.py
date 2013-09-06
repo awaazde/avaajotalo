@@ -156,3 +156,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REPORTS_ROOT = '/Users/neil/Documents/'
+'''
+'    For multi-server dialing setups. If you don't have multiple
+'    servers making calls, you don't need to change this
+'''
+MACHINE_ID = None
