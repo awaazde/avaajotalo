@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Forum.ForumStatus;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.http.client.Request;
@@ -88,7 +87,9 @@ public final class JSONRequest {
 		public static final String POSTS_ALL = "all";
 		public static final String POSTS_RESPONSES = "responses";
 		
+		@Deprecated
 		public static final String TAG_TYPE_CROP = "agri-crop";
+		@Deprecated
 		public static final String TAG_TYPE_TOPIC = "agri-topic";
 		
 		public static final String MSG_METADATA = "MESSAGE_METADATA";
