@@ -154,6 +154,28 @@ def create_blank(num, prefix, suffix):
         blank_opt.save()
         
         return s
+    
+def create_template(line, title, pre, post):
+    name = title
+    
+    s = Survey.objects.filter(name=name)
+    if not bool(s):
+        s = Survey(name=name, complete_after=0, number=line.outbound_number or line.number, template=True)
+        print ("adding template " + str(s))
+        s.save()
+    
+        # pre
+        welcome = Prompt.objects.create(file=language+"/pre"+SOUND_EXT, order=1, bargein=True, survey=s)
+        welcome_opt1 = Option.objects.create(number="", action=Option.NEXT, prompt=welcome)
+        welcome_opt9 = Option.objects.create(number="9", action=Option.NEXT, prompt=welcome)
+        
+        # post
+        thanks = Prompt.objects.create(file=language+"/post"+SOUND_EXT, order=3, bargein=False, survey=s)
+        thanks_opt1 = Option.objects.create(number="", action=Option.NEXT, prompt=thanks)
+        
+        return s
+    else:
+        return s[0]
 
 '''
 ****************************************************************************
@@ -537,16 +559,9 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
                         if u.balance == -1:
                             treatment = 'Yes'
                     mf = Message_forum.objects.get(message__content_file=fname)
-                    crop=''
-                    topic=''
-                    if mf.tags.filter(type='agri-crop'):
-                        crop = mf.tags.get(type='agri-crop')
-                        crop = crop.tag
-                    if mf.tags.filter(type='agri-topic'):
-                        topic = mf.tags.get(type='agri-topic')
-                        topic = topic.tag
+                    tags = [t.tag for t in mf.tags.all()]
                     dur = (current_date-listenstart).seconds
-                    all_calls.append([uid,treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),crop,topic,str(mf.message.date),str(dur)])
+                    all_calls.append([uid,treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),str(mf.message.date),str(dur)]+tags)
                     
                     open_calls[phone_num] = False
                 
@@ -564,7 +579,7 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
             #print("PhoneNumException: " + line)
             continue
     
-    header = ['UserId','Treatment?','SessId','ListenTime','Name','ForumId','MessageForumId','MessageCrop','MessageTopic','MessageDate','ListenDuration(s)']
+    header = ['UserId','Treatment?','SessId','ListenTime','Name','ForumId','MessageForumId','MessageDate','ListenDuration(s)','Tags']
     if date_start:
         outfilename='listens_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -744,7 +759,7 @@ def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_
     if date_end:
         msgs = msgs.filter(message__date__lt=date_end)
         
-    header = ['phone num','message time','forum','crop','topic']    
+    header = ['phone num','message time','forum','tags']    
     if date_start:
         outfilename='message_topics_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -753,15 +768,9 @@ def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
     for mf in msgs:
-        crop = ''
-        topic = ''
-        for t in mf.tags.all():
-            if t.type == 'agri-crop':
-                crop = t.tag
-            elif t.type == 'agri-topic':
-                topic = t.tag
+        tags = [t.tag for t in mf.tags.all()]
                 
-        output.writerow([mf.message.user.number, time_str(mf.message.date), mf.forum.name, crop, topic])
+        output.writerow([mf.message.user.number, time_str(mf.message.date), mf.forum.name]+tags)
     
 def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=False):
     # Get CMF minutes used
