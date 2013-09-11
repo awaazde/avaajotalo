@@ -210,7 +210,6 @@ class Forum(models.Model):
     
 class Tag(models.Model):
     tag = models.CharField(max_length=256)
-    type = models.CharField(max_length=24, blank=True, null=True)
     tag_file = models.CharField(max_length=24, blank=True, null=True)
     
     def __unicode__(self):
