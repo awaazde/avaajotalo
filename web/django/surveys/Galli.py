@@ -594,68 +594,8 @@ def main():
                 end = datetime.strptime(sys.argv[4], "%m-%d-%Y")
                 
         messages(line, date_start=start, date_end=end, outputdir=OUTPUT_FILE_DIR)
-    elif '--add_tags' in sys.argv:
-        forumids = sys.argv[2]
-        forumids = forumids.split(',')
-        forumids = [id.strip() for id in forumids]
-        forums = Forum.objects.filter(pk__in=forumids)
-        
-        tags = sys.argv[3]
-        tags = tags.split(',')
-        tags = [t.strip() for t in tags]
-        
-        for tag in tags:
-            code = tag[:tag.find('-')+1]
-            tags = Tag.objects.filter(tag__startswith=code, forum__in=forums)
-            if not bool(tags):
-                tag1 = Tag.objects.create(tag=tag, type='agri-crop')
-                tag2 = Tag.objects.create(tag=tag, type='agri-topic')
-            else:
-                tag1 = tags.filter(type='agri-crop')[0]
-                tag2 = tags.filter(type='agri-topic')[0]
-                # update the name
-                tags.update(tag=tag)
-            
-            for f in forums:
-                fts = Forum_tag.objects.filter(forum=f, tag=tag1)
-                if not bool(fts):
-                    Forum_tag.objects.create(forum=f, tag=tag1)
-                    Forum_tag.objects.create(forum=f, tag=tag2)
-                    print("adding "+str(tag1)+" to "+str(f))
-                
     elif '--main' in sys.argv:
-        f1 = Forum.objects.get(pk=360)
-        f2 = Forum.objects.get(pk=361)
-        tags = '1-Training Feedback,1.1-Aww feedback  hygiene training,1.2-Supervisor feedback hygiene training,1.3-Aww feedback  Nutrition training,1.4-Supervisor feedback Nutrition training,2-Songs & episodes,2.1-Hyg song,2.1(a)-Jaag ,2.1 (b)-Safai main bhi hai masti,2.1 (c)-Dholo haath,2.1 (d)-Dhanyawad Shukriya Thank you,2.2-Hyg Episode,2.2 (a)-Saaf Sundari,2.2 (b)-Kitanu Raja,2.3 (c)-Shikki Shikki,2.3-Nut Song,2.4-Nut Episode,3-Print material,3.1-Hand washing cards,3.2-Hygiene Cut outs,3.3-Hyg story book,3.4-Hyg kit feedback ,3.5-Hyg parent material,3.6-Hyg Flash cards,3.7-Food flash cards,3.8-Nut Board game,3.9-Nut Story books ,3.1-Nut Parent material,3.11-Thali,3.12-Nut kit feedback ,4-Questions & Suggestions,4.1-Supervisor- Question & Suggestion,4.2-Anganwadi worker- Question & Suggestion,5-Interaction,5.1- Song/ children,5.2-Material/ children,5.3-Ques & Ans/ children,5.4-Parent talking,6-Child Speaking,7-Enrollment,8-Blank calls,9-Test calls,10-Hyg general,11-Nut general'
-        tags = tags.split(',')
-        for tag in tags:
-            tag1 = Tag.objects.filter(tag=tag)
-            if not bool(tag1):
-                tag1 = Tag.objects.create(tag=tag, type='agri-crop')
-                tag2 = Tag.objects.create(tag=tag, type='agri-topic')
-                
-                Forum_tag.objects.create(forum=f1, tag=tag1)
-                Forum_tag.objects.create(forum=f1, tag=tag2)
-                print("adding "+str(tag1)+" to "+str(f1))
-                Forum_tag.objects.create(forum=f2, tag=tag1)
-                Forum_tag.objects.create(forum=f2, tag=tag2)
-                print("adding "+str(tag1)+" to "+str(f2))
-                
-#        old_names = 'PMQ_H&H_230213,CMQ_H&H_20313,PMQ_H&H_90313,CMQ_H&H_160313,CMQ_H&H_230313,PMQ_H&H_300313,CMQ_H&H_60413,PMQ_H&H_130413,CMQ_H&H_200413,CMQ_H&H_270413,PMQ_H&H_110513'
-#        old_names = old_names.split(',')
-#        new_names = 'PMQ_H&H_20313,CMQ_H&H_90313,PMQ_H&H_160313,CMQ_H&H_230313,CMQ_H&H_300313,PMQ_H&H_60413,CMQ_H&H_130413,PMQ_H&H_200413,CMQ_H&H_270413,CMQ_H&H_40513,CMQ_H&H_110513'
-#        new_names = new_names.split(',')
-#        
-#        for i in range(len(old_names)):
-#            s = Survey.objects.filter(number='7967776066', name=old_names[i])
-#            if bool(s):
-#                s = s[0]
-#                new_name = new_names[i]
-#                print('changing name of '+str(s)+' to '+new_name)
-#                s.name = new_name
-#                s.save()
-#            else:
-#                print(old_names[i]+' survey not found')
+        print('NONE')
             
     else:
         print("Command not found.")
