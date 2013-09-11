@@ -88,7 +88,7 @@ public class MessageDetail extends Composite {
   	detailsTable = new FlexTable();
   	metadata = new VerticalPanel();
   	metadata.setHeight("100%");
-  	tags = new AOTagWidget();
+  	tags = new AutoCompleteTagWidget();
   	routing = new AORoutingWidget();
   	metadata.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
   	metadata.add(tags);
@@ -145,6 +145,8 @@ public class MessageDetail extends Composite {
   	
   	saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
+    	//calling setSelectedTagData so that selected tags can be collected and set as value to selectedTags input.
+    	tags.setSelectedTagData();
       	setClickedButton(saveButton);
       	detailsForm.setAction(JSONRequest.BASE_URL + AoAPI.UPDATE_MESSAGE);
         detailsForm.submit();
