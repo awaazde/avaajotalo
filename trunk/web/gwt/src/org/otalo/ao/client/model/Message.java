@@ -73,7 +73,7 @@ public class Message extends BaseModel {
 	{
 //	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //	return format.parse(dateStr);
-		return getObject("fields").get("content_file");
+		return getObject("fields").get("file");
 	}
 	
 	public String getRgt()

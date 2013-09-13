@@ -25,11 +25,12 @@ from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
 from django.core import serializers
+from django.core.files import File
 from django.conf import settings
 from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
-import alerts, broadcast
+import broadcast
 import otalo_utils, stats_by_phone_num
 
 # Only keep these around as legacy
@@ -54,7 +55,6 @@ MEMBER_CREDITS_EXCEEDED = "4"
 INVALID_DATE = "5"
 INVALID_GROUP_SETTING = "6"
 INVALID_FILE_FORMAT = "7"
-INVALID_SUMMARY_FILE_FORMAT = "8"
 
 
 #Tags related constants
@@ -106,7 +106,7 @@ def group(request):
     if 'forums' in params:
         excludes=('members','messages','tags','responders')
     else:
-        relations={'forums':{'relations':{'responders':{'excludes':('name','balance','district','taluka','village','allowed','email','tags','name_file','balance_last_updated','taluka_file','village_file','district_file','indirect_bcasts_allowed')}}, 'excludes':('members','messages','tags',)}}
+        relations={'forums':{'relations':{'responders':{'excludes':('name','balance','district','taluka','village','allowed','email','tags','name_file','balance_last_updated','indirect_bcasts_allowed')}}, 'excludes':('members','messages','tags',)}}
         
     return send_response(groups, relations=relations, excludes=excludes )
 
@@ -369,16 +369,6 @@ def uploadmessage(request):
             response['Cache-Control'] = "no-cache, must-revalidate"
             return response
         
-        summary = False
-        if 'summary' in request.FILES:
-            summary = request.FILES['summary']
-            extension = summary.name[summary.name.index('.'):]
-            if extension != '.mp3':
-                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_SUMMARY_FILE_FORMAT+', "message":"mp3 format required"}]')
-                response['Pragma'] = "no cache"
-                response['Cache-Control'] = "no-cache, must-revalidate"
-                return response
-        
         if 'number' in params:
             number = params['number'].strip()
             author = User.objects.filter(number=number)
@@ -424,7 +414,7 @@ def uploadmessage(request):
                 min = int(params['min'])
                 date = datetime(year=date.year,month=date.month,day=date.day,hour=hour,minute=min)
                 
-        m = createmessage(request, f, main, author, summary, parent, date)
+        m = createmessage(request, f, main, author, parent, date)
 
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
     else:
@@ -432,33 +422,17 @@ def uploadmessage(request):
         response['Pragma'] = "no cache"
         response['Cache-Control'] = "no-cache, must-revalidate"
         return response
-
-def createmessage(request, forum, content, author, summary=False, parent=False, date=None):
+                
+def createmessage(request, forum, content, author, parent=None, date=None):
     t = datetime.now()
-    summary_filename = ''
 
     extension = content.name[content.name.index('.'):]
     filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + extension
-    filename_abs = settings.MEDIA_ROOT + '/' + filename
-    destination = open(filename_abs, 'wb')
-    for chunk in content.chunks():
-        destination.write(chunk)
-    os.chmod(filename_abs, 0644)
-    destination.close()
-
-    if summary:
-        extension = summary.name[summary.name.index('.'):]
-        summary_filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + '_summary' + extension
-        summary_filename_abs = settings.MEDIA_ROOT + '/' + summary_filename
-        destination = open(summary_filename_abs, 'wb')
-        for chunk in summary.chunks():
-            destination.write(chunk)
-        os.chmod(summary_filename_abs, 0644)
-        destination.close()
-
+    content.name = filename
+    
     pos = None
-    msg = Message(date=date or t, content_file=filename, summary_file=summary_filename, user=author)
-    msg.save()
+    msg = Message.objects.create(date=date or t, file=content, user=author)
+    
     if bool(Admin.objects.filter(user=author,forum=forum)):
         status = Message_forum.STATUS_APPROVED
         if not parent:
@@ -474,7 +448,7 @@ def createmessage(request, forum, content, author, summary=False, parent=False, 
     if parent:
         add_child(msg, parent.message)
         if msg_forum.status == Message_forum.STATUS_APPROVED and msg_forum.forum.response_calls:
-            alerts.answer_call(forum.line_set.all()[0], msg_forum)
+            broadcast.answer_call(forum.line_set.all()[0], msg_forum)
 
     return msg_forum
 
@@ -506,11 +480,11 @@ def updatestatus(request, action):
         else:
             '''
             '    Deliberately not checking if response call has already been created
-            '    (not Prompt.objects.filter(file__contains=m.message.content_file)
+            '    (not Prompt.objects.filter(file__contains=m.message.file.name)
             '    to allow moderator to re-send response call by rejecting and re-approving msg
             '''
             if m.forum.response_calls:
-                alerts.answer_call(m.forum.line_set.all()[0], m)
+                broadcast.answer_call(m.forum.line_set.all()[0], m)
             
             
     elif action == 'reject' and current_status != Message_forum.STATUS_REJECTED: # newly rejecting
@@ -844,12 +818,11 @@ def add_child(child, parent):
 def download(request, model, model_id):
     if model == 'mf':
         mf = get_object_or_404(Message_forum, pk=model_id)
-        fname = mf.message.content_file
+        fname = mf.message.file.path
     elif model == 'si':
         input = get_object_or_404(Input, pk=model_id)
-        fname = input.input
+        fname = settings.MEDIA_ROOT + '/' + input.input
     
-    fname = settings.MEDIA_ROOT + '/' + fname
     return send_file(fname,'application/octet-stream')
 
 def sms(request, line_id):
