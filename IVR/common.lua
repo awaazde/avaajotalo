@@ -189,36 +189,8 @@ end
 -- playcontent
 -----------
 
-function playcontent (summary, content)
+function playcontent (content)
    local d;
-   
-   if (summary ~= nil and summary ~= "") then
-      arg[1] = sd .. summary;
-      logfile:write(sessid, "\t",
-		    caller, "\t", destination, "\t",
-		    os.time(), "\t", "Stream", "\t", arg[1], "\n");
-      session:streamFile(sd .. summary);
-      sleep(1000);
-      
-      d = input();
-      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
-	 return d;
-      end
-   
-      read(aosd .. "morecontent.wav", 2000);
-      d = input();
-      if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
-	 return d;
-      elseif (d ~= "1") then
-	 return GLOBAL_MENU_NEXT;
-      else
-	 read(aosd .. "okcontent.wav", 500);
-	 d = input();
-	 if (d == GLOBAL_MENU_MAINMENU or d == GLOBAL_MENU_SKIP_BACK or d == GLOBAL_MENU_SKIP_FWD or d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
-	    return d;
-	 end
-      end
-   end
    
    arg[1] = sd .. content;
    logfile:write(sessid, "\t",
@@ -258,8 +230,9 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local maxlength = maxlength; -- mandatory field, so no default
    local rgt = rgt or 1;
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
+   local mediasubdir = get_media_subdir();
    -- add caller digits to prevent name collisions
-   local partfilename = os.time() .. caller:sub(caller:len()-1) .. ".mp3";
+   local partfilename = mediasubdir..os.time() .. caller:sub(caller:len()-1) .. ".mp3";
    local filename = sd .. partfilename;
 
    repeat
@@ -304,7 +277,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
 	  end
    until (d == "1");
    
-   query1 = "INSERT INTO ao_message (user_id, content_file, date";
+   query1 = "INSERT INTO ao_message (user_id, file, date";
    query2 = " VALUES ("..userid..",'"..partfilename.."',".."now()";
    
    if (thread ~= nil) then -- this is a response
@@ -470,6 +443,40 @@ function get_available_line(api, prefixes, maxparallels)
 	return prefixes[1]
 end
 
+--[[
+-------------------------------------------
+------- get_media_subdir ------------------
+-------------------------------------------
+
+	Returns the prefix for a media file.
+	Currently media files are stored by
+	date, so return the current year/month/day/
+-------------------------------------------
+--]]
+function get_media_subdir()
+	d = os.date('*t');
+	year = d.year;
+	month = d.month;
+	day = d.day;
+	
+	if month < 10 then
+		month = '0'..month;
+	end
+	
+	if day < 10 then
+		day = '0'..day;
+	end
+	
+	local subdir = year..'/'..month..'/'..day..'/';
+	
+	-- create it if it doesn't already exist
+	if io.open(sd .. subdir,"rb") == nil then
+		os.execute("mkdir "..sd..subdir);
+	end
+	
+	return subdir;
+end
+
 --[[ 
 **********************************************************
 ********* BEGIN COMMON RESPONDER FUNCTIONS
@@ -509,7 +516,7 @@ end
 -----------
 
 function get_responder_messages (userid)
-   local query = "SELECT message.id, message.content_file, message.summary_file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id, forum.max_responder_len ";
+   local query = "SELECT message.id, message.file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id, forum.max_responder_len ";
    query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_message_responder message_responder, ao_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND forum.id = message_forum.forum_id ";
@@ -622,9 +629,8 @@ end
 function play_responder_message (msg)
   local id = msg[1];
   local content = msg[2];
-  local summary = msg[3];
 
-  d = playcontent(summary, content);
+  d = playcontent(content);
   
   -- remind about the options, and
   -- give some time for users to compose themselves and
@@ -1103,7 +1109,8 @@ end
 function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    local maxlength = maxlength or 90;
    -- add callid digits to prevent name collisions
-   local partfilename = os.time() .. callid:sub(callid:len()-1) .. ".mp3";
+   local mediasubdir = get_media_subdir();
+   local partfilename = mediasubdir..os.time() .. callid:sub(callid:len()-1) .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
    local confirm = confirm or 1;
@@ -1196,7 +1203,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
        con:execute(query);
        freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")
        
-       query = "INSERT INTO ao_message (user_id, content_file, date, thread_id, lft, rgt)";
+       query = "INSERT INTO ao_message (user_id, file, date, thread_id, lft, rgt)";
 	   query = query .. " VALUES ("..userid..",'"..partfilename.."',".."now(),'" .. thread .. "','" .. rgt .. "','" .. rgt+1 .. "')";
 	   con:execute(query);
 	   freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n")

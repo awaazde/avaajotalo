@@ -34,6 +34,9 @@ DEF_INTERVAL_MINS = 5
 # mins before sending a backup call
 BACKUP_THRESH_MINS = 30
 
+# should match the interval of the cron running this script
+ANSWER_CALL_INTERVAL_HOURS = 1
+
 def subjects_by_numbers(numbers):
     subjects = []
     
@@ -99,40 +102,6 @@ def subjects_by_log(line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
             subjects.append(s[0])
     
     return subjects
-
-def single(file, line):
-    # save the file
-    now = datetime.now()
-    extension = file.name[file.name.index('.'):]
-    filename = now.strftime("%m-%d-%Y_%H%M%S") + extension
-    filename_abs = settings.MEDIA_ROOT + '/' + filename
-    destination = open(filename_abs, 'wb')
-    #TODO: test to see that this overwrites an existing file with that name
-    for file in file.chunks():
-        destination.write(chunk)
-    os.chmod(filename_abs, 0644)
-    destination.close()
-    name = 'Single_' + filename
-    
-    return create_bcast_survey(line, [filename_abs], name)
-
-def forum(forum, line, since=None):
-    now = datetime.now()
-    today = datetime(year=now.year, month=now.month, day=now.day)
-        
-    if since:
-        since = datetime.strptime(sys.argv[3], "%m-%d-%Y")
-    else:
-        since = today
-            
-    messages = Message_forum.objects.filter(forum=forum, message__date__gte=since, status=Message_forum.STATUS_APPROVED).order_by('-message__date')
-    if messages:
-        filenames = []
-        for msg in messages:
-            filenames.append(settings.MEDIA_ROOT+ '/' + msg.message.content_file)
-        
-        name = 'Forum_' + forum.name + '_' + str(today)
-        return create_bcast_survey(line, filenames, name)
 
 def create_bcast_survey(line, filenames, surveyname):
     prefix = line.dialstring_prefix
@@ -231,7 +200,7 @@ def thread(messageforum, template, responseprompt, num_backups, start_date, bcas
     
     #fill in the missing prompt with the given thread
     order = thread_start
-    origpost = Prompt(file=settings.MEDIA_ROOT + '/' + messageforum.message.content_file, order=order, bargein=True, survey=bcast)
+    origpost = Prompt(file=messageforum.message.file.path, order=order, bargein=True, survey=bcast)
     origpost.save()
     origpost_opt = Option(number="1", action=Option.NEXT, prompt=origpost)
     origpost_opt.save()
@@ -252,7 +221,7 @@ def thread(messageforum, template, responseprompt, num_backups, start_date, bcas
         responseintro_opt2.save()
         order += 1
         
-        responsecontent = Prompt(file=settings.MEDIA_ROOT + '/' + response.message.content_file, order=order, bargein=True, survey=bcast)
+        responsecontent = Prompt(file=response.message.file.path, order=order, bargein=True, survey=bcast)
         responsecontent.save()
         responsecontent_opt = Option(number="1", action=Option.NEXT, prompt=responsecontent)
         responsecontent_opt.save()
@@ -407,6 +376,80 @@ def schedule_bcasts(time=None, dialers=None):
             
             call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix, machine_id=dialer.machine_id, subject=subject, date=bcasttime, priority=priority)
             print('Scheduled call '+ str(call))
+
+'''
+****************************************************************************
+************************** ANSWER_CALL RELATED *****************************
+****************************************************************************
+'''
+def check_unsent_responses():
+    interval = timedelta(hours=ANSWER_CALL_INTERVAL_HOURS)
+    now = datetime.now()
+    # Get responses in the last INTERVAL_HOURS
+    responses = Message_forum.objects.filter(message__lft__gt=1, message__date__gte=now-interval, status=Message_forum.STATUS_APPROVED)
+    for response in responses:
+        if not Prompt.objects.filter(file__contains=response.message.file.name):
+            answer_call(response.forum.line_set.all()[0], response)
+
+def answer_call(line, answer):
+    # get the immediate parent of this message
+    fullthread = Message.objects.filter(Q(thread=answer.message.thread) | Q(pk=answer.message.thread.pk))
+    ancestors = fullthread.filter(lft__lt=answer.message.lft, rgt__gt=answer.message.rgt).order_by('-lft')
+    parent = ancestors[0]
+
+    asker = Subject.objects.filter(number=parent.user.number)
+    if not bool(asker):
+        asker = Subject.objects.create(name=parent.user.name, number=parent.user.number)
+    else:
+        asker = asker[0]
+        
+    now = datetime.now()
+    num = line.outbound_number or line.number
+        
+    s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now, backup_calls=1)
+    s.subjects.add(asker)
+    #print ("adding announcement survey " + str(s))
+    order = 1
+    
+    # welcome
+    welcome = Prompt.objects.create(file=line.language+"/welcome_responsecall.wav", order=order, bargein=True, survey=s)
+    welcome_opt = Option.objects.create(number="", action=Option.NEXT, prompt=welcome)
+    welcome_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=welcome)
+    order += 1
+    
+    original = Prompt.objects.create(file=parent.file.path, order=order, bargein=True, survey=s)
+    original_opt = Option.objects.create(number="", action=Option.NEXT, prompt=original)
+    original_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=original)
+    order += 1
+    
+    response = Prompt.objects.create(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
+    response_opt = Option.objects.create(number="", action=Option.NEXT, prompt=response)
+    response_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=response)
+    order += 1
+        
+
+    a = Prompt.objects.create(file=answer.message.file.path, order=order, bargein=True, survey=s)
+    a_opt = Option.objects.create(number="", action=Option.NEXT, prompt=a)
+    a_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=a)
+    order += 1
+    
+    if answer.forum.respondtoresponse_allowed:
+        record = Prompt.objects.create(file=line.language+"/record_responsecall.wav", order=order, bargein=True, survey=s, delay=3000)
+        record_opt = Option.objects.create(number="", action=Option.GOTO, prompt=record)
+        param = Param.objects.create(option=record_opt, name=Param.IDX, value=order+2)
+        record_opt2 = Option.objects.create(number="1", action=Option.RECORD, prompt=record)
+        param2 = Param.objects.create(option=record_opt2, name=Param.MFID, value=answer.id)
+        param3 = Param.objects.create(option=record_opt2, name=Param.ONCANCEL, value=order+2)
+        order += 1
+        
+        recordthanks = Prompt.objects.create(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s, delay=0)
+        recordthanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=recordthanks)
+        order += 1
+    
+    # thanks
+    thanks = Prompt.objects.create(file=line.language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
+    thanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=thanks)
+    order += 1
             
 '''
 ****************************************************************************
@@ -485,49 +528,9 @@ if __name__=="__main__":
         numbers = [num.strip() for num in numbers]
         dialers = Dialer.objects.filter(base_number__in=numbers)
         schedule_bcasts(dialers=dialers)
-    elif "--gws_dialers" in sys.argv:
-        authid = sys.argv[2]
-        pri_dialer = Dialer.objects.get(pk=int(sys.argv[3]))
-        print("PRI Dialer: " + str(pri_dialer))
-        lines = Line.objects.filter(forums__admin__auth_user__pk=int(authid))
-        
-        for l in lines:
-            #print('line '+str(l))
-            if 'freetdm' in l.dialstring_prefix:
-                l.dialers.add(pri_dialer)
-                print("Adding PRI dialer to line "+ str(l))
-            else:
-                d = Dialer.objects.filter(dialstring_prefix=l.dialstring_prefix)
-                if bool(d):
-                    d = d[0]
-                    print("Found VoIP dialer "+str(d)+" for line "+str(l))
-                else:
-                    d = Dialer.objects.create(base_number=pri_dialer.base_number, type=Dialer.TYPE_VOIP, max_nums=pri_dialer.max_nums, max_parallel_out=9999, max_parallel_in=9999, interval_mins=Dialer.MIN_INTERVAL_MINS, dialstring_prefix=l.dialstring_prefix)                
-                    print("Created VoIP dialer "+str(d)+" for line "+str(l))
-                    
-                l.dialers.add(d)     
-        
-    elif "--main" in sys.argv:
-        bases = {1:'7961907700', 2:'7967776000', 3:'7967775500', 5:'7961555000', 6:'7967776100', 7:'7967776200', 8:'7930118999'}
-        #bases = {2:'7930142000'}
-        dialers=[]
-        
-        for slot,base in bases.iteritems():
-            d = Dialer.objects.create(base_number=base, type=Dialer.TYPE_PRI, max_parallel_out=25, max_parallel_in=30, max_nums=100, interval_mins=DEF_INTERVAL_MINS, dialstring_prefix='freetdm/grp'+str(slot)+'/a/0')
-            print("Created dialer "+ str(d))
-            dialers.append(d)
-        
-        lines = {1:['61907700', '61907707', '61907711', '61907788', '61907754', '61907755', '61907744'], 2:['67776000', '67776066'], 6:['67776177'], 7:['67776222']}
-        #lines = {2: ['30142000', '30142011']}
-        for slot,nums in lines.iteritems():
-            d = Dialer.objects.filter(dialstring_prefix__contains='grp'+str(slot))[0]
-            for num in nums:
-                lines = Line.objects.filter(number__contains=num)
-                if bool(lines):
-                    for l in lines: 
-                        l.dialers.add(d)
-                        print ("added dialer "+str(d) + " to line " + str(l))
-                else:
-                    print("line not found: "+str(num))
+    elif "--answer_calls" in sys.argv: 
+        check_unsent_responses()
+    elif "--main" in sys.argv:        
+        print("NONE")
     else:
         print("Command not found.")

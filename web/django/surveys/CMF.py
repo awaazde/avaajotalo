@@ -558,7 +558,7 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
                         treatment = 'No'
                         if u.balance == -1:
                             treatment = 'Yes'
-                    mf = Message_forum.objects.get(message__content_file=fname)
+                    mf = Message_forum.objects.get(message__file__contains=fname)
                     tags = [t.tag for t in mf.tags.all()]
                     dur = (current_date-listenstart).seconds
                     all_calls.append([uid,treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),str(mf.message.date),str(dur)]+tags)

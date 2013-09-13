@@ -75,12 +75,6 @@ bsd = basedir .. "/sounds/en/us/callie/";
 sd = "/Users/neil/Development/media/";
 logfileroot = "/Users/neil/Documents/"
 
---[[
-aosd = basedir .. "/scripts/AO/sounds/eng/";
-sd = basedir .. "/storage/otalo/";
-logfilename = sd .. "ao.log";
-      --]]
-
 luasql = require "luasql.odbc";
 env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));

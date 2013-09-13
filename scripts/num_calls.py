@@ -1,5 +1,6 @@
 import otalo_utils
 import sys
+from django.conf import settings
 from datetime import datetime,timedelta
 from otalo.ao.models import User, Message, 	Message_forum, Forum, Line
 from otalo.surveys.models import Input
@@ -665,7 +666,7 @@ def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, p
 		if phone_num_filter:
 			this_weeks_msgs = this_weeks_msgs.filter(message__user__number__in=phone_num_filter)
 			
-		this_weeks_msgs = this_weeks_msgs.exclude(message__content_file__in=transfer_recordings)
+		this_weeks_msgs = this_weeks_msgs.exclude(message__file__in=transfer_recordings)
 #		for msg in this_weeks_msgs:
 #			print(str(msg))
 		questions = this_weeks_msgs.filter(message__lft=1)
@@ -678,7 +679,7 @@ def get_num_qna(filename, line, forum=False, date_start=False, date_end=False, p
 		n_rs_unique = responses.values('message__user').distinct().count()
 		approved_responses = responses.filter(status=Message_forum.STATUS_APPROVED)
 		n_rs_approved = approved_responses.count()
-		response_files = responses.values('message__content_file')
+		response_files = responses.values('message__file')
 		response_files = [pair.values()[0] for pair in response_files]
 		n_rs_bcast = Input.objects.filter(input__in=response_files).count()
 		
@@ -797,7 +798,7 @@ def get_posts_by_number(inbound, outbound, blanks, line, phone_num_filter, date_
 		#posts[num] = inbound_msgs.count() + bcast_msgs.count()
 		
 		# for paid posts only
-		inbound_msgs = inbound_msgs.exclude(message__content_file__in=freebie_posts)
+		inbound_msgs = inbound_msgs.exclude(message__file__in=freebie_posts)
 		posts[num] = inbound_msgs.count()
 		
 	if not quiet:
@@ -910,8 +911,8 @@ def get_lurking_and_posting(filename, destnum, forums, phone_num_filter=False, d
 					call['lurks'] += 1
 					call['forum'] = False
 				elif line.find("Stream") != -1:
-					filename = line[line.rfind('/')+1:]
-					if bool(Message_forum.objects.filter(forum__in=forumids, message__content_file=filename.strip())):
+					fname = line[line.rfind('/')+1:]
+					if bool(Message_forum.objects.filter(forum__in=forumids, message__file__contains=fname.strip())):
 						#print("counting " + filename)
 					# check to make sure it's in the forums of interest
 						call['listens'] += 1
@@ -1008,7 +1009,7 @@ def get_recordings(filename, destnum=False, phone_num_filter=False, date_start=F
 
 			if otalo_utils.is_record(line):
 				filename = otalo_utils.get_prompt(line)
-				filename = filename[filename.rfind('/')+1:]
+				filename = filename[filename.find(settings.MEDIA_ROOT)+len(settings.MEDIA_ROOT)+1:]
 				files.append(filename.strip())
 					
 		except ValueError as err:
@@ -1051,7 +1052,7 @@ def get_uploaded_msgs(inbound, outbound, line, forums=False, destnum=False, phon
 	recordings += get_recordings(outbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end)
 	recordings += get_recordings(outbound, line.number, phone_num_filter=phone_num_filter, date_start=date_start, date_end=date_end, transfer_calls=True)
 	
-	msgs = msgs.exclude(message__content_file__in=recordings)
+	msgs = msgs.exclude(message__file__in=recordings)
 	msg_ids = msgs.values('pk')
 	msg_ids = [pair.values()[0] for pair in msg_ids]
 	

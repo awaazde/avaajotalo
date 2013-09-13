@@ -207,7 +207,7 @@ def update_tow(line):
     number = line.outbound_number or line.number
     s = Survey.objects.get(number=number, inbound=True)
     p = Prompt.objects.get(survey=s, name='tow')
-    p.file = settings.MEDIA_ROOT + '/' + mf.message.content_file
+    p.file = mf.message.file.path
     p.save()
     
 def date_str(date):
