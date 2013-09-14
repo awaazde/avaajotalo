@@ -16,12 +16,9 @@ g * Copyright 2007 Google Inc.
  */
 package org.otalo.ao.client;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.MessageList.Images;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.User;
@@ -30,14 +27,17 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.uibinder.client.UiConstructor;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * The top panel, which contains the 'welcome' message and various links.
@@ -45,10 +45,14 @@ import com.google.gwt.user.client.ui.Label;
 public class TopPanel extends Composite implements ClickHandler {
 
   private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
-  private HTML aboutLink = new HTML("<a href='javascript:;'>About</a>");
-  private HorizontalPanel outer, inner;
+  private HTML helpLink = new HTML("<a href='javascript:;'>Help</a>");
+  private HorizontalPanel outer, inner, search;
   private Images images;
-  
+  //search functionality
+  private Button searchBtn;
+  private TextBox searchBox;
+  private HTML homeLink = new HTML("<a href='javascript:;'>Home</a>");
+  private FlexTable layout;
   /**
    * Specifies the images that will be bundled for this Composite and specify
    * that tree's images should also be included in the same bundle.
@@ -57,9 +61,14 @@ public class TopPanel extends Composite implements ClickHandler {
     ImageResource recharge();
   }
 
+  @UiConstructor
   public TopPanel(Line line, User moderator, Images images) {
     this.outer = new HorizontalPanel();
     this.inner = new HorizontalPanel();
+    this.searchBtn = new Button();
+    this.layout = new FlexTable();
+    this.search = new HorizontalPanel();
+    
     this.images = images;
 
     if (line != null)
@@ -70,9 +79,12 @@ public class TopPanel extends Composite implements ClickHandler {
     }
     outer.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
     inner.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
-    inner.setSpacing(4);
-
-    outer.add(inner);
+    search.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
+    inner.setSpacing(10);
+    search.setSpacing(10);
+    
+    layout.setWidget(0, 0, inner);
+    outer.add(layout);
     if (moderator != null)
     	inner.add(new HTML("Welcome back, " + moderator.getName() + "&nbsp;(" + moderator.getNumber() + ")&nbsp;|&nbsp;"));
     
@@ -82,31 +94,66 @@ public class TopPanel extends Composite implements ClickHandler {
       request.doFetchURL(AoAPI.BALANCE, new BalanceRequestor());
     }
     
+    homeLink.setVisible(false);
+    inner.add(homeLink);
     inner.add(signOutLink);
-    inner.add(aboutLink);
+    inner.add(helpLink);
+    
+    searchBox = new TextBox();
+    searchBox.setTitle("Search");
+    searchBox.setName("search_keywords");
+    search.add(searchBox);
+    searchBtn.setText("Search");
+    searchBtn.setTitle("Search");
+    searchBtn.addClickHandler(new SearchButtonHandler());
+    search.add(searchBtn);
+    
+    layout.setWidget(1, 0, search); 
     
     signOutLink.addClickHandler(this);
-    aboutLink.addClickHandler(this);
+    helpLink.addClickHandler(this);
+    homeLink.addClickHandler(this);
 
     initWidget(outer);
     setStyleName("mail-TopPanel");
     inner.setStyleName("mail-TopPanelLinks");
-
+    
+    
   }
 
   public void onClick(ClickEvent event) {
     Object sender = event.getSource();
     if (sender == signOutLink) {
     	JSONRequest request = new JSONRequest();
-      request.doFetchURL(AoAPI.LOGOUT, null);
-    } else if (sender == aboutLink) {
+    	request.doFetchURL(AoAPI.LOGOUT, null);
+    } else if (sender == helpLink) {
       // When the 'About' item is selected, show the AboutDialog.
       // Note that showing a dialog box does not block -- execution continues
       // normally, and the dialog fires an event when it is closed.
       AboutDialog dlg = new AboutDialog();
       dlg.show();
       dlg.center();
-    }
+    } else if(sender == homeLink) {
+    	homeLink.setVisible(false);
+    	search.setVisible(true);
+    	searchBox.setText("");
+    	Messages.get().displayForumPanel();
+    } 
+  }
+  
+  private class SearchButtonHandler implements ClickHandler {
+	@Override
+	public void onClick(ClickEvent event) {
+		if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
+			ConfirmDialog validate = new ConfirmDialog("Please enter search word to search anything");
+			validate.center();
+		}
+		else {
+			homeLink.setVisible(true);
+			search.setVisible(false);
+			Messages.get().displaySerchPanel(searchBox.getText());
+		}
+	}
   }
   
   private class BalanceRequestor implements JSONRequester {
