@@ -16,7 +16,7 @@
  */
 package org.otalo.ao.client;
 
-import org.otalo.ao.client.model.SMSConfig;
+import org.otalo.ao.client.search.SearchFilterPanel;
 
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -40,27 +40,36 @@ public class Shortcuts extends Composite {
 	public interface Images extends Fora.Images {
 		ImageResource forum();
 		ImageResource messagesgroup();
+		ImageResource search();
 	}
 	
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
 	private Fora fora;
 	private Broadcasts bcasts;
+	
+	private SearchFilterPanel searchPanel;
 	/**
 	 * Constructs a new shortcuts widget using the specified images.
 	 * 
 	 * @param images
 	 *            a bundle that provides the images for this widget
 	 */
-	public Shortcuts(Images images, Fora fora, Broadcasts bcasts, SMSs sms) {
+	public Shortcuts(Images images, Fora fora, Broadcasts bcasts, SMSs sms, SearchFilterPanel searchPanel) {
 		this.fora = fora;
 		this.bcasts = bcasts;
+		this.searchPanel = searchPanel;
+		if(fora != null) {
+			String forumPanelName = Messages.get().canManage() ? "Groups" : "Forums";
+			add(fora, images.forum(), forumPanelName);
+		}
 		
-		String forumPanelName = Messages.get().canManage() ? "Groups" : "Forums";
-		add(fora, images.forum(), forumPanelName);
 		if (bcasts != null)
 			add(bcasts, images.broadcast(), "Broadcasts");
 		if (sms != null)
 			add(sms, images.messagesgroup(), "SMS");
+		if(searchPanel != null)
+			add(searchPanel, images.search(), "Search");
+
 		initWidget(stackPanel);
 	}
 

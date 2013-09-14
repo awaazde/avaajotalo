@@ -29,6 +29,11 @@ import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 
+/**
+ * This class is deprecated now. Use AutoCompleteTagWidget class instead of this.
+ *
+ */
+@Deprecated
 public class AOTagWidget extends TagWidget {
 	private ListBox crop, topic;
 	private Hidden tagsChanged;

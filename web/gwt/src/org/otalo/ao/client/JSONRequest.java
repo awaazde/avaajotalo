@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Forum.ForumStatus;
 
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.http.client.Request;
@@ -88,11 +87,15 @@ public final class JSONRequest {
 		public static final String POSTS_ALL = "all";
 		public static final String POSTS_RESPONSES = "responses";
 		
+		@Deprecated
 		public static final String TAG_TYPE_CROP = "agri-crop";
+		@Deprecated
 		public static final String TAG_TYPE_TOPIC = "agri-topic";
 		
 		public static final String MSG_METADATA = "MESSAGE_METADATA";
 		public static final String MEMBER_METADATA = "MEMBER_METADATA";
+		
+		public static final String SEARCH	= "search/";
 		
 		/**
 		 * Should be consistent with views.py validation codes
@@ -183,6 +186,22 @@ public final class JSONRequest {
     	// TODO
     }
   }
+  
+  /*
+   * Fetch the requested URL.
+   */
+  public void doPost(String fetchURL, String postData, JSONRequester requester) {
+  	this.requester = requester;
+  	// RequestBuilder used to issue HTTP GET requests.
+  	RequestBuilder requestBuilder = new RequestBuilder(
+	      RequestBuilder.POST, URL.encode(BASE_URL + fetchURL));
+    try {
+      requestBuilder.sendRequest(postData, new JSONResponseTextHandler());
+    } catch (RequestException ex) {
+    	// TODO
+    }
+  }
+  
   
   public static void doPost(String url, String postData) {
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);

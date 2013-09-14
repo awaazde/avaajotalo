@@ -28,6 +28,8 @@ import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Prompt;
 import org.otalo.ao.client.model.User;
+import org.otalo.ao.client.search.SearchFilterPanel;
+import org.otalo.ao.client.search.SearchResultMsgList;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -58,7 +60,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images, SearchResultMsgList.Images {
   }
 
   /**
@@ -84,6 +86,12 @@ public class Messages implements EntryPoint, ResizeHandler {
   private Line line;
   private boolean canManage = false;
 
+  private SearchFilterPanel search;
+  private SearchResultMsgList searchResultMsgList;
+  private Shortcuts searchShortCut;
+
+ 
+  
   /**
    * Displays the specified item. 
    * 
@@ -188,8 +196,11 @@ public class Messages implements EntryPoint, ResizeHandler {
 		shortcuts.showStack(1);
   }
   
-  private void displayForumPanel()
+  public void displayForumPanel()
   {
+	shortcuts.setVisible(true);
+	searchShortCut.setVisible(false);
+	searchResultMsgList.setVisible(false);
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(true);
   	if (!canManage()) messageDetail.setVisible(true);
@@ -200,6 +211,27 @@ public class Messages implements EntryPoint, ResizeHandler {
 		}
 		if (canManage()) groupsIface.setVisible(false);
 		shortcuts.showStack(0);
+  }
+  
+  public void displaySerchPanel(String searchPhrase) {
+	  search.reset();
+	  search.setVisible(true);
+	  shortcuts.setVisible(false);
+	  searchShortCut.setVisible(true);
+	  searchShortCut.showStack(0);
+	  search.setSearchPharse(searchPhrase);
+	  searchResultMsgList.setVisible(true);
+	  messageList.setVisible(false);
+	 
+	  if (line.bcastingAllowed()) broadcastIface.setVisible(false);
+	  if (!canManage()) messageDetail.setVisible(true);
+		if (line.hasSMSConfig())
+		{
+			smsList.setVisible(false);
+			smsIface.setVisible(false);
+		}
+		if (canManage()) groupsIface.setVisible(false);
+	  //TODO
   }
   
   public void displaySMS(SMSListType type, int start)
@@ -321,8 +353,13 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
+    searchResultMsgList = new SearchResultMsgList(images);
+    searchResultMsgList.setWidth("100%");
+    searchResultMsgList.setVisible(false);
+    
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
+    rightPanel.add(searchResultMsgList);
     
     if (line.bcastingAllowed())
     {
@@ -337,7 +374,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     	smsIface = new SMSInterface(images);
     	smss = new SMSs(images);
 	    rightPanel.add(smsIface);
-	    rightPanel.add(smsList);
+		rightPanel.add(smsList);
     }
     if (canManage())
     {
@@ -351,21 +388,27 @@ public class Messages implements EntryPoint, ResizeHandler {
     	rightPanel.add(messageDetail);
     }
     
-    shortcuts = new Shortcuts(images, fora, bcasts, smss);
+    search = new SearchFilterPanel(searchResultMsgList);
+    
+    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
+    searchShortCut = new Shortcuts(images, null, null, null, search);
     
     rightPanel.setWidth("100%");
     shortcuts.setWidth("100%");
-    
+        
+    searchShortCut.setWidth("100%");
+    searchShortCut.setVisible(false);
+     
     displayForumPanel();
-
-    // Create a dock panel that will contain the menu bar at the top,
+   // Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
     DockPanel outer = new DockPanel();
     //DockLayoutPanel outer = new DockLayoutPanel(Unit.PCT);
     
     outer.add(topPanel, DockPanel.NORTH);
-    //outer.addNorth(topPanel, 100);
     outer.add(shortcuts, DockPanel.WEST);
+   	outer.add(searchShortCut, DockPanel.WEST);
+    
     //outer.addWest(shortcuts, 100);
     outer.add(rightPanel, DockPanel.CENTER);
     //outer.add(rightPanel);
