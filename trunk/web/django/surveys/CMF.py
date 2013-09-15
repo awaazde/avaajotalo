@@ -791,7 +791,7 @@ def get_minutes_used(aoline, inboundf, date_start=None, date_end=None):
     if date_end:
         aooutbound = aooutbound.filter(date__lte=date_end)
     aooutbound = aooutbound.aggregate(Sum('duration'))
-    auoutbound = auoutbound.values()[0]
+    aooutbound = aooutbound.values()[0]
     if aooutbound:
         aooutbound = aooutbound / 60
         
