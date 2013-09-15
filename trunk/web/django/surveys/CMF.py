@@ -785,7 +785,12 @@ def get_minutes_used(aoline, inboundf, date_start=None, date_end=None):
         
     # broadcast
     out_num = aoline.outbound_number or aoline.number
-    aooutbound = Call.objects.filter(survey__number=out_num, date__gt=date_start, date__lte=date_end).aggregate(Sum('duration'))
+    aooutbound = Call.objects.filter(survey__number=out_num)
+    if date_start:
+        aooutbound = aooutbound.filter(date__gt=date_start)
+    if date_end:
+        aooutbound = aooutbound.filter(date__lte=date_end)
+    aooutbound = aooutbound.aggregate(Sum('duration'))
     auoutbound = auoutbound.values()[0]
     if aooutbound:
         aooutbound = aooutbound / 60
@@ -805,7 +810,12 @@ def get_minutes_used(aoline, inboundf, date_start=None, date_end=None):
         ao2inbound = ao2inbound / 60
         
     # broadcast
-    ao2outbound = Call.objects.filter(survey__number=out_num, date__gt=date_start, date__lte=date_end).aggregate(Sum('duration'))
+    ao2outbound = Call.objects.filter(survey__number=out_num)
+    if date_start:
+        ao2outbound = ao2outbound.filter(date__gt=date_start)
+    if date_end:
+        ao2outbound = ao2outbound.filter(date__lte=date_end)
+    ao2outbound = ao2outbound.aggregate(Sum('duration'))
     au2outbound = au2outbound.values()[0]
     if ao2outbound:
         ao2outbound = ao2outbound / 60
