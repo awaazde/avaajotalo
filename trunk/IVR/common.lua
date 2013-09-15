@@ -703,13 +703,13 @@ function play_responder_messages (userid, msgs, adminforums)
       
       if (d == GLOBAL_MENU_RESPOND) then
 	    read(aosd .. "okrecordresponse.wav", 500);
-	    local thread = current_msg[8] or current_msg[1];
-	    local forumid = current_msg[5];
-	    local rgt = current_msg[4];
-	    local moderated = current_msg[7];
+	    local thread = current_msg[7] or current_msg[1];
+	    local forumid = current_msg[4];
+	    local rgt = current_msg[3];
+	    local moderated = current_msg[6];
 	    local adminmode = is_admin(forumid, adminforums);
 	    local okrecordedprompt = anssd .. "okrecorded.wav";
-	    local maxlength = current_msg[9] or MAX_RESPONDER_LEN_DEF;
+	    local maxlength = current_msg[8] or MAX_RESPONDER_LEN_DEF;
 	    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, 1, okrecordedprompt);
 	    if (d == GLOBAL_MENU_MAINMENU) then
 	    	update_listens(prevmsgs, userid);
@@ -723,12 +723,12 @@ function play_responder_messages (userid, msgs, adminforums)
 		    current_msg = prevmsgs[current_msg_idx];
 		 end
 	  elseif (d == GLOBAL_MENU_ASK_LATER) then
-	  	local msgforumid = current_msg[6];
+	  	local msgforumid = current_msg[5];
 	  	ask_later(userid, msgforumid);
 	  	read(anssd .. "asklater.wav", 500);
 	  	d = GLOBAL_MENU_NEXT;
 	  elseif (d == GLOBAL_MENU_PASS) then
-	  	local msgforumid = current_msg[6];
+	  	local msgforumid = current_msg[5];
 	  	pass_question(userid, msgforumid);
 	  	read(anssd .. "passquestion.wav", 500);
 	  	d = GLOBAL_MENU_NEXT;
@@ -751,7 +751,7 @@ function play_responder_messages (userid, msgs, adminforums)
 	  	if (d == GLOBAL_MENU_CANCEL_REFERRAL) then
 	  		read(aosd .. "messagecancelled.wav", 500);
 	  	else
-	  		local msgforumid = current_msg[6];
+	  		local msgforumid = current_msg[5];
 	  		refer_question(d, msgforumid);
 	  	end
 	  	
