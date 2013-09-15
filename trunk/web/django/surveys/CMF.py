@@ -794,6 +794,8 @@ def get_minutes_used(aoline, inboundf, date_start=None, date_end=None):
     aooutbound = aooutbound.values()[0]
     if aooutbound:
         aooutbound = aooutbound / 60
+    else:
+        aooutbound = 0
         
     # Get AO2 minutes used
     # inbound
@@ -808,6 +810,8 @@ def get_minutes_used(aoline, inboundf, date_start=None, date_end=None):
         ao2inbound += inbound[date]
     if ao2inbound:
         ao2inbound = ao2inbound / 60
+    else:
+        ao2outbound = 0
         
     # broadcast
     ao2outbound = Call.objects.filter(survey__number=out_num)
