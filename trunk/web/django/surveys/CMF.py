@@ -26,6 +26,7 @@ CMF_OUTPUT_DIR = '/home/cmf/reports/'
 #CMF_OUTPUT_DIR = ''
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
+AO2_NUMBER = '7930142013'
 
 def add_users(names, numbers, villages, treatment_group):
     added = 0
@@ -772,39 +773,41 @@ def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_
                 
         output.writerow([mf.message.user.number, time_str(mf.message.date), mf.forum.name]+tags)
     
-def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=False):
-    # Get CMF minutes used
-    inbound = call_duration.get_online_time(inboundf, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True)
-    cmfinbound = 0
-    for date in inbound:
-        cmfinbound += inbound[date]
-    if cmfinbound:
-        cmfinbound = cmfinbound / 60
-        
-    # broadcast
-    outbound = call_duration.get_online_time(outboundf, phone_num_filter=cmf_nums, date_start=date_start, date_end=date_end, quiet=True, transfer_calls=True)
-    cmfoutbound = 0
-    for date in outbound:
-        cmfoutbound += outbound[date]
-    if cmfoutbound:
-        cmfoutbound = cmfoutbound / 60
-        
-    # Get total minutes used
-    # inbound
+def get_minutes_used(aoline, inboundf, date_start=None, date_end=None):
+    # Get AO1 minutes used
     inbound = call_duration.get_online_time(inboundf, date_start=date_start, date_end=date_end, quiet=True)
-    totinbound = 0
+    aoinbound = 0
     for date in inbound:
-        totinbound += inbound[date]
-    if totinbound:
-        totinbound = totinbound / 60
+        aoinbound += inbound[date]
+    if aoinbound:
+        aoinbound = aoinbound / 60
         
     # broadcast
-    outbound = call_duration.get_online_time(outboundf, date_start=date_start, date_end=date_end, quiet=True, transfer_calls=True)
-    totoutbound = 0
-    for date in outbound:
-        totoutbound += outbound[date]
-    if totoutbound:
-        totoutbound = totoutbound / 60
+    out_num = aoline.outbound_number or aoline.number
+    aooutbound = Call.objects.filter(survey__number=out_num, date__gt=date_start, date__lte=date_end).aggregate(Sum('duration'))
+    auoutbound = auoutbound.values()[0]
+    if aooutbound:
+        aooutbound = aooutbound / 60
+        
+    # Get AO2 minutes used
+    # inbound
+    line = Line.objects.get(number=AO2_NUMBER)
+    lineid = str(line.id)
+    inboundf = settings.INBOUND_LOG_ROOT + lineid + '.log'
+    out_num = line.outbound_number or line.number
+    
+    inbound = call_duration.get_online_time(inboundf, date_start=date_start, date_end=date_end, quiet=True)
+    ao2inbound = 0
+    for date in inbound:
+        ao2inbound += inbound[date]
+    if ao2inbound:
+        ao2inbound = ao2inbound / 60
+        
+    # broadcast
+    ao2outbound = Call.objects.filter(survey__number=out_num, date__gt=date_start, date__lte=date_end).aggregate(Sum('duration'))
+    au2outbound = au2outbound.values()[0]
+    if ao2outbound:
+        ao2outbound = ao2outbound / 60
     
     if not date_start:
         date_start = inbound[0]
@@ -814,20 +817,20 @@ def get_minutes_used(inboundf, outboundf, cmf_nums, date_start=False, date_end=F
          
     # prepare email
     print("<html>")
-    print("<div> Below are minutes used on AO between " + date_str(date_start) + " and " + date_str(date_end) + "</div>")
+    print("<div> Below are minutes used on AO and AO2 between " + date_str(date_start) + " and " + date_str(date_end) + "</div>")
     print("<br/><div>")
-    print("<b>DSC minutes:</b> ")
-    print(str(totinbound-cmfinbound))
+    print("<b>AO minutes:</b> ")
+    print(str(aoinbound))
     print(" inbound; ")
-    print(str(totoutbound-cmfoutbound))
+    print(str(aooutbound))
     print(" outbound")
     print("</div>")
     
     print("<br/><div>")
-    print("<b>CMF minutes:</b> ")
-    print(str(cmfinbound))
+    print("<b>AO2 minutes:</b> ")
+    print(str(ao2inbound))
     print(" inbound; ")
-    print(str(cmfoutbound))
+    print(str(a2ooutbound))
     print(" outbound")
     print("</div>")
     
@@ -927,7 +930,7 @@ def main():
                     year = today.year - 1
                     month = 12
                 usagestart = datetime(year=year, month=month, day=15)
-        get_minutes_used(inbound, outbound, numbers, date_start=usagestart, date_end=usageend)
+        get_minutes_used(line, inbound, date_start=usagestart, date_end=usageend)
 
     #get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
     #num = line.outbound_number
