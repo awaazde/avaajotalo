@@ -472,6 +472,7 @@ function get_media_subdir()
 	-- create it if it doesn't already exist
 	if io.open(sd .. subdir,"rb") == nil then
 		os.execute("mkdir "..sd..subdir);
+		os.execute("chmod 775 "..sd..subdir);
 	end
 	
 	return subdir;
