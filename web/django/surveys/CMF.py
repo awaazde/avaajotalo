@@ -185,7 +185,7 @@ def create_template(line, title, pre, post):
 ****************************************************************************
 '''
 
-def get_features_within_call(feature_list, filename, phone_num_filter=False, date_start=False, date_end=False, delim=','):
+def get_features_within_call(number, feature_list, filename, date_start=False, date_end=False, delim=','):
     all_calls = []
     open_calls = {}
     
@@ -207,9 +207,6 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
             dest = otalo_utils.get_destination(line)            
         ##
         ################################################
-            
-            if phone_num_filter and not phone_num in phone_num_filter:
-                continue
                 
             if date_start:
                 if date_end:
@@ -307,15 +304,15 @@ def get_features_within_call(feature_list, filename, phone_num_filter=False, dat
         
     header = ['number','treatment?','date','duration'] + feature_list
     if date_start:
-        outfilename='features_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        outfilename='features_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
-        outfilename='features.csv'
+        outfilename='features_'+number[-8:]+'.csv'
     outfilename = CMF_OUTPUT_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
     output.writerows(all_calls)
     
-def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date_end=False):
+def get_broadcast_calls(number, filename, date_start=None, date_end=None):
     all_calls = []
     open_calls = {}
     
@@ -337,9 +334,6 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
             dest = otalo_utils.get_destination(line)            
         ##
         ################################################
-            
-            if phone_num_filter and not phone_num in phone_num_filter:
-                continue
                 
             if date_start:
                 if date_end:
@@ -435,9 +429,9 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                 
     header = ['name','treatment?','call try #','time','duration','last prompt','input']    
     if date_start:
-        outfilename='outgoing_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        outfilename='outgoing_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
-        outfilename='outgoing.csv'
+        outfilename='outgoing_'+number[-8:]+'.csv'
     outfilename = CMF_OUTPUT_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
@@ -478,8 +472,53 @@ def get_broadcast_calls(filename, phone_num_filter=False, date_start=False, date
                         treatment = 'Yes'
                 nocalls.append([num,treatment,'1',time_str(first_att),'N/A','N/A','N/A'])
     output.writerows(nocalls)
+
+def get_broadcast_calls2(line, date_start=None, date_end=None):
+    all_calls = []
+    number = line.outbound_number or line.number
     
-def get_message_listens(filename, phone_num_filter=False, date_start=False, date_end=False, transfer_calls=False, delim=','):
+    calls = Call.objects.filter(survey__number=outbound_num, survey__broadcast=True, complete=True)
+    surveys = Survey.objects.filter(number=number, broadcast=True).order_by('created_on')
+    if date_start:
+        surveys = surveys.filter(created_on__gte=date_start)
+    if date_end:
+        surveys = surveys.filter(created_on__lt=date_end)
+        
+    for survey in surveys:
+        calls = Call.objects.filter(survey=survey, complete=True)
+        completed = {}
+        for call in calls:
+            completed[call.subject]=call
+            
+        for subject in survey.subjects.all():            
+            name = subject.number
+            u = User.objects.filter(number=subject.number)
+            if bool(u):
+                u=u[0]
+                if u.name and u.name != '':
+                    name = u.name
+            result = [name]
+            if subject in completed:
+                call = completed[subject]
+                result += [call.priority, time_str(call.date), call.duration]
+                for input in Input.objects.filter(call=call):
+                    result.append(input.input)
+            else:
+                result += ['N/A', 'N/A', 'N/A', 'N/A']
+            
+            all_calls.append(result)
+                
+    header = ['name','call try #','time','duration','input(s)']    
+    if date_start:
+        outfilename='outgoing_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+    else:
+        outfilename='outgoing_'+number[-8:]+'.csv'
+    outfilename = CMF_OUTPUT_DIR+outfilename
+    output = csv.writer(open(outfilename, 'wb'))
+    output.writerow(header)
+    output.writerows(all_calls)
+    
+def get_message_listens(number, filename, date_start=False, date_end=False, transfer_calls=False, delim=','):
     all_calls = []
     open_calls = {}
     
@@ -500,9 +539,6 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
             dest = otalo_utils.get_destination(line)            
         ##
         ################################################
-            
-            if phone_num_filter and not phone_num in phone_num_filter:
-                continue
                 
             if date_start:
                 if date_end:
@@ -583,9 +619,9 @@ def get_message_listens(filename, phone_num_filter=False, date_start=False, date
     
     header = ['UserId','Treatment?','SessId','ListenTime','Name','ForumId','MessageForumId','MessageDate','ListenDuration(s)','Tags']
     if date_start:
-        outfilename='listens_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        outfilename='listens_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
-        outfilename='listens.csv'
+        outfilename='listens_'+number[-8:]+'.csv'
     outfilename = CMF_OUTPUT_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
@@ -656,101 +692,37 @@ def get_survey_results(phone_num_filter, date_start=False, date_end=False):
                 nocalls.append([num,time_str(first_att),'N/A','N/A','N/A'])
     output.writerows(nocalls)
 
-def get_broadcast_minutes(filename, phone_num_filter=False, date_start=False, date_end=False):
-    all_surveys = {}
-    open_calls = {}
+def get_broadcast_minutes(line, date_start=None, date_end=None):
+    all_surveys = []
+    number = line.outbound_number or line.number
     
-    f = open(filename)
-
-    while(True):
-        line = f.readline()
-        if not line:
-            break
-        try:
-        
-        #################################################
-        ## Use the calls here to determine what pieces
-        ## of data must exist for the line to be valid.
-        ## All of those below should probably always be.
-        
-            phone_num = otalo_utils.get_phone_num(line)
-            current_date = otalo_utils.get_date(line)        
-            dest = otalo_utils.get_destination(line)            
-        ##
-        ################################################
-            
-            if phone_num_filter and not phone_num in phone_num_filter:
-                continue
-                
-            if date_start:
-                if date_end:
-                    if not (current_date >= date_start and current_date < date_end):
-                        continue
-                    if current_date > date_end:
-                        break
-                else:
-                    if not current_date >= date_start:
-                        continue
-    
-            if line.find("Start call") != -1:
-                # check to see if this caller already has one open
-                if phone_num in open_calls:
-                    # close out current call
-                    start = open_calls[phone_num]    
-                    dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
-                    if bool(call):
-                        call = call[0]
-                        survey = call.survey                                            
-                        if survey.id not in all_surveys:
-                            all_surveys[survey.id] = 0
-                        all_surveys[survey.id] += dur.seconds                 
-                    del open_calls[phone_num]
-                    
-                # add new call
-                #print("adding new call: " + phone_num)
-                open_calls[phone_num] = current_date
-                
-            elif line.find("End call") != -1:
-                if phone_num in open_calls:
-                    # close out call                
-                    start = open_calls[phone_num]    
-                    dur = current_date - start
-                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
-                    if bool(call):
-                        call = call[0]
-                        survey = call.survey                                            
-                        if survey.id not in all_surveys:
-                            all_surveys[survey.id] = 0
-                        all_surveys[survey.id] += dur.seconds                     
-                    del open_calls[phone_num]
-                    
-        except KeyError as err:
-            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
-            raise
-        except ValueError as err:
-            #print("ValueError: " + line)
-            continue
-        except IndexError as err:
-            continue
-        except otalo_utils.PhoneNumException:
-            #print("PhoneNumException: " + line)
-            continue
-                
-    header = ['surveyid','survey name','start','attempts','completed','total secs']    
+    calls = Call.objects.filter(survey__number=outbound_num, survey__broadcast=True, complete=True)
+    surveys = Survey.objects.filter(number=number, broadcast=True).order_by('created_on')
     if date_start:
-        outfilename='bcast_minutes_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
+        surveys = surveys.filter(created_on__gte=date_start)
+    if date_end:
+        surveys = surveys.filter(created_on__lt=date_end)
+        
+    for survey in surveys:
+        attempts = Call.objects.filter(survey=survey).count()
+        recipients = survey.subjects.all().count()
+        completed = Call.objects.filter(survey=survey, complete=True).count()
+        secs = Call.objects.filter(survey=survey, complete=True).aggregate(Sum('duration'))
+        secs = secs.values()[0]
+        mins = 0
+        if secs:
+            mins = secs / 60
+        all_surveys.append([survey.id,survey.name,time_str(survey.created_on),recipients,attempts,completed,mins])
+        
+    header = ['surveyid','survey name','start','num recipients','attempts','completed','total mins']    
+    if date_start:
+        outfilename='bcast_minutes_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
-        outfilename='bcast_minutes.csv'
+        outfilename='bcast_minutes'+number[-8:]+'.csv'
     outfilename = CMF_OUTPUT_DIR+outfilename
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
-    for surveyid,mins in all_surveys.items():
-        survey = Survey.objects.get(pk=surveyid)
-        attempts = Subject.objects.filter(call__survey=survey).distinct().count()
-        completed = Call.objects.filter(survey=survey, complete=True).count()
-        start = Call.objects.filter(survey=survey).order_by('date')[0].date
-        output.writerow([surveyid,survey.name,time_str(start),attempts,completed,mins])
+    output.writerows(all_surveys)
 
 def get_message_topics(forumids, phone_num_filter=False, date_start=False, date_end=False):
     msgs = Message_forum.objects.filter(forum__in=forumids)
@@ -879,58 +851,38 @@ def date_str(date):
 ****************************************************************************
 ''' 
 def main():
-#    current_cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
-#    for u in current_cmf:
-#        u.name = u.name[:-4]
-#        u.save()
-    #add_users(names, numbers, villages, treatment_group)
 
-    if len(sys.argv) < 3:
-        print("args: op lineid oldnumbersfile <startdate> <enddate>")
-        sys.exit()
-    else:
-        lineid = sys.argv[2]
-        line = Line.objects.get(pk=lineid)
-        oldnumsfile = sys.argv[3]
+    lineid = sys.argv[2]
+    line = Line.objects.get(pk=lineid)
         
     now = datetime.now()
     today = datetime(year=now.year, month=now.month, day=now.day)
-    
-    startdate = None
-    enddate = None
-    usagestart = None
-    usageend = None
-    if len(sys.argv) > 4:
-        startdate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
-        usagestart = startdate
-    else:
-        startdate = today-timedelta(days=7)
-    if len(sys.argv) > 5:
-        enddate = datetime.strptime(sys.argv[5], "%m-%d-%Y")
-        usageend = enddate
         
     inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
     out_num = line.outbound_number or line.number
     outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
     
-    cmf = User.objects.filter(name__contains=CMF_DESIGNATOR)
-    numbers = [u.number for u in cmf]
-    
-    f = open(oldnumsfile)
-    while(True):
-        num = f.readline()
-        if not num:
-            break
-        numbers.append(num.strip())
-    
     if '--report' in sys.argv:
+        startdate = None
+        enddate = None
+        features = sys.argv[3].split(',')
+        
+        if len(sys.argv) > 4:
+            startdate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+        else:
+            startdate = today-timedelta(days=7)
+        if len(sys.argv) > 5:
+            enddate = datetime.strptime(sys.argv[5], "%m-%d-%Y")
+        
         features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
-        get_features_within_call(features, inbound, numbers, date_start=startdate, date_end=enddate)
-        get_broadcast_calls(outbound, numbers, date_start=startdate, date_end=enddate)
-        get_message_listens(inbound, numbers, date_start=startdate, date_end=enddate)
-        get_broadcast_minutes(outbound, numbers, date_start=startdate, date_end=enddate)
+        get_features_within_call(line.number, features, inbound, date_start=startdate, date_end=enddate)
+        get_broadcast_calls(line, date_start=startdate, date_end=enddate)
+        get_message_listens(line.number, inbound, date_start=startdate, date_end=enddate)
+        get_broadcast_minutes(line, date_start=startdate, date_end=enddate)
     elif '--usageemail' in sys.argv:
-        if not usagestart:
+        if len(sys.argv) > 3:
+            usagestart = datetime.strptime(sys.argv[3], "%m-%d-%Y")
+        else:
             # set to last 15th
             if today.day > 15:
                 usagestart = datetime(year=today.year, month=today.month, day=15)
@@ -941,6 +893,11 @@ def main():
                     year = today.year - 1
                     month = 12
                 usagestart = datetime(year=year, month=month, day=15)
+                
+        usageend=None
+        if len(sys.argv) > 4:
+            usageend = datetime.strptime(sys.argv[4], "%m-%d-%Y")
+            
         get_minutes_used(line, inbound, date_start=usagestart, date_end=usageend)
 
     #get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
@@ -955,41 +912,3 @@ def main():
     #responder_report(48, [1], date_start=datetime(year=2012, month=1, day=1))
     
 main()
-
-def main2():
-    if len(sys.argv) < 4:
-        print("args: lineid oldnumbersfile startdate enddate")
-        sys.exit()
-    else:
-        lineid = sys.argv[1]
-        line = Line.objects.get(pk=lineid)
-        oldnumsfile = sys.argv[2]
-        startdate = datetime.strptime(sys.argv[3], "%m-%d-%Y")
-        enddate = datetime.strptime(sys.argv[4], "%m-%d-%Y")
-        
-    inbound = settings.INBOUND_LOG_ROOT + lineid + '.log'
-    out_num = line.outbound_number or line.number
-    outbound = settings.OUTBOUND_LOG_ROOT + out_num + '.log'
-    
-    cmf = User.objects.filter(name__contains=CMF_DESIGNATOR).distinct()
-    numbers = [u.number for u in cmf]
-    
-    f = open(oldnumsfile)
-    while(True):
-        num = f.readline()
-        if not num:
-            break
-        numbers.append(num.strip())
-    
-    features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
-    dt = startdate
-    while (dt < enddate):
-        get_features_within_call(features, inbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
-        get_broadcast_calls(outbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
-        get_message_listens(inbound, numbers, date_start=dt, date_end=dt+timedelta(days=7))
-        
-        dt += timedelta(days=7)
-        
-    #get_survey_results(numbers)
-        
-#main2()
