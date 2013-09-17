@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
@@ -32,6 +32,7 @@ urlpatterns = patterns('',
     (r'^move/$', 'otalo.ao.views.movemessage'),
     (r'^upload/$', 'otalo.ao.views.uploadmessage'),
     (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.thread'),
+    (r'^tags/$', 'otalo.ao.views.alltags'),
     (r'^tags/(?P<forum_id>\d+)/$', 'otalo.ao.views.tags'),
     (r'^tagsbyline/(?P<line_id>\d+)/$', 'otalo.ao.views.tagsbyline'),
     (r'^messagetag/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.messagetag'),
@@ -53,11 +54,14 @@ urlpatterns = patterns('',
     (r'^sendsms/$', 'otalo.ao.views.sendsms'),
     (r'^smsin/$', 'otalo.ao.views.smsin'),
     (r'^group/$', 'otalo.ao.views.group'),
-    (r'^createaccount/$', 'awaazde.streamit.views.createacct'),
+    (r'^search/$', 'otalo.ao.views.search'),
+    #(r'^createaccount/$', 'awaazde.streamit.views.createacct'),
     # s is for streams views
-    (r'^s/', include('awaazde.streamit.urls')),
+    #(r'^s/', include('awaazde.streamit.urls')),
     # 2 is for gen2 console views
-    (r'^2/', include('awaazde.console.urls')),
+    #    (r'^2/', include('awaazde.console.urls')),
+    #(r'^xact/', include('awaazde.xact.urls')),
+    #(r'^xact-auth/', include('rest_framework.urls', namespace='rest_framework')),
 )
 
 if settings.DEVELOPMENT:

@@ -25,12 +25,17 @@ from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
 from django.core import serializers
+from django.core.files import File
 from django.conf import settings
 from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
-import alerts, broadcast
+import json
+import broadcast
 import otalo_utils, stats_by_phone_num
+from haystack.query import SearchQuerySet
+from haystack.inputs import AutoQuery
+from haystack.query import SQ
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -54,13 +59,30 @@ MEMBER_CREDITS_EXCEEDED = "4"
 INVALID_DATE = "5"
 INVALID_GROUP_SETTING = "6"
 INVALID_FILE_FORMAT = "7"
-INVALID_SUMMARY_FILE_FORMAT = "8"
 
 
 #Tags related constants
 #This is separator for all the selected tags. From the client side, all the selected tags are coming with this seperatar.
 #Also this constant must be consistent with the same constant in AutoCompleteWidget.java 
 TAG_SEPERATOR = "##"
+
+
+#These search related constants must be consistent with the same constant in JSONRequest.AoAPI.SearchConstants class.
+SEARCH_PARAM = "search_data"
+SEARCH_KEYWORD = "search_keyword"
+STATUS = "status"
+FROMDATE = "fromDate"
+TODATE = "toDate"
+TAG = "tags"
+AUTHOR = "author"
+
+AUTHOR_NAME = "author_name";
+AUTHOR_NUMBER = "author_number";
+AUTHOR_DISTRICT = "author_district";
+AUTHOR_TALUKA = "author_taluka";
+AUTHOR_VILLAGE = "author_village";
+
+
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
 
@@ -106,7 +128,7 @@ def group(request):
     if 'forums' in params:
         excludes=('members','messages','tags','responders')
     else:
-        relations={'forums':{'relations':{'responders':{'excludes':('name','balance','district','taluka','village','allowed','email','tags','name_file','balance_last_updated','taluka_file','village_file','district_file','indirect_bcasts_allowed')}}, 'excludes':('members','messages','tags',)}}
+        relations={'forums':{'relations':{'responders':{'excludes':('name','balance','district','taluka','village','allowed','email','tags','name_file','balance_last_updated','indirect_bcasts_allowed')}}, 'excludes':('members','messages','tags',)}}
         
     return send_response(groups, relations=relations, excludes=excludes )
 
@@ -369,16 +391,6 @@ def uploadmessage(request):
             response['Cache-Control'] = "no-cache, must-revalidate"
             return response
         
-        summary = False
-        if 'summary' in request.FILES:
-            summary = request.FILES['summary']
-            extension = summary.name[summary.name.index('.'):]
-            if extension != '.mp3':
-                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_SUMMARY_FILE_FORMAT+', "message":"mp3 format required"}]')
-                response['Pragma'] = "no cache"
-                response['Cache-Control'] = "no-cache, must-revalidate"
-                return response
-        
         if 'number' in params:
             number = params['number'].strip()
             author = User.objects.filter(number=number)
@@ -424,7 +436,7 @@ def uploadmessage(request):
                 min = int(params['min'])
                 date = datetime(year=date.year,month=date.month,day=date.day,hour=hour,minute=min)
                 
-        m = createmessage(request, f, main, author, summary, parent, date)
+        m = createmessage(request, f, main, author, parent, date)
 
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
     else:
@@ -432,33 +444,17 @@ def uploadmessage(request):
         response['Pragma'] = "no cache"
         response['Cache-Control'] = "no-cache, must-revalidate"
         return response
-
-def createmessage(request, forum, content, author, summary=False, parent=False, date=None):
+                
+def createmessage(request, forum, content, author, parent=None, date=None):
     t = datetime.now()
-    summary_filename = ''
 
     extension = content.name[content.name.index('.'):]
     filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + extension
-    filename_abs = settings.MEDIA_ROOT + '/' + filename
-    destination = open(filename_abs, 'wb')
-    for chunk in content.chunks():
-        destination.write(chunk)
-    os.chmod(filename_abs, 0644)
-    destination.close()
-
-    if summary:
-        extension = summary.name[summary.name.index('.'):]
-        summary_filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + '_summary' + extension
-        summary_filename_abs = settings.MEDIA_ROOT + '/' + summary_filename
-        destination = open(summary_filename_abs, 'wb')
-        for chunk in summary.chunks():
-            destination.write(chunk)
-        os.chmod(summary_filename_abs, 0644)
-        destination.close()
-
+    content.name = filename
+    
     pos = None
-    msg = Message(date=date or t, content_file=filename, summary_file=summary_filename, user=author)
-    msg.save()
+    msg = Message.objects.create(date=date or t, file=content, user=author)
+    
     if bool(Admin.objects.filter(user=author,forum=forum)):
         status = Message_forum.STATUS_APPROVED
         if not parent:
@@ -474,7 +470,7 @@ def createmessage(request, forum, content, author, summary=False, parent=False, 
     if parent:
         add_child(msg, parent.message)
         if msg_forum.status == Message_forum.STATUS_APPROVED and msg_forum.forum.response_calls:
-            alerts.answer_call(forum.line_set.all()[0], msg_forum)
+            broadcast.answer_call(forum.line_set.all()[0], msg_forum)
 
     return msg_forum
 
@@ -506,11 +502,11 @@ def updatestatus(request, action):
         else:
             '''
             '    Deliberately not checking if response call has already been created
-            '    (not Prompt.objects.filter(file__contains=m.message.content_file)
+            '    (not Prompt.objects.filter(file__contains=m.message.file.name)
             '    to allow moderator to re-send response call by rejecting and re-approving msg
             '''
             if m.forum.response_calls:
-                alerts.answer_call(m.forum.line_set.all()[0], m)
+                broadcast.answer_call(m.forum.line_set.all()[0], m)
             
             
     elif action == 'reject' and current_status != Message_forum.STATUS_REJECTED: # newly rejecting
@@ -537,6 +533,10 @@ def updatestatus(request, action):
     m.save()
     
     return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(m.id),)))
+
+def alltags(request):
+    tags = Tag.objects.all().order_by('tag').distinct()   
+    return send_response(tags)
 
 def tags(request, forum_id):
     params = request.GET
@@ -844,12 +844,11 @@ def add_child(child, parent):
 def download(request, model, model_id):
     if model == 'mf':
         mf = get_object_or_404(Message_forum, pk=model_id)
-        fname = mf.message.content_file
+        fname = mf.message.file.path
     elif model == 'si':
         input = get_object_or_404(Input, pk=model_id)
-        fname = input.input
+        fname = settings.MEDIA_ROOT + '/' + input.input
     
-    fname = settings.MEDIA_ROOT + '/' + fname
     return send_file(fname,'application/octet-stream')
 
 def sms(request, line_id):
@@ -1049,4 +1048,131 @@ def send_response(query_set, relations=(), excludes=()):
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response;
 
-
+@csrf_exempt
+def search(request):
+    
+    #getting users's forum first
+    auth_user = request.user
+    if not auth_user.is_superuser:
+        # get all forums that this user has access to
+        fora = Forum.objects.filter(admin__auth_user=auth_user).exclude(status=Forum.STATUS_INACTIVE).distinct()
+    else:
+        fora = Forum.objects.all()
+    
+    
+    forums = []
+    for forum in fora:
+        forums.append(forum.name)
+        
+    filts = []
+    message_forums = []
+    
+    if len(forums) > 0:
+        results = SearchQuerySet().filter(SQ(forum__in=forums))
+        
+        params = request.POST
+        search_data = json.loads(params[SEARCH_PARAM])
+        #if search keyword is present then checking it against the message author fields
+        search_keyword = search_data[SEARCH_KEYWORD].lower()
+        if search_keyword is not None and len(search_keyword) > 0:
+            filts.append(SQ(author_name__icontains=search_keyword))
+            '''
+            if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
+                selected_author_fields = search_data[AUTHOR].split(",")
+                
+                if len(selected_author_fields) > 0:
+                    if AUTHOR_NAME in selected_author_fields:
+                        author_sqs = SQ(author_name__icontains=search_keyword)
+                    
+                    if AUTHOR_NUMBER in selected_author_fields and author_sqs is not None:
+                        author_sqs |= SQ(author_number__icontains=search_keyword)
+                    elif AUTHOR_NUMBER in selected_author_fields:
+                            author_sqs = SQ(author_number__icontains=search_keyword)
+                    
+                    if AUTHOR_DISTRICT in selected_author_fields and author_sqs is not None:
+                        author_sqs |= SQ(author_district__icontains=search_keyword)
+                    elif AUTHOR_DISTRICT in selected_author_fields :
+                        author_sqs = SQ(author_district__icontains=search_keyword)
+                        
+                    if AUTHOR_TALUKA in selected_author_fields and author_sqs is not None:
+                        author_sqs |= SQ(author_taluka__icontains=search_keyword)
+                    elif AUTHOR_TALUKA in selected_author_fields:
+                        author_sqs = SQ(author_taluka__icontains=search_keyword)
+                    
+                    if AUTHOR_VILLAGE in selected_author_fields and author_sqs is not None:
+                        author_sqs |= SQ(author_village__icontains=search_keyword)
+                    elif AUTHOR_VILLAGE in selected_author_fields:
+                        author_sqs = SQ(author_village__icontains=search_keyword)
+                        
+                else:
+                    author_sqs = SQ(author_name__icontains=search_keyword)
+                    author_sqs |= SQ(author_number__icontains=search_keyword)
+                    author_sqs |= SQ(author_district__icontains=search_keyword)
+                    author_sqs |= SQ(author_taluka__icontains=search_keyword)
+                    author_sqs |= SQ(author_village__icontains=search_keyword)
+            else:
+                author_sqs = SQ(author_name__icontains=search_keyword)
+                author_sqs |= SQ(author_number__icontains=search_keyword)
+                author_sqs |= SQ(author_district__icontains=search_keyword)
+                author_sqs |= SQ(author_taluka__icontains=search_keyword)
+                author_sqs |= SQ(author_village__icontains=search_keyword)
+                
+            filts.append(author_sqs)
+            '''
+            
+        # if status is passed then appending it into filter criteria
+        if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
+            selected_status = search_data[STATUS].split(",")
+            
+            if len(selected_status) > 0:
+                filts.append(SQ(status__in=selected_status))
+                '''
+                status_sqs = SQ()
+                for status_value in selected_status:
+                    status_sqs |= SQ(status_icontains=status_value)
+                
+                filts.append(status_sqs)
+                '''
+                
+        
+        # if tags are passed then appending them into filter criteria
+        if search_data[TAG] is not None and len(search_data[TAG]) > 0:
+            selected_tags = search_data[TAG].split(TAG_SEPERATOR)
+            
+            if len(selected_tags) > 0:
+                filts.append(SQ(tags__in=selected_tags))
+            
+        
+        # if from date is passed then appending it into filter criteria
+        # from server side date would be always comes in format of yyyy-MM-dd HH:mm:ss only. 
+        #If need to be change then change it on the both the place. i.e. client and server
+        # e.g. 2013-09-17 15:50:30
+        
+        date_format = '%Y-%m-%d %H:%M:%S'
+        if search_data[FROMDATE] is not None and len(search_data[FROMDATE]) > 0:
+            from_date = datetime.strptime(search_data[FROMDATE], date_format)
+            filts.append(SQ(message_date__gte=from_date))
+    
+        # if to date is passed then appending it into filter criteria
+        if search_data[TODATE] is not None and len(search_data[TODATE]) > 0:
+            to_date = datetime.strptime(search_data[TODATE], date_format)
+            filts.append(SQ(message_date__lte=to_date))
+        
+        print filts
+        for filt in filts:
+            results = results.filter(filt)
+            
+        print results.stats_results()
+        #print results
+        
+        for r in results:
+            message_forums.append(r.object)
+        count = len(message_forums)
+    else:
+        count = 0;
+    
+    
+                    
+    resp = send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('name', 'moderated', 'responses_allowed', 'posting_allowed', 'routeable')}})
+        
+    return resp
