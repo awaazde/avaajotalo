@@ -14,12 +14,20 @@
     limitations under the License.
 '''
 
+'''
+****************************************************************************
+******************* CONSTANTS **********************************************
+****************************************************************************
+'''
 import sys, csv
 from datetime import datetime, timedelta
+from openpyxl.reader.excel import load_workbook
 from django.conf import settings
 from django.db.models import Sum
+from django.core.mail import EmailMessage
 from otalo.ao.models import Line, User, Message_forum
 from otalo.surveys.models import Survey, Prompt, Option, Call, Input, Subject
+from otalo.ao.views import get_phone_number
 import otalo_utils, call_duration
 
 CMF_DESIGNATOR = '_CMF'
@@ -28,55 +36,7 @@ CMF_OUTPUT_DIR = '/home/cmf/reports/'
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
 AO2_NUMBER = '7930142013'
-
-def add_users(names, numbers, villages, treatment_group):
-    added = 0
-    modified = 0
-    for i in range(len(numbers)):
-        number = numbers[i]
-        user = User.objects.filter(number=number)
-        if bool(user):
-            user = user[0]
-            user.allowed = 'y'
-            user.indirect_bcasts_allowed = False
-            if user.name is None or CMF_DESIGNATOR not in user.name:
-                user.name = names[i] + CMF_DESIGNATOR
-            user.village = villages[i]
-            if number in treatment_group:
-                print('found treatment num')
-                user.balance = -1
-            user.save()
-            print("modified "+ str(user))
-            modified += 1
-        else:
-            user = User(number=number, name=names[i]+CMF_DESIGNATOR, village=villages[i], allowed='y', indirect_bcasts_allowed=False)
-            if number in treatment_group:
-                print('found treatment num')
-                user.balance = -1
-            user.save()
-            print("added "+ str(user))
-            added += 1
-            
-    print(str(added)+" users added; "+str(modified)+" users modified")
-    
-def get_numbers(f):
-    f = open(f)
-    numbers = []
-    while(True):
-        num = f.readline()
-        if not num:
-            break
-        numbers.append(num.strip())
-        
-    return numbers
-
-def date_str(date):
-    #return date.strftime('%Y-%m-%d')
-    return date.strftime('%m-%d-%y')
-
-def time_str(date):
-    #return date.strftime('%Y-%m-%d')
-    return date.strftime('%m-%d-%y %H:%M')
+MISSED_CALL_FILE = '/home/Dropbox/missed_calls.xlsx'
 
 '''
 ****************************************************************************
@@ -841,9 +801,136 @@ def responder_report(userid, forumids, date_start=False, date_end=False, ):
 ******************* UTILS **************************************************
 ****************************************************************************
 ''' 
+def update_missed_call(wkbk_file):
+    wb = load_workbook(filename = wkbk_file)
+    
+    to_add = wb.worksheets[0]
+    to_remove = wb.worksheets[1]
+    
+    remove_users_by_file(to_remove)
+    add_users_by_file(to_add)
+
+def change_user_nums_by_file(sht):
+    oldnums = sht.columns[0]
+    oldnums = [str(cell.value) for cell in oldnums]
+    
+    newnums = sht.columns[1]
+    oldnums = [str(cell.value) for cell in oldnums]
+    
+    updated = []
+    not_found = []
+    # skip header
+    for i in range(1,len(oldnums)):
+        u = User.objects.filter(number=oldnums[i]).order_by('id')
+        if bool(u):
+            u=u[0]
+            newnum_user = User.objects.filter(number=newnums[i])
+            if bool(newnum_user):
+                email = EmailMessage("AO2: change user number clash", 'already exists '+newnums[i], "Awaaz.De Team <dailydigest@awaaz.de>", "neil@awaaz.de")
+                settings.EMAIL_HOST_USER = 'dailydigest@awaaz.de'
+                settings.EMAIL_HOST_PASSWORD = 'XXX'
+                email.send()
+            else:
+                print(time_str(datetime.now())+'\tchange for '+u.number+ ':'+newnums[i])
+                u.number = newnums[i]
+                u.save()
+        else:
+            print(time_str(datetime.now())+'\tchange not found: '+oldnums[i])
+    
+def remove_users_by_file(sht):
+    col = sht.columns[0]
+    nums = [str(cell.value) for cell in col]
+    # remove header
+    nums = nums[1:]
+    not_found = User.objects.filter(number__in=nums).values('number')
+    not_found = [u.values()[0] for u in not_found]
+    not_found = list(set(nums) - set(not_found))
+    already_off = User.objects.filter(number__in=nums, balance=None).values('number')
+    already_off = [u.values()[0] for u in already_off]
+    '''
+    ' only proceed if there has been a change, which
+    ' we infer by checking if any of the requested numbers
+    ' actually need to be turned off
+    '''
+    if len(already_off) != len(set(nums))-len(not_found):
+        if not_found:
+            print(time_str(datetime.now())+'\tremove not found '+ ",".join(not_found))
+    
+        if already_off:
+            print(time_str(datetime.now())+'\talready off '+ ",".join(already_off))
+    
+        User.objects.filter(number__in=nums).update(balance=None)
+        print(time_str(datetime.now())+'\tremoved '+ ",".join(nums))
+    
+def add_users_by_file(sht):
+    rows = list(sht.rows)
+    header = rows[0]
+    header = [str(cell.value).lower().strip() for cell in header]
+    
+    # skip the header
+    for row in rows[1:]:
+        row = list(row)
+        row = [str(cell.value).strip() if cell.value else None for cell in row]
+        number = row[header.index('number')]
+        number = get_phone_number(number)
+        if number == None or number == '':
+            print(time_str(datetime.now())+'\tinvalid number '+ str(row[header.index('number')]))
+            continue
+        u = User.objects.filter(number=number)
+        if bool(u):
+            u = u[0]
+            verb = "updating user "
+        else:
+            u = User.objects.create(number=number, allowed='y')
+            verb = "creating user "
+        
+        changed = False
+        if 'name' in header:
+            if u.name != row[header.index('name')]:
+                changed = True
+            u.name = row[header.index('name')]
+        if 'village' in header:
+            if u.village != row[header.index('village')]:
+                changed = True
+            u.village = row[header.index('village')]
+        if 'taluka' in header:
+            if u.taluka != row[header.index('taluka')]:
+                changed = True
+            u.taluka = row[header.index('taluka')]
+        if 'district' in header:
+            if u.district != row[header.index('district')]:
+                changed = True
+            u.district = row[header.index('district')]
+        
+        if u.balance != -1:
+            changed = True
+            
+        if not changed and 'updating' in verb:
+            print(time_str(datetime.now())+'\tunchanged, breaking on '+ str(row[header.index('number')]))
+            break
+        
+        u.balance = -1    
+        u.save()
+        print(time_str(datetime.now())+'\t'+verb + str(u))
+        
+def get_numbers(f):
+    f = open(f)
+    numbers = []
+    while(True):
+        num = f.readline()
+        if not num:
+            break
+        numbers.append(num.strip())
+        
+    return numbers
+
 def date_str(date):
     #return date.strftime('%Y-%m-%d')
     return date.strftime('%b-%d-%y')
+
+def time_str(date):
+    #return date.strftime('%Y-%m-%d')
+    return date.strftime('%m-%d-%y %H:%M')
 
 '''
 ****************************************************************************
@@ -899,7 +986,9 @@ def main():
             usageend = datetime.strptime(sys.argv[4], "%m-%d-%Y")
             
         get_minutes_used(line, inbound, date_start=usagestart, date_end=usageend)
-
+    elif '--update_missed_calls' in sys.argv:
+        update_missed_call(MISSED_CALL_FILE)
+        
     #get_message_topics([1,2], numbers, date_start=startdate, date_end=enddate)
     #num = line.outbound_number
     #if not num:
