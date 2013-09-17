@@ -59,7 +59,6 @@ class Line(models.Model):
     # for personal inbox in the main menu
     personalinbox = models.BooleanField(default=True)
     checkpendingmsgs = models.BooleanField(default=True)
-    name_file = models.CharField(max_length=24, blank=True, null=True)
     logo_file = models.CharField(max_length=24, blank=True, null=True)
     forums = models.ManyToManyField('Forum', blank=True, null=True)
     sms_config = models.ForeignKey('sms.Config', blank=True, null=True)
@@ -85,10 +84,6 @@ class User(models.Model):
     district = models.CharField(max_length=128, blank=True, null=True)
     taluka = models.CharField(max_length=128, blank=True, null=True)
     village = models.CharField(max_length=128, blank=True, null=True)
-    name_file = models.CharField(max_length=24, blank=True, null=True)
-    district_file = models.CharField(max_length=24, blank=True, null=True)
-    taluka_file = models.CharField(max_length=24, blank=True, null=True)
-    village_file = models.CharField(max_length=24, blank=True, null=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     balance_last_updated = models.DateTimeField(blank=True, null=True)
     email = models.CharField(max_length=64, blank=True, null=True)
@@ -102,11 +97,11 @@ class User(models.Model):
             return self.name
         else:
             return self.number
-        
+    
 class Message(models.Model):
     date = models.DateTimeField()
     content_file = models.CharField(max_length=48)
-    summary_file = models.CharField(max_length=48, blank=True, null=True)
+    file = models.FileField(upload_to="%Y/%m/%d")
     user = models.ForeignKey(User)    
     thread = models.ForeignKey('self', blank=True, null=True)
     lft = models.IntegerField(default=1) 
@@ -115,7 +110,7 @@ class Message(models.Model):
     
     def __unicode__(self):
         return datetime.strftime(self.date, '%b-%d-%Y') + '_' + unicode(self.user)
-      
+
 class Forum(models.Model):
     name = models.CharField(max_length=128)
     name_file = models.CharField(max_length=24, blank=True, null=True)
@@ -476,8 +471,10 @@ class Dialer(models.Model):
     '    Now there are two redundant fields between dialers and calls: dialstring_prefix, suffix, and machine_id
     '    Could consider passing a dialer as a foreign key to Call, but that would mean an extra db lookup on each call
     '    in survey.lua. So cache it for now, if the fields pile up further we can make a change.
+    '
+    '    In many setups, multi-tenant telephony servers won't be needed, so make this a nullable field
     '''
-    #machine_id = models.IntegerField()
+    machine_id = models.IntegerField(blank=True, null=True)
     '''
     ****************************************************************************************************
     '''
