@@ -36,7 +36,7 @@ CMF_OUTPUT_DIR = '/home/cmf/reports/'
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
 AO2_NUMBER = '7930142013'
-MISSED_CALL_FILE = '/home/Dropbox/missed_calls.xlsx'
+MISSED_CALL_FILE = '/home/awaazde/Dropbox/missed_calls.xlsx'
 
 '''
 ****************************************************************************
