@@ -3,16 +3,16 @@ from haystack import indexes
 
 
 class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
-    text = indexes.CharField(document=True, use_template=True)
+    text = indexes.EdgeNgramField(document=True, use_template=True)
     message = indexes.CharField(model_attr='message', null=True)
     forum = indexes.CharField(model_attr='forum', null=True)
     status = indexes.CharField(model_attr='status', null=True)
     tags = indexes.CharField(model_attr='tags', null=True)
-    author_name = indexes.CharField(null=True)
-    author_number = indexes.CharField(null=True)
-    author_district = indexes.CharField(null=True)
-    author_taluka = indexes.CharField(null=True)
-    author_village = indexes.CharField(null=True)
+    author_name = indexes.EdgeNgramField(null=True)
+    author_number = indexes.EdgeNgramField(null=True)
+    author_district = indexes.EdgeNgramField(null=True)
+    author_taluka = indexes.EdgeNgramField(null=True)
+    author_village = indexes.EdgeNgramField(null=True)
     message_date = indexes.DateTimeField(null=True)
     message_thread = indexes.CharField(null=True)
 

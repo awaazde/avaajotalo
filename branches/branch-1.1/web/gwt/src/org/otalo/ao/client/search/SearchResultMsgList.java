@@ -19,7 +19,6 @@ package org.otalo.ao.client.search;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.otalo.ao.client.ConfirmDialog;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.Messages;
 import org.otalo.ao.client.SoundWidget;
@@ -238,8 +237,6 @@ public class SearchResultMsgList extends Composite {
 		styleRow(selectedRow, false);
 		styleRow(row, true);
 
-		// TODO
-		//message.read = true;
 		selectedRow = row;
 
 		BaseModel message = messages.get(row);
@@ -359,19 +356,9 @@ public class SearchResultMsgList extends Composite {
 		// Select the first row if none is selected.
 		if (selectedRow == -1 && count > 0) {
 			selectRow(0);
+		} else {
+			Messages.get().getMessageDetail().reset();
 		}
-	}
-	
-	
-	private void unselectAllRow() {
-		if(table.getRowCount() > 0 ) {
-			for(int count=0; count<table.getRowCount();count++) {
-				if(table.getRowFormatter()!= null)
-					table.getRowFormatter().removeStyleName(count + 1, "mail-SelectedRow");
-				if (Messages.get().canManage() && table.getCellCount(count) > 6) 
-					table.clearCell(count + 1, 5);
-			}
-		}			
 	}
 
 	private class TableClickHandler implements ClickHandler {

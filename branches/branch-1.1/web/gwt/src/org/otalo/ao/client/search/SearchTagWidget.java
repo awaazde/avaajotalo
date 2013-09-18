@@ -16,6 +16,7 @@
 package org.otalo.ao.client.search;
 
 import org.otalo.ao.client.AutoCompleteTagWidget;
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent;
 import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent.ChosenChangeHandler;
 
@@ -25,7 +26,7 @@ import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent.ChosenChangeHan
  */
 public class SearchTagWidget extends AutoCompleteTagWidget {
 
-	private EventObserver notifier; //notifies when any tag is selected
+	private EventObserver notifier; //notifies when any tag is selected or removed
 	
 	public SearchTagWidget(boolean isShowLabel, boolean isEditable, EventObserver notifier) {
 		super(isShowLabel, isEditable);
@@ -37,7 +38,7 @@ public class SearchTagWidget extends AutoCompleteTagWidget {
 		@Override
 		public void onChange(ChosenChangeEvent event) {
 			setSelectedTagData();
-			notifier.notifyQueryChangeListener("tags", selectedTags.getValue());
+			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.TAG, selectedTags.getValue());
 		}
 	}
 }

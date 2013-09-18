@@ -36,8 +36,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -61,6 +65,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * application into a single bundle.
    */
   public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images, SearchResultMsgList.Images {
+	  ImageResource loader();
   }
 
   /**
@@ -90,6 +95,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   private SearchResultMsgList searchResultMsgList;
   private Shortcuts searchShortCut;
 
+  private HTML loaderImage;
  
   
   /**
@@ -161,6 +167,10 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.getResponses(f, start);
   }
   
+  public MessageDetail getMessageDetail() {
+	  return messageDetail;
+  }
+  
   public void displayBroadcastPanel(MessageForum thread)
   {
   	broadcastIface.reset(thread);
@@ -222,16 +232,14 @@ public class Messages implements EntryPoint, ResizeHandler {
 	  search.setSearchPharse(searchPhrase);
 	  searchResultMsgList.setVisible(true);
 	  messageList.setVisible(false);
-	 
+
 	  if (line.bcastingAllowed()) broadcastIface.setVisible(false);
 	  if (!canManage()) messageDetail.setVisible(true);
-		if (line.hasSMSConfig())
-		{
-			smsList.setVisible(false);
-			smsIface.setVisible(false);
-		}
-		if (canManage()) groupsIface.setVisible(false);
-	  //TODO
+	  if (line.hasSMSConfig()) {
+		  smsList.setVisible(false);
+		  smsIface.setVisible(false);
+	  }
+	  if (canManage()) groupsIface.setVisible(false);
   }
   
   public void displaySMS(SMSListType type, int start)
@@ -353,9 +361,11 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
-    searchResultMsgList = new SearchResultMsgList(images);
-    searchResultMsgList.setWidth("100%");
-    searchResultMsgList.setVisible(false);
+    if(!Messages.get().canManage()) {
+	    searchResultMsgList = new SearchResultMsgList(images);
+	    searchResultMsgList.setWidth("100%");
+	    searchResultMsgList.setVisible(false);
+    }
     
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
@@ -391,15 +401,25 @@ public class Messages implements EntryPoint, ResizeHandler {
     search = new SearchFilterPanel(searchResultMsgList);
     
     shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
-    searchShortCut = new Shortcuts(images, null, null, null, search);
+    
+    if(!Messages.get().canManage()) {
+    	searchShortCut = new Shortcuts(images, null, null, null, search);
+    	searchShortCut.setWidth("100%");
+        searchShortCut.setVisible(false);
+    }
     
     rightPanel.setWidth("100%");
     shortcuts.setWidth("100%");
-        
-    searchShortCut.setWidth("100%");
-    searchShortCut.setVisible(false);
-     
+
     displayForumPanel();
+    
+    // creating a loader
+    loaderImage = new HTML(AbstractImagePrototype.create(images.loader()).getHTML());
+	loaderImage.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	loaderImage.addStyleName("loader-img");
+	showLoader(false);
+	
+	rightPanel.add(loaderImage);
    // Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
     DockPanel outer = new DockPanel();
@@ -407,7 +427,8 @@ public class Messages implements EntryPoint, ResizeHandler {
     
     outer.add(topPanel, DockPanel.NORTH);
     outer.add(shortcuts, DockPanel.WEST);
-   	outer.add(searchShortCut, DockPanel.WEST);
+    if(!Messages.get().canManage())
+    	outer.add(searchShortCut, DockPanel.WEST);
     
     //outer.addWest(shortcuts, 100);
     outer.add(rightPanel, DockPanel.CENTER);
@@ -442,6 +463,14 @@ public class Messages implements EntryPoint, ResizeHandler {
     onWindowResized(Window.getClientWidth(), Window.getClientHeight());
   }
 
+  
+  public void showLoader(boolean isShow) {
+	  loaderImage.setVisible(isShow);
+	  //TODO
+  }
+  
+ 
+  
   public void onResize(ResizeEvent event) {
     onWindowResized(event.getWidth(), event.getHeight());
   }
