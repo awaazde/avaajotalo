@@ -36,7 +36,7 @@ CMF_OUTPUT_DIR = '/home/cmf/reports/'
 SUBDIR = 'guj/cmf/'
 SOUND_EXT = '.wav'
 AO2_NUMBER = '7930142013'
-MISSED_CALL_FILE = '/home/awaazde/Dropbox/CMF/missed_calls.xlsx'
+MISSED_CALL_FILE = '/Users/neil/Dropbox/AD-internal/Centre for Microfinance (CMF)/missed_calls.xlsx'
 
 '''
 ****************************************************************************
@@ -184,15 +184,7 @@ def get_features_within_call(number, feature_list, filename, date_start=False, d
                     # close out current call
                     call = open_calls[phone_num]    
                     dur = current_date - call['start']
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        treatment = 'No'
-                        if u.balance == -1:
-                            treatment = 'Yes'
-                    call_info = [phone_num,treatment,date_str(call['start']),str(dur.seconds)]
+                    call_info = [phone_num,date_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
                             call_info.append(call[feature])
@@ -211,15 +203,7 @@ def get_features_within_call(number, feature_list, filename, date_start=False, d
                     # close out call                
                     call = open_calls[phone_num]
                     dur = current_date - call['start']
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        treatment = 'No'
-                        if u.balance == -1:
-                            treatment = 'Yes'
-                    call_info = [phone_num,treatment,date_str(call['start']),str(dur.seconds)]
+                    call_info = [phone_num,date_str(call['start']),str(dur.seconds)]
                     for feature in feature_list:
                         if feature in call:
                             call_info.append(call[feature])
@@ -262,7 +246,7 @@ def get_features_within_call(number, feature_list, filename, date_start=False, d
             #print("PhoneNumException: " + line)
             continue
         
-    header = ['number','treatment?','date','duration'] + feature_list
+    header = ['number','date','duration'] + feature_list
     if date_start:
         outfilename='features_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -271,169 +255,8 @@ def get_features_within_call(number, feature_list, filename, date_start=False, d
     output = csv.writer(open(outfilename, 'wb'))
     output.writerow(header)
     output.writerows(all_calls)
-    
-def get_broadcast_calls(number, filename, date_start=None, date_end=None):
-    all_calls = []
-    open_calls = {}
-    
-    f = open(filename)
 
-    while(True):
-        line = f.readline()
-        if not line:
-            break
-        try:
-        
-        #################################################
-        ## Use the calls here to determine what pieces
-        ## of data must exist for the line to be valid.
-        ## All of those below should probably always be.
-        
-            phone_num = otalo_utils.get_phone_num(line)
-            current_date = otalo_utils.get_date(line)        
-            dest = otalo_utils.get_destination(line)            
-        ##
-        ################################################
-                
-            if date_start:
-                if date_end:
-                    if not (current_date >= date_start and current_date < date_end):
-                        continue
-                    if current_date > date_end:
-                        break
-                else:
-                    if not current_date >= date_start:
-                        continue
-    
-            if line.find("Start call") != -1:
-                # check to see if this caller already has one open
-                if phone_num in open_calls:
-                    # close out current call
-                    call = open_calls[phone_num]    
-                    start = call['start']
-                    dur = current_date - start
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    uname = ''
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        treatment = 'No'
-                        uname = u.name
-                        if u.balance == -1:
-                            treatment = 'Yes'
-                    last_prompt_file = call['last_prompt']
-                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
-                    if bool(call):
-                        call = call[0]
-                        priority = str(call.priority)
-                        input = Input.objects.filter(call=call)
-                        if input:
-                            input = input[0].input
-                        else:
-                            input = 'N/A'                          
-                        #all_calls += phone_num+delim+priority+delim+time_str(start)+delim+str(dur.seconds)+"\n"
-                        all_calls.append([uname, treatment,priority,time_str(start),str(dur.seconds), last_prompt_file, input])                        
-                    del open_calls[phone_num]
-                    
-                # add new call
-                #print("adding new call: " + phone_num)
-                open_calls[phone_num] = {'start':current_date, 'last_prompt':'Start Call'}
-                
-            elif line.find("End call") != -1:
-                if phone_num in open_calls:
-                    # close out call                
-                    call = open_calls[phone_num]    
-                    start = call['start']
-                    dur = current_date - start
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    uname = ''
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        treatment = 'No'
-                        uname = u.name
-                        if u.balance == -1:
-                            treatment = 'Yes'
-                    last_prompt_file = call['last_prompt']
-                    call = Call.objects.filter(subject__number=phone_num, date__year=start.year, date__month=start.month, date__day=start.day, complete=True, survey__broadcast=True)
-                    if bool(call):
-                        call = call[0]
-                        priority = str(call.priority)
-                        input = Input.objects.filter(call=call)
-                        if input:
-                            input = input[0].input
-                        else:
-                            input = 'N/A'                         
-                        #all_calls += phone_num+delim+priority+delim+time_str(start)+delim+str(dur.seconds)+"\n"
-                        all_calls.append([uname,treatment,priority,time_str(start),str(dur.seconds), last_prompt_file, input])
-                    del open_calls[phone_num]
-                    
-            elif phone_num in open_calls:
-                call = open_calls[phone_num]
-                prompt = line[line.rfind('/')+1:]
-                call['last_prompt'] = prompt.strip()
-                    
-        except KeyError as err:
-            #print("KeyError: " + phone_num + "-" + otalo.date_str(current_date))
-            raise
-        except ValueError as err:
-            #print("ValueError: " + line)
-            continue
-        except IndexError as err:
-            continue
-        except otalo_utils.PhoneNumException:
-            #print("PhoneNumException: " + line)
-            continue
-                
-    header = ['name','treatment?','call try #','time','duration','last prompt','input']    
-    if date_start:
-        outfilename='outgoing_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
-    else:
-        outfilename='outgoing_'+number[-8:]+'.csv'
-    outfilename = CMF_OUTPUT_DIR+outfilename
-    output = csv.writer(open(outfilename, 'wb'))
-    output.writerow(header)
-    output.writerows(all_calls)
-    nocalls=[]
-    for num in phone_num_filter:
-        #print('number is ' + num)
-        calls = Call.objects.select_related().filter(subject__number=num, survey__broadcast=True)
-        #print('got calls')
-        calls_by_survey = {}
-        for call in calls:
-            if date_end and call.priority == 1 and call.date > date_end:
-                break
-            s = call.survey
-            if s in calls_by_survey:
-                calls_by_survey[s].append(call)
-            elif call.priority == 1:
-                if date_start:
-                    if call.date >= date_start:
-                        calls_by_survey[s] = [call]
-                else:
-                    calls_by_survey[s] = [call]
-        for survey,calls in calls_by_survey.items():
-            #print('processing survey ' + str(survey))
-            complete = filter(lambda call: call.complete==True, calls)
-            if not(bool(complete)):
-                #print('getting first att call for survey ' + str(survey.id) + ' number '+ num)
-                first_call = filter(lambda call: call.priority==1, calls)[0]
-                first_att = first_call.date
-                
-                # may not be there if it's an old number
-                treatment = 'N/A'
-                u = User.objects.filter(number=phone_num)
-                if bool(u):
-                    u = u[0]
-                    treatment = 'No'
-                    if u.balance == -1:
-                        treatment = 'Yes'
-                nocalls.append([num,treatment,'1',time_str(first_att),'N/A','N/A','N/A'])
-    output.writerows(nocalls)
-
-def get_broadcast_calls2(line, date_start=None, date_end=None):
+def get_broadcast_calls(line, date_start=None, date_end=None):
     all_calls = []
     number = line.outbound_number or line.number
     
@@ -544,22 +367,10 @@ def get_message_listens(number, filename, date_start=False, date_end=False, tran
                     fname = open_calls[phone_num][0]
                     listenstart = open_calls[phone_num][1]
                     sessid = otalo_utils.get_sessid(line)
-                    # may not be there if it's an old number
-                    treatment = 'N/A'
-                    uid = 'N/A'
-                    uname = 'N/A'
-                    u = User.objects.filter(number=phone_num)
-                    if bool(u):
-                        u = u[0]
-                        uid = str(u.id)
-                        uname = u.name
-                        treatment = 'No'
-                        if u.balance == -1:
-                            treatment = 'Yes'
                     mf = Message_forum.objects.get(message__file__contains=fname)
                     tags = [t.tag for t in mf.tags.all()]
                     dur = (current_date-listenstart).seconds
-                    all_calls.append([uid,treatment,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),str(mf.message.date),str(dur)]+tags)
+                    all_calls.append([uid,sessid,str(listenstart),uname,str(mf.forum.id),str(mf.id),str(mf.message.date),str(dur)]+tags)
                     
                     open_calls[phone_num] = False
                 
@@ -577,7 +388,7 @@ def get_message_listens(number, filename, date_start=False, date_end=False, tran
             #print("PhoneNumException: " + line)
             continue
     
-    header = ['UserId','Treatment?','SessId','ListenTime','Name','ForumId','MessageForumId','MessageDate','ListenDuration(s)','Tags']
+    header = ['UserId','SessId','ListenTime','Name','ForumId','MessageForumId','MessageDate','ListenDuration(s)','Tags']
     if date_start:
         outfilename='listens_'+number[-8:]+'_'+str(date_start.day)+'-'+str(date_start.month)+'-'+str(date_start.year)[-2:]+'.csv'
     else:
@@ -839,9 +650,13 @@ def change_user_nums_by_file(sht):
     
 def remove_users_by_file(sht):
     col = sht.columns[0]
-    nums = [str(cell.value) for cell in col]
+    nums = [get_phone_number(str(cell.value)) for cell in col]
     # remove header
     nums = nums[1:]
+    # remove invalid nums
+    nums = filter(lambda elt: elt is not None, nums)
+    # remove duplicates
+    nums = list(set(nums))
     not_found = User.objects.filter(number__in=nums).values('number')
     not_found = [u.values()[0] for u in not_found]
     not_found = list(set(nums) - set(not_found))
@@ -852,7 +667,7 @@ def remove_users_by_file(sht):
     ' we infer by checking if any of the requested numbers
     ' actually need to be turned off
     '''
-    if len(already_off) != len(set(nums))-len(not_found):
+    if len(already_off) != len(nums)-len(not_found):
         if not_found:
             print(time_str(datetime.now())+'\tremove not found '+ ",".join(not_found))
     
@@ -869,8 +684,17 @@ def add_users_by_file(sht):
     
     # skip the header
     for row in rows[1:]:
-        row = list(row)
-        row = [str(cell.value).strip() if cell.value else None for cell in row]
+        rawrow = list(row)
+        row = []
+        for cell in rawrow:
+            if type(cell.value) is unicode:
+                row.append(cell.value.encode('ascii', 'ignore').strip())
+            elif type(cell.value) is type(None):
+                row.append(None)
+            else:
+                row.append(str(cell.value))
+                
+        #row = [cell.value.encode('ascii', 'ignore').strip() if cell.value else None for cell in row]
         number = row[header.index('number')]
         number = get_phone_number(number)
         if number == None or number == '':
@@ -911,7 +735,7 @@ def add_users_by_file(sht):
         
         u.balance = -1    
         u.save()
-        print(time_str(datetime.now())+'\t'+verb + str(u))
+        print(time_str(datetime.now())+'\t'+verb + str(u) + '-'+u.number+'-'+str(u.id))
         
 def get_numbers(f):
     f = open(f)
