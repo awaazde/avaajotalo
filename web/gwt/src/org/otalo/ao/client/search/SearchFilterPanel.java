@@ -19,22 +19,26 @@ import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest;
+import org.otalo.ao.client.Messages;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.JSONRequester;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.util.QueryParam;
 
 import com.google.gwt.core.client.JsDate;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -56,7 +60,8 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	private SearchQueryParamMap queryParamsMap;
 	
 	private SearchResultMsgList searchResultContainer;
-	//private Button searchButton;
+	private final DateTimeFormat formatter = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss"); //on server side string date should be converted back to date in this format only
+	private Button searchButton;
 	
 	
 	/**
@@ -78,19 +83,12 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		verticalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_TOP);
 		verticalPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
 		
-		
 		//Initializing other widgets
 		searchInput = new TextBox();
-		searchInput.setName("search_pharase");
-		searchInput.setTitle("search_pharase");
+		searchInput.setName(AoAPI.SearchConstants.SEARCH_KEYWORD);
+		searchInput.setTitle(AoAPI.SearchConstants.SEARCH_KEYWORD);
 		searchInput.addStyleName("input-txt");
-		searchInput.addKeyUpHandler(new KeyUpHandler() {
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
-			}
-		});
-		
+
 		Label searchLbl = new Label();
 		searchLbl.setText("Search Keyword:");
 		searchLbl.addStyleName("label-txt");
@@ -111,8 +109,8 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		
 		fromDate = new CustomDateBox();
 		toDate = new CustomDateBox();
-		fromDate.setName("fromDate");
-		toDate.setName("toDate");
+		fromDate.setName(AoAPI.SearchConstants.FROMDATE);
+		toDate.setName(AoAPI.SearchConstants.TODATE);
 		JsDate todayDate = JsDate.create();
 		JsDate tomorrowDate = JsDate.create();
 		tomorrowDate.setTime(todayDate.getTime() + 86400000);
@@ -130,7 +128,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		tagLbl.addStyleName("label-txt");
 		tagLbl.addStyleName("tag-label");
 		tagsInput = new SearchTagWidget(false, false, this);
-		tagsInput.setWidth("220px");
+		tagsInput.setWidth("252px");
 		tagsInput.loadTags(null);
 
 		Label authorLbl = new Label();
@@ -138,14 +136,25 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		authorLbl.addStyleName("label-txt");
 		authorFilter = new AuthorFilterCriteria(this);
 		
-		/*searchButton = new Button();
+		searchButton = new Button();
 		searchButton.setText("Search");
-		searchButton.addStyleName("btn-search");*/
+		searchButton.addStyleName("btn-search");
+		
+		searchButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
+			}
+		});
 		
 		Grid fieldGrid = new Grid(12, 1);
 		fieldGrid.setCellSpacing(3);
 		fieldGrid.setWidget(0, 0, searchLbl);
-		fieldGrid.setWidget(1, 0, searchInput);
+		HorizontalPanel searchBoxPanel = new HorizontalPanel();
+		searchBoxPanel.setSpacing(4);
+		searchBoxPanel.add(searchInput);
+		searchBoxPanel.add(searchButton);
+		fieldGrid.setWidget(1, 0, searchBoxPanel);
 		
 		fieldGrid.setWidget(2, 0, mstatusLbl);
 		fieldGrid.setWidget(3, 0, msgStatusFilter);
@@ -162,7 +171,8 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		verticalPanel.add(fieldGrid);
 		
 		initWidget(verticalPanel);
-		
+		//setting default search fields
+		setDefaults();
 	}
 	
 	
@@ -175,10 +185,18 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		//adding into query map, it will automatically prevents duplicates query parameters
 		queryParamsMap.add(new QueryParam(searchProperty, latestState));
 		
+		//always appending the current value of search box
+		queryParamsMap.add(new QueryParam(searchInput.getName(), searchInput.getText()));
+		
+		//showing the loader
+		Messages.get().showLoader(true);
+		
 		JSONRequest request = new JSONRequest();
-		request.doPost(AoAPI.SEARCH, queryParamsMap.jsonString(), new JSONRequester() {
+		request.doPost(AoAPI.SearchConstants.SEARCH, AoAPI.SearchConstants.SEARCH_PARAM + "=" + queryParamsMap.jsonString(), new JSONRequester() {
 			@Override
 			public void dataReceived(List<JSOModel> models) {
+				//on receiving data hiding it
+				Messages.get().showLoader(false);
 				searchResultContainer.displayMessages(models);
 			}
 		});
@@ -191,10 +209,25 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	 */
 	public void setSearchPharse(String value) {
 		this.searchInput.setText(value);
+		tagsInput.loadTags(null);
 		notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
 	}
 	
+	private void setDefaults() {
+		//adding default values for each search parameteres
+		queryParamsMap.add(new QueryParam(searchInput.getName(), searchInput.getText()));
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.STATUS, ""));
+		queryParamsMap.add(new QueryParam(fromDate.getName(), formatter.format(fromDate.getValue())));
+		queryParamsMap.add(new QueryParam(toDate.getName(), formatter.format(toDate.getValue())));
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.TAG, ""));
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.AUTHOR, ""));
+	}
 	
+	/**
+	 * Custom DateBox class. Extending default functionalities of DateBox + having name attribute which is missing into DateBox.
+	 * @author nikhil
+	 *
+	 */
 	private class CustomDateBox extends DateBox {
 		private String name; //name should be unique and can be used to identify the object
 
@@ -217,7 +250,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		@Override
 		public void onValueChange(ValueChangeEvent<Date> event) {
 			CustomDateBox source = (CustomDateBox) event.getSource();
-			notifyQueryChangeListener(source.getName(), source.getValue().toString());
+			notifyQueryChangeListener(source.getName(), formatter.format(source.getValue()));
 		}
 	}
 }

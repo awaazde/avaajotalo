@@ -15,6 +15,7 @@
  */
 package org.otalo.ao.client.search;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.util.CustomStringBuilder;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -49,11 +50,11 @@ public class AuthorFilterCriteria extends Composite{
 		this.taluka 	= new CheckBox("Taluka");
 		this.village 	= new CheckBox("Village");
 		
-		this.name.setName("Name");
-		this.number.setName("Number");
-		this.district.setName("District");
-		this.taluka.setName("Taluka");
-		this.village.setName("Village");
+		this.name.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_NAME);
+		this.number.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_NUMBER);
+		this.district.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_DISTRICT);
+		this.taluka.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_TALUKA);
+		this.village.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_VILLAGE);
 		
 		this.name.addClickHandler(new CheckBoxClickHandler());
 		this.number.addClickHandler(new CheckBoxClickHandler());
@@ -83,7 +84,7 @@ public class AuthorFilterCriteria extends Composite{
 				selectedStatusQuery.add(sender.getName());
 			else
 				selectedStatusQuery.remove(sender.getName());
-			notifier.notifyQueryChangeListener("author", selectedStatusQuery.toString());
+			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.AUTHOR, selectedStatusQuery.toString());
 		}	
 	}
 }

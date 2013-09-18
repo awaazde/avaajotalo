@@ -99,16 +99,17 @@ public class TopPanel extends Composite implements ClickHandler {
     inner.add(signOutLink);
     inner.add(helpLink);
     
-    searchBox = new TextBox();
-    searchBox.setTitle("Search");
-    searchBox.setName("search_keywords");
-    search.add(searchBox);
-    searchBtn.setText("Search");
-    searchBtn.setTitle("Search");
-    searchBtn.addClickHandler(new SearchButtonHandler());
-    search.add(searchBtn);
-    
-    layout.setWidget(1, 0, search); 
+    if(!Messages.get().canManage()) {
+	    searchBox = new TextBox();
+	    searchBox.setTitle("Search");
+	    searchBox.setName("search_keywords");
+	    search.add(searchBox);
+	    searchBtn.setText("Search");
+	    searchBtn.setTitle("Search");
+	    searchBtn.addClickHandler(new SearchButtonHandler());
+	    search.add(searchBtn);
+	    layout.setWidget(1, 0, search);
+    }
     
     signOutLink.addClickHandler(this);
     helpLink.addClickHandler(this);

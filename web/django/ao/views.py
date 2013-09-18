@@ -33,6 +33,8 @@ from django.core.servers.basehttp import FileWrapper
 import json
 import broadcast
 import otalo_utils, stats_by_phone_num
+from itertools import chain
+from operator import attrgetter
 from haystack.query import SearchQuerySet
 from haystack.inputs import AutoQuery
 from haystack.query import SQ
@@ -76,11 +78,12 @@ TODATE = "toDate"
 TAG = "tags"
 AUTHOR = "author"
 
-AUTHOR_NAME = "author_name";
-AUTHOR_NUMBER = "author_number";
-AUTHOR_DISTRICT = "author_district";
-AUTHOR_TALUKA = "author_taluka";
-AUTHOR_VILLAGE = "author_village";
+AUTHOR_NAME = "author_name"
+AUTHOR_NUMBER = "author_number"
+AUTHOR_DISTRICT = "author_district"
+AUTHOR_TALUKA = "author_taluka"
+AUTHOR_VILLAGE = "author_village"
+STATUS_RESPONDED = "3"
 
 
 # How many bcasts to display at a time
@@ -534,9 +537,6 @@ def updatestatus(request, action):
     
     return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(m.id),)))
 
-def alltags(request):
-    tags = Tag.objects.all().order_by('tag').distinct()   
-    return send_response(tags)
 
 def tags(request, forum_id):
     params = request.GET
@@ -1048,9 +1048,15 @@ def send_response(query_set, relations=(), excludes=()):
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response;
 
-@csrf_exempt
-def search(request):
+
+def combined_resultsets(resultset1, resultset2, sortby):
+    if sortby is not None:
+        resultset1 = sorted(chain(resultset1, resultset2),key=attrgetter(sortby))
+    else:
+        resultset1 = chain(resultset1, resultset2)
     
+
+def get_forums(request):
     #getting users's forum first
     auth_user = request.user
     if not auth_user.is_superuser:
@@ -1059,7 +1065,16 @@ def search(request):
     else:
         fora = Forum.objects.all()
     
-    
+    return fora
+
+def alltags(request):
+    fora = get_forums(request)
+    tags = Tag.objects.filter(forum__in=fora).order_by('tag').distinct()   
+    return send_response(tags)
+
+@csrf_exempt
+def search(request):
+    fora = get_forums(request)
     forums = []
     for forum in fora:
         forums.append(forum.name)
@@ -1073,59 +1088,21 @@ def search(request):
         params = request.POST
         search_data = json.loads(params[SEARCH_PARAM])
         #if search keyword is present then checking it against the message author fields
-        search_keyword = search_data[SEARCH_KEYWORD].lower()
-        if search_keyword is not None and len(search_keyword) > 0:
-            filts.append(SQ(author_name__icontains=search_keyword))
-            '''
-            if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
-                selected_author_fields = search_data[AUTHOR].split(",")
-                
-                if len(selected_author_fields) > 0:
-                    if AUTHOR_NAME in selected_author_fields:
-                        author_sqs = SQ(author_name__icontains=search_keyword)
-                    
-                    if AUTHOR_NUMBER in selected_author_fields and author_sqs is not None:
-                        author_sqs |= SQ(author_number__icontains=search_keyword)
-                    elif AUTHOR_NUMBER in selected_author_fields:
-                            author_sqs = SQ(author_number__icontains=search_keyword)
-                    
-                    if AUTHOR_DISTRICT in selected_author_fields and author_sqs is not None:
-                        author_sqs |= SQ(author_district__icontains=search_keyword)
-                    elif AUTHOR_DISTRICT in selected_author_fields :
-                        author_sqs = SQ(author_district__icontains=search_keyword)
-                        
-                    if AUTHOR_TALUKA in selected_author_fields and author_sqs is not None:
-                        author_sqs |= SQ(author_taluka__icontains=search_keyword)
-                    elif AUTHOR_TALUKA in selected_author_fields:
-                        author_sqs = SQ(author_taluka__icontains=search_keyword)
-                    
-                    if AUTHOR_VILLAGE in selected_author_fields and author_sqs is not None:
-                        author_sqs |= SQ(author_village__icontains=search_keyword)
-                    elif AUTHOR_VILLAGE in selected_author_fields:
-                        author_sqs = SQ(author_village__icontains=search_keyword)
-                        
-                else:
-                    author_sqs = SQ(author_name__icontains=search_keyword)
-                    author_sqs |= SQ(author_number__icontains=search_keyword)
-                    author_sqs |= SQ(author_district__icontains=search_keyword)
-                    author_sqs |= SQ(author_taluka__icontains=search_keyword)
-                    author_sqs |= SQ(author_village__icontains=search_keyword)
-            else:
-                author_sqs = SQ(author_name__icontains=search_keyword)
-                author_sqs |= SQ(author_number__icontains=search_keyword)
-                author_sqs |= SQ(author_district__icontains=search_keyword)
-                author_sqs |= SQ(author_taluka__icontains=search_keyword)
-                author_sqs |= SQ(author_village__icontains=search_keyword)
-                
-            filts.append(author_sqs)
-            '''
-            
+        search_keyword = search_data[SEARCH_KEYWORD]
+        
         # if status is passed then appending it into filter criteria
         if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
             selected_status = search_data[STATUS].split(",")
             
             if len(selected_status) > 0:
+                if STATUS_RESPONDED in selected_status:
+                    del selected_status[selected_status.index(STATUS_RESPONDED)]
+                    #now appending filter for responded message
+                    filts.append(SQ(message_thread__isnull=False))
+                
+                #appending other status filters    
                 filts.append(SQ(status__in=selected_status))
+                
                 '''
                 status_sqs = SQ()
                 for status_value in selected_status:
@@ -1133,7 +1110,6 @@ def search(request):
                 
                 filts.append(status_sqs)
                 '''
-                
         
         # if tags are passed then appending them into filter criteria
         if search_data[TAG] is not None and len(search_data[TAG]) > 0:
@@ -1160,19 +1136,62 @@ def search(request):
         
         print filts
         for filt in filts:
-            results = results.filter(filt)
-            
-        print results.stats_results()
-        #print results
+            results = results.filter(filt)   
         
+        print results
+        
+        if search_keyword is not None:
+            if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
+                selected_author_fields = search_data[AUTHOR].split(",")
+                
+                if AUTHOR_NAME in selected_author_fields:
+                    results_by_name = results.autocomplete(author_name=search_keyword)
+                    combined_resultsets(results,results_by_name,'message_date')
+                    
+                if AUTHOR_NUMBER in selected_author_fields:
+                    results_by_number = results.autocomplete(author_number=search_keyword)
+                    combined_resultsets(results,results_by_number,'message_date')
+                    
+                if AUTHOR_DISTRICT in selected_author_fields :
+                    results_by_district = results.autocomplete(author_district=search_keyword)
+                    combined_resultsets(results,results_by_district,'message_date')
+                        
+                if AUTHOR_TALUKA in selected_author_fields:
+                    results_by_taluka = results.autocomplete(author_taluka=search_keyword)
+                    combined_resultsets(results,results_by_taluka,'message_date')
+                    
+                if AUTHOR_VILLAGE in selected_author_fields:
+                    results_by_village = results.autocomplete(author_village=search_keyword)
+                    combined_resultsets(results,results_by_village,'message_date')
+
+            elif len(search_keyword) > 0:
+                
+                results_by_name = results.autocomplete(author_name=search_keyword)
+                results_by_number = results.autocomplete(author_number=search_keyword)
+                results_by_district = results.autocomplete(author_district=search_keyword)
+                results_by_taluka = results.autocomplete(author_taluka=search_keyword)
+                results_by_village = results.autocomplete(author_village=search_keyword)
+                
+                if results_by_name.count() > 0:
+                    combined_resultsets(results,results_by_name,'message_date')
+                elif results_by_number.count() > 0:
+                    combined_resultsets(results,results_by_number,'message_date')
+                elif results_by_district.count() > 0:
+                    combined_resultsets(results,results_by_district,'message_date')
+                elif results_by_taluka.count() > 0:
+                    combined_resultsets(results,results_by_taluka,'message_date')
+                elif results_by_village.count() > 0:
+                    combined_resultsets(results,results_by_village,'message_date')
+                else:
+                    results = results.autocomplete(text=search_keyword)
+                
         for r in results:
             message_forums.append(r.object)
+        
         count = len(message_forums)
     else:
         count = 0;
     
-    
-                    
     resp = send_response(message_forums, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('name', 'moderated', 'responses_allowed', 'posting_allowed', 'routeable')}})
         
     return resp

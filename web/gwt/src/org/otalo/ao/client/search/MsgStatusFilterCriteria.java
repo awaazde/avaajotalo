@@ -15,6 +15,7 @@
  */
 package org.otalo.ao.client.search;
 
+import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.util.CustomStringBuilder;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -44,10 +45,10 @@ public class MsgStatusFilterCriteria extends Composite {
 		this.approved 	= new CheckBox("Approved");
 		this.rejected 	= new CheckBox("Rejected");
 		this.responsed 	= new CheckBox("Responsed");
-		this.inbox.setName("Inbox");
-		this.approved.setName("Approved");
-		this.rejected.setName("Rejected");
-		this.responsed.setName("Responsed");
+		this.inbox.setName(AoAPI.SearchConstants.StausConstants.STATUS_INPUT);
+		this.approved.setName(AoAPI.SearchConstants.StausConstants.STATUS_APPROVED);
+		this.rejected.setName(AoAPI.SearchConstants.StausConstants.STATUS_REJECTED);
+		this.responsed.setName(AoAPI.SearchConstants.StausConstants.STATUS_RESPONDED);
 		this.inbox.addClickHandler(new CheckBoxClickHandler());
 		this.approved.addClickHandler(new CheckBoxClickHandler());
 		this.rejected.addClickHandler(new CheckBoxClickHandler());
@@ -73,7 +74,7 @@ public class MsgStatusFilterCriteria extends Composite {
 				selectedStatusQuery.add(sender.getName());
 			else
 				selectedStatusQuery.remove(sender.getName());
-			notifier.notifyQueryChangeListener("status", selectedStatusQuery.toString());
+			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.STATUS, selectedStatusQuery.toString());
 		}	
 	}
 }
