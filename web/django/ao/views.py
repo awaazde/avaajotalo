@@ -673,12 +673,9 @@ def bcast(request):
 
     if mf is not None:
         responseprompt = params.__contains__('response')
-        survey = broadcast.thread(mf, template, responseprompt, num_backups, start_date, bcastname)
+        survey = broadcast.thread(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
     else:
-        survey = broadcast.regular_bcast(template, num_backups, start_date, bcastname)
-        
-    for su in subjects:
-        survey.subjects.add(su)
+        survey = broadcast.regular_bcast(line, template, subjects, num_backups, start_date, bcastname)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(params['messageforumid']),)))
