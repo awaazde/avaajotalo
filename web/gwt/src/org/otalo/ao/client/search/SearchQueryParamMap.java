@@ -71,6 +71,7 @@ public class SearchQueryParamMap extends ArrayList<QueryParam> {
 			builder.append(':');
 			write(queryParam.getQueryValue(), builder);
 		}
+		
 		builder.append('}');
 		return builder.toString();
 	}

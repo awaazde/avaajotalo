@@ -224,6 +224,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   }
   
   public void displaySerchPanel(String searchPhrase) {
+	  messageDetail.reset();
 	  search.reset();
 	  search.setVisible(true);
 	  shortcuts.setVisible(false);
