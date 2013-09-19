@@ -2,7 +2,7 @@ body, html {
   height: 100%;
 }
 body {
-  background: #fff;
+  background-color: #fff;
   color: black;
   font-family: Helvetica, Arial, sans-serif;
   font-size: small;
@@ -170,7 +170,26 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 }
 
 .mail-TopPanel {
-  height: 60px;
+	height: 60px;
+	/*filter: none;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 1030;
+	margin-bottom: 0;
+	padding-left: 0;
+	padding-right: 0;
+	
+	border-bottom: 1px solid #d1d4d7;
+	box-shadow: 0 0 5px rgba(0,0,0,.1);
+	background: rgba(255, 255, 255, 0.94);
+	
+	border: 0;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+	margin-bottom: 10px;*/
+
 }
 
 .mail-TopPanel table {
@@ -334,8 +353,96 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 
 .mail-StackContent {
   height: 100%;
+  min-width: 210px !important;
 }
 
 .mail-Contacts {
   border-bottom: none;
+}
+
+.btn-search {
+	margin-left: 2px !important;
+	margin-top: -1px !important;
+}
+
+.gwt-TextBox {
+	border-radius: 0px 0px 0px 0px;
+	border: 1px solid rgb(170, 170, 170);
+	box-shadow: none;
+	padding: 4px 20px 4px 5px !important;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(1%, #eeeeee), color-stop(15%, #ffffff)); 
+  	background: -webkit-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -moz-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -o-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -ms-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: linear-gradient(top, #eeeeee 1%, #ffffff 15%);
+  	font-size: 12px;
+}
+
+.input-txt {
+	border-radius: 0px 0px 0px 0px;
+	border: 1px solid rgb(170, 170, 170);
+	box-shadow: none;
+	padding: 4px 20px 4px 5px !important;
+	width: 160px !important;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(1%, #eeeeee), color-stop(15%, #ffffff)); 
+  	background: -webkit-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -moz-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -o-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -ms-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: linear-gradient(top, #eeeeee 1%, #ffffff 15%);
+  	margin-top: 0px;
+  	margin-left: 5px;
+  	font-size: 12px;
+}
+
+.search-label {
+	margin-top: 12px !important;
+}
+
+.tag-label {
+	margin-top: 8px !important;
+}
+
+.label-txt {
+	font-weight: bold;
+	font-size: 12px;
+	margin-left: 5px;
+	margin-top: 5px;
+}
+
+.to-lbl {
+	margin-top: 8px;
+}
+.date-txt {
+	border-radius: 0px 0px 0px 0px;
+	border: 1px solid rgb(170, 170, 170);
+	box-shadow: none;
+	padding: 4px 14px 4px 5px !important;
+	width: 230px !important;
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(1%, #eeeeee), color-stop(15%, #ffffff)); 
+  	background: -webkit-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -moz-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -o-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: -ms-linear-gradient(top, #eeeeee 1%, #ffffff 15%); 
+  	background: linear-gradient(top, #eeeeee 1%, #ffffff 15%);
+  	margin-top: 0px;
+  	margin-left: 5px;
+  	font-size: 12px;
+}
+
+.author-filter, .status-filter {
+	padding-left: 10%;
+	margin-bottom: 8px;
+}
+
+.author-filter {
+	margin-top: 8px;
+}
+
+.loader-img {
+	top: 42% !important;
+	position: absolute;
+	left: 50%;
+	background: transparent;
 }

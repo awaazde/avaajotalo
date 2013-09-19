@@ -113,6 +113,7 @@ public final class JSONRequest {
 			public static final String TODATE			= "toDate";
 			public static final String TAG				= "tags";
 			public static final String AUTHOR			= "author";
+			public static final String PAGE_PARAM 		= "result_page";
 
 			//status related constants
 			//NOTE: THESE CONSTANTS VALUE MUST BE MATCHED WITH STATUS VALUES ON SERVER SIDE IN MODELS.PY

@@ -26,7 +26,6 @@ import org.otalo.ao.client.model.BaseModel;
 import org.otalo.ao.client.model.Call;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Subject;
 import org.otalo.ao.client.model.SurveyInput;
@@ -62,10 +61,13 @@ public class SearchResultMsgList extends Composite {
 
 	private HandlerRegistration newButtonReg=null, oldButtonReg=null;
 	private List<BaseModel> messages = new ArrayList<BaseModel>();
-	private int startIndex, count, selectedRow = -1;
+	private int count, selectedRow = -1;
+	private String current_page, previous_page, next_page;
 	private FlexTable table = new FlexTable();
 	private HorizontalPanel navBar = new HorizontalPanel();
 	private Images images;
+
+	private SearchFilterPanel filterPanelRef;
 
 	private BaseModel selectMessage;
 	private Forum forum;
@@ -133,13 +135,14 @@ public class SearchResultMsgList extends Composite {
 		}
 	}
 
-	public void displayMessages(List<JSOModel> models) {
+	public void displayMessages(SearchFilterPanel filterPanel, List<JSOModel> models) {
+		this.filterPanelRef = filterPanel;
 		// Start with a fresh set of messages
 		messages.clear();
 
 		// do this instead of initializing selectedRow
 		// to 0 in case there are no messages in this folder
-		startIndex = 0;
+		current_page = "1";
 		styleRow(selectedRow, false);
 		selectedRow = -1;
 		count = 0;
@@ -147,7 +150,13 @@ public class SearchResultMsgList extends Composite {
 		for (JSOModel model : models) {
 			if (model.get("model").equals(AoAPI.MSG_METADATA)) {
 				count = Integer.valueOf(model.get("count"));
-				startIndex = Integer.valueOf(model.get("start"));
+				previous_page = model.get("previous_page");
+				if("undefined".equalsIgnoreCase(previous_page))
+					previous_page = null;
+				next_page = model.get("next_page");
+				if("undefined".equalsIgnoreCase(next_page))
+					next_page = null;
+				current_page = model.get("current_page");
 			}
 			else {// Assume it's a data model
 				messages.add(new BaseModel(model));
@@ -191,37 +200,15 @@ public class SearchResultMsgList extends Composite {
 		public void onClick(ClickEvent event) {
 			if (direction.equals("older")) {
 				// Move forward a page.
-				startIndex += VISIBLE_MESSAGE_COUNT;
-				if (startIndex >= count) {
-					startIndex -= VISIBLE_MESSAGE_COUNT;
-				} 
+				filterPanelRef.requestResultPage(previous_page);
 			}
 			else if (direction.equals("newer")) {
 				// Move back a page.
-				startIndex -= VISIBLE_MESSAGE_COUNT;
-				if (startIndex < 0) {
-					startIndex = 0;
-				}
-			}
-
-			styleRow(selectedRow, false);
-			selectedRow = -1;
-			if (MessageForum.isMessageForum(message))
-			{
-				MessageForum mf = new MessageForum(message);
-				if (mf.isResponse() && mf.getStatus() != MessageStatus.PENDING)
-					Messages.get().displayResponses(mf.getForum(), startIndex);
-				else
-					Messages.get().displayMessages(mf.getForum(), mf.getStatus(), startIndex);
-			}
-			else if (SurveyInput.isSurveyInput(message))
-			{
-				SurveyInput input = new SurveyInput(message);
-				Messages.get().displaySurveyInput(input.getPrompt(), startIndex);
+				filterPanelRef.requestResultPage(next_page);
 			}
 		}
-
 	}
+
 	/**
 	 * Selects the given row (relative to the current page).
 	 * 
@@ -277,13 +264,8 @@ public class SearchResultMsgList extends Composite {
 
 	private void update() {
 		// Update the older/newer buttons & label.
-		int max = startIndex + VISIBLE_MESSAGE_COUNT;
-		if (max > count) {
-			max = count;
-		}
-
-		newerButton.setVisible(startIndex != 0);
-		olderButton.setVisible(startIndex + VISIBLE_MESSAGE_COUNT < count);
+		newerButton.setVisible((next_page != null && !next_page.isEmpty()));
+		olderButton.setVisible((previous_page != null && !previous_page.isEmpty()));
 
 		if (newButtonReg != null) {newButtonReg.removeHandler(); newButtonReg = null;}
 		if (oldButtonReg != null) {oldButtonReg.removeHandler(); oldButtonReg = null;}
@@ -294,7 +276,19 @@ public class SearchResultMsgList extends Composite {
 			oldButtonReg = olderButton.addClickHandler(new PageOverHandler("older", message));
 		}
 
-		countLabel.setText("" + (startIndex + 1) + " - " + max + " of " + count);
+		int startIndex = 1;
+		if(count == 0)
+			startIndex = 0;
+		else if(((VISIBLE_MESSAGE_COUNT * Integer.parseInt(current_page)) + 1) > count)
+			startIndex = 1;
+		else
+			startIndex = ((VISIBLE_MESSAGE_COUNT * Integer.parseInt(current_page)) + 1);
+		int endIndex = startIndex;
+		if(endIndex + VISIBLE_MESSAGE_COUNT < count)
+			endIndex += VISIBLE_MESSAGE_COUNT;
+		else
+			endIndex+= count - startIndex;
+		countLabel.setText("" + startIndex + " - " + endIndex + " of " + count);
 
 		// Show the selected messages.
 		int i = 0;
@@ -372,7 +366,7 @@ public class SearchResultMsgList extends Composite {
 				// apparently styling the row doesn't do well with any cell that has HTML
 				// so weed them out of selection
 				if (row > 0 && (table.getHTML(row, col).equals("") || (col != 2 && col != 5))) {
-					 selectRow(row - 1);
+					selectRow(row - 1);
 				}
 			}
 		}

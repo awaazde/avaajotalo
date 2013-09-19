@@ -66,6 +66,13 @@ public class MsgStatusFilterCriteria extends Composite {
 		this.selectedStatusQuery = new CustomStringBuilder();
 	}
 	
+	public void reset() {
+		this.approved.setValue(false);
+		this.inbox.setValue(false);
+		this.rejected.setValue(false);
+		this.responsed.setValue(false);
+	}
+	
 	private class CheckBoxClickHandler implements ClickHandler {
 		@Override
 		public void onClick(ClickEvent event) {

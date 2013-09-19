@@ -111,11 +111,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		toDate = new CustomDateBox();
 		fromDate.setName(AoAPI.SearchConstants.FROMDATE);
 		toDate.setName(AoAPI.SearchConstants.TODATE);
-		JsDate todayDate = JsDate.create();
-		JsDate tomorrowDate = JsDate.create();
-		tomorrowDate.setTime(todayDate.getTime() + 86400000);
-		fromDate.setValue(new Date((long) todayDate.getTime()));
-		toDate.setValue(new Date((long) tomorrowDate.getTime()));
+		
 		
 		fromDate.addValueChangeHandler(new DateValueChangeHandler());
 		toDate.addValueChangeHandler(new DateValueChangeHandler());
@@ -177,7 +173,12 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	
 	
 	public void reset() {
-		//TODO
+		searchInput.setText("");
+		tagsInput.reset();
+		tagsInput.loadTags(null);
+		authorFilter.reset();
+		msgStatusFilter.reset();
+		setDefaults();
 	}
 
 	@Override
@@ -188,6 +189,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		//always appending the current value of search box
 		queryParamsMap.add(new QueryParam(searchInput.getName(), searchInput.getText()));
 		
+		final SearchFilterPanel filterPanelRef = this;
 		//showing the loader
 		Messages.get().showLoader(true);
 		
@@ -197,10 +199,15 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 			public void dataReceived(List<JSOModel> models) {
 				//on receiving data hiding it
 				Messages.get().showLoader(false);
-				searchResultContainer.displayMessages(models);
+				searchResultContainer.displayMessages(filterPanelRef, models);
 			}
 		});
 		
+	}
+	
+	
+	public void requestResultPage(String nextPageNo) {
+		notifyQueryChangeListener(AoAPI.SearchConstants.PAGE_PARAM, nextPageNo);
 	}
 	
 	/**
@@ -213,14 +220,27 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
 	}
 	
+	
+	private void setDefaultDates() {
+		JsDate todayDate = JsDate.create();
+		JsDate tomorrowDate = JsDate.create();
+		tomorrowDate.setTime(todayDate.getTime() + 86400000);
+		fromDate.setValue(new Date((long) todayDate.getTime()));
+		toDate.setValue(new Date((long) tomorrowDate.getTime()));
+	}
+	
 	private void setDefaults() {
 		//adding default values for each search parameteres
 		queryParamsMap.add(new QueryParam(searchInput.getName(), searchInput.getText()));
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.STATUS, ""));
+		setDefaultDates();
 		queryParamsMap.add(new QueryParam(fromDate.getName(), formatter.format(fromDate.getValue())));
 		queryParamsMap.add(new QueryParam(toDate.getName(), formatter.format(toDate.getValue())));
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.TAG, ""));
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.AUTHOR, ""));
+		
+		//appending the paging info
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.PAGE_PARAM, "1"));
 	}
 	
 	/**

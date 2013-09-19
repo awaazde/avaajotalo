@@ -74,7 +74,15 @@ public class AuthorFilterCriteria extends Composite{
 		authorFieldTable.addStyleName("author-filter");
 		initWidget(authorFieldTable);
 	}
-
+	
+	public void reset() {
+		this.name.setValue(false);
+		this.district.setValue(false);
+		this.number.setValue(false);
+		this.taluka.setValue(false);
+		this.village.setValue(false);
+		this.selectedStatusQuery = new CustomStringBuilder();
+	}
 	
 	private class CheckBoxClickHandler implements ClickHandler {
 		@Override
