@@ -42,7 +42,9 @@ def subjects_by_numbers(numbers):
     
     for number in numbers:
         number = number.strip()
-        number = number[-10:]
+        # allow variable length numbers
+        # on bcast
+        #number = number[-10:]
         if number == '':
             continue
         u = User.objects.filter(number=number)
@@ -144,7 +146,7 @@ def create_bcast_survey(line, filenames, surveyname):
 
 # Assumes the messageforum is a top-level message
 # and you want to bcast the whole thread (flattened)
-def thread(messageforum, template, responseprompt, num_backups, start_date, bcastname=None):
+def thread(messageforum, template, subjects, responseprompt, num_backups, start_date, bcastname=None):
     line = messageforum.forum.line_set.all()[0]
     prefix = line.dialstring_prefix
     suffix = line.dialstring_suffix
@@ -174,6 +176,10 @@ def thread(messageforum, template, responseprompt, num_backups, start_date, bcas
         newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + str(messageforum)
     newname = newname[:128]
     bcast = clone_template(template, newname, num_backups, start_date)
+    for su in subjects:
+        bcast.subjects.add(su)
+    for d in line.dialers.all():
+        bcast.dialers.add(d)
     
     # shift the old prompts before we add new ones to override the order
     toshift = Prompt.objects.filter(survey=bcast, order__gt=thread_start)
@@ -255,14 +261,20 @@ def thread(messageforum, template, responseprompt, num_backups, start_date, bcas
     
     return bcast
 
-def regular_bcast(template, num_backups, start_date, bcastname=None):
+def regular_bcast(line, template, subjects, num_backups, start_date, bcastname=None):
     # create a clone from the template
     now = datetime.now()
     newname = bcastname
     if not newname or newname=='':
         newname = template.name.replace(Survey.TEMPLATE_DESIGNATOR, '') + '_' + datetime.strftime(now, '%b-%d-%Y')
     newname = newname[:128]
-    return clone_template(template, newname, num_backups, start_date)
+    bcast = clone_template(template, newname, num_backups, start_date)
+    for su in subjects:
+        bcast.subjects.add(su)
+    for d in line.dialers.all():
+        bcast.dialers.add(d)
+        
+    return bcast
 
 def clone_template(template, newname, num_backups, start_date):
     # avoid duplicating forums that point to the template
@@ -316,9 +328,17 @@ def schedule_bcasts(time=None, dialers=None):
         '    connected lines. This is in case there are surveys connected
         '    to numbers that aren't inbound lines (forum apps), like Xact numbers
         '
+        '    Filter surveys for those that are connected to this dialer as an additional
+        '    check. This is for the case where there are multiple dialers covering the same
+        '    range of numbers, but with different prefixes. This happens with international
+        '    dialing, where one PRI resources is used to dial multiple country codes. In that
+        '    case different dialers with diff country codes are defined over the same number range.
+        '    For that case you have to associate the broadcast to a specific dialer to specify
+        '    which country code you want to dial with.
+        '
         '''
         nums = get_dialer_numbers(dialer)
-        bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums).exclude(status=Survey.STATUS_CANCELLED)   
+        bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums, dialers=dialer).exclude(status=Survey.STATUS_CANCELLED)   
         for bcast in bcasts:
             #print("pending bcast: "+ str(bcast))
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
@@ -373,8 +393,8 @@ def schedule_bcasts(time=None, dialers=None):
                 if latest_call.date > bcasttime - timedelta(minutes=BACKUP_THRESH_MINS):
                     continue
                 priority = latest_call.priority + 1
-            
-            call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix, machine_id=dialer.machine_id, subject=subject, date=bcasttime, priority=priority)
+                
+            call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix+(dialer.country_code or ''), machine_id=dialer.machine_id, subject=subject, date=bcasttime, priority=priority)
             print('Scheduled call '+ str(call))
 
 '''
@@ -408,6 +428,8 @@ def answer_call(line, answer):
         
     s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now, backup_calls=1)
     s.subjects.add(asker)
+    for d in line.dialers.all():
+        s.dialers.add(d)
     #print ("adding announcement survey " + str(s))
     order = 1
     
