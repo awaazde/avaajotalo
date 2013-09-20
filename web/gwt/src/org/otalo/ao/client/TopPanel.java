@@ -45,7 +45,7 @@ import com.google.gwt.user.client.ui.TextBox;
 public class TopPanel extends Composite implements ClickHandler {
 
   private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
-  private HTML helpLink = new HTML("<a href='javascript:;'>Help</a>");
+  
   private HorizontalPanel outer, inner, search;
   private Images images;
   //search functionality
@@ -97,7 +97,7 @@ public class TopPanel extends Composite implements ClickHandler {
     homeLink.setVisible(false);
     inner.add(homeLink);
     inner.add(signOutLink);
-    inner.add(helpLink);
+   
     
     if(!Messages.get().canManage()) {
 	    searchBox = new TextBox();
@@ -112,13 +112,11 @@ public class TopPanel extends Composite implements ClickHandler {
     }
     
     signOutLink.addClickHandler(this);
-    helpLink.addClickHandler(this);
     homeLink.addClickHandler(this);
 
     initWidget(outer);
     setStyleName("mail-TopPanel");
     inner.setStyleName("mail-TopPanelLinks");
-    
     
   }
 
@@ -127,19 +125,18 @@ public class TopPanel extends Composite implements ClickHandler {
     if (sender == signOutLink) {
     	JSONRequest request = new JSONRequest();
     	request.doFetchURL(AoAPI.LOGOUT, null);
-    } else if (sender == helpLink) {
-      // When the 'About' item is selected, show the AboutDialog.
-      // Note that showing a dialog box does not block -- execution continues
-      // normally, and the dialog fires an event when it is closed.
-      AboutDialog dlg = new AboutDialog();
-      dlg.show();
-      dlg.center();
     } else if(sender == homeLink) {
     	homeLink.setVisible(false);
     	search.setVisible(true);
     	searchBox.setText("");
     	Messages.get().displayForumPanel();
     } 
+  }
+  
+  public void displaySearch() {
+	  homeLink.setVisible(false);
+	  search.setVisible(true);
+	  searchBox.setText("");
   }
   
   private class SearchButtonHandler implements ClickHandler {

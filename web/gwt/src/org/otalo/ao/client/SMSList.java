@@ -174,7 +174,7 @@ public class SMSList extends Composite implements ClickHandler, JSONRequester {
 
     BaseModel message = messages.get(row);
     if (MessageForum.isMessageForum(message))
-    	Messages.get().setItem(new MessageForum(message));
+    	Messages.get().setItem(new MessageForum(message), true);
   }
 
   private void update(SMSListType type) {

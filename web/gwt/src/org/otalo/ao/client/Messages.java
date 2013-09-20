@@ -103,9 +103,14 @@ public class Messages implements EntryPoint, ResizeHandler {
    * 
    * @param messageForum
    */
-  public void setItem(MessageForum messageForum) {
-  	if (!canManage()) messageDetail.setItem(messageForum);
+  public void setItem(MessageForum messageForum, boolean isShowMoveButtons) {
+  	if (!canManage()) {
+  		messageDetail.setItem(messageForum);
+  		if(!isShowMoveButtons)
+  			messageDetail.hideMoveButtons();
+  	}
   }
+  
   
   public void setTagable(boolean tagable)
   {
@@ -221,6 +226,8 @@ public class Messages implements EntryPoint, ResizeHandler {
 		}
 		if (canManage()) groupsIface.setVisible(false);
 		shortcuts.showStack(0);
+	
+	topPanel.displaySearch();
   }
   
   public void displaySerchPanel(String searchPhrase) {
@@ -241,6 +248,14 @@ public class Messages implements EntryPoint, ResizeHandler {
 		  smsIface.setVisible(false);
 	  }
 	  if (canManage()) groupsIface.setVisible(false);
+  }
+  
+  public void hideSearchPanel() {
+	  search.setVisible(false);
+	  shortcuts.setVisible(true);
+	  searchShortCut.setVisible(false);
+	  searchResultMsgList.setVisible(false);
+	  topPanel.displaySearch();
   }
   
   public void displaySMS(SMSListType type, int start)
@@ -462,6 +477,12 @@ public class Messages implements EntryPoint, ResizeHandler {
 	});
 
     onWindowResized(Window.getClientWidth(), Window.getClientHeight());
+    
+    //showing help if its stream
+    if(canManage()) {
+    	RootPanel.get("help_tab").setVisible(true);
+    	RootPanel.get("help_tab").addStyleName("help-tab-show");
+    }
   }
 
   

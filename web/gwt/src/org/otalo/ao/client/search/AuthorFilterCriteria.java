@@ -92,6 +92,7 @@ public class AuthorFilterCriteria extends Composite{
 				selectedStatusQuery.add(sender.getName());
 			else
 				selectedStatusQuery.remove(sender.getName());
+			notifier.resetPagingInformation();
 			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.AUTHOR, selectedStatusQuery.toString());
 		}	
 	}

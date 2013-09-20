@@ -1106,47 +1106,21 @@ def search(request):
 
                 if AUTHOR_NUMBER in selected_author_fields:
                     results_by_number = results.autocomplete(author_number=search_keyword)
-                    combined_resultsets(results,results_by_number,'-message_date')
+                    combined_resultsets(results,results_by_number,'message_date')
                     
                 if AUTHOR_DISTRICT in selected_author_fields :
                     results_by_district = results.autocomplete(author_district=search_keyword)
-                    combined_resultsets(results,results_by_district,'-message_date')
+                    combined_resultsets(results,results_by_district,'message_date')
                     
                 if AUTHOR_TALUKA in selected_author_fields:
                     results_by_taluka = results.autocomplete(author_taluka=search_keyword)
-                    combined_resultsets(results,results_by_taluka,'-message_date')
+                    combined_resultsets(results,results_by_taluka,'message_date')
                     
                 if AUTHOR_VILLAGE in selected_author_fields:
                     results_by_village = results.autocomplete(author_village=search_keyword)
-                    combined_resultsets(results,results_by_village,'-message_date')
+                    combined_resultsets(results,results_by_village,'message_date')
 
             elif len(search_keyword) > 0:
-                '''
-                results_by_name = results.autocomplete(author_name=search_keyword)
-                results_by_number = results.autocomplete(author_number=search_keyword)
-                results_by_district = results.autocomplete(author_district=search_keyword)
-                results_by_taluka = results.autocomplete(author_taluka=search_keyword)
-                results_by_village = results.autocomplete(author_village=search_keyword)
-                
-                if results_by_name.count() > 0:
-                    combined_resultsets(results,results_by_name,'message_date')
-                    
-                if results_by_number.count() > 0 and results_by_name.count()>0:
-                    combined_resultsets(results,results_by_number,'message_date')
-                elif results_by_number.count() > 0:
-                    results = results_by_number
-                    
-                elif results_by_district.count() > 0:
-                    combined_resultsets(results,results_by_district,'message_date')
-                    
-                elif results_by_taluka.count() > 0:
-                    combined_resultsets(results,results_by_taluka,'message_date')
-                    
-                elif results_by_village.count() > 0:
-                    combined_resultsets(results,results_by_village,'message_date')
-                    
-                else:
-                '''
                 results = results.autocomplete(text=search_keyword)
                     
         print results
@@ -1192,7 +1166,7 @@ def search(request):
             results = results.filter(filt)   
         
                 
-        results = results.order_by('-message_date')
+        results = results.order_by('message_date')
         for r in results:
             message_forums.append(r.object)
         
@@ -1223,13 +1197,13 @@ def search(request):
         # append some meta info about the messages
         # remove end bracket
         jsons = resp.content[:-1]
-        jsons += ', {"model":"MESSAGE_METADATA",'
+        jsons += ', {"model":"MESSAGE_METADATA"'
         if messages.has_previous():
-            jsons += '"previous_page":'+str(messages.previous_page_number())
+            jsons += ', "previous_page":'+str(messages.previous_page_number())
         if messages.has_next():
-            jsons += '"next_page":'+str(messages.next_page_number())
+            jsons += ', "next_page":'+str(messages.next_page_number())
         
-        jsons += '"current_page":'+str(page)
+        jsons += ', "current_page":'+str(page)
         jsons+= ', "count":'+str(count)+'}]'
         resp.content = jsons
         

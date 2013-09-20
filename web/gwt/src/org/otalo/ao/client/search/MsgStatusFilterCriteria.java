@@ -81,6 +81,7 @@ public class MsgStatusFilterCriteria extends Composite {
 				selectedStatusQuery.add(sender.getName());
 			else
 				selectedStatusQuery.remove(sender.getName());
+			notifier.resetPagingInformation();
 			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.STATUS, selectedStatusQuery.toString());
 		}	
 	}

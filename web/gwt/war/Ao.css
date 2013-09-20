@@ -446,3 +446,46 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 	left: 50%;
 	background: transparent;
 }
+
+.help-tab-right {
+	border: solid 1px;
+	cursor: pointer;
+	position: fixed;
+	top: 50%;
+	z-index: 10000;
+	display: block; 
+	background-color: rgb(243, 63, 61); 
+	border-color: rgb(243, 63, 61);
+	float: right;
+	right: 0px;
+	border-top-left-radius: 3px;
+	border-bottom-left-radius: 3px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	padding-right: 0px;
+	text-align: center;
+	
+	-webkit-box-shadow: 2px 1px 12px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    2px 1px 12px rgba(50, 50, 50, 0.75);
+	box-shadow:         2px 1px 12px rgba(50, 50, 50, 0.75);
+	width: 24px;
+	display: none;
+}
+
+.help-tab-show  {
+	display: block !important;
+}
+
+.help-tab-right > a {
+	color: #fff !important;
+	font-weight: bold;
+	font-size: 14px;
+	text-decoration: none;
+	border-right: none;
+	text-decoration: none;
+	
+}
+
+.help-tab-right > a > span {
+	display: block;
+}
