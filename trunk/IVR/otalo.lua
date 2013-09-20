@@ -130,7 +130,7 @@ function my_cb(s, type, obj, arg)
       
       if (obj['digit'] == GLOBAL_MENU_INSTRUCTIONS) then
 	 	 read(aosd .. "okinstructions.wav", 500);
-		 read(anssd .. "instructions_full.wav", 500);
+		 read(aosd .. "instructions_full.wav", 500);
 		 digits = input();
 		 return "break";
       end
