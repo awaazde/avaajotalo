@@ -73,7 +73,6 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	  }
 	
 	public SearchFilterPanel(SearchResultMsgList searchResultContainer) {
-		
 		//Initializing queryParams
 		queryParamsMap = new SearchQueryParamMap();
 		
@@ -139,6 +138,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		searchButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				resetPagingInformation();
 				notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
 			}
 		});
@@ -205,6 +205,11 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		
 	}
 	
+	@Override
+	public void resetPagingInformation() {
+		//appending the paging info
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.PAGE_PARAM, "1"));
+	}
 	
 	public void requestResultPage(String nextPageNo) {
 		notifyQueryChangeListener(AoAPI.SearchConstants.PAGE_PARAM, nextPageNo);
@@ -217,6 +222,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	public void setSearchPharse(String value) {
 		this.searchInput.setText(value);
 		tagsInput.loadTags(null);
+		resetPagingInformation();
 		notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
 	}
 	
@@ -270,6 +276,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		@Override
 		public void onValueChange(ValueChangeEvent<Date> event) {
 			CustomDateBox source = (CustomDateBox) event.getSource();
+			resetPagingInformation();
 			notifyQueryChangeListener(source.getName(), formatter.format(source.getValue()));
 		}
 	}

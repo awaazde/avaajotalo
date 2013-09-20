@@ -228,7 +228,7 @@ public class SearchResultMsgList extends Composite {
 
 		BaseModel message = messages.get(row);
 		if (MessageForum.isMessageForum(message))
-			Messages.get().setItem(new MessageForum(message));
+			Messages.get().setItem(new MessageForum(message), false);
 	}
 
 	private void styleRow(int row, boolean selected) {
@@ -276,18 +276,23 @@ public class SearchResultMsgList extends Composite {
 			oldButtonReg = olderButton.addClickHandler(new PageOverHandler("older", message));
 		}
 
-		int startIndex = 1;
-		if(count == 0)
-			startIndex = 0;
-		else if(((VISIBLE_MESSAGE_COUNT * Integer.parseInt(current_page)) + 1) > count)
+		int startIndex = 0;
+		int endIndex = 0;
+		int currentPageNum = Integer.parseInt(current_page);
+
+		if(currentPageNum == 1 && count > 0) {
 			startIndex = 1;
-		else
-			startIndex = ((VISIBLE_MESSAGE_COUNT * Integer.parseInt(current_page)) + 1);
-		int endIndex = startIndex;
-		if(endIndex + VISIBLE_MESSAGE_COUNT < count)
-			endIndex += VISIBLE_MESSAGE_COUNT;
-		else
-			endIndex+= count - startIndex;
+			endIndex = VISIBLE_MESSAGE_COUNT;
+		}
+		else if(currentPageNum > 1 && count > 0) {
+			startIndex = (VISIBLE_MESSAGE_COUNT * currentPageNum) + 1 - VISIBLE_MESSAGE_COUNT;
+			endIndex = startIndex;
+			if(endIndex + VISIBLE_MESSAGE_COUNT < count)
+				endIndex += VISIBLE_MESSAGE_COUNT;
+			else
+				endIndex+= count - startIndex;
+		}
+
 		countLabel.setText("" + startIndex + " - " + endIndex + " of " + count);
 
 		// Show the selected messages.

@@ -35,7 +35,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -63,7 +62,6 @@ public class MessageDetail extends Composite {
 	private HorizontalPanel outer;
 	private DockPanel threadPanel;
 	private FlexTable detailsTable;
-	private CheckBox sticky;
 	private Map<String, TextBox> callerDetailsMap = new HashMap<String, TextBox>();
 	private TagWidget tags;
 	private RoutingWidget routing;
@@ -141,9 +139,6 @@ public class MessageDetail extends Composite {
   	thread.setSpacing(3);
   	threadPanel.add(thread, DockPanel.NORTH);
   	
-  	sticky = new CheckBox("Sticky");
-  	sticky.setName("position");
-  	
   	saveButton = new Button("Save", new ClickHandler() {
       public void onClick(ClickEvent event) {
     	//calling setSelectedTagData so that selected tags can be collected and set as value to selectedTags input.
@@ -204,7 +199,6 @@ public class MessageDetail extends Composite {
   	linksPanel.add(downloadLink);
   	buttons.add(linksPanel);
   	buttons.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-  	buttons.add(sticky);
   	buttons.add(moveButtons);
   	buttons.add(saveButton);
   	controls.add(buttons);
@@ -238,7 +232,12 @@ public class MessageDetail extends Composite {
   	
   	return box;
   }
-
+  
+  public void hideMoveButtons() {
+	  this.moveButtons.setVisible(false);
+  }
+  
+  
   public void setItem(MessageForum messageForum) {  
   	// in case selection is done from msgList
   	reset();
@@ -253,31 +252,19 @@ public class MessageDetail extends Composite {
   	{
   		case PENDING:
 	  	  	setMovable(false); 
-	  	  	setSticky(false);
+	  	  //	setSticky(false);
 	  	  	break;
   		case APPROVED:
 	  	  	setMovable(true);
-	  	  	setSticky(true);
 	  	  	break;
   		case REJECTED:
   			setMovable(false);
-  			setSticky(false);
   	}
   	
   	//special case: Moderated responses
   	if (messageForum.isResponse() && messageForum.getStatus() != MessageStatus.PENDING)
   	{
   		setMovable(false); 
-  		setSticky(false);
-  	}
-  	
-  	if ("null".equals(messageForum.getPosition()) || "".equals(messageForum.getPosition()))
-  	{
-  		sticky.setValue(false);
-  	}
-  	else
-  	{
-  		sticky.setValue(true);
   	}
   	
   	// Load Tags
@@ -325,6 +312,7 @@ public class MessageDetail extends Composite {
   		this.mf = mf;
   	}
 		public void onClick(ClickEvent event) {
+			Messages.get().hideSearchPanel();
 			Messages.get().forwardThread(mf);
 		}
   	
@@ -424,7 +412,8 @@ public class MessageDetail extends Composite {
   		this.mf = mf;
   	}
 		public void onClick(ClickEvent event) {
-			Messages.get().displayMessages(mf);
+			Messages.get().hideSearchPanel();
+			Messages.get().displayMessages(this.mf);
 		}
   	
   }
@@ -481,7 +470,6 @@ public class MessageDetail extends Composite {
 	{
 		detailsForm.reset();
 		thread.clear();
-		sticky.setValue(false);
 		messageForumId.setValue("");
 		tags.reset();
 		routing.reset();
@@ -490,11 +478,6 @@ public class MessageDetail extends Composite {
 	private void setMovable(boolean canMove)
 	{
 		moveButtons.setVisible(canMove);
-	}
-	
-	private void setSticky(boolean canStick)
-	{
-		sticky.setVisible(canStick);
 	}
 	
 	private void setRouteable(boolean isRouteable)

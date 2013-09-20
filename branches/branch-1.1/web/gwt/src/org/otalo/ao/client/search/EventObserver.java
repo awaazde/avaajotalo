@@ -9,4 +9,9 @@ public interface EventObserver {
 	 * @param newState
 	 */
 	public void notifyQueryChangeListener(String searchProperty, String latestState);
+	
+	/**
+	 * Resets the paging info
+	 */
+	public void resetPagingInformation();
 }
