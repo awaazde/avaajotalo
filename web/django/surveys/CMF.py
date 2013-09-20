@@ -260,7 +260,7 @@ def get_broadcast_calls(line, date_start=None, date_end=None):
     all_calls = []
     number = line.outbound_number or line.number
     
-    calls = Call.objects.filter(survey__number=outbound_num, survey__broadcast=True, complete=True)
+    calls = Call.objects.filter(survey__number=number, survey__broadcast=True, complete=True)
     surveys = Survey.objects.filter(number=number, broadcast=True).order_by('created_on')
     if date_start:
         surveys = surveys.filter(created_on__gte=date_start)
