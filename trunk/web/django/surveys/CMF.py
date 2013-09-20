@@ -761,8 +761,7 @@ def time_str(date):
 ******************* MAIN ***************************************************
 ****************************************************************************
 ''' 
-def main():
-
+if __name__=="__main__":
     lineid = sys.argv[2]
     line = Line.objects.get(pk=lineid)
         
@@ -784,8 +783,7 @@ def main():
             startdate = today-timedelta(days=7)
         if len(sys.argv) > 5:
             enddate = datetime.strptime(sys.argv[5], "%m-%d-%Y")
-        
-        features=['qna', 'announcements', 'radio', 'experiences', 'okyourreplies', 'okrecord', 'okplay', 'okplay_all', 'cotton', 'wheat', 'cumin', 'castor']
+            
         get_features_within_call(line.number, features, inbound, date_start=startdate, date_end=enddate)
         get_broadcast_calls(line, date_start=startdate, date_end=enddate)
         get_message_listens(line.number, inbound, date_start=startdate, date_end=enddate)
@@ -823,5 +821,3 @@ def main():
     #get_survey_results()
     
     #responder_report(48, [1], date_start=datetime(year=2012, month=1, day=1))
-    
-main()
