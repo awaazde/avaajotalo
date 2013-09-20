@@ -504,10 +504,10 @@ function playmessages (msgs, listenreplies)
    local current_msg_idx = 1;
    local d = "";
    
-   while (current_msg ~= nil) do
-      local adminmode = is_admin(current_msg[6], adminforums);
-      local responsesallowed = current_msg[7];
-      local moderated = current_msg[8];
+   while (current_msg ~= nil) do 
+      local adminmode = is_admin(current_msg[5], adminforums);
+      local responsesallowed = current_msg[6];
+      local moderated = current_msg[7];
 
       if (d == GLOBAL_MENU_RESPOND or d == GLOBAL_MENU_INSTRUCTIONS) then
 		 -- if last msg played recd a response
@@ -537,14 +537,14 @@ function playmessages (msgs, listenreplies)
 		 		return d;
 		 	end
 		    read(aosd .. "okrecordresponse.wav", 500);
-		    local thread = current_msg[5];		    
+		    local thread = current_msg[4];		    
 		    if (thread == nil) then
 		       thread = current_msg[1];
 		    end
-		    local forumid = current_msg[6];
-		    local confirm = current_msg[10];
-		    local rgt = current_msg[4];
-		    local maxlength = current_msg[11] or MAX_USER_RESP_LEN_DEF;
+		    local forumid = current_msg[5];
+		    local confirm = current_msg[9];
+		    local rgt = current_msg[3];
+		    local maxlength = current_msg[10] or MAX_USER_RESP_LEN_DEF;
 		    d = recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, confirm);
 		    if (d == GLOBAL_MENU_MAINMENU) then
 		       return d;
