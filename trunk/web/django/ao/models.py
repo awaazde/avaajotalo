@@ -100,7 +100,6 @@ class User(models.Model):
     
 class Message(models.Model):
     date = models.DateTimeField()
-    content_file = models.CharField(max_length=48)
     file = models.FileField(upload_to="%Y/%m/%d")
     user = models.ForeignKey(User)    
     thread = models.ForeignKey('self', blank=True, null=True)
