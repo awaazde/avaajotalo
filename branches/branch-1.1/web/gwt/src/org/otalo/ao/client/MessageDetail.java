@@ -252,7 +252,6 @@ public class MessageDetail extends Composite {
   	{
   		case PENDING:
 	  	  	setMovable(false); 
-	  	  //	setSticky(false);
 	  	  	break;
   		case APPROVED:
 	  	  	setMovable(true);
