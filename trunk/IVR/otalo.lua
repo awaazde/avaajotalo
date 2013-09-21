@@ -379,7 +379,7 @@ function mainmenu ()
    	  	read(aosd .. "okresponder.mp3", 0);
    	  end
       input();
-   	  local rmsgs = get_responder_messages(userid);
+   	  local rmsgs = get_responder_messages(userid, lineid);
       play_responder_messages(userid, rmsgs, adminforums);
    --elseif (d == GLOBAL_JUMP_MESSAGE) then
           --jumptomessage() ;
