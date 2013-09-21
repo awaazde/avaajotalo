@@ -45,7 +45,7 @@ public class AutoCompleteTagWidget extends TagWidget{
 	public AutoCompleteTagWidget(boolean isShowLabel, boolean isEditable) {
 		ChosenOptions options = new ChosenOptions();
 		options.setPlaceholderTextSingle("Select a tag...");
-		options.setPlaceholderTextMultiple("Select tags...");
+		options.setPlaceholderTextMultiple("Begin typing here »");
 		options.setAllowSingleDeselect(true);
 		options.setSingleBackstrokeDelete(true);
 		options.setHideNoResult(true);

@@ -214,10 +214,11 @@ public class Messages implements EntryPoint, ResizeHandler {
   public void displayForumPanel()
   {
 	shortcuts.setVisible(true);
-	if(!canManage()) {
+	if(searchShortCut != null)
 		searchShortCut.setVisible(false);
+	if(searchResultMsgList != null)
 		searchResultMsgList.setVisible(false);
-	}
+	
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(true);
   	if (!canManage()) messageDetail.setVisible(true);
@@ -417,18 +418,16 @@ public class Messages implements EntryPoint, ResizeHandler {
     	rightPanel.add(messageDetail);
     }
     
+    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
+    shortcuts.setWidth("100%");
+    rightPanel.setWidth("100%");
+    
     if(!canManage()) {
     	search = new SearchFilterPanel(searchResultMsgList);
     	searchShortCut = new Shortcuts(images, null, null, null, search);
     	searchShortCut.setWidth("100%");
         searchShortCut.setVisible(false);
-        
     }
-    
-    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
-    shortcuts.setWidth("100%");
-    rightPanel.setWidth("100%");
-    
 
     displayForumPanel();
     
@@ -446,8 +445,10 @@ public class Messages implements EntryPoint, ResizeHandler {
     
     outer.add(topPanel, DockPanel.NORTH);
     outer.add(shortcuts, DockPanel.WEST);
-    if(!canManage())
+    if(!canManage()) {
+    	searchShortCut.setVisible(false);
     	outer.add(searchShortCut, DockPanel.WEST);
+    }
     
     //outer.addWest(shortcuts, 100);
     outer.add(rightPanel, DockPanel.CENTER);
