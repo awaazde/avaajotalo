@@ -34,6 +34,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -52,6 +53,7 @@ public class TopPanel extends Composite implements ClickHandler {
   private Button searchBtn;
   private TextBox searchBox;
   private HTML homeLink = new HTML("<a href='javascript:;'>Home</a>");
+  private HTML asearchLink = new HTML("<a href='javascript:;'>Advance Search</a>");
   private FlexTable layout;
   /**
    * Specifies the images that will be bundled for this Composite and specify
@@ -83,6 +85,7 @@ public class TopPanel extends Composite implements ClickHandler {
     inner.setSpacing(10);
     search.setSpacing(10);
     
+    inner.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     layout.setWidget(0, 0, inner);
     outer.add(layout);
     if (moderator != null)
@@ -108,16 +111,17 @@ public class TopPanel extends Composite implements ClickHandler {
 	    searchBtn.setTitle("Search");
 	    searchBtn.addClickHandler(new SearchButtonHandler());
 	    search.add(searchBtn);
+	    search.add(asearchLink);
 	    layout.setWidget(1, 0, search);
     }
     
     signOutLink.addClickHandler(this);
     homeLink.addClickHandler(this);
+    asearchLink.addClickHandler(this);
 
     initWidget(outer);
     setStyleName("mail-TopPanel");
     inner.setStyleName("mail-TopPanelLinks");
-    
   }
 
   public void onClick(ClickEvent event) {
@@ -131,6 +135,11 @@ public class TopPanel extends Composite implements ClickHandler {
     	searchBox.setText("");
     	Messages.get().displayForumPanel();
     } 
+    else if(sender == asearchLink) {
+    	homeLink.setVisible(true);
+		search.setVisible(false);
+		Messages.get().displaySerchPanel(searchBox.getText());
+    }
   }
   
   public void displaySearch() {
