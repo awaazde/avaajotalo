@@ -214,8 +214,10 @@ public class Messages implements EntryPoint, ResizeHandler {
   public void displayForumPanel()
   {
 	shortcuts.setVisible(true);
-	searchShortCut.setVisible(false);
-	searchResultMsgList.setVisible(false);
+	if(!canManage()) {
+		searchShortCut.setVisible(false);
+		searchResultMsgList.setVisible(false);
+	}
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(true);
   	if (!canManage()) messageDetail.setVisible(true);
@@ -385,7 +387,8 @@ public class Messages implements EntryPoint, ResizeHandler {
     
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
-    rightPanel.add(searchResultMsgList);
+    if(!canManage())
+    	rightPanel.add(searchResultMsgList);
     
     if (line.bcastingAllowed())
     {
@@ -414,18 +417,18 @@ public class Messages implements EntryPoint, ResizeHandler {
     	rightPanel.add(messageDetail);
     }
     
-    search = new SearchFilterPanel(searchResultMsgList);
-    
-    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
-    
-    if(!Messages.get().canManage()) {
+    if(!canManage()) {
+    	search = new SearchFilterPanel(searchResultMsgList);
     	searchShortCut = new Shortcuts(images, null, null, null, search);
     	searchShortCut.setWidth("100%");
         searchShortCut.setVisible(false);
+        
     }
     
-    rightPanel.setWidth("100%");
+    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
     shortcuts.setWidth("100%");
+    rightPanel.setWidth("100%");
+    
 
     displayForumPanel();
     
@@ -443,7 +446,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     
     outer.add(topPanel, DockPanel.NORTH);
     outer.add(shortcuts, DockPanel.WEST);
-    if(!Messages.get().canManage())
+    if(!canManage())
     	outer.add(searchShortCut, DockPanel.WEST);
     
     //outer.addWest(shortcuts, 100);
@@ -488,7 +491,6 @@ public class Messages implements EntryPoint, ResizeHandler {
   
   public void showLoader(boolean isShow) {
 	  loaderImage.setVisible(isShow);
-	  //TODO
   }
   
  

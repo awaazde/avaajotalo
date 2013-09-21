@@ -67,7 +67,7 @@ public class Shortcuts extends Composite {
 			add(bcasts, images.broadcast(), "Broadcasts");
 		if (sms != null)
 			add(sms, images.messagesgroup(), "SMS");
-		if(searchPanel != null)
+		if(searchPanel != null && !Messages.get().canManage())
 			add(searchPanel, images.search(), "Search");
 
 		initWidget(stackPanel);

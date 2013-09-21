@@ -134,9 +134,11 @@ public class TopPanel extends Composite implements ClickHandler {
   }
   
   public void displaySearch() {
-	  homeLink.setVisible(false);
-	  search.setVisible(true);
-	  searchBox.setText("");
+	  if(!Messages.get().canManage())  {
+		  homeLink.setVisible(false);
+		  search.setVisible(true);
+		  searchBox.setText("");
+	  }
   }
   
   private class SearchButtonHandler implements ClickHandler {
