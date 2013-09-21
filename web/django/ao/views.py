@@ -703,12 +703,9 @@ def bcast(request):
 
     if mf is not None:
         responseprompt = params.__contains__('response')
-        survey = broadcast.thread(mf, template, responseprompt, num_backups, start_date, bcastname)
+        survey = broadcast.thread(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
     else:
-        survey = broadcast.regular_bcast(template, num_backups, start_date, bcastname)
-        
-    for su in subjects:
-        survey.subjects.add(su)
+        survey = broadcast.regular_bcast(line, template, subjects, num_backups, start_date, bcastname)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(params['messageforumid']),)))
@@ -1020,6 +1017,8 @@ def get_phone_number(number):
     # a ten-digit number left.
     # Not full-proof, but accomodates all standard
     # number entry styles
+    if number is None:
+        return number
     number = re.sub(r'[^\d]+','',number)
     if len(number) >= 10:
         return number[-10:]
@@ -1123,7 +1122,6 @@ def search(request):
             elif len(search_keyword) > 0:
                 results = results.autocomplete(text=search_keyword)
                     
-        print results
         
         # if status is passed then appending it into filter criteria
         if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
