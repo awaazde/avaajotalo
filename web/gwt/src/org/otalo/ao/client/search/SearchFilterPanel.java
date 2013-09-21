@@ -19,13 +19,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest;
-import org.otalo.ao.client.Messages;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.JSONRequester;
+import org.otalo.ao.client.Messages;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.util.QueryParam;
 
-import com.google.gwt.core.client.JsDate;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -110,7 +109,6 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		toDate = new CustomDateBox();
 		fromDate.setName(AoAPI.SearchConstants.FROMDATE);
 		toDate.setName(AoAPI.SearchConstants.TODATE);
-		
 		
 		fromDate.addValueChangeHandler(new DateValueChangeHandler());
 		toDate.addValueChangeHandler(new DateValueChangeHandler());
@@ -223,25 +221,23 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		this.searchInput.setText(value);
 		tagsInput.loadTags(null);
 		resetPagingInformation();
-		notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
-	}
-	
-	
-	private void setDefaultDates() {
-		JsDate todayDate = JsDate.create();
-		JsDate tomorrowDate = JsDate.create();
-		tomorrowDate.setTime(todayDate.getTime() + 86400000);
-		fromDate.setValue(new Date((long) todayDate.getTime()));
-		toDate.setValue(new Date((long) tomorrowDate.getTime()));
+		if(value != null && !value.isEmpty())
+			notifyQueryChangeListener(searchInput.getName(), searchInput.getText());
 	}
 	
 	private void setDefaults() {
 		//adding default values for each search parameteres
 		queryParamsMap.add(new QueryParam(searchInput.getName(), searchInput.getText()));
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.STATUS, ""));
-		setDefaultDates();
-		queryParamsMap.add(new QueryParam(fromDate.getName(), formatter.format(fromDate.getValue())));
-		queryParamsMap.add(new QueryParam(toDate.getName(), formatter.format(toDate.getValue())));
+		
+		if(fromDate.getValue() != null)
+			queryParamsMap.add(new QueryParam(fromDate.getName(), formatter.format(fromDate.getValue())));
+		else
+			queryParamsMap.add(new QueryParam(fromDate.getName(), ""));
+		if(toDate.getValue() != null)
+			queryParamsMap.add(new QueryParam(toDate.getName(), formatter.format(toDate.getValue())));
+		else
+			queryParamsMap.add(new QueryParam(toDate.getName(), ""));
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.TAG, ""));
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.AUTHOR, ""));
 		
