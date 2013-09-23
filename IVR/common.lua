@@ -518,16 +518,22 @@ end
 
 function get_responder_messages (userid, lineid)
    local query = "SELECT message.id, message.file, message.rgt, message_forum.forum_id, message_forum.id, forum.moderated, message.thread_id, forum.max_responder_len ";
-   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_message_responder message_responder, ao_forum forum, ao_line_forums lf, ao_line line ";
+   query = query .. " FROM ao_message message, ao_message_forum message_forum, ao_message_responder message_responder, ao_forum forum ";
    query = query .. " WHERE message.id = message_forum.message_id";
    query = query .. " AND forum.id = message_forum.forum_id ";
    query = query .. " AND message_responder.message_forum_id = message_forum.id ";
    query = query .. " AND message_responder.user_id = " .. userid;
+   
+   -- temporarily rolling back this part with the join
+   -- because this query is bogging things down
+   --[[
    if (lineid ~= nil) then
    		query = query .. " AND line.id = " .. lineid;
    		query = query .. " AND lf.line_id = line.id AND lf.forum_id = forum.id ";
    		query = query .. " AND message_forum.forum_id = forum.id ";
    end
+   --]]
+   
    -- Next part says to only select messages
    -- for response if this user hasn't already
    -- responded to it message
