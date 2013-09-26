@@ -40,6 +40,7 @@ if (destination == nil) then
 else
 	destination = destination:sub(-8);
 end
+freeswitch.consoleLog("info", script_name .. " : destination = " .. destination .. "\n");
 -- set the language, check if line is restricted
 line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota, id, checkpendingmsgs FROM ao_line WHERE number LIKE '%" .. destination .. "%'");
 aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		

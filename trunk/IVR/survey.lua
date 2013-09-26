@@ -56,7 +56,7 @@ if (destination == nil) then
 else
 	destination = destination:sub(-8);
 end
-
+freeswitch.consoleLog("info", script_name .. " : destination = " .. destination .. "\n");
 -- get survey id
 query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback, survey.outbound_number ";
 query = query .. " FROM surveys_survey survey ";
