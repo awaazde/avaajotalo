@@ -48,7 +48,14 @@ callstarttime = nil;
 prevprompts = {};
 
 -- survey phonenumber
-destination = session:getVariable("destination_number");
+-- get destination from different spots depending
+-- on whether this is SIP or PRI
+destination = session:getVariable("sip_to_user");
+if (destination == nil) then
+	destination = session:getVariable("destination_number");
+else
+	destination = destination:sub(-8);
+end
 
 -- get survey id
 query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback, survey.outbound_number ";
