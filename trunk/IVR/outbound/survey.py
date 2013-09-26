@@ -34,7 +34,7 @@ def make_calls():
      now = datetime.now()
  
      # get calls in the last INTERVAL
-     calls = Call.objects.filter(complete=False, date__gte=now-interval, date__lt=now, machine_id=settings.MACHINE_ID).order_by('priority')
+     calls = Call.objects.filter(complete=False, date__gte=now-interval, date__lt=now, dialer__machine_id=settings.MACHINE_ID).order_by('priority')
      for call in calls:
          # The way it works with backups: If we encounter a call scheduled for this run for this
          # subject, only use it if the first priority call time(s) up until this point were not

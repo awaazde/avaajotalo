@@ -478,6 +478,22 @@ function get_media_subdir()
 	return subdir;
 end
 
+--[[
+-------------------------------------------
+------ replace_channel_vars_wildcards -----
+-------------------------------------------
+--]]
+function replace_channel_vars_wildcards(channel_vars)
+	if (channel_vars == nil or channel_vars == '') then
+		return nil;
+	end
+	
+	-- add all supported wildcards here for substitutions
+	channel_vars = channel_vars:gsub('__destination__', destination);
+	
+	return channel_vars;
+end
+
 --[[ 
 **********************************************************
 ********* BEGIN COMMON RESPONDER FUNCTIONS
