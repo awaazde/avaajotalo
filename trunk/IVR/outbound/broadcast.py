@@ -105,51 +105,10 @@ def subjects_by_log(line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
     
     return subjects
 
-def create_bcast_survey(line, filenames, surveyname):
-    prefix = line.dialstring_prefix
-    suffix = line.dialstring_suffix
-    language = line.language
-    if line.outbound_number:
-        num = line.outbound_number
-    else:
-        num = line.number
-        
-    s = Survey.objects.filter(name=surveyname)
-    if not bool(s):
-        s = Survey(name=surveyname, dialstring_prefix=prefix, dialstring_suffix=suffix, complete_after=0, number=num, broadcast=True)
-        #print ("adding announcement survey " + str(s))
-        s.save()
-    
-        # welcome
-        welcome = Prompt(file=language+"/welcome"+SOUND_EXT, order=1, bargein=False, survey=s)
-        welcome.save()
-        welcome_opt = Option(number="", action=Option.NEXT, prompt=welcome)
-        welcome_opt.save()
-        
-        order=2
-        for fname in filenames:
-            msg = Prompt(file=fname, order=order, bargein=False, survey=s)
-            msg.save()
-            msg_opt = Option(number="", action=Option.NEXT, prompt=msg)
-            msg_opt.save()
-            order += 1
-        
-        # thanks
-        thanks = Prompt(file=language+"/thankyou"+SOUND_EXT, order=order, bargein=False, survey=s)
-        thanks.save()
-        thanks_opt = Option(number="", action=Option.NEXT, prompt=thanks)
-        thanks_opt.save()
-        
-        return s
-    else:
-        return s[0]
-
 # Assumes the messageforum is a top-level message
 # and you want to bcast the whole thread (flattened)
 def thread(messageforum, template, subjects, responseprompt, num_backups, start_date, bcastname=None):
     line = messageforum.forum.line_set.all()[0]
-    prefix = line.dialstring_prefix
-    suffix = line.dialstring_suffix
     language = line.language
     if line.outbound_number:
         num = line.outbound_number
@@ -380,8 +339,7 @@ def schedule_bcasts(time=None, dialers=None):
         # assign calls as they are
         # found to be available
         scheduled = {}
-        num_available = dialer.max_parallel_out - Call.objects.filter(dialstring_prefix=dialer.dialstring_prefix, date=bcasttime).count()
-        #print("prefix "+prefix+" maxpara="+str(PROFILES[prefix]['maxparallel'])+" existing call count="+str(Call.objects.filter(dialstring_prefix=prefix, date=bcasttime).count()))
+        num_available = dialer.max_parallel_out - Call.objects.filter(dialer=dialer, date=bcasttime).count()
         to_sched = flat[:num_available]
         for survey, subject in to_sched:            
             latest_call = Call.objects.filter(survey=survey, subject=subject).order_by('-priority')
@@ -394,7 +352,7 @@ def schedule_bcasts(time=None, dialers=None):
                     continue
                 priority = latest_call.priority + 1
                 
-            call = Call.objects.create(survey=survey, dialstring_prefix=dialer.dialstring_prefix+(dialer.country_code or ''), machine_id=dialer.machine_id, subject=subject, date=bcasttime, priority=priority)
+            call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, date=bcasttime, priority=priority)
             print('Scheduled call '+ str(call))
 
 '''
