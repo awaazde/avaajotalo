@@ -95,10 +95,11 @@ caller = session:getVariable("caller_id_number");
 local prefixes = {};
 local suffixes = {};
 local maxparallels = {};
+local channel_vars_tbl = {};
 local country_code = nil;
 if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
 	-- get from dialer
-	local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey_dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.country_code, dialer.min_number_len");
+	local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey_dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.country_code, dialer.min_number_len, dialer.channel_vars");
 	local dialstring = dialstrings();
 	local min_len = nil;
 	local phone_num = nil;
@@ -107,6 +108,7 @@ if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
 		table.insert(prefixes, dialstring[1]);
 		suffixes[dialstring[1]] = dialstring[2];
 		table.insert(maxparallels, dialstring[3]);
+		channel_vars_tbl[dialstring[1]] = dialstring[6];
 
 		if (phone_num == nil) then
 			country_code = dialstring[4];
@@ -207,10 +209,13 @@ if (callback_allowed == 1) then
 	session:execute("ring_ready");
 	local api = freeswitch.API();
 	
+	local channel_vars = nil;
 	 -- find a dialer that is available
 	if (DIALSTRING_PREFIX == '' and DIALSTRING_SUFFIX == '') then
 	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels)..country_code;
 	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+	    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+	    channel_vars = replace_channel_vars_wildcards(channel_vars);
 	end
 
 	local uuid = session:getVariable('uuid');
@@ -229,7 +234,12 @@ if (callback_allowed == 1) then
 	vars = vars .. ',caller_id_number='..caller;
 	vars = vars .. ',origination_caller_id_number='.. (outbound_number or destination);
 	vars = vars .. ',origination_caller_id_name='.. (outbound_number or destination);
+	if (channel_vars ~= nil) then
+		vars = vars ..','.. channel_vars ..',';
+	end
 	vars = vars .. '}'
+	
+	freeswitch.consoleLog("info", script_name .. " : vars = " .. vars .. "\n");
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
 	-- wait a while before testing

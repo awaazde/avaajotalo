@@ -828,24 +828,30 @@ if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(useri
 	session:execute("ring_ready");
 	api = freeswitch.API();
 	
+	local channel_vars = nil;
 	-- do this only if missed call happening, to save the
 	-- db and processing hits in the non-missed call case
 	if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
 		-- get from dialer
-		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in");
+		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars");
 		local prefixes = {};
 		local suffixes = {};
 		local maxparallels = {};
+		local channel_vars_tbl = {};
 		local dialstring = dialstrings();
 		while (dialstring ~= nil) do
 			table.insert(prefixes, dialstring[1]);
 			suffixes[dialstring[1]] = dialstring[2];
 			table.insert(maxparallels, dialstring[3]);
+			channel_vars_tbl[dialstring[1]] = dialstring[4];
 			dialstring = dialstrings();
 	    end	    
 	    -- find a dialer that is available
+	    -- assumes the line has dialers with unique prefixes associated.
 	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
 	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+	    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+	    channel_vars = replace_channel_vars_wildcards(channel_vars);
 	end
 	
 	
@@ -874,7 +880,11 @@ if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(useri
 	vars = vars .. ',caller_id_number='..caller;
 	vars = vars .. ',origination_caller_id_number='..destination;
 	vars = vars .. ',origination_caller_id_name='..destination;
+	if (channel_vars ~= nil) then
+		vars = vars ..','.. channel_vars ..',';
+	end
 	vars = vars .. '}'
+	freeswitch.consoleLog("info", script_name .. " : vars = " .. vars .. "\n");
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
 	-- wait a while before testing

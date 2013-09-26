@@ -467,17 +467,29 @@ class Dialer(models.Model):
     '    We could model machines in the DB, but it doesn't seem necessary at this point since all we need
     '    to do is differentiate machines from each other
     '
-    '    Now there are two redundant fields between dialers and calls: dialstring_prefix, suffix, and machine_id
+    '    Now there are three redundant fields between dialers and calls: dialstring_prefix, suffix, and machine_id
     '    Could consider passing a dialer as a foreign key to Call, but that would mean an extra db lookup on each call
     '    in survey.lua. So cache it for now, if the fields pile up further we can make a change.
     '
-    '    In many setups, multi-tenant telephony servers won't be needed, so make this a nullable field
+    '    In most setups, multi-tenant telephony servers won't be needed, so make this a nullable field
     '''
     machine_id = models.IntegerField(blank=True, null=True)
     '''
     ****************************************************************************************************
     '''
     
+    '''
+    '    If this dialer has any specific channel variables to be set for outbound calls,
+    '    define them here in a comma-seperated string with no spaces. 
+    '    Can also support wildcards that correspond to variables in
+    '    the IVR apps. Currently supported wildcards:
+    '
+    '    __destination__ => otalo.lua:destination
+    '
+    '    Example channel_var values:
+    '    'sip_from_uri=__destination__@1.2.3.4,sip_h_P-Preferred-Identity=sip:1234567890@1.2.3.4'
+    '''
+    channel_vars = models.CharField(max_length=200, blank=True, null=True)
     
     def __unicode__(self):
         if self.country_code:
