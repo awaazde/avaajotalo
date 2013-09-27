@@ -1,5 +1,5 @@
 import sys, subprocess
-from otalo.ao.models import Line, User
+from otalo.ao.models import Line, User, Dialer
 from otalo.sms.models import Config
 from otalo.sms import sms_utils
 
@@ -18,11 +18,11 @@ def check_pris():
 		out,err = p.communicate()
 		
 		if 'Low' in out:
-			line = Line.objects.filter(dialstring_prefix__contains='grp'+str(i))
+			dialer = Dialer.objects.filter(dialstring_prefix__contains='grp'+str(i))
 			error_msg = 'PRI line w'+str(i)+'g1'
-			if bool(line):
-				line = line[0]
-				error_msg += " ("+line.name + '-' + line.number + ")"
+			if bool(dialer):
+				dialer = dialer[0]
+				error_msg += " (grp"+str(i)+ ")"
 			error_msg += ' is down!'
 			print("error "+error_msg)
 			report_error(error_msg)
