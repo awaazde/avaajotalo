@@ -75,7 +75,7 @@ CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_numb
 if (dialer[2] ~= nil and dialer[2] ~= '') then
 	local channel_vars = dialer[2];
 	channel_vars = replace_channel_vars_wildcards(channel_vars);
-	if (channel_vars) ~= nil then
+	if (channel_vars ~= nil) then
 		CALLID_VAR = CALLID_VAR .. ','.. channel_vars .. '}';
 	end
 else
