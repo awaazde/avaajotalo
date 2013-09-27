@@ -147,7 +147,7 @@ msg = check_n_msgs();
 if (msg ~= nil) then
 	local lineid = "";
 	-- set the language
-	query = 		"SELECT line.language, line.dialstring_prefix, line.dialstring_suffix, line.number, line.outbound_number, line.id ";
+	query = 		"SELECT line.language, line.number, line.outbound_number, line.id ";
 	query = query .. " FROM ao_line line, ao_line_forums line_forum, ao_forum forum, ao_message_forum message_forum ";
 	query = query .. " WHERE line.id = line_forum.line_id ";
 	query = query .. " AND  line_forum.forum_id = forum.id ";
@@ -165,7 +165,7 @@ if (msg ~= nil) then
 	   aosd = basedir .. "/scripts/AO/sounds/eng/";
 	else
 	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
-	   lineid = row[6];
+	   lineid = row[4];
 	end	
 	
 	logfilename = logfileroot .. "responder_" .. lineid .. ".log";
@@ -182,17 +182,35 @@ if (msg ~= nil) then
 		adminforum = adminrows();
 	end
 	
-	DIALSTRING_PREFIX = "";
-	DIALSTRING_SUFFIX = "";
-	if (row[2] ~= nil) then
-		DIALSTRING_PREFIX = row[2];
-	end
-	if (row[3] ~= nil) then
-		DIALSTRING_SUFFIX = row[3];
-	end
+	-- get from dialer
+	local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars");
+	local prefixes = {};
+	local suffixes = {};
+	local maxparallels = {};
+	local channel_vars_tbl = {};
+	local dialstring = dialstrings();
+	while (dialstring ~= nil) do
+		table.insert(prefixes, dialstring[1]);
+		suffixes[dialstring[1]] = dialstring[2];
+		table.insert(maxparallels, dialstring[3]);
+		channel_vars_tbl[dialstring[1]] = dialstring[4];
+		dialstring = dialstrings();
+    end	    
+    -- find a dialer that is available
+    -- assumes the line has dialers with unique prefixes associated.
+    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
+    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+    local channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+    channel_vars = replace_channel_vars_wildcards(channel_vars);
 	
-	destination = row[5] or row[4];
-	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..destination..'}';
+	destination = row[3] or row[2];
+	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..destination..',origination_caller_id_name='..destination;
+	if (channel_vars ~= nil) then
+		CALLID_VAR = CALLID_VAR .. ','.. channel_vars .. '}';
+	else
+		CALLID_VAR = CALLID_VAR .. '}';
+	end
+	freeswitch.consoleLog("info", script_name .. " : vars = " .. CALLID_VAR .. "\n");
 	
 	-- script-specific sounds
 	anssd = aosd .. "answer/";
