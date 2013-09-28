@@ -397,6 +397,12 @@ public class Messages implements EntryPoint, ResizeHandler {
 	});
 
     onWindowResized(Window.getClientWidth(), Window.getClientHeight());
+    
+    //showing help if its stream
+    if(canManage()) {
+    	RootPanel.get("help_tab").setVisible(true);
+    	RootPanel.get("help_tab").addStyleName("help-tab-show");
+    }
   }
 
   public void onResize(ResizeEvent event) {
