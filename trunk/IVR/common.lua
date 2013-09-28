@@ -404,9 +404,20 @@ end
 	current occupied channels
 -------------------------------------------
 --]]
-function get_num_channels(api, prefix)
-	local pri = string.match(prefix,'grp(%d+)');
-	local profile = 'FreeTDM/'.. tostring(pri);
+function get_num_channels(api, prefix, dialer_type)
+	local profile = "";
+	if  (dialer_type == DIALER_TYPE_PRI) then
+		local pri = string.match(prefix,'grp(%d+)');
+		profile = 'FreeTDM/'.. tostring(pri);
+	else -- SIP
+		-- NOTE THIS ASSUMES profile name is same as gateway name
+		-- FS show channels names calls by profile name, not gateway name.
+		-- so if we need multiple gateways in a profile that could be a problem 
+		-- if it there is not physical limit to SIP calls, safe to not worry about
+		-- naming the gateway in any particular way
+		local gateway = string.match(prefix,"sofia/gateway/([%w%p]+)/");
+		profile = 'sofia/'..tostring(gateway);
+	end
 	local status_str = "show channels like " .. profile;
 	--freeswitch.consoleLog("info", script_name .. " : executing " .. status_str .."\n");
 	local reply = api:executeString(status_str);
@@ -429,18 +440,18 @@ end
 	set of dialer db rows
 -------------------------------------------
 --]]
-function get_available_line(api, prefixes, maxparallels)
+function get_available_line(api, prefixes, maxparallels, dialer_types)
 	local nchannels = nil;
 	
 	for i,prefix in ipairs(prefixes) do
-		nchannels = get_num_channels(api, prefix);
+		nchannels = get_num_channels(api, prefix, dialer_types[i]);
 		if (nchannels < maxparallels[i]) then
 			return prefix;
 		end
 	end
 	
 	-- return the first prefix by default
-	return prefixes[1]
+	return prefixes[1];
 end
 
 --[[

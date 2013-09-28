@@ -58,6 +58,10 @@ OPARAM_NUM = 'num';
 OPARAM_NAME = 'name';
 OPARAM_FWD_PROMPT_PATH = 'fwdpath';
 
+--  Should be consistent with Dialer model
+DIALER_TYPE_PRI = 0;
+DIALER_TYPE_VOIP = 1;
+
 GLOBAL_MENU_MAINMENU = "0";
 GLOBAL_MENU_NEXT = "1";
 GLOBAL_MENU_RESPOND = "2";
