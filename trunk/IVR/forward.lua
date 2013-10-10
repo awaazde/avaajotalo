@@ -155,11 +155,11 @@ end
 -------------------------------------------
 --]]
 function add_forward_recipient(forwardid, recipient_num)
-	userid = get_table_field('ao_user', 'id', 'number='..recipient_num);
-	if (userid == nil) then
+	local rec_userid = get_table_field('ao_user', 'id', 'number='..recipient_num);
+	if (rec_userid == nil) then
 		name_vals = {number=recipient_num, allowed="'y'"};
-		userid = insert_into_table('ao_user', name_vals);		
+		rec_userid = insert_into_table('ao_user', name_vals);		
 	end
-	name_vals = {forward_id=forwardid, user_id=userid};
+	name_vals = {forward_id=forwardid, user_id=rec_userid};
 	return insert_into_table("ao_forward_recipients", name_vals);
 end
