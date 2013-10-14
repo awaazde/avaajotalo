@@ -200,6 +200,7 @@ if (msg ~= nil) then
     end	    
     -- find a dialer that is available
     -- assumes the line has dialers with unique prefixes associated.
+    local api = freeswitch.API();
     DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
     DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
     local channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
