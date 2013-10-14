@@ -183,22 +183,24 @@ if (msg ~= nil) then
 	end
 	
 	-- get from dialer
-	local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars");
+	local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
 	local prefixes = {};
 	local suffixes = {};
 	local maxparallels = {};
 	local channel_vars_tbl = {};
+	local dialer_types = {};
 	local dialstring = dialstrings();
 	while (dialstring ~= nil) do
 		table.insert(prefixes, dialstring[1]);
 		suffixes[dialstring[1]] = dialstring[2];
 		table.insert(maxparallels, dialstring[3]);
 		channel_vars_tbl[dialstring[1]] = dialstring[4];
+		table.insert(dialer_types, dialstring[5]);
 		dialstring = dialstrings();
     end	    
     -- find a dialer that is available
     -- assumes the line has dialers with unique prefixes associated.
-    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels);
+    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
     DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
     local channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
     channel_vars = replace_channel_vars_wildcards(channel_vars);
