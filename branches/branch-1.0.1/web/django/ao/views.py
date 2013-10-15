@@ -32,8 +32,6 @@ from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
 import broadcast
 import otalo_utils, stats_by_phone_num
-from django.utils import simplejson
-from django.conf import settings
 import subprocess
 
 
@@ -360,51 +358,17 @@ def movemessage(request):
             
     return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
     
+
 @csrf_exempt    
-def uploadmessage(request):
-    if 'main' in request.FILES:
-        params = request.POST
-        
-        main = request.FILES['main']
-        extension = main.name[main.name.index('.'):]
-        if extension != '.mp3':
-            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_FILE_FORMAT+', "message":"mp3 format required"}]')
-            response['Pragma'] = "no cache"
-            response['Cache-Control'] = "no-cache, must-revalidate"
-            return response
-        
-        if 'number' in params:
-            number = params['number'].strip()
-            author = User.objects.filter(number=number)
-            if author:
-                author = author[0]
-            else:
-                # try to get a 10-digit number
-                number = get_phone_number(number)
-                if number:
-                    author = User(number=number, allowed='y')
-                    author.save()
-                else:
-                    response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
-                    response['Pragma'] = "no cache"
-                    response['Cache-Control'] = "no-cache, must-revalidate"
-                    return response
-        else:
-            auth_user = request.user
-            author = User.objects.filter(admin__auth_user=auth_user).distinct()[0]
-            number = author.number
-        
-        parent = False
-        if request.POST['messageforumid']:
-            parent = get_object_or_404(Message_forum, pk=request.POST['messageforumid'])
-            f = parent.forum
-        else:
-            f = get_object_or_404(Forum, pk=request.POST['forumid'])
-        
-        date=None
-        if 'when' in params:
-            when = params['when']
-            if when == 'date':
+def record_or_upload_message(request):
+    params = request.POST
+    if 'record' in params:
+        # getting recorded file
+        if request.FILES:
+            main = request.FILES['audiofile']
+            
+            date=None
+            if 'date' in params:
                 bcastdate = params['date']
                 try:
                     date = datetime.strptime(bcastdate, '%b-%d-%Y')
@@ -417,94 +381,93 @@ def uploadmessage(request):
                 hour = int(params['hour'])
                 min = int(params['min'])
                 date = datetime(year=date.year,month=date.month,day=date.day,hour=hour,minute=min)
-                
-        m = createmessage(request, f, main, author, parent, date)
-
-        return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(m.id,)))
+        else:
+            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
+            response['Pragma'] = "no cache"
+            response['Cache-Control'] = "no-cache, must-revalidate"
+            return response
     else:
-        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
-        response['Pragma'] = "no cache"
-        response['Cache-Control'] = "no-cache, must-revalidate"
-        return response
-                
-@csrf_exempt    
-def recordmessage(request):
-    if request.FILES:
-        params = request.POST
-        
-        #params = json.loads(upload_data['data'])
-        
-        main = request.FILES['audiofile']
-        
-        if 'number' in params:
-            number = params['number'].strip()
-            author = User.objects.filter(number=number)
-            if author:
-                author = author[0]
-            else:
-                # try to get a 10-digit number
-                number = get_phone_number(number)
-                if number:
-                    author = User(number=number, allowed='y')
-                    author.save()
-                else:
-                    response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
-                    response['Pragma'] = "no cache"
-                    response['Cache-Control'] = "no-cache, must-revalidate"
-                    return response
-        else:
-            auth_user = request.user
-            author = User.objects.filter(admin__auth_user=auth_user).distinct()[0]
-            number = author.number
-        
-        parent = False
-        if params['messageforumid']:
-            parent = get_object_or_404(Message_forum, pk=params['messageforumid'])
-            f = parent.forum
-        else:
-            f = get_object_or_404(Forum, pk=params['forumid'])
-        
-        date=None
-        if 'date' in params:
-            bcastdate = params['date']
-            try:
-                date = datetime.strptime(bcastdate, '%b-%d-%Y')
-            except ValueError as err:
-                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_DATE+', "message":"invalid date"}]')
+        # getting uploaded file
+        if 'main' in request.FILES:
+            main = request.FILES['main']
+            extension = main.name[main.name.index('.'):]
+            if extension != '.mp3':
+                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_FILE_FORMAT+', "message":"mp3 format required"}]')
                 response['Pragma'] = "no cache"
                 response['Cache-Control'] = "no-cache, must-revalidate"
                 return response
-                
-            hour = int(params['hour'])
-            min = int(params['min'])
-            date = datetime(year=date.year,month=date.month,day=date.day,hour=hour,minute=min)
-                
-        message = createmessage(request, f, main, author, parent, date)
-        #converting wav to mp3
-        msg_file=message.message.file
-        wav_file_name = msg_file.name
-        media_path = settings.MEDIA_ROOT
-        wav_file_name = msg_file.name
-        wav_file_path = media_path+"/"+wav_file_name
-        mp3_file_name=wav_file_name[:-4]
-        mp3_file_name=mp3_file_name+".mp3"
-        mp3_file_path=media_path+"/"+mp3_file_name
+            
+            date=None
+            if 'when' in params:
+                when = params['when']
+                if when == 'date':
+                    bcastdate = params['date']
+                    try:
+                        date = datetime.strptime(bcastdate, '%b-%d-%Y')
+                    except ValueError as err:
+                        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_DATE+', "message":"invalid date"}]')
+                        response['Pragma'] = "no cache"
+                        response['Cache-Control'] = "no-cache, must-revalidate"
+                        return response
+                    
+                    hour = int(params['hour'])
+                    min = int(params['min'])
+                    date = datetime(year=date.year,month=date.month,day=date.day,hour=hour,minute=min)
+        else:
+            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
+            response['Pragma'] = "no cache"
+            response['Cache-Control'] = "no-cache, must-revalidate"
+            return response
+    
+    
+    if 'number' in params:
+        number = params['number'].strip()
+        author = User.objects.filter(number=number)
+        if author:
+            author = author[0]
+        else:
+            # try to get a 10-digit number
+            number = get_phone_number(number)
+            if number:
+                author = User(number=number, allowed='y')
+                author.save()
+            else:
+                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_NUMBER+', "message":"invalid number"}]')
+                response['Pragma'] = "no cache"
+                response['Cache-Control'] = "no-cache, must-revalidate"
+                return response
+    else:
+        auth_user = request.user
+        author = User.objects.filter(admin__auth_user=auth_user).distinct()[0]
+        number = author.number
         
+    parent = False
+    if params['messageforumid']:
+        parent = get_object_or_404(Message_forum, pk=params['messageforumid'])
+        f = parent.forum
+    else:
+        f = get_object_or_404(Forum, pk=params['forumid'])
+    
+    mf = createmessage(request, f, main, author, parent, date)
+    if 'record' in params:
+        #converting wav to mp3
+        wav_file_path = mf.message.file.path
+        mp3_file_path=wav_file_path[0:wav_file_path.rfind(".wav")] + ".mp3"
+            
         cmd = 'lame --preset insane %s' % wav_file_path
         subprocess.call(cmd, shell=True)
-        
+            
         #updating message object with new mp3 file
         mp3file = open(mp3_file_path)
-        mp3_file_name = mp3_file_name[mp3_file_name.rfind("/")+1:]
-        message.message.file.save(mp3_file_name, File(mp3file))
-        
-        message = get_list_or_404(Message_forum, pk=message.id)
-        return send_response(message, {'message':{'fields':()}, 'forum':{}})
+        mp3_file_name = mp3_file_path[mp3_file_path.rfind("/")+1:]
+        mf.message.file.save(mp3_file_name, File(mp3file))
+            
+        mf = get_list_or_404(Message_forum, pk=mf.id)
+        return send_response(mf, {'message':{'fields':()}, 'forum':{}})
     else:
-        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
-        response['Pragma'] = "no cache"
-        response['Cache-Control'] = "no-cache, must-revalidate"
-        return response
+        return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(mf.id,)))
+        
+    
 
 def createmessage(request, forum, content, author, parent=None, date=None):
     t = datetime.now()
