@@ -1,11 +1,7 @@
 package org.otalo.ao.client.widget.audio.client;
 
-import org.otalo.ao.client.ConfirmDialog;
 import org.otalo.ao.client.JSONRequest;
-import org.otalo.ao.client.Messages;
-import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.widget.audio.resource.CustomButton;
 import org.otalo.ao.client.widget.audio.resource.ResourceBundle;
 
@@ -74,7 +70,6 @@ public class AudioRecorderWidget extends Composite implements ClickHandler  {
 		outer.setWidget(0, 0, recordButton);
 		outer.setWidget(0, 1, playButton);
 		outer.setWidget(0, 2, stopButton);
-		//outer.getFlexCellFormatter().setColSpan(1, 0, 3);
 		outer.setWidget(0, 3, status);
 
 		isRecorded = false;
@@ -151,6 +146,10 @@ public class AudioRecorderWidget extends Composite implements ClickHandler  {
 		$wnd.upload(url, params);
 	}-*/;
 	
+	public void stopRecording() {
+		playButton.setEnabled(true);
+		onStopButtonClick();
+	}
 	
 	public void onSuccess(String data) {
 		JSOModel model = JSONRequest.getModels(data).get(0);
@@ -161,6 +160,11 @@ public class AudioRecorderWidget extends Composite implements ClickHandler  {
 		recorderEventObserver.onRecordError(errorData);
 	}
 
+	public void reset() {
+		this.isRecorded = false;
+		setEnabled(true);
+		this.status.setText("Click on record button to start recording...");
+	}
 	
 	public void onClick(ClickEvent event) {
 		Object sender = event.getSource();
@@ -220,5 +224,12 @@ public class AudioRecorderWidget extends Composite implements ClickHandler  {
 	 */
 	public boolean isRecorded() {
 		return isRecorded;
+	}
+
+	/**
+	 * @param isRecorded the isRecorded to set
+	 */
+	public void setRecorded(boolean isRecorded) {
+		this.isRecorded = isRecorded;
 	}
 }
