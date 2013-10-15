@@ -38,7 +38,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FileUpload;
@@ -82,7 +81,7 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		setText("Record or Upload Content");
 		outer = new FlexTable();
 		outer.setSize("100%", "100%");
-		uploadForm.setAction(JSONRequest.BASE_URL+AoAPI.UPLOAD);
+		uploadForm.setAction(JSONRequest.BASE_URL+AoAPI.RECORD_OR_UPLOAD);
 		uploadForm.setMethod(FormPanel.METHOD_POST);
 		uploadForm.setEncoding(FormPanel.ENCODING_MULTIPART);
 
@@ -102,7 +101,7 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		saveButton = new Button("Save", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if(!recorder.isRecorded() && !uploadOpt.getValue())
-					Window.alert("Please either record message or upload it first!");
+					setErrorMsg("Please either record message or upload it first!");
 				else {
 					setClickedButton();
 					if(recordOpt.getValue() == true) {
@@ -116,31 +115,34 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		
 		cancelButton = new Button("Cancel", new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				if(recorder.isRecorded())
+					recorder.stopRecording();
 				hide();
 			}
 		});
 
-		mainMsgHTML = new HTML("<span id='recordError'>Please select 'Record' to record or 'Upload' to upload message.</span>");
-		mainMsgHTML.addStyleName("upload-top-msg");
-		outer.getFlexCellFormatter().setColSpan(0, 0, 2);
-		outer.getCellFormatter().getElement(0, 0).getStyle().setTextAlign(TextAlign.JUSTIFY);
-		outer.setWidget(0, 0, mainMsgHTML);
 
 		recordOpt = new RadioButton("options", "Record");
+		recordOpt.setFormValue("record");
 		recordOpt.addStyleName("label-txt");
 		recordOpt.setValue(true);
 		recordOpt.addClickHandler(new OptionClickHandler());
 
 		uploadOpt = new RadioButton("options", "Upload");
+		uploadOpt.setFormValue("upload");
 		uploadOpt.setValue(false);
 		uploadOpt.addStyleName("label-txt");
 		uploadOpt.addClickHandler(new OptionClickHandler());
 
+		
 		outer.setWidget(1, 0, recordOpt);
-		outer.getFlexCellFormatter().setColSpan(1, 0, 2);
+		mainMsgHTML = new HTML("<span id='recordError'></span>");
+		mainMsgHTML.addStyleName("upload-top-msg");
+		outer.setWidget(1, 1, mainMsgHTML);
+		outer.getCellFormatter().getElement(1, 1).getStyle().setTextAlign(TextAlign.JUSTIFY);
 		outer.getCellFormatter().getElement(1, 0).getStyle().setTextAlign(TextAlign.LEFT);
 		//creating recorder widget
-		recorder = new AudioRecorderWidget(JSONRequest.BASE_URL+AoAPI.RECORD, this);
+		recorder = new AudioRecorderWidget(JSONRequest.BASE_URL+AoAPI.RECORD_OR_UPLOAD, this);
 		outer.setWidget(2, 0, recorder);
 		outer.getFlexCellFormatter().setColSpan(2, 0, 2);
 
@@ -380,6 +382,19 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 			now.setValue(true);
 			hour.setSelectedIndex(9);
 		}
+		recordOpt.setValue(true);
+		uploadOpt.setValue(false);
+		recorder.reset();
+		main.setEnabled(false);
+		mainLabel.removeStyleName("normal-text");
+		mainLabel.addStyleName("gray-text");
+		setSaveButtonSate();
+	}
+	
+	@Override
+	public void show() {
+		this.reset();
+		super.show();
 	}
 
 	public void setCompleteHandler(SubmitCompleteHandler handler)
@@ -426,7 +441,7 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 	}
 	
 	private void setErrorMsg(String errorMessage) {
-		mainMsgHTML.setHTML("<span id='recordError' style='color:red;'>"+("+msg+")+"</span>");
+		mainMsgHTML.setHTML("<span id='recordError' style='color:red;'>"+errorMessage+"</span>");
 	}
 
 	private void setClickedButton()
@@ -489,6 +504,10 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		
 		params.add(new AudioRecordParam(write(messageForumId.getName()), write(messageForumId.getValue())));
 		params.add(new AudioRecordParam(write(forumId.getName()), write(forumId.getValue())));
+		if(recordOpt.getValue())
+			params.add(new AudioRecordParam(write("record"), write("true")));
+		else
+			params.add(new AudioRecordParam(write("upload"), write("true")));
 		return params.toArray(new AudioRecordParam[0]);
 	}
 	
