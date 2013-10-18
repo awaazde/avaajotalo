@@ -2,6 +2,8 @@
 <module rename-to='ao'>
   <!--  script src="js/swfobject.js"></script -->
   <stylesheet src="css/ao.css" />
+  <script src="js/recorder.js"></script>
+  <script src="js/audiorecord.js"></script>
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
 

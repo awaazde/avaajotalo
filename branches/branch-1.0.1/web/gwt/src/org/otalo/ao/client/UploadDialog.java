@@ -288,7 +288,13 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 
 		outer.setWidget(outer.getRowCount(), 0, forumId);
 		outer.setWidget(outer.getRowCount(), 0, messageForumId);
-
+		
+		HTML troubleShootLink = new HTML("<a class='trblLink' target=_blank  href='http://awaaz.de/blog/2013/10/audio-recording-on-web-console-is-now-available'>Running into any issue with recording? click here!</a>");
+		int trblCell = outer.getRowCount();
+		outer.setWidget(trblCell, 0,troubleShootLink);
+		outer.getFlexCellFormatter().setColSpan(trblCell, 0, 2);
+		outer.getFlexCellFormatter().addStyleName(trblCell, 0, "left-align");
+		
 		uploadForm.setWidget(outer);
 
 		setSaveButtonSate();
@@ -508,6 +514,8 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 			params.add(new AudioRecordParam(write("record"), write("true")));
 		else
 			params.add(new AudioRecordParam(write("upload"), write("true")));
+		if(date.getValue())
+			params.add(new AudioRecordParam(write("when"), write("date")));
 		return params.toArray(new AudioRecordParam[0]);
 	}
 	
