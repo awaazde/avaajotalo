@@ -62,7 +62,7 @@ function upload(uploadUrl, params){
 	
 	Recorder.upload({
 		url:        uploadUrl,
-		audioParam: "audiofile", 
+		audioParam: "main", 
 		params: dataParams,
 		success: function(responseText){           
 			window.onAudioSucessCallBack(responseText);
