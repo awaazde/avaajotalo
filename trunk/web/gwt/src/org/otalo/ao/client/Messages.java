@@ -343,6 +343,10 @@ public class Messages implements EntryPoint, ResizeHandler {
     {
       groupsIface = new ManageGroups(images);
     	rightPanel.add(groupsIface);
+    	
+    	//showing help if its stream
+    	RootPanel.get("help_tab").setVisible(true);
+    	RootPanel.get("help_tab").addStyleName("help-tab-show");    	
     }
     else
     {

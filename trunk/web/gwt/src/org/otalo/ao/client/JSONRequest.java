@@ -45,7 +45,7 @@ public final class JSONRequest {
 		public static final String MESSAGES = "messages/";
 		public static final String UPDATE_MESSAGE = "update/message/";
 		public static final String MOVE = "move/";
-		public static final String UPLOAD = "upload/";
+		public static final String RECORD_OR_UPLOAD = "recordorupload/";
 		public static final String APPROVE = "approve/";
 		public static final String REJECT = "reject/";
 		public static final String UPDATE_STATUS = "update/status/";
