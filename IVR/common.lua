@@ -224,11 +224,9 @@ end
 -----------
 
 function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, confirm, okrecordedprompt)
-   local forumid = forumid or nil;
-   local thread = thread or nil;
-   local moderated = moderated or nil;
-   local maxlength = maxlength; -- mandatory field, so no default
-   local rgt = rgt or 1;
+   maxlength = tonumber(maxlength);
+   rgt = tonumber(rgt) or 1;
+   confirm = tonumber(confirm);
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local mediasubdir = get_media_subdir();
    -- add caller digits to prevent name collisions
@@ -391,6 +389,7 @@ function is_sufficient_balance(userid)
 		return false;
 	else
 		local balance = get_table_field("ao_user", "balance", "id="..userid);
+		balance = tonumber(balance);
 		return balance ~= nil and (balance > 0 or balance == -1);
 	end
 end
@@ -406,6 +405,7 @@ end
 --]]
 function get_num_channels(api, prefix, dialer_type)
 	local profile = "";
+	dialer_type = tonumber(dialer_type);
 	if  (dialer_type == DIALER_TYPE_PRI) then
 		local pri = string.match(prefix,'grp(%d+)');
 		profile = 'FreeTDM/'.. tostring(pri);
@@ -445,7 +445,7 @@ function get_available_line(api, prefixes, maxparallels, dialer_types)
 	
 	for i,prefix in ipairs(prefixes) do
 		nchannels = get_num_channels(api, prefix, dialer_types[i]);
-		if (nchannels < maxparallels[i]) then
+		if (nchannels < tonumber(maxparallels[i])) then
 			return prefix;
 		end
 	end
@@ -913,6 +913,7 @@ function play_prompts (prompts)
    local inputval = "";
    local replay_cnt = 0;
    local optionid = "";
+   local action = nil;
    
    -- a complete_after 0 means it's complete if they've picked up the call
    if (complete_after_idx ~= nil and complete_after_idx == 0) then
@@ -922,8 +923,8 @@ function play_prompts (prompts)
    while (current_prompt ~= nil) do
    	  local promptid = current_prompt[1];
    	  local promptfile = current_prompt[2];
-   	  local bargein = current_prompt[3];
-   	  local delay = current_prompt[4];
+   	  local bargein = tonumber(current_prompt[3]);
+   	  local delay = tonumber(current_prompt[4]);
    	  local inputlen = tonumber(current_prompt[5]);
    	  local dependson = tonumber(current_prompt[6]);
    	  local surveyid = tonumber(current_prompt[7]);
@@ -972,8 +973,8 @@ function play_prompts (prompts)
    	  -- get option
    	  option = get_option(promptid, inputval);
    	  if (option ~= nil) then
-   	  	optionid = option[1];
-   	  	action = option[2];
+   	  	optionid = tonumber(option[1]);
+   	  	action = tonumber(option[2]);
    	  elseif (inputval ~= "" and inputlen ~= nil and inputlen > 0 and inputlen >= string.len(tostring(inputval))) then
    	  	-- there is no specific option, it is a range
    	  	-- The check for input being non-empty means that on no input the prompt will
@@ -989,6 +990,7 @@ function play_prompts (prompts)
    	  end
       
       freeswitch.consoleLog("info", script_name .. " : option selected - " .. tostring(action) .. "\n");
+      
       -- abort if 3 replays for any prompt in a row
       if (action == OPTION_REPLAY) then
 		replay_cnt = check_abort(replay_cnt, 3);
@@ -1146,13 +1148,13 @@ end
 -----------
 
 function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
-   local maxlength = maxlength or 90;
+   maxlength = tonumber(maxlength) or 90;
    -- add callid digits to prevent name collisions
    local mediasubdir = get_media_subdir();
    local partfilename = mediasubdir..os.time() .. callid:sub(callid:len()-1) .. ".mp3";
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
-   local confirm = confirm or 1;
+   confirm = tonumber(confirm) or 1;
    local firstiter = true;
    
    if (lang:sub(0,1) == '/') then
@@ -1219,7 +1221,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   cur:close();
 	   
 	   local forumid = result[1];
-	   local rgt = result[2];
+	   local rgt = tonumber(result[2]);
 	   local thread = result[3] or result[4];
 
 		-- get userid

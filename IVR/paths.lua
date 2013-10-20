@@ -79,8 +79,8 @@ bsd = basedir .. "/sounds/en/us/callie/";
 sd = "/Users/neil/Development/media/";
 logfileroot = "/Users/neil/Documents/"
 
-luasql = require "luasql.odbc";
-env = assert (luasql.odbc());
+luasql = require "luasql.mysql";
+env = assert (luasql.mysql());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 assert (con:execute ("use otalo"));
 
