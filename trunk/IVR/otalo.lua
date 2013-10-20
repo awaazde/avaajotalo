@@ -624,10 +624,10 @@ function playforum (forumid)
    local moderated = forum[2];
    local postingallowed = forum[3];
    local responsesallowed = forum[4];
-   local maxlength = forum[5];
+   local maxlength = tonumber(forum[5]);
    local filter_code = tonumber(forum[6]);
-   local confirm_recordings = forum[7];
-   local listeningallowed = forum[8];
+   local confirm_recordings = tonumber(forum[7]);
+   local listeningallowed = tonumber(forum[8]);
    local d = "";
    local adminmode = is_admin(forumid, adminforums);
    local tagid = nil;
