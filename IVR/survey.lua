@@ -85,7 +85,10 @@ end
 
 complete_after_idx = tonumber(res[4]);
 local callback_allowed = tonumber(res[5]);
-local outbound_number = res[6];
+local outbound_number = nil;
+if (res[6] ~= nil and res[6] ~= '') then
+	outbound_number = res[6];
+end
 
 -- caller's number
 caller = session:getVariable("caller_id_number");
