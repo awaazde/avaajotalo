@@ -51,14 +51,14 @@ anssd = aosd .. "answer/";
 -- tagfiles
 tagsd = aosd .. "tag/";
 
-local open = line_info[2];
+local open = tonumber(line_info[2]);
 local DIALSTRING_PREFIX = line_info[3];
 local DIALSTRING_SUFFIX = line_info[4];
-local callback_allowed = line_info[5];
-local personal_inbox = line_info[6];
-local quota_imposed = line_info[7];
+local callback_allowed = tonumber(line_info[5]);
+local personal_inbox = tonumber(line_info[6]);
+local quota_imposed = tonumber(line_info[7]);
 local lineid = line_info[8];
-local checkpendingmsgs = line_info[9];
+local checkpendingmsgs = tonumber(line_info[9]);
 
 logfilename = logfileroot .. "inbound_" .. lineid .. ".log";
 logfile = io.open(logfilename, "a");
