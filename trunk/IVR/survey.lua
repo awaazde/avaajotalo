@@ -85,7 +85,7 @@ end
 
 complete_after_idx = tonumber(res[4]);
 local callback_allowed = tonumber(res[5]);
-local outbound_number = tonumber(res[6]);
+local outbound_number = res[6];
 
 -- caller's number
 caller = session:getVariable("caller_id_number");
@@ -114,7 +114,7 @@ if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
 
 		if (phone_num == nil) then
 			country_code = dialstring[4];
-			min_len = dialstring[5];
+			min_len = tostring(dialstring[5]);
 			if (country_code ~= nil and min_len ~= nil) then
 				pattern = '('..string.rep('%d', min_len)..'%d*)';			
 				phone_num = string.match(caller, '1?'..country_code..pattern) or string.match(caller, pattern);

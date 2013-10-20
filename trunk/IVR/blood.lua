@@ -24,7 +24,6 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 --]]
 
 -- INCLUDES
-require "luasql.odbc";
 require "socket.http";
 
 -- TODO: figure out how to get the local path
