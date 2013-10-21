@@ -289,7 +289,7 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		outer.setWidget(outer.getRowCount(), 0, forumId);
 		outer.setWidget(outer.getRowCount(), 0, messageForumId);
 		
-		HTML troubleShootLink = new HTML("<a class='trblLink' target=_blank  href='http://awaaz.de/blog/2013/10/audio-recording-on-web-console-is-now-available'>Running into any issue with recording? click here!</a>");
+		HTML troubleShootLink = new HTML("<a class='trblLink' target=_blank  href='http://awaaz.de/blog/2013/10/record-your-messages-over-web'>Unable to record? Complete the one-time setup instructions</a>");
 		int trblCell = outer.getRowCount();
 		outer.setWidget(trblCell, 0,troubleShootLink);
 		outer.getFlexCellFormatter().setColSpan(trblCell, 0, 2);
@@ -497,7 +497,9 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 				hourValue = String.valueOf(d.getHours());
 				minValue = String.valueOf(d.getMinutes());
 			}
-			else { 
+			else {
+				params.add(new AudioRecordParam(write("when"), write("date")));
+				
 				dateValue = dateField.getValue();
 				hourValue = hour.getValue(hour.getSelectedIndex());
 				minValue = min.getValue(min.getSelectedIndex());
@@ -514,8 +516,6 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 			params.add(new AudioRecordParam(write("record"), write("true")));
 		else
 			params.add(new AudioRecordParam(write("upload"), write("true")));
-		if(date.getValue())
-			params.add(new AudioRecordParam(write("when"), write("date")));
 		return params.toArray(new AudioRecordParam[0]);
 	}
 	
