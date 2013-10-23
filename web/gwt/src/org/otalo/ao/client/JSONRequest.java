@@ -34,10 +34,10 @@ import com.google.gwt.http.client.URL;
  * Class that acts as a client to a JSON service. 
  */
 public final class JSONRequest {
-	/**
-	 * Class for handling the response text associated with a request for a JSON
-	 * object.
-	 */
+  /**
+   * Class for handling the response text associated with a request for a JSON
+   * object.
+   */
 	public static final class AoAPI {
 		public static final String USER = "user/";
 		public static final String THREAD = "thread/";
@@ -45,7 +45,7 @@ public final class JSONRequest {
 		public static final String MESSAGES = "messages/";
 		public static final String UPDATE_MESSAGE = "update/message/";
 		public static final String MOVE = "move/";
-		public static final String UPLOAD = "upload/";
+		public static final String RECORD_OR_UPLOAD = "recordorupload/";
 		public static final String APPROVE = "approve/";
 		public static final String REJECT = "reject/";
 		public static final String UPDATE_STATUS = "update/status/";
@@ -82,19 +82,19 @@ public final class JSONRequest {
 		public static final String DOWNLOAD_BCAST_REPORT = "s/download/bcastreport/";
 		public static final String DOWNLOAD_STREAM_REPORT = "s/download/streamreport/";
 		public static final String BALANCE = "s/balance/";
-
+		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
 		public static final String POSTS_RESPONSES = "responses";
-
+		
 		@Deprecated
 		public static final String TAG_TYPE_CROP = "agri-crop";
 		@Deprecated
 		public static final String TAG_TYPE_TOPIC = "agri-topic";
-
+		
 		public static final String MSG_METADATA = "MESSAGE_METADATA";
 		public static final String MEMBER_METADATA = "MEMBER_METADATA";
-
+		
 		/**
 		 * Search related constants
 		 * @author nikhil
@@ -207,7 +207,7 @@ public final class JSONRequest {
 
 	}
 
-	public static final String BASE_URL = "/AO/";
+	public static final String BASE_URL = "/console/";
 	private JSONRequester requester;
 
 	/*
