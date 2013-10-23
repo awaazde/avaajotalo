@@ -19,6 +19,7 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tools.ant.taskdefs.Javadoc.Html;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
@@ -404,12 +405,22 @@ public class Messages implements EntryPoint, ResizeHandler {
     	smsIface = new SMSInterface(images);
     	smss = new SMSs(images);
 	    rightPanel.add(smsIface);
-		rightPanel.add(smsList);
+	    rightPanel.add(smsList);
     }
     if (canManage())
     {
       groupsIface = new ManageGroups(images);
     	rightPanel.add(groupsIface);
+    	
+    	//showing help if its stream
+    	String helpHtmlStr = "<div id='help_tab' class='help-tab-right'>"
+    			+ "<a href='http://awaaz.de/blog/2013/09/awaaz-de-streams-start-up-guide-and-glossary/' target=_blank  id='help-link>"
+    			+ "<span>H</span>"
+    			+ "<span>E</span>"
+    			+ "<span>L</span>"
+    			+ "<span>P</span></a></div>";
+    	HTML helpHtml = new HTML(helpHtmlStr);
+    	RootPanel.get().add(helpHtml);
     }
     else
     {
@@ -481,12 +492,6 @@ public class Messages implements EntryPoint, ResizeHandler {
 	});
 
     onWindowResized(Window.getClientWidth(), Window.getClientHeight());
-    
-    //showing help if its stream
-    if(canManage()) {
-    	RootPanel.get("help_tab").setVisible(true);
-    	RootPanel.get("help_tab").addStyleName("help-tab-show");
-    }
   }
 
   

@@ -98,7 +98,7 @@ public class ForumWidget implements ClickHandler {
 	    root.addItem(responses);
     }
     
-    uploadHTML = imageItemHTML(images.sent(), "Upload");
+    uploadHTML = imageItemHTML(images.sent(), "Record/Upload");
     upload = new TreeItem(uploadHTML);
     root.addItem(upload);
     

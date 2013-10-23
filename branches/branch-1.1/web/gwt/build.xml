@@ -20,12 +20,9 @@
   <path id="project.class.path">
     <pathelement location="war/WEB-INF/classes"/>
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
-    <!--  other library for custom tag widget -->
-    <pathelement location="lib/gwtchosen-1.1.0.jar"/>
-    <pathelement location="lib/gwtquery-1.3.3.jar"/>
-    
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
     <!-- Add any additional non-server libs (such as JUnit) -->
+    <pathelement location="lib/gwtquery-1.3.3.jar"/>
     <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>
   </path>
 

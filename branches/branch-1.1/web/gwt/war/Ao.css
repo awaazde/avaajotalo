@@ -171,25 +171,7 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 
 .mail-TopPanel {
 	height: 60px;
-	/*filter: none;
-	top: 0;
-	right: 0;
-	left: 0;
-	z-index: 1030;
-	margin-bottom: 0;
-	padding-left: 0;
-	padding-right: 0;
-	
-	border-bottom: 1px solid #d1d4d7;
-	box-shadow: 0 0 5px rgba(0,0,0,.1);
-	background: rgba(255, 255, 255, 0.94);
-	
-	border: 0;
-	-webkit-border-radius: 0;
-	-moz-border-radius: 0;
-	border-radius: 0;
-	margin-bottom: 10px;*/
-
+	table-layout: fixed;
 }
 
 .mail-TopPanel table {
@@ -488,4 +470,10 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 
 .help-tab-right > a > span {
 	display: block;
+}
+
+.right {
+  	text-align: right;
+  	margin-right: 1em;
+    padding-right: 1em;
 }

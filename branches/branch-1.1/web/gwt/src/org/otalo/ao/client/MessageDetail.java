@@ -126,7 +126,7 @@ public class MessageDetail extends Composite {
   	threadPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
   	uploadDlg = new UploadDialog();
     uploadDlg.setCompleteHandler(new UploadComplete());
-  	Button uploadResponse = new Button("Upload Response", new ClickHandler() {
+  	Button uploadResponse = new Button("Record/Upload Response", new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
 				uploadDlg.reset();
