@@ -1,4 +1,4 @@
-from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership
+from otalo.ao.models import Message_forum
 from haystack import indexes
 
 

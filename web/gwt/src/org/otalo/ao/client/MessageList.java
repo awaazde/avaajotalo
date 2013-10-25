@@ -179,7 +179,7 @@ public class MessageList extends Composite implements ClickHandler, JSONRequeste
 
     BaseModel message = messages.get(row);
     if (MessageForum.isMessageForum(message))
-    	Messages.get().setItem(new MessageForum(message), true);
+    	Messages.get().setItem(new MessageForum(message));
   }
 
   private void styleRow(int row, boolean selected) {

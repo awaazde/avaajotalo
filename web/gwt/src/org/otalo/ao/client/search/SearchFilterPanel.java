@@ -31,7 +31,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
@@ -68,7 +67,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	   * that tree's images should also be included in the same bundle.
 	   */
 	  public interface Images extends ClientBundle {
-	    ImageResource search();
+	    //ImageResource search();
 	  }
 	
 	public SearchFilterPanel(SearchResultMsgList searchResultContainer) {
@@ -122,7 +121,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 		tagLbl.addStyleName("tag-label");
 		tagsInput = new SearchTagWidget(false, false, this);
 		tagsInput.setWidth("252px");
-		tagsInput.loadTags(null);
+		tagsInput.loadTags();
 
 		Label authorLbl = new Label();
 		authorLbl.setText("Author:");
@@ -173,7 +172,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	public void reset() {
 		searchInput.setText("");
 		tagsInput.reset();
-		tagsInput.loadTags(null);
+		tagsInput.loadTags();
 		authorFilter.reset();
 		msgStatusFilter.reset();
 		setDefaults();
@@ -219,7 +218,7 @@ public class SearchFilterPanel extends Composite implements EventObserver {
 	 */
 	public void setSearchPharse(String value) {
 		this.searchInput.setText(value);
-		tagsInput.loadTags(null);
+		tagsInput.loadTags();
 		resetPagingInformation();
 		if(value != null && !value.isEmpty())
 			notifyQueryChangeListener(searchInput.getName(), searchInput.getText());

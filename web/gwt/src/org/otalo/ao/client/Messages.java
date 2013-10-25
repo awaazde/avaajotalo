@@ -19,7 +19,6 @@ package org.otalo.ao.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tools.ant.taskdefs.Javadoc.Html;
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
@@ -104,14 +103,15 @@ public class Messages implements EntryPoint, ResizeHandler {
    * 
    * @param messageForum
    */
-  public void setItem(MessageForum messageForum, boolean isShowMoveButtons) {
+  public void setItem(MessageForum messageForum) {
   	if (!canManage()) {
   		messageDetail.setItem(messageForum);
-  		if(!isShowMoveButtons)
-  			messageDetail.hideMoveButtons();
   	}
   }
   
+  public void displayMoveButtons(boolean isDisplay) {
+	  messageDetail.displayMoveButtons(isDisplay);
+  }
   
   public void setTagable(boolean tagable)
   {
