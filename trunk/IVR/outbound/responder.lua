@@ -254,7 +254,7 @@ function responder_main()
 	end -- close num_rows check
 end
 
-status, err = pcall(resonder_main)
+status, err = pcall(responder_main)
 if status == false and termination_reason ~= NORMAL_HANGUP then
 	freeswitch.consoleLog("err", tostring(debug.traceback(err)) .. "\n");
 end
