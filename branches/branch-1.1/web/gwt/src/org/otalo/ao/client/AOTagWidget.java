@@ -75,6 +75,11 @@ public class AOTagWidget extends TagWidget {
 		
 	}
 	
+	public void loadTags() {
+		new JSONRequest().doFetchURL(AoAPI.TAGS, new TagRequestor());
+	}
+	
+	
 	public void loadTags(MessageForum messageForum)
 	{
 		mf = messageForum;

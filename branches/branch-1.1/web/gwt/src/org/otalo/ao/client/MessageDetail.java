@@ -232,12 +232,7 @@ public class MessageDetail extends Composite {
   	
   	return box;
   }
-  
-  public void hideMoveButtons() {
-	  this.moveButtons.setVisible(false);
-  }
-  
-  
+
   public void setItem(MessageForum messageForum) {  
   	// in case selection is done from msgList
   	reset();
@@ -412,7 +407,7 @@ public class MessageDetail extends Composite {
   	}
 		public void onClick(ClickEvent event) {
 			Messages.get().hideSearchPanel();
-			Messages.get().displayMessages(this.mf);
+			Messages.get().displayMessages(mf);
 		}
   	
   }
@@ -488,6 +483,14 @@ public class MessageDetail extends Composite {
 	{
 		tags.setVisible(tagable);
 	}
+	
+	
+	 
+	public void displayMoveButtons(boolean isDisplay) {
+		this.moveButtons.setVisible(isDisplay);
+	}
+	  
+	
 	
 	/**
 	 * We are keeping track of which button was clicked in this class

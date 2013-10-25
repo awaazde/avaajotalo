@@ -35,10 +35,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLTable.Cell;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -54,9 +54,9 @@ public class SearchResultMsgList extends Composite {
 	private static final int VISIBLE_MESSAGE_COUNT = 10;
 
 	private HTML countLabel = new HTML();
-	private HTML newerButton = new HTML("<a href='javascript:;'>&lt; newer</a>",
+	private HTML newerButton = new HTML("<a href='javascript:;'>newer&gt;</a>",
 			true);
-	private HTML olderButton = new HTML("<a href='javascript:;'>older &gt;</a>",
+	private HTML olderButton = new HTML("<a href='javascript:;'> &lt;older</a>",
 			true);
 
 	private HandlerRegistration newButtonReg=null, oldButtonReg=null;
@@ -72,12 +72,13 @@ public class SearchResultMsgList extends Composite {
 	private BaseModel selectMessage;
 	private Forum forum;
 
+
 	/**
 	 * Specifies the images that will be bundled for this Composite and specify
 	 * that tree's images should also be included in the same bundle.
 	 */
 	public interface Images extends ClientBundle {
-		ImageResource download();
+		//ImageResource download();
 	}
 
 	public SearchResultMsgList(Images images) {
@@ -94,14 +95,14 @@ public class SearchResultMsgList extends Composite {
 		// Create the 'navigation' bar at the upper-right.
 		HorizontalPanel innerNavBar = new HorizontalPanel();
 		navBar.setStyleName("mail-ListNavBar");
-		innerNavBar.add(newerButton);
-		innerNavBar.add(countLabel);
 		innerNavBar.add(olderButton);
+		innerNavBar.add(countLabel);
+		innerNavBar.add(newerButton);
 
 		navBar.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
 		navBar.add(innerNavBar);
 		navBar.setWidth("100%");
-
+		
 		initWidget(table);
 		setStyleName("mail-List");
 		initTable();
@@ -133,6 +134,9 @@ public class SearchResultMsgList extends Composite {
 			table.getCellFormatter().setWordWrap(i + 1, 1, false);
 			table.getCellFormatter().setWordWrap(i + 1, 2, false);
 		}
+		//hiding newer and older, so that it won't be shown in case user clicked on Advance Search link
+		newerButton.addStyleName("disbled-txt");
+		olderButton.addStyleName("disbled-txt");
 	}
 
 	public void displayMessages(SearchFilterPanel filterPanel, List<JSOModel> models) {
@@ -150,6 +154,11 @@ public class SearchResultMsgList extends Composite {
 		for (JSOModel model : models) {
 			if (model.get("model").equals(AoAPI.MSG_METADATA)) {
 				count = Integer.valueOf(model.get("count"));
+				
+				if(count > 0) {
+					newerButton.removeStyleName("disbled-txt");
+					olderButton.removeStyleName("disbled-txt");
+				}
 				previous_page = model.get("previous_page");
 				if("undefined".equalsIgnoreCase(previous_page))
 					previous_page = null;
@@ -228,7 +237,8 @@ public class SearchResultMsgList extends Composite {
 
 		BaseModel message = messages.get(row);
 		if (MessageForum.isMessageForum(message))
-			Messages.get().setItem(new MessageForum(message), false);
+			Messages.get().setItem(new MessageForum(message));
+			Messages.get().displayMoveButtons(false);
 	}
 
 	private void styleRow(int row, boolean selected) {
@@ -370,7 +380,7 @@ public class SearchResultMsgList extends Composite {
 				int col = cell.getCellIndex();
 				// apparently styling the row doesn't do well with any cell that has HTML
 				// so weed them out of selection
-				if (row > 0 && (table.getHTML(row, col).equals("") || (col != 2 && col != 5))) {
+				if (row > 0 && (table.getHTML(row, col).equals("") || (col != 3 && col != 5))) {
 					selectRow(row - 1);
 				}
 			}

@@ -35,7 +35,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -53,7 +52,6 @@ public class TopPanel extends Composite implements ClickHandler {
   //search functionality
   private Button searchBtn;
   private TextBox searchBox;
-  private HTML homeLink = new HTML("<a href='javascript:;'>Home</a>");
   private HTML asearchLink = new HTML("<a href='javascript:;'>Advance Search</a>");
   private FlexTable layout;
   /**
@@ -62,12 +60,14 @@ public class TopPanel extends Composite implements ClickHandler {
    */
   public interface Images extends ClientBundle {
     ImageResource recharge();
+    ImageResource searchbutton();
   }
 
   @UiConstructor
   public TopPanel(Line line, User moderator, Images images) {
     this.outer = new HorizontalPanel();
-    this.inner = new HorizontalPanel();
+    this.inner = new HorizontalPanel(); 
+    
     this.searchBtn = new Button();
     this.layout = new FlexTable();
     this.search = new HorizontalPanel();
@@ -83,14 +83,14 @@ public class TopPanel extends Composite implements ClickHandler {
     outer.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
     inner.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
     search.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
-    inner.setSpacing(10);
-    search.setSpacing(10);
+    inner.setSpacing(8);
+    search.setSpacing(8);
     
     inner.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     layout.setWidget(0, 0, inner);
-    outer.add(layout);
+    
     if (moderator != null)
-    	inner.add(new HTML("Welcome back, " + moderator.getName() + "&nbsp;(" + moderator.getNumber() + ")&nbsp;|&nbsp;"));
+    	inner.add(new HTML("Welcome back, " + moderator.getName() + "&nbsp;(" + moderator.getNumber() + ")&nbsp;|"));
     
     if (Messages.get().canManage())
     {
@@ -98,8 +98,6 @@ public class TopPanel extends Composite implements ClickHandler {
       request.doFetchURL(AoAPI.BALANCE, new BalanceRequestor());
     }
     
-    homeLink.setVisible(false);
-    inner.add(homeLink);
     inner.add(signOutLink);
    
     
@@ -112,18 +110,17 @@ public class TopPanel extends Composite implements ClickHandler {
 	    searchBtn.setTitle("Search");
 	    searchBtn.addClickHandler(new SearchButtonHandler());
 	    search.add(searchBtn);
+	    asearchLink.addStyleName("advancesearch");
 	    search.add(asearchLink);
-	    layout.setWidget(1, 0, search);
+	    outer.add(search);
     }
     
     signOutLink.addClickHandler(this);
-    homeLink.addClickHandler(this);
     asearchLink.addClickHandler(this);
 
+    outer.add(layout);
     initWidget(outer);
     setStyleName("mail-TopPanel");
-    //inner.setStyleName("mail-TopPanelLinks");
-    
   }
 
   public void onClick(ClickEvent event) {
@@ -131,14 +128,8 @@ public class TopPanel extends Composite implements ClickHandler {
     if (sender == signOutLink) {
     	JSONRequest request = new JSONRequest();
     	request.doFetchURL(AoAPI.LOGOUT, null);
-    } else if(sender == homeLink) {
-    	homeLink.setVisible(false);
-    	search.setVisible(true);
-    	searchBox.setText("");
-    	Messages.get().displayForumPanel();
-    } 
+    }
     else if(sender == asearchLink) {
-    	homeLink.setVisible(true);
 		search.setVisible(false);
 		Messages.get().displaySerchPanel(searchBox.getText());
     }
@@ -146,7 +137,6 @@ public class TopPanel extends Composite implements ClickHandler {
   
   public void displaySearch() {
 	  if(!Messages.get().canManage())  {
-		  homeLink.setVisible(false);
 		  search.setVisible(true);
 		  searchBox.setText("");
 	  }
@@ -156,11 +146,10 @@ public class TopPanel extends Composite implements ClickHandler {
 	@Override
 	public void onClick(ClickEvent event) {
 		if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
-			ConfirmDialog validate = new ConfirmDialog("Please enter search word to search anything");
+			ConfirmDialog validate = new ConfirmDialog("Please enter a search a query");
 			validate.center();
 		}
 		else {
-			homeLink.setVisible(true);
 			search.setVisible(false);
 			Messages.get().displaySerchPanel(searchBox.getText());
 		}

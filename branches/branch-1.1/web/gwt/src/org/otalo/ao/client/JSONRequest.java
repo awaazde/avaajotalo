@@ -141,93 +141,93 @@ public final class JSONRequest {
 		 *
 		 */
 		public enum ValidationError {  
-			INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4), INVALID_DATE(5), INVALID_GROUP_SETTING(6), INVALID_FILE_FORMAT(7), INVALID_SUMMARY_FILE_FORMAT(8);
-
-			private int code;  
-
-			private ValidationError(int code) {  
-				this.code = code;  
-			}  
-
-			public int getCode() {  
-				return code;  
-			}  
-
-			public static ValidationError getError(int code) {
-				for (ValidationError s : values())
-				{
-					if (s.getCode() == code)
-						return s;
-				}
-
-				return null;
-			}
-		}  
+	  	INVALID_NUMBER(1), NO_CONTENT(2), INVALID_GROUPNAME(3), MEMBER_CREDITS_EXCEEDED(4), INVALID_DATE(5), INVALID_GROUP_SETTING(6), INVALID_FILE_FORMAT(7);
+	  
+	    private int code;  
+	  
+	    private ValidationError(int code) {  
+	        this.code = code;  
+	    }  
+	  
+	    public int getCode() {  
+	        return code;  
+	    }  
+	    
+	    public static ValidationError getError(int code) {
+	    	for (ValidationError s : values())
+	    	{
+	    		if (s.getCode() == code)
+	    			return s;
+	    	}
+	    	
+	    	return null;
+	    }
+	  }  
 	}
 	public static List<JSOModel> getModels(String jsonStr)
 	{
-		jsonStr = jsonStr.replaceAll("\\n","");
-		List<JSOModel> models = new ArrayList<JSOModel>();
-		if (JSOModel.isArray(jsonStr))
-		{
-			JsArray<JSOModel> data = JSOModel.arrayFromJson(jsonStr);
+		 jsonStr = jsonStr.replaceAll("\\n","");
+		 List<JSOModel> models = new ArrayList<JSOModel>();
+		 if (JSOModel.isArray(jsonStr))
+		 {
+			 JsArray<JSOModel> data = JSOModel.arrayFromJson(jsonStr);
 
-			for (int i = 0; i < data.length(); i++) {
-				models.add(data.get(i));
-			}
+			 for (int i = 0; i < data.length(); i++) {
+         models.add(data.get(i));
+			 }
 
-		}
-		else
-		{
-			JSOModel data = JSOModel.fromJson(jsonStr); 
-			models.add(data);
-		}
-
-		return models;
+		 }
+		 else
+		 {
+			 JSOModel data = JSOModel.fromJson(jsonStr); 
+			 models.add(data);
+		 }
+		 
+		 return models;
 	}
-	private class JSONResponseTextHandler implements RequestCallback {
-		public void onError(Request request, Throwable exception) {
-			// TODO
-		}
+  private class JSONResponseTextHandler implements RequestCallback {
+    public void onError(Request request, Throwable exception) {
+      // TODO
+    }
 
-		public void onResponseReceived(Request request, Response response) 
-		{
-			if (response.getStatusCode() == 200) 
-			{
-				List<JSOModel> models = getModels(response.getText());
+    public void onResponseReceived(Request request, Response response) 
+    {
+    	 if (response.getStatusCode() == 200) 
+    	 {
+    		 List<JSOModel> models = getModels(response.getText());
+	      
+    		 requester.dataReceived(models);
+    	 } 
+    	 else
+    	 {
+    		 onError(request, new RequestException(response.getText()));
+    	 }
+      
+    }
 
-				requester.dataReceived(models);
-			} 
-			else
-			{
-				onError(request, new RequestException(response.getText()));
-			}
+  }
 
-		}
-
-	}
-
-	public static final String BASE_URL = "/console/";
-	private JSONRequester requester;
-
-	/*
-	 * Fetch the requested URL.
-	 */
-	public void doFetchURL(String fetchURL, JSONRequester requester) {
-		this.requester = requester;
-		// RequestBuilder used to issue HTTP GET requests.
-		RequestBuilder requestBuilder = new RequestBuilder(
-				RequestBuilder.GET, URL.encode(BASE_URL + fetchURL));
-		try {
-			requestBuilder.sendRequest(null, new JSONResponseTextHandler());
-		} catch (RequestException ex) {
-			// TODO
-		}
-	}
-
-	/*
-	 * Fetch the requested URL.
-	 */
+  public static final String BASE_URL = "/console/";
+  private JSONRequester requester;
+  
+  /*
+   * Fetch the requested URL.
+   */
+  public void doFetchURL(String fetchURL, JSONRequester requester) {
+  	this.requester = requester;
+  	// RequestBuilder used to issue HTTP GET requests.
+  	RequestBuilder requestBuilder = new RequestBuilder(
+	      RequestBuilder.GET, URL.encode(BASE_URL + fetchURL));
+    try {
+      requestBuilder.sendRequest(null, new JSONResponseTextHandler());
+    } catch (RequestException ex) {
+    	// TODO
+    }
+  }
+  
+  /*
+   * Fetch the requested URL.
+   */
 	public void doPost(String fetchURL, String postData, JSONRequester requester) {
 		this.requester = requester;
 		// RequestBuilder used to issue HTTP GET requests.
@@ -240,24 +240,24 @@ public final class JSONRequest {
 			// TODO
 		}
 	}
+  
+  public static void doPost(String url, String postData) {
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
+    try {
+      builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+      Request response = builder.sendRequest(postData, new RequestCallback() {
 
-	public static void doPost(String url, String postData) {
-		RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+        public void onError(Request request, Throwable exception) {
+          // code omitted for clarity
+        }
 
-		try {
-			builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			Request response = builder.sendRequest(postData, new RequestCallback() {
-
-				public void onError(Request request, Throwable exception) {
-					// code omitted for clarity
-				}
-
-				public void onResponseReceived(Request request, Response response) {
-					// code omitted for clarity
-				}
-			});
-		} catch (RequestException e) {
-		}
-	}
+        public void onResponseReceived(Request request, Response response) {
+          // code omitted for clarity
+        }
+      });
+    } catch (RequestException e) {
+    }
+  }
+  
 }

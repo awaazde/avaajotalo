@@ -75,12 +75,16 @@ public class AutoCompleteTagWidget extends TagWidget{
 	}
 
 	@Override
+	public void loadTags() {
+		JSONRequest request = new JSONRequest();
+	    request.doFetchURL(AoAPI.TAGS, new TagRequestor());
+	}
+	
+	@Override
 	public void loadTags(MessageForum messageForum) {
 		mf = messageForum;
 		JSONRequest request = new JSONRequest();
-		String tagSourceURL = AoAPI.TAGS;
-		if(mf != null)
-			tagSourceURL+= mf.getForum().getId();
+		String tagSourceURL = AoAPI.TAGS + mf.getForum().getId();
 		request.doFetchURL(tagSourceURL, new TagRequestor());
 	}	
 
