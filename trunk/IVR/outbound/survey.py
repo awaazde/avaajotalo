@@ -44,8 +44,8 @@ def make_calls():
              call_ids.append(call.id)
          else:
              # only make a P2 call if there have been unfullfilled P1s for this survey
-             past_p1_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, priority=1, date__lt=now-interval, machine_id=settings.MACHINE_ID).count()
-             past_complete_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, date__lt=now-interval, complete=True, machine_id=settings.MACHINE_ID).count()
+             past_p1_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, priority=1, date__lt=now-interval, dialer__machine_id=settings.MACHINE_ID).count()
+             past_complete_cnt = Call.objects.filter(subject=call.subject, survey=call.survey, date__lt=now-interval, complete=True, dialer__machine_id=settings.MACHINE_ID).count()
              if past_p1_cnt > past_complete_cnt:
                  call_ids.append(call.id)      
      

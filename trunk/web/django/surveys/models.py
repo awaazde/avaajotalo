@@ -200,17 +200,6 @@ class Call(models.Model):
     duration = models.IntegerField(blank=True, null=True)
     
     '''
-    '****************************************************************************************************
-    '    DEPRECATED since all these fields are packed into the dialer
-    '''
-    machine_id = models.IntegerField(blank=True, null=True)
-    dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
-    dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
-    '''
-    ****************************************************************************************************
-    '''
-    
-    '''
     '    The actual selected dialing resource this call should use, set at schedule time.
     '    The survey has all possible dialers; this is the dialer that was actually chosen
     '    given line availability.
