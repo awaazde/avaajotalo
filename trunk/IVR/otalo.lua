@@ -917,7 +917,7 @@ function otalo_main()
 	local mm_cnt = 0;
 	while (1) do
 	   -- choose a forum
-	   dmainmenu();
+	   mainmenu();
 		
 	   -- go back to the main menu
 	   read(aosd .. "mainmenu.wav", 1000);
