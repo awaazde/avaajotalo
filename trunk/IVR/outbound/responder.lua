@@ -142,113 +142,121 @@ end
 
 -- cursor:numrows doesn't seem to work for all luasql drivers, so
 -- better to just leave it out and take the hit of an extra query
-check_n_msgs = get_responder_messages(userid);
-msg = check_n_msgs();
-if (msg ~= nil) then
-	local lineid = "";
-	-- set the language
-	query = 		"SELECT line.language, line.number, line.outbound_number, line.id ";
-	query = query .. " FROM ao_line line, ao_line_forums line_forum, ao_forum forum, ao_message_forum message_forum ";
-	query = query .. " WHERE line.id = line_forum.line_id ";
-	query = query .. " AND  line_forum.forum_id = forum.id ";
-	query = query .. " AND  message_forum.forum_id = forum.id ";
-	query = query .. " AND  message_forum.message_id = " .. msg[1];
-	row = row(query);
-	
-	-- since we joined on message_forum, we are assured
-	-- that there was only one line returned by the above.
-	-- What we are not doing is adjusting this per message in
-	-- this responder's queue, which we will have to do if
-	-- a responder belongs to multiple lines (then billing the call is an issue)
-	if (row == nil) then
-	   -- default
-	   aosd = basedir .. "/scripts/AO/sounds/eng/";
-	else
-	   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
-	   lineid = row[4];
-	end	
-	
-	logfilename = logfileroot .. "responder_" .. lineid .. ".log";
-	logfile = io.open(logfilename, "a");
-	logfile:setvbuf("line");
-
-	-- get admin permissions
-	adminrows = rows("SELECT forum_id FROM ao_admin where user_id =  " .. userid);
-	adminforum = adminrows();
-	while (adminforum ~= nil) do
-		-- use the table as a set to make lookup faster
-		adminforums[adminforum[1]] = true;
-		freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
-		adminforum = adminrows();
-	end
-	
-	-- get from dialer
-	local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
-	local prefixes = {};
-	local suffixes = {};
-	local maxparallels = {};
-	local channel_vars_tbl = {};
-	local dialer_types = {};
-	local dialstring = dialstrings();
-	while (dialstring ~= nil) do
-		table.insert(prefixes, dialstring[1]);
-		suffixes[dialstring[1]] = dialstring[2];
-		table.insert(maxparallels, dialstring[3]);
-		channel_vars_tbl[dialstring[1]] = dialstring[4];
-		table.insert(dialer_types, dialstring[5]);
-		dialstring = dialstrings();
-    end	    
-    -- find a dialer that is available
-    -- assumes the line has dialers with unique prefixes associated.
-    local api = freeswitch.API();
-    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
-    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
-    local channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
-    channel_vars = replace_channel_vars_wildcards(channel_vars);
-	
-	destination = row[3] or row[2];
-	CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..destination..',origination_caller_id_name='..destination;
-	if (channel_vars ~= nil) then
-		CALLID_VAR = CALLID_VAR .. ','.. channel_vars .. '}';
-	else
-		CALLID_VAR = CALLID_VAR .. '}';
-	end
-	freeswitch.consoleLog("info", script_name .. " : vars = " .. CALLID_VAR .. "\n");
-	
-	-- script-specific sounds
-	anssd = aosd .. "answer/";
-
-	-- make the call
-	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
-	session:setVariable("caller_id_number", caller);
-	session:setVariable("playback_terminators", "#");
-	session:setHangupHook("hangup");
-	session:setInputCallback("my_cb", "arg");
-
-	-- sleep for some secs
-	session:sleep(2000);
-	if (session:ready() == true) then
-
-		logfile:write(sessid, "\t", caller, "\t", destination,
-		"\t", os.time(), "\t", "Start call", "\n");
+function responder_main()
+	check_n_msgs = get_responder_messages(userid);
+	msg = check_n_msgs();
+	if (msg ~= nil) then
+		local lineid = "";
+		-- set the language
+		query = 		"SELECT line.language, line.number, line.outbound_number, line.id ";
+		query = query .. " FROM ao_line line, ao_line_forums line_forum, ao_forum forum, ao_message_forum message_forum ";
+		query = query .. " WHERE line.id = line_forum.line_id ";
+		query = query .. " AND  line_forum.forum_id = forum.id ";
+		query = query .. " AND  message_forum.forum_id = forum.id ";
+		query = query .. " AND  message_forum.message_id = " .. msg[1];
+		row = row(query);
 		
-		local mainmenu_cnt = 0;
-		while (1) do
-		   read(anssd .. "welcome.wav", 500);
-		   -- ignore any barge-in and move on
-		   input();
-		   
-		   msgs = get_responder_messages(userid);
-
-		   -- play messages
-		   play_responder_messages(userid, msgs, adminforums);
-		   
-		   mainmenu_cnt = check_abort(mainmenu_cnt, 5);
-		   -- go back to the main menu
-		   read(aosd .. "mainmenu.wav", 1000);
+		-- since we joined on message_forum, we are assured
+		-- that there was only one line returned by the above.
+		-- What we are not doing is adjusting this per message in
+		-- this responder's queue, which we will have to do if
+		-- a responder belongs to multiple lines (then billing the call is an issue)
+		if (row == nil) then
+		   -- default
+		   aosd = basedir .. "/scripts/AO/sounds/eng/";
+		else
+		   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
+		   lineid = row[4];
+		end	
+		
+		logfilename = logfileroot .. "responder_" .. lineid .. ".log";
+		logfile = io.open(logfilename, "a");
+		logfile:setvbuf("line");
+	
+		-- get admin permissions
+		adminrows = rows("SELECT forum_id FROM ao_admin where user_id =  " .. userid);
+		adminforum = adminrows();
+		while (adminforum ~= nil) do
+			-- use the table as a set to make lookup faster
+			adminforums[adminforum[1]] = true;
+			freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
+			adminforum = adminrows();
 		end
 		
-		hangup();
-	end
-end -- close num_rows check
+		-- get from dialer
+		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
+		local prefixes = {};
+		local suffixes = {};
+		local maxparallels = {};
+		local channel_vars_tbl = {};
+		local dialer_types = {};
+		local dialstring = dialstrings();
+		while (dialstring ~= nil) do
+			table.insert(prefixes, dialstring[1]);
+			suffixes[dialstring[1]] = dialstring[2];
+			table.insert(maxparallels, dialstring[3]);
+			channel_vars_tbl[dialstring[1]] = dialstring[4];
+			table.insert(dialer_types, dialstring[5]);
+			dialstring = dialstrings();
+	    end	    
+	    -- find a dialer that is available
+	    -- assumes the line has dialers with unique prefixes associated.
+	    local api = freeswitch.API();
+	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
+	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+	    local channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+	    channel_vars = replace_channel_vars_wildcards(channel_vars);
+		
+		destination = row[3] or row[2];
+		CALLID_VAR = '{ao_responder=true,ignore_early_media=true,origination_caller_id_number='..destination..',origination_caller_id_name='..destination;
+		if (channel_vars ~= nil) then
+			CALLID_VAR = CALLID_VAR .. ','.. channel_vars .. '}';
+		else
+			CALLID_VAR = CALLID_VAR .. '}';
+		end
+		freeswitch.consoleLog("info", script_name .. " : vars = " .. CALLID_VAR .. "\n");
+		
+		-- script-specific sounds
+		anssd = aosd .. "answer/";
+	
+		-- make the call
+		session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+		session:setVariable("caller_id_number", caller);
+		session:setVariable("playback_terminators", "#");
+		session:setHangupHook("hangup");
+		session:setInputCallback("my_cb", "arg");
+	
+		-- sleep for some secs
+		session:sleep(2000);
+		if (session:ready() == true) then
+	
+			logfile:write(sessid, "\t", caller, "\t", destination,
+			"\t", os.time(), "\t", "Start call", "\n");
+			
+			local mainmenu_cnt = 0;
+			while (1) do
+			   read(anssd .. "welcome.wav", 500);
+			   -- ignore any barge-in and move on
+			   input();
+			   
+			   msgs = get_responder_messages(userid);
+	
+			   -- play messages
+			   play_responder_messages(userid, msgs, adminforums);
+			   
+			   mainmenu_cnt = check_abort(mainmenu_cnt, 5);
+			   -- go back to the main menu
+			   read(aosd .. "mainmenu.wav", 1000);
+			end
+			
+			hangup();
+		end
+	end -- close num_rows check
+end
+
+status, err = pcall(resonder_main)
+if status == false and termination_reason ~= NORMAL_HANGUP then
+	freeswitch.consoleLog("err", tostring(debug.traceback(err)) .. "\n");
+end
+
 

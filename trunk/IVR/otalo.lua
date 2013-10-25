@@ -806,126 +806,129 @@ end
 -----------
 -- MAIN 
 -----------
--- get admin permissions
-local query = "SELECT admin.forum_id FROM ao_admin admin, ao_forum forum, ao_line line, ao_line_forums line_forum "; 
-query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
-query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id ";
-query = query .. " AND (forum.status IS NULL OR forum.status <> " .. FORUM_STATUS_INACTIVE .. ") ";
-query = query .. " AND user_id =  " .. userid;
-query = query .. " AND admin.forum_id =  forum.id ";
-
-adminrows = rows(query);
-adminforum = adminrows();
-while (adminforum ~= nil) do
-	-- use the table as a set to make lookup faster
-	adminforums[adminforum[1]] = true;
-	freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
+function otalo_main()
+	-- get admin permissions
+	local query = "SELECT admin.forum_id FROM ao_admin admin, ao_forum forum, ao_line line, ao_line_forums line_forum "; 
+	query = query .. " WHERE line.number LIKE '%" .. destination .. "%' "; 
+	query = query .. " AND line_forum.line_id = line.id AND line_forum.forum_id = forum.id ";
+	query = query .. " AND (forum.status IS NULL OR forum.status <> " .. FORUM_STATUS_INACTIVE .. ") ";
+	query = query .. " AND user_id =  " .. userid;
+	query = query .. " AND admin.forum_id =  forum.id ";
+	
+	adminrows = rows(query);
 	adminforum = adminrows();
+	while (adminforum ~= nil) do
+		-- use the table as a set to make lookup faster
+		adminforums[adminforum[1]] = true;
+		freeswitch.consoleLog("info", script_name .. " : adminforum = " .. adminforum[1] .. "\n");
+		adminforum = adminrows();
+	end
+	
+	if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(userid))) then
+		-- Allow for missed calls to be made
+		session:execute("ring_ready");
+		api = freeswitch.API();
+		
+		local channel_vars = nil;
+		-- do this only if missed call happening, to save the
+		-- db and processing hits in the non-missed call case
+		if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
+			-- get from dialer
+			local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
+			local prefixes = {};
+			local suffixes = {};
+			local maxparallels = {};
+			local channel_vars_tbl = {};
+			local dialer_types = {};
+			local dialstring = dialstrings();
+			while (dialstring ~= nil) do
+				table.insert(prefixes, dialstring[1]);
+				suffixes[dialstring[1]] = dialstring[2];
+				table.insert(maxparallels, dialstring[3]);
+				channel_vars_tbl[dialstring[1]] = dialstring[4];
+				table.insert(dialer_types, dialstring[5]);
+				dialstring = dialstrings();
+		    end	    
+		    -- find a dialer that is available
+		    -- assumes the line has dialers with unique prefixes associated.
+		    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
+		    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+		    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+		    channel_vars = replace_channel_vars_wildcards(channel_vars);
+		end
+		
+		
+		local uuid = session:getVariable('uuid');
+		local mc_cnt = 0;
+	    while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
+		 	session:sleep(3000);
+		 	mc_cnt = check_abort(mc_cnt, 11)
+	  	end
+		freeswitch.consoleLog("info", script_name .. " : woke up \n");
+		
+		-- decrease the caller's balance if necessary
+		if (quota_imposed == 1 and balance > 0) then
+			local query = " UPDATE ao_user ";
+		   	query = query .. " SET balance = balance - 1 ";
+		   	query = query .. " WHERE id = " .. userid;
+		   	con:execute(query);
+		   	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
+		end
+		
+		-- Missed call; 
+		-- call the user back
+		session:hangup();
+		local vars = '{';
+		vars = vars .. 'ignore_early_media=true';
+		vars = vars .. ',caller_id_number='..caller;
+		vars = vars .. ',origination_caller_id_number='..destination;
+		vars = vars .. ',origination_caller_id_name='..destination;
+		if (channel_vars ~= nil) then
+			vars = vars ..','.. channel_vars ..',';
+		end
+		vars = vars .. '}'
+		freeswitch.consoleLog("info", script_name .. " : vars = " .. vars .. "\n");
+		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+		
+		-- wait a while before testing
+		session:sleep(2000);
+		if (session:ready() == false) then
+			hangup();
+		end
+	else
+		-- No callback allowed; just answer the call
+		session:answer();
+	end
+	
+	-- put hangup hook after session init in case of missed call;
+	-- if old session closes and hangup() is invoked, the db conn
+	-- and logfile will get clobbered
+	session:setVariable("playback_terminators", "#");
+	session:setHangupHook("hangup");
+	session:setInputCallback("my_cb", "arg");
+	session:set_tts_parms("flite", "awb");
+	
+	logfile:write(sessid, "\t", caller, "\t", destination,
+	"\t", os.time(), "\t", "Start call", "\n");
+	
+	-- sleep for a sec
+	sleep(1000);
+	
+	local mm_cnt = 0;
+	while (1) do
+	   -- choose a forum
+	   dmainmenu();
+		
+	   -- go back to the main menu
+	   read(aosd .. "mainmenu.wav", 1000);
+	   
+	   -- prevent the non-deterministic spinning forever
+	   mm_cnt = check_abort(mm_cnt, 5)
+	end
 end
 
-if (callback_allowed == 1 and (quota_imposed == 0 or is_sufficient_balance(userid))) then
-	-- Allow for missed calls to be made
-	session:execute("ring_ready");
-	api = freeswitch.API();
-	
-	local channel_vars = nil;
-	-- do this only if missed call happening, to save the
-	-- db and processing hits in the non-missed call case
-	if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
-		-- get from dialer
-		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
-		local prefixes = {};
-		local suffixes = {};
-		local maxparallels = {};
-		local channel_vars_tbl = {};
-		local dialer_types = {};
-		local dialstring = dialstrings();
-		while (dialstring ~= nil) do
-			table.insert(prefixes, dialstring[1]);
-			suffixes[dialstring[1]] = dialstring[2];
-			table.insert(maxparallels, dialstring[3]);
-			channel_vars_tbl[dialstring[1]] = dialstring[4];
-			table.insert(dialer_types, dialstring[5]);
-			dialstring = dialstrings();
-	    end	    
-	    -- find a dialer that is available
-	    -- assumes the line has dialers with unique prefixes associated.
-	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
-	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
-	    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
-	    channel_vars = replace_channel_vars_wildcards(channel_vars);
-	end
-	
-	
-	local uuid = session:getVariable('uuid');
-	local mc_cnt = 0;
-    while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
-	 	session:sleep(3000);
-	 	mc_cnt = check_abort(mc_cnt, 11)
-  	end
-	freeswitch.consoleLog("info", script_name .. " : woke up \n");
-	
-	-- decrease the caller's balance if necessary
-	if (quota_imposed == 1 and balance > 0) then
-		local query = " UPDATE ao_user ";
-	   	query = query .. " SET balance = balance - 1 ";
-	   	query = query .. " WHERE id = " .. userid;
-	   	con:execute(query);
-	   	freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-	end
-	
-	-- Missed call; 
-	-- call the user back
-	session:hangup();
-	local vars = '{';
-	vars = vars .. 'ignore_early_media=true';
-	vars = vars .. ',caller_id_number='..caller;
-	vars = vars .. ',origination_caller_id_number='..destination;
-	vars = vars .. ',origination_caller_id_name='..destination;
-	if (channel_vars ~= nil) then
-		vars = vars ..','.. channel_vars ..',';
-	end
-	vars = vars .. '}'
-	freeswitch.consoleLog("info", script_name .. " : vars = " .. vars .. "\n");
-	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
-	
-	-- wait a while before testing
-	session:sleep(2000);
-	if (session:ready() == false) then
-		hangup();
-	end
-else
-	-- No callback allowed; just answer the call
-	session:answer();
+status, err = pcall(otalo_main)
+if status == false and termination_reason ~= NORMAL_HANGUP then
+	freeswitch.consoleLog("err", tostring(debug.traceback(err)) .. "\n");
 end
 
--- put hangup hook after session init in case of missed call;
--- if old session closes and hangup() is invoked, the db conn
--- and logfile will get clobbered
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
-session:setInputCallback("my_cb", "arg");
-session:set_tts_parms("flite", "awb");
-
-logfile:write(sessid, "\t", caller, "\t", destination,
-"\t", os.time(), "\t", "Start call", "\n");
-
--- sleep for a sec
-sleep(1000);
-
-local mm_cnt = 0;
-while (1) do
-   -- choose a forum
-   mainmenu();
-	
-   -- go back to the main menu
-   read(aosd .. "mainmenu.wav", 1000);
-   
-   -- prevent the non-deterministic spinning forever
-   mm_cnt = check_abort(mm_cnt, 5)
-end
-
--- say goodbye 
-read(bsd .. "/zrtp/8000/zrtp-thankyou_goodbye.wav", 1000);
-
-hangup();

@@ -117,28 +117,35 @@ end
 -- MAIN 
 -----------
 
-prompts = get_prompts(surveyid);
-
--- make the call
-session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
-session:setVariable("caller_id_number", caller)
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
-
--- wait a while before testing
-session:sleep(2000);
-if (session:ready() == true) then
-	callstarttime = os.time();
-	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", callstarttime, "\t", "Start call", "\n");
+function survey_main()
+	prompts = get_prompts(surveyid);
 	
-	-- play prompts
-   	play_prompts(prompts);
-   	
-   	-- assume that the suvey will make any loops
-   	-- that are necessary itself
-	hangup();
+	-- make the call
+	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+	session:setVariable("caller_id_number", caller)
+	session:setVariable("playback_terminators", "#");
+	session:setHangupHook("hangup");
+	
+	-- wait a while before testing
+	session:sleep(2000);
+	if (session:ready() == true) then
+		callstarttime = os.time();
+		logfile:write(sessid, "\t", caller, "\t", destination,
+		"\t", callstarttime, "\t", "Start call", "\n");
+		
+		-- play prompts
+	   	play_prompts(prompts);
+	   	
+	   	-- assume that the suvey will make any loops
+	   	-- that are necessary itself
+		hangup();
+	
+	end
+end
 
+status, err = pcall(survey_main)
+if status == false and termination_reason ~= NORMAL_HANGUP then
+	freeswitch.consoleLog("err", tostring(debug.traceback(err)) .. "\n");
 end
 
 
