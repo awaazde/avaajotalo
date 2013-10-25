@@ -205,72 +205,76 @@ end
 -----------
 -- MAIN 
 -----------
-
-prompts = get_prompts(surveyid);
-
-if (callback_allowed == 1) then
-	freeswitch.consoleLog("info", script_name .. " : in main \n");
-	-- Allow for missed calls to be made
-	session:execute("ring_ready");
-	local api = freeswitch.API();
+function survey_main()
+	prompts = get_prompts(surveyid);
 	
-	local channel_vars = nil;
-	 -- find a dialer that is available
-	if (DIALSTRING_PREFIX == '' and DIALSTRING_SUFFIX == '') then
-	    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types)..country_code;
-	    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
-	    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
-	    channel_vars = replace_channel_vars_wildcards(channel_vars);
-	end
-
-	local uuid = session:getVariable('uuid');
-	local mc_cnt = 0;
-    while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
-	 	session:sleep(3000);
-	 	mc_cnt = check_abort(mc_cnt, 11)
-  	end
-	freeswitch.consoleLog("info", script_name .. " : woke up \n");
+	if (callback_allowed == 1) then
+		freeswitch.consoleLog("info", script_name .. " : in main \n");
+		-- Allow for missed calls to be made
+		session:execute("ring_ready");
+		local api = freeswitch.API();
 		
-	-- Missed call; 
-	-- call the user back
-	session:hangup();
-	local vars = '{';
-	vars = vars .. 'ignore_early_media=true';
-	vars = vars .. ',caller_id_number='..caller;
-	vars = vars .. ',origination_caller_id_number='.. (outbound_number or destination);
-	vars = vars .. ',origination_caller_id_name='.. (outbound_number or destination);
-	if (channel_vars ~= nil) then
-		vars = vars ..','.. channel_vars ..',';
-	end
-	vars = vars .. '}'
+		local channel_vars = nil;
+		 -- find a dialer that is available
+		if (DIALSTRING_PREFIX == '' and DIALSTRING_SUFFIX == '') then
+		    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types)..country_code;
+		    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+		    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+		    channel_vars = replace_channel_vars_wildcards(channel_vars);
+		end
 	
-	freeswitch.consoleLog("info", script_name .. " : vars = " .. vars .. "\n");
-	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
-	
-	-- wait a while before testing
-	session:sleep(2000);
-	if (session:ready() == false) then
-		hangup();
+		local uuid = session:getVariable('uuid');
+		local mc_cnt = 0;
+	    while (api:executeString('eval uuid:' .. uuid .. ' ${Channel-Call-State}') == 'RINGING') do
+		 	session:sleep(3000);
+		 	mc_cnt = check_abort(mc_cnt, 11)
+	  	end
+		freeswitch.consoleLog("info", script_name .. " : woke up \n");
+			
+		-- Missed call; 
+		-- call the user back
+		session:hangup();
+		local vars = '{';
+		vars = vars .. 'ignore_early_media=true';
+		vars = vars .. ',caller_id_number='..caller;
+		vars = vars .. ',origination_caller_id_number='.. (outbound_number or destination);
+		vars = vars .. ',origination_caller_id_name='.. (outbound_number or destination);
+		if (channel_vars ~= nil) then
+			vars = vars ..','.. channel_vars ..',';
+		end
+		vars = vars .. '}'
+		
+		freeswitch.consoleLog("info", script_name .. " : vars = " .. vars .. "\n");
+		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
+		
+		-- wait a while before testing
+		session:sleep(2000);
+		if (session:ready() == false) then
+			hangup();
+		end
+	else
+		-- answer the call
+		session:answer();
 	end
-else
-	-- answer the call
-	session:answer();
+	
+	session:setVariable("playback_terminators", "#");
+	session:setHangupHook("hangup");
+	
+	-- sleep for a bit
+	--session:sleep(1000);
+	
+	callstarttime = os.time();
+	logfile:write(sessid, "\t", caller, "\t", destination,
+	"\t", callstarttime, "\t", "Start call", "\n");
+	
+	-- play prompts
+	play_prompts(prompts);
+	
+	hangup();
 end
 
-session:setVariable("playback_terminators", "#");
-session:setHangupHook("hangup");
-
--- sleep for a bit
---session:sleep(1000);
-
-callstarttime = os.time();
-logfile:write(sessid, "\t", caller, "\t", destination,
-"\t", callstarttime, "\t", "Start call", "\n");
-
--- play prompts
-play_prompts(prompts);
-
-hangup();
-
-
+status, err = pcall(survey_main)
+if status == false and termination_reason ~= NORMAL_HANGUP then
+	freeswitch.consoleLog("err", tostring(debug.traceback(err)) .. "\n");
+end
 

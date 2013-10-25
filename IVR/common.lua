@@ -45,8 +45,8 @@ function hangup()
    logfile:close();
    
    -- hangup
-   session:hangup();
-   os.exit();
+   termination_reason = NORMAL_HANGUP;
+   error();
 end
 
 -----------
