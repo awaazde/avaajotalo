@@ -42,7 +42,7 @@ else
 end
 freeswitch.consoleLog("info", script_name .. " : destination = " .. destination .. "\n");
 -- set the language, check if line is restricted
-line_info = row("SELECT language, open, dialstring_prefix, dialstring_suffix, callback, personalinbox, quota, id, checkpendingmsgs FROM ao_line WHERE number LIKE '%" .. destination .. "%'");
+line_info = row("SELECT language, open, callback, personalinbox, quota, id, checkpendingmsgs FROM ao_line WHERE number LIKE '%" .. destination .. "%'");
 aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		
 
 -- responder section-specific sounds
@@ -52,13 +52,11 @@ anssd = aosd .. "answer/";
 tagsd = aosd .. "tag/";
 
 local open = tonumber(line_info[2]);
-local DIALSTRING_PREFIX = line_info[3];
-local DIALSTRING_SUFFIX = line_info[4];
-local callback_allowed = tonumber(line_info[5]);
-local personal_inbox = tonumber(line_info[6]);
-local quota_imposed = tonumber(line_info[7]);
-local lineid = line_info[8];
-local checkpendingmsgs = tonumber(line_info[9]);
+local callback_allowed = tonumber(line_info[3]);
+local personal_inbox = tonumber(line_info[4]);
+local quota_imposed = tonumber(line_info[5]);
+local lineid = line_info[6];
+local checkpendingmsgs = tonumber(line_info[7]);
 
 logfilename = logfileroot .. "inbound_" .. lineid .. ".log";
 logfile = io.open(logfilename, "a");
@@ -832,30 +830,28 @@ function otalo_main()
 		local channel_vars = nil;
 		-- do this only if missed call happening, to save the
 		-- db and processing hits in the non-missed call case
-		if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
-			-- get from dialer
-			local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
-			local prefixes = {};
-			local suffixes = {};
-			local maxparallels = {};
-			local channel_vars_tbl = {};
-			local dialer_types = {};
-			local dialstring = dialstrings();
-			while (dialstring ~= nil) do
-				table.insert(prefixes, dialstring[1]);
-				suffixes[dialstring[1]] = dialstring[2];
-				table.insert(maxparallels, dialstring[3]);
-				channel_vars_tbl[dialstring[1]] = dialstring[4];
-				table.insert(dialer_types, dialstring[5]);
-				dialstring = dialstrings();
-		    end	    
-		    -- find a dialer that is available
-		    -- assumes the line has dialers with unique prefixes associated.
-		    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
-		    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
-		    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
-		    channel_vars = replace_channel_vars_wildcards(channel_vars);
-		end
+		-- get from dialer
+		local dialstrings = get_table_rows("ao_dialer dialer, ao_line_dialers line_dialers", "line_dialers.line_id="..lineid.." AND dialer.id = line_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.channel_vars, dialer.type");
+		local prefixes = {};
+		local suffixes = {};
+		local maxparallels = {};
+		local channel_vars_tbl = {};
+		local dialer_types = {};
+		local dialstring = dialstrings();
+		while (dialstring ~= nil) do
+			table.insert(prefixes, dialstring[1]);
+			suffixes[dialstring[1]] = dialstring[2];
+			table.insert(maxparallels, dialstring[3]);
+			channel_vars_tbl[dialstring[1]] = dialstring[4];
+			table.insert(dialer_types, dialstring[5]);
+			dialstring = dialstrings();
+	    end	    
+	    -- find a dialer that is available
+	    -- assumes the line has dialers with unique prefixes associated.
+	    local DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types);
+	    local DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+	    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+	    channel_vars = replace_channel_vars_wildcards(channel_vars);
 		
 		
 		local uuid = session:getVariable('uuid');

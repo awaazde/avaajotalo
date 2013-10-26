@@ -34,16 +34,6 @@ class Subject(models.Model):
 class Survey(models.Model):
     name = models.CharField(max_length=128)
     complete_after = models.IntegerField(blank=True, null=True)
-    
-    '''
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    '    DEPRECATED in favor of Dialer for dialing out
-    ''' 
-    dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
-    dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
-    '''
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    '''
     number = models.CharField(max_length=24, blank=True, null=True)
     broadcast = models.BooleanField(default=False)
     # This is only relevant for inbound surveys. Make it a nullable for that reason.

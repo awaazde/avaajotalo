@@ -39,16 +39,6 @@ class Line(models.Model):
     quota = models.BooleanField(default=False)
     
     '''
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    '    DEPRECATED in favor of Dialer for dialing out
-    '''
-    dialstring_prefix = models.CharField(max_length=128, blank=True, null=True)
-    dialstring_suffix = models.CharField(max_length=128, blank=True, null=True)
-    '''
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    '''
-    
-    '''
     '    Next-gen outbound dialing support
     '    Decouples a number (which is essentially what a line models)
     '    from dialing resources, so you can connect a number to multiple
