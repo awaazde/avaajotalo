@@ -33,7 +33,7 @@ public class SearchQueryParamMap extends ArrayList<QueryParam> {
 	@Override
 	public boolean add(QueryParam queryParam) {
 		if(this.contains(queryParam))
-			this.remove(queryParam);
+			this.remove(queryParam.getQueryParam());
 		else { //first iterating through list and removing older version of it
 			if(this.size()>0) {
 				for(int count=0;count<this.size();count++) {
@@ -51,6 +51,16 @@ public class SearchQueryParamMap extends ArrayList<QueryParam> {
 	@Override
 	public void add(int index, QueryParam queryParam) {
 		this.add(queryParam);
+	}
+
+	public boolean remove(String queryParam) {
+		for(int count=0;count<this.size();count++) {
+			if(((QueryParam)this.get(count)).getQueryParam().equalsIgnoreCase(queryParam)) {
+				this.remove(this.get(count));
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

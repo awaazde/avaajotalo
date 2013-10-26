@@ -8,7 +8,13 @@ public interface EventObserver {
 	 * @param oldState
 	 * @param newState
 	 */
-	public void notifyQueryChangeListener(String searchProperty, String latestState);
+	public void appendIntoQueryQueue(String searchProperty, String latestState);
+	
+	/**
+	 * Removes from search query queue
+	 * @param searchProperty
+	 */
+	public void removeFromQueryQueue(String searchProperty);
 	
 	/**
 	 * Resets the paging info

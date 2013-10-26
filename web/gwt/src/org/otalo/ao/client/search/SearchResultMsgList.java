@@ -34,11 +34,9 @@ import org.otalo.ao.client.model.User;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLTable.Cell;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -47,7 +45,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
  * A composite that displays voice messages.
  */
 public class SearchResultMsgList extends Composite {
-
 	/*
 	 * This variable should be consistent with otalo/views.py
 	 */
@@ -65,25 +62,14 @@ public class SearchResultMsgList extends Composite {
 	private String current_page, previous_page, next_page;
 	private FlexTable table = new FlexTable();
 	private HorizontalPanel navBar = new HorizontalPanel();
-	private Images images;
+
 
 	private SearchFilterPanel filterPanelRef;
 
 	private BaseModel selectMessage;
 	private Forum forum;
 
-
-	/**
-	 * Specifies the images that will be bundled for this Composite and specify
-	 * that tree's images should also be included in the same bundle.
-	 */
-	public interface Images extends ClientBundle {
-		//ImageResource download();
-	}
-
-	public SearchResultMsgList(Images images) {
-		this.images = images;
-
+	public SearchResultMsgList() {
 		// Setup the table.
 		table.setCellSpacing(0);
 		table.setCellPadding(0);
@@ -102,7 +88,7 @@ public class SearchResultMsgList extends Composite {
 		navBar.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
 		navBar.add(innerNavBar);
 		navBar.setWidth("100%");
-		
+
 		initWidget(table);
 		setStyleName("mail-List");
 		initTable();
@@ -154,7 +140,7 @@ public class SearchResultMsgList extends Composite {
 		for (JSOModel model : models) {
 			if (model.get("model").equals(AoAPI.MSG_METADATA)) {
 				count = Integer.valueOf(model.get("count"));
-				
+
 				if(count > 0) {
 					newerButton.removeStyleName("disbled-txt");
 					olderButton.removeStyleName("disbled-txt");
@@ -195,6 +181,13 @@ public class SearchResultMsgList extends Composite {
 		update();
 		if (msgFound) selectRow(selectedRow);
 		selectMessage = null;
+	}
+
+	public void reset() {
+		messages.clear();
+		count = 0;
+		styleRow(selectedRow, false);
+		update();
 	}
 
 
@@ -238,7 +231,7 @@ public class SearchResultMsgList extends Composite {
 		BaseModel message = messages.get(row);
 		if (MessageForum.isMessageForum(message))
 			Messages.get().setItem(new MessageForum(message));
-			Messages.get().displayMoveButtons(false);
+		Messages.get().displayMoveButtons(false);
 	}
 
 	private void styleRow(int row, boolean selected) {
@@ -288,7 +281,9 @@ public class SearchResultMsgList extends Composite {
 
 		int startIndex = 0;
 		int endIndex = 0;
-		int currentPageNum = Integer.parseInt(current_page);
+		int currentPageNum = 0;
+		if(current_page != null)
+			currentPageNum = Integer.parseInt(current_page);
 
 		if(currentPageNum == 1 && count > 0) {
 			startIndex = 1;
@@ -302,6 +297,9 @@ public class SearchResultMsgList extends Composite {
 			else
 				endIndex+= count - startIndex;
 		}
+		
+		if(endIndex > count)
+			endIndex = count;
 
 		countLabel.setText("" + startIndex + " - " + endIndex + " of " + count);
 
@@ -324,13 +322,9 @@ public class SearchResultMsgList extends Composite {
 				table.setText(i + 1, 1, callerText);
 				table.setText(i + 1, 2, mf.getForum().getName());
 
-				if (forum != null && forum.moderated()) {
-					//TODO
-				}
-				else {
-					table.setHTML(i+1, 3, "&nbsp");
-					table.setHTML(i+1, 4, "&nbsp");
-				}
+				table.setHTML(i+1, 3, "&nbsp");
+				table.setHTML(i+1, 4, "&nbsp");
+
 			}
 			else if (SurveyInput.isSurveyInput(message)) {
 				SurveyInput input = new SurveyInput(message);

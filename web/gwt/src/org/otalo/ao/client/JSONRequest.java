@@ -114,10 +114,12 @@ public final class JSONRequest {
 			public static final String TAG				= "tags";
 			public static final String AUTHOR			= "author";
 			public static final String PAGE_PARAM 		= "result_page";
+			public static final String FORUM			= "forum";
 
 			//status related constants
 			//NOTE: THESE CONSTANTS VALUE MUST BE MATCHED WITH STATUS VALUES ON SERVER SIDE IN MODELS.PY
 			public static interface StausConstants {
+				public static final String STATUS_ANY		= "-1";
 				public static final String STATUS_INPUT		= "0";
 				public static final String STATUS_APPROVED	= "1";
 				public static final String STATUS_REJECTED	= "2";
@@ -127,12 +129,17 @@ public final class JSONRequest {
 			//author related constants
 			//NOTE: THESE CONSTANTS VALUE MUST BE MATCHED WITH FIELD NAME IN Message_forumIndex in search_index.py file
 			public static interface AuthorConstants {
+				public static final String ANY				= "author_any";
 				public static final String AUTHOR_NAME		= "author_name";
 				public static final String AUTHOR_NUMBER	= "author_number";
 				public static final String AUTHOR_DISTRICT	= "author_district";
 				public static final String AUTHOR_TALUKA	= "author_taluka";
 				public static final String AUTHOR_VILLAGE	= "author_village";
 			}
+			
+			//forum related constants
+			public static final String FORUM_ANY		= "forum_any";
+			
 		}
 
 		/**

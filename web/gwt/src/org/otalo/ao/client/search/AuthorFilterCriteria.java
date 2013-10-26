@@ -28,15 +28,16 @@ import com.google.gwt.user.client.ui.FlexTable;
  * @author nikhil
  *
  */
-public class AuthorFilterCriteria extends Composite{
+public class AuthorFilterCriteria extends Composite implements ClickHandler{
 
+	private CheckBox any;
 	private CheckBox name;
 	private CheckBox number;
 	private CheckBox district;
 	private CheckBox taluka;
 	private CheckBox village;
 	
-	private CustomStringBuilder selectedStatusQuery; 
+	private CustomStringBuilder selectedFieldsQuery; 
 	private EventObserver notifier; //this notifier will be notified in case of any change in any of the filter criteria.
 	
 	/**
@@ -44,56 +45,76 @@ public class AuthorFilterCriteria extends Composite{
 	 * @param notifier 
 	 */
 	public AuthorFilterCriteria(EventObserver notifier) {
-		this.name 		= new CheckBox("Name");
-		this.number 	= new CheckBox("Number");
-		this.district 	= new CheckBox("District");
-		this.taluka 	= new CheckBox("Taluka");
-		this.village 	= new CheckBox("Village");
+		any 		= new CheckBox("All");
+		name 		= new CheckBox("Name");
+		number 	= new CheckBox("Number");
+		district 	= new CheckBox("District");
+		taluka 	= new CheckBox("Taluka");
+		village 	= new CheckBox("Village");
 		
-		this.name.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_NAME);
-		this.number.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_NUMBER);
-		this.district.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_DISTRICT);
-		this.taluka.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_TALUKA);
-		this.village.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_VILLAGE);
+		any.setName(AoAPI.SearchConstants.AuthorConstants.ANY);
+		name.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_NAME);
+		number.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_NUMBER);
+		district.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_DISTRICT);
+		taluka.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_TALUKA);
+		village.setName(AoAPI.SearchConstants.AuthorConstants.AUTHOR_VILLAGE);
 		
-		this.name.addClickHandler(new CheckBoxClickHandler());
-		this.number.addClickHandler(new CheckBoxClickHandler());
-		this.district.addClickHandler(new CheckBoxClickHandler());
-		this.taluka.addClickHandler(new CheckBoxClickHandler());
-		this.village.addClickHandler(new CheckBoxClickHandler());
+		any.addClickHandler(this);
+		name.addClickHandler(this);
+		number.addClickHandler(this);
+		district.addClickHandler(this);
+		taluka.addClickHandler(this);
+		village.addClickHandler(this);
 		
 		this.notifier = notifier;
-		this.selectedStatusQuery = new CustomStringBuilder();
+		selectedFieldsQuery = new CustomStringBuilder();
 		
 		FlexTable authorFieldTable = new FlexTable();
-		authorFieldTable.setWidget(0, 0, name);
+		authorFieldTable.setCellSpacing(8);
+		authorFieldTable.setWidget(0, 0, any);
+		authorFieldTable.setWidget(0, 1, name);
 		authorFieldTable.setWidget(1, 0, number);
-		authorFieldTable.setWidget(2, 0, district);
-		authorFieldTable.setWidget(3, 0, taluka);
-		authorFieldTable.setWidget(4, 0, village);
+		authorFieldTable.setWidget(1, 1, district);
+		authorFieldTable.setWidget(2, 0, taluka);
+		authorFieldTable.setWidget(2, 1, village);
+		
+		any.setValue(true);
+		setResetAny();
+		
 		authorFieldTable.addStyleName("author-filter");
 		initWidget(authorFieldTable);
 	}
 	
 	public void reset() {
-		this.name.setValue(false);
-		this.district.setValue(false);
-		this.number.setValue(false);
-		this.taluka.setValue(false);
-		this.village.setValue(false);
-		this.selectedStatusQuery = new CustomStringBuilder();
+		any.setValue(true);
+		setResetAny();
+		selectedFieldsQuery = new CustomStringBuilder();
 	}
 	
-	private class CheckBoxClickHandler implements ClickHandler {
-		@Override
-		public void onClick(ClickEvent event) {
-			CheckBox sender = (CheckBox) event.getSource();
+	private void setResetAny() {
+		name.setEnabled(!any.getValue());
+		district.setEnabled(!any.getValue());
+		number.setEnabled(!any.getValue());
+		taluka.setEnabled(!any.getValue());
+		village.setEnabled(!any.getValue());
+	}
+	
+	@Override
+	public void onClick(ClickEvent event) {
+		CheckBox sender = (CheckBox) event.getSource();
+		if(AoAPI.SearchConstants.AuthorConstants.ANY.equalsIgnoreCase(sender.getName())) {
+			//if its any then first disable all others and removing all of them from selected status queue
+			setResetAny();
+			selectedFieldsQuery.clear();
+			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.AUTHOR, "");
+		}
+		else {
 			if(sender.getValue())
-				selectedStatusQuery.add(sender.getName());
+				selectedFieldsQuery.add(sender.getName());
 			else
-				selectedStatusQuery.remove(sender.getName());
-			notifier.resetPagingInformation();
-			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.AUTHOR, selectedStatusQuery.toString());
-		}	
+				selectedFieldsQuery.remove(sender.getName());
+			
+			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.AUTHOR, selectedFieldsQuery.toString());
+		}
 	}
 }

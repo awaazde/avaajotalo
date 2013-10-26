@@ -25,6 +25,8 @@ import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.uibinder.client.UiConstructor;
@@ -43,7 +45,7 @@ import com.google.gwt.user.client.ui.TextBox;
 /**
  * The top panel, which contains the 'welcome' message and various links.
  */
-public class TopPanel extends Composite implements ClickHandler {
+public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 
   private Anchor signOutLink = new Anchor("Sign Out", AoAPI.LOGOUT);
   
@@ -105,10 +107,11 @@ public class TopPanel extends Composite implements ClickHandler {
 	    searchBox = new TextBox();
 	    searchBox.setTitle("Search");
 	    searchBox.setName("search_keywords");
+	    searchBox.addKeyUpHandler(this);
 	    search.add(searchBox);
 	    searchBtn.setText("Search");
 	    searchBtn.setTitle("Search");
-	    searchBtn.addClickHandler(new SearchButtonHandler());
+	    searchBtn.addClickHandler(this);
 	    search.add(searchBtn);
 	    asearchLink.addStyleName("advancesearch");
 	    search.add(asearchLink);
@@ -131,8 +134,36 @@ public class TopPanel extends Composite implements ClickHandler {
     }
     else if(sender == asearchLink) {
 		search.setVisible(false);
-		Messages.get().displaySerchPanel(searchBox.getText());
+		Messages.get().displaySearchPanel(searchBox.getText());
     }
+    else if(sender == searchBtn) {
+    	if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
+			ConfirmDialog validate = new ConfirmDialog("Please enter a search query");
+			validate.center();
+		}
+		else {
+			search.setVisible(false);
+			Messages.get().displaySearchPanel(searchBox.getText());
+		}
+    }
+  }
+  
+  @Override
+  public void onKeyUp(KeyUpEvent event) {
+	  Object sender = event.getSource();
+	  if (sender == searchBox) {
+		  int stroke = event.getNativeKeyCode();
+		  if(stroke == 13) {
+			  if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
+				  ConfirmDialog validate = new ConfirmDialog("Please enter a search query");
+				  validate.center();
+			  }
+			  else {
+				  search.setVisible(false);
+				  Messages.get().displaySearchPanel(searchBox.getText());
+			  }
+		  }
+	  }
   }
   
   public void displaySearch() {
@@ -142,6 +173,7 @@ public class TopPanel extends Composite implements ClickHandler {
 	  }
   }
   
+  //TODO
   private class SearchButtonHandler implements ClickHandler {
 	@Override
 	public void onClick(ClickEvent event) {
@@ -151,7 +183,7 @@ public class TopPanel extends Composite implements ClickHandler {
 		}
 		else {
 			search.setVisible(false);
-			Messages.get().displaySerchPanel(searchBox.getText());
+			Messages.get().displaySearchPanel(searchBox.getText());
 		}
 	}
   }

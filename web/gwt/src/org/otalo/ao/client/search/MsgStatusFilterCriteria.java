@@ -22,18 +22,19 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.FlexTable;
 
 /**
  * @author nikhil
  *
  */
-public class MsgStatusFilterCriteria extends Composite {
+public class MsgStatusFilterCriteria extends Composite implements ClickHandler {
 
+	private CheckBox any;
 	private CheckBox inbox;
 	private CheckBox approved;
 	private CheckBox rejected;
-	private CheckBox responsed;
+	private CheckBox responses;
 	
 	private CustomStringBuilder selectedStatusQuery; 
 	private EventObserver notifier; //this notifier will be notified in case of any change in any of the filter criteria.
@@ -41,48 +42,71 @@ public class MsgStatusFilterCriteria extends Composite {
 	 * Constructs new author criteria panel
 	 */
 	public MsgStatusFilterCriteria(EventObserver notifier) {
-		this.inbox 		= new CheckBox("Inbox");
-		this.approved 	= new CheckBox("Approved");
-		this.rejected 	= new CheckBox("Rejected");
-		this.responsed 	= new CheckBox("Responsed");
-		this.inbox.setName(AoAPI.SearchConstants.StausConstants.STATUS_INPUT);
-		this.approved.setName(AoAPI.SearchConstants.StausConstants.STATUS_APPROVED);
-		this.rejected.setName(AoAPI.SearchConstants.StausConstants.STATUS_REJECTED);
-		this.responsed.setName(AoAPI.SearchConstants.StausConstants.STATUS_RESPONDED);
-		this.inbox.addClickHandler(new CheckBoxClickHandler());
-		this.approved.addClickHandler(new CheckBoxClickHandler());
-		this.rejected.addClickHandler(new CheckBoxClickHandler());
-		this.responsed.addClickHandler(new CheckBoxClickHandler());
+		any 		= new CheckBox("Any");
+		inbox 		= new CheckBox("Inbox");
+		approved 	= new CheckBox("Approved");
+		rejected 	= new CheckBox("Rejected");
+		responses 	= new CheckBox("Responses");
 		
-		Grid fieldGrid = new Grid(4,1);
-		fieldGrid.setWidget(0, 0, inbox);
-		fieldGrid.setWidget(1, 0, approved);
+		any.setName(AoAPI.SearchConstants.StausConstants.STATUS_ANY);
+		inbox.setName(AoAPI.SearchConstants.StausConstants.STATUS_INPUT);
+		approved.setName(AoAPI.SearchConstants.StausConstants.STATUS_APPROVED);
+		rejected.setName(AoAPI.SearchConstants.StausConstants.STATUS_REJECTED);
+		responses.setName(AoAPI.SearchConstants.StausConstants.STATUS_RESPONDED);
+		
+		any.addClickHandler(this);
+		inbox.addClickHandler(this);
+		approved.addClickHandler(this);
+		rejected.addClickHandler(this);
+		responses.addClickHandler(this);
+		
+		FlexTable fieldGrid = new FlexTable();
+		fieldGrid.setCellSpacing(8);
+		fieldGrid.setWidget(0, 0, any);
+		fieldGrid.getFlexCellFormatter().setColSpan(0, 0, 2);
+		fieldGrid.setWidget(1, 0, inbox);
+		fieldGrid.setWidget(1, 1, approved);
 		fieldGrid.setWidget(2, 0, rejected);
-		fieldGrid.setWidget(3, 0, responsed);
+		fieldGrid.setWidget(2, 1, responses);
 		fieldGrid.addStyleName("status-filter");
+		any.setValue(true);
+		setResetAny();
+		
 		initWidget(fieldGrid);
 		
 		this.notifier = notifier;
-		this.selectedStatusQuery = new CustomStringBuilder();
+		selectedStatusQuery = new CustomStringBuilder();
 	}
 	
 	public void reset() {
-		this.approved.setValue(false);
-		this.inbox.setValue(false);
-		this.rejected.setValue(false);
-		this.responsed.setValue(false);
+		any.setValue(true);
+		setResetAny();
+		selectedStatusQuery = new CustomStringBuilder();
 	}
 	
-	private class CheckBoxClickHandler implements ClickHandler {
-		@Override
-		public void onClick(ClickEvent event) {
-			CheckBox sender = (CheckBox) event.getSource();
+	@Override
+	public void onClick(ClickEvent event) {
+		CheckBox sender = (CheckBox) event.getSource();
+		if(AoAPI.SearchConstants.StausConstants.STATUS_ANY.equalsIgnoreCase(sender.getName())) {
+			//if its any then first disable all others and removing all of them from selected status queue
+			setResetAny();
+			selectedStatusQuery.clear();
+			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.STATUS, "");
+		}
+		else {
 			if(sender.getValue())
 				selectedStatusQuery.add(sender.getName());
 			else
 				selectedStatusQuery.remove(sender.getName());
-			notifier.resetPagingInformation();
-			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.STATUS, selectedStatusQuery.toString());
-		}	
+			
+			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.STATUS, selectedStatusQuery.toString());
+		}
+	}
+	
+	private void setResetAny() {
+		inbox.setEnabled(!any.getValue());
+		approved.setEnabled(!any.getValue());
+		rejected.setEnabled(!any.getValue());
+		responses.setEnabled(!any.getValue());
 	}
 }

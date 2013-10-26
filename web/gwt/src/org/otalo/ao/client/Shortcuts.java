@@ -82,6 +82,13 @@ public class Shortcuts extends Composite {
 	{
 		stackPanel.showStack(idx);
 	}
+	
+	@Override
+	public void setVisible(boolean visible) {
+		if(searchPanel != null && !Messages.get().canManage())
+			searchPanel.reset();
+		super.setVisible(getElement(), visible);
+	}
 
 	private void add(Widget widget, ImageResource resource,
 			String caption) {
