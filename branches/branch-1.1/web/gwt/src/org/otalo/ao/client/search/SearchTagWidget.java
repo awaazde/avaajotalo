@@ -38,7 +38,7 @@ public class SearchTagWidget extends AutoCompleteTagWidget {
 		@Override
 		public void onChange(ChosenChangeEvent event) {
 			setSelectedTagData();
-			notifier.notifyQueryChangeListener(AoAPI.SearchConstants.TAG, selectedTags.getValue());
+			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.TAG, selectedTags.getValue());
 		}
 	}
 }

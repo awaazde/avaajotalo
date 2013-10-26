@@ -64,7 +64,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * An aggragate image bundle that pulls together all the images for this
    * application into a single bundle.
    */
-  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images, SearchResultMsgList.Images {
+  public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images {
 	  ImageResource loader();
   }
 
@@ -234,7 +234,7 @@ public class Messages implements EntryPoint, ResizeHandler {
 	topPanel.displaySearch();
   }
   
-  public void displaySerchPanel(String searchPhrase) {
+  public void displaySearchPanel(String searchPhrase) {
 	  messageDetail.reset();
 	  search.reset();
 	  search.setVisible(true);
@@ -243,6 +243,7 @@ public class Messages implements EntryPoint, ResizeHandler {
 	  searchShortCut.showStack(0);
 	  search.setSearchPharse(searchPhrase);
 	  searchResultMsgList.setVisible(true);
+	  searchResultMsgList.reset();
 	  messageList.setVisible(false);
 
 	  if (line.bcastingAllowed()) broadcastIface.setVisible(false);
@@ -260,6 +261,8 @@ public class Messages implements EntryPoint, ResizeHandler {
 	  searchShortCut.setVisible(false);
 	  searchResultMsgList.setVisible(false);
 	  topPanel.displaySearch();
+	  
+	  messageList.setVisible(true);
   }
   
   public void displaySMS(SMSListType type, int start)
@@ -382,7 +385,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList.setWidth("100%");
     
     if(!Messages.get().canManage()) {
-	    searchResultMsgList = new SearchResultMsgList(images);
+	    searchResultMsgList = new SearchResultMsgList();
 	    searchResultMsgList.setWidth("100%");
 	    searchResultMsgList.setVisible(false);
     }

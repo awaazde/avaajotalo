@@ -25,6 +25,9 @@ class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_author_name(self, obj):
         return obj.message.user.name
 
+    def prepare_forum(self, obj):
+        return obj.forum
+    
     def prepare_author_number(self, obj):
         return obj.message.user.number
     
