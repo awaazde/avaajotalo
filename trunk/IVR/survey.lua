@@ -58,7 +58,7 @@ else
 end
 freeswitch.consoleLog("info", script_name .. " : destination = " .. destination .. "\n");
 -- get survey id
-query = 		"SELECT survey.id, survey.dialstring_prefix, survey.dialstring_suffix, survey.complete_after, survey.callback, survey.outbound_number ";
+query = 		"SELECT survey.id, survey.complete_after, survey.callback, survey.outbound_number ";
 query = query .. " FROM surveys_survey survey ";
 query = query .. " WHERE number LIKE '%" .. destination .. "%' ";
 -- This is legacy, moved to inbound field
@@ -74,20 +74,13 @@ logfilename = logfileroot .. "survey_in_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
-local DIALSTRING_PREFIX = "";
-local DIALSTRING_SUFFIX = "";
-if (res[2] ~= nil) then
-	DIALSTRING_PREFIX = res[2];
-end
-if (res[3] ~= nil) then
-	DIALSTRING_SUFFIX = res[3];
-end
 
-complete_after_idx = tonumber(res[4]);
-local callback_allowed = tonumber(res[5]);
+
+complete_after_idx = tonumber(res[2]);
+local callback_allowed = tonumber(res[3]);
 local outbound_number = nil;
-if (res[6] ~= nil and res[6] ~= '') then
-	outbound_number = res[6];
+if (res[4] ~= nil and res[4] ~= '') then
+	outbound_number = res[4];
 end
 
 -- caller's number
@@ -101,40 +94,36 @@ local maxparallels = {};
 local channel_vars_tbl = {};
 local dialer_types = {};
 local country_code = nil;
-if (DIALSTRING_PREFIX == "" and DIALSTRING_SUFFIX == "") then
-	-- get from dialer
-	local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey_dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.country_code, dialer.min_number_len, dialer.channel_vars, dialer.type");
-	local dialstring = dialstrings();
-	local min_len = nil;
-	local phone_num = nil;
-	local pattern = nil;
-	while (dialstring ~= nil) do
-		table.insert(prefixes, dialstring[1]);
-		suffixes[dialstring[1]] = dialstring[2];
-		table.insert(maxparallels, dialstring[3]);
-		channel_vars_tbl[dialstring[1]] = dialstring[6];
-		table.insert(dialer_types, dialstring[7]);
 
-		if (phone_num == nil) then
-			country_code = dialstring[4];
-			min_len = tostring(dialstring[5]);
-			if (country_code ~= nil and min_len ~= nil) then
-				pattern = '('..string.rep('%d', min_len)..'%d*)';			
-				phone_num = string.match(caller, '1?'..country_code..pattern) or string.match(caller, pattern);
-				--freeswitch.consoleLog("info", script_name .. ": country code = " .. country_code .. " , minlen = " .. tostring(min_len) .. " , pattern = " .. pattern .. " , phone_num = " .. phone_num .."\n");
-			end
+-- get dialer and phone number length info
+local dialstrings = get_table_rows("ao_dialer dialer, surveys_survey_dialers survey_dialers", "survey_dialers.survey_id="..surveyid.." AND dialer.id = survey_dialers.dialer_id", "dialer.dialstring_prefix, dialer.dialstring_suffix, dialer.max_parallel_in, dialer.country_code, dialer.min_number_len, dialer.channel_vars, dialer.type");
+local dialstring = dialstrings();
+local min_len = nil;
+local phone_num = nil;
+local pattern = nil;
+while (dialstring ~= nil) do
+	table.insert(prefixes, dialstring[1]);
+	suffixes[dialstring[1]] = dialstring[2];
+	table.insert(maxparallels, dialstring[3]);
+	channel_vars_tbl[dialstring[1]] = dialstring[6];
+	table.insert(dialer_types, dialstring[7]);
+
+	if (phone_num == nil) then
+		country_code = dialstring[4];
+		min_len = tonumber(dialstring[5]);
+		freeswitch.consoleLog("info", script_name .. ": country code = " .. tostring(country_code) .. " , minlen = " .. tostring(min_len) .."\n");
+		if (country_code ~= nil and country_code ~= '' and min_len ~= nil) then
+			pattern = '('..string.rep('%d', min_len)..'%d*)';			
+			phone_num = string.match(caller, '1?'..country_code..pattern) or string.match(caller, pattern);
+			--freeswitch.consoleLog("info", script_name .. ": country code = " .. country_code .. " , minlen = " .. tostring(min_len) .. " , pattern = " .. pattern .. " , phone_num = " .. phone_num .."\n");
 		end
-		
-		dialstring = dialstrings();
-    end
-    
-    if (phone_num ~= nil) then
-    	caller = phone_num
-    else
-    	-- default
-    	caller = caller:sub(-10);
-    	country_code = '';
-    end
+	end
+	
+	dialstring = dialstrings();
+end
+
+if (phone_num ~= nil) then
+	caller = phone_num
 else
 	-- default
 	caller = caller:sub(-10);
@@ -216,12 +205,10 @@ function survey_main()
 		
 		local channel_vars = nil;
 		 -- find a dialer that is available
-		if (DIALSTRING_PREFIX == '' and DIALSTRING_SUFFIX == '') then
-		    DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types)..country_code;
-		    DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
-		    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
-		    channel_vars = replace_channel_vars_wildcards(channel_vars);
-		end
+	    local DIALSTRING_PREFIX = get_available_line(api, prefixes, maxparallels, dialer_types)..country_code;
+	    local DIALSTRING_SUFFIX = suffixes[DIALSTRING_PREFIX] or '';
+	    channel_vars = channel_vars_tbl[DIALSTRING_PREFIX];
+	    channel_vars = replace_channel_vars_wildcards(channel_vars);
 	
 		local uuid = session:getVariable('uuid');
 		local mc_cnt = 0;
