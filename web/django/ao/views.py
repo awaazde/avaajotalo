@@ -41,6 +41,7 @@ from haystack.inputs import AutoQuery
 from haystack.query import SQ
 from django.contrib.messages.context_processors import messages
 from django.core.paginator import Paginator
+from django.contrib.admin.templatetags.admin_list import results
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -1112,11 +1113,9 @@ def search(request):
         
     filts = []
     message_forums = []
-    print forums
+    
     if len(forums) > 0:
-        print("here1 "+str(datetime.now()))
-        results = SearchQuerySet().filter(SQ(forum__in=forums))
-        print("here2 "+str(datetime.now()))
+        results = SearchQuerySet().filter(SQ(forum_id__in=forums))
         
         count = results.count()
         
@@ -1125,78 +1124,51 @@ def search(request):
         if count > 0:
             #if search keyword is present then checking it against the message author fields
             search_keyword = search_data[SEARCH_KEYWORD]
-            print("here3 "+str(datetime.now()))
-            if search_keyword is not None:
+            
+            if search_keyword is not None and len(search_keyword) > 0:
                 if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
                     selected_author_fields = search_data[AUTHOR].split(",")
                     
+                    author_cond = SQ()
+                    
                     if AUTHOR_NAME in selected_author_fields:
-                        results = results.autocomplete(author_name=search_keyword)
+                        #results = results.autocomplete(author_name=search_keyword)
+                        author_cond |= SQ(author_name__contains=search_keyword)
      
                     if AUTHOR_NUMBER in selected_author_fields:
-                        #results_by_number = results.autocomplete(author_number=search_keyword)
-                        results_by_number = results.filter(author_number=search_keyword)
-                        combined_resultsets(results,results_by_number,'message_date')
-                        
-                    if AUTHOR_DISTRICT in selected_author_fields :
-                        #results_by_district = results.autocomplete(author_district=search_keyword)
-                        results_by_district = results.filter(author_district=search_keyword)
-                        combined_resultsets(results,results_by_district,'message_date')
-                        
-                    if AUTHOR_TALUKA in selected_author_fields:
-                        ##results_by_taluka = results.autocomplete(author_taluka=search_keyword)
-                        results_by_taluka = results.filter(author_taluka=search_keyword)
-                        combined_resultsets(results,results_by_taluka,'message_date')
-                        
-                    if AUTHOR_VILLAGE in selected_author_fields:
-                        #results_by_village = results.autocomplete(author_village=search_keyword)
-                        results_by_village = results.filter(author_village=search_keyword)
-                        combined_resultsets(results,results_by_village,'message_date')
-     
-                elif len(search_keyword) > 0:
-                    '''
-                    results_by_name = results.autocomplete(author_name=search_keyword)
-                    results_by_number = results.autocomplete(author_number=search_keyword)
-                    results_by_district = results.autocomplete(author_district=search_keyword)
-                    results_by_taluka = results.autocomplete(author_taluka=search_keyword)
-                    results_by_village = results.autocomplete(author_village=search_keyword)
+                        author_cond |= SQ(author_number__contains=search_keyword)
                     
-                    if results_by_name.count() > 0:
-                        combined_resultsets(results,results_by_name,'message_date')
+                    if AUTHOR_DISTRICT in selected_author_fields :
+                        author_cond |= SQ(author_district__contains=search_keyword)
+                    
+                    if AUTHOR_TALUKA in selected_author_fields:
+                        author_cond |= SQ(author_taluka__contains=search_keyword)
+                    
+                    if AUTHOR_VILLAGE in selected_author_fields:
+                        author_cond |= SQ(author_taluka__contains=search_keyword)
                         
-                    if results_by_number.count() > 0 and results_by_name.count()>0:
-                        combined_resultsets(results,results_by_number,'message_date')
-                    elif results_by_number.count() > 0:
-                        results = results_by_number
-                        
-                    elif results_by_district.count() > 0:
-                        combined_resultsets(results,results_by_district,'message_date')
-                        
-                    elif results_by_taluka.count() > 0:
-                        combined_resultsets(results,results_by_taluka,'message_date')
-                        
-                    elif results_by_village.count() > 0:
-                        combined_resultsets(results,results_by_village,'message_date')
-                        
-                    else:
-                    '''
-                    #results = results.autocomplete(text=search_keyword)
-                    results = results.filter(content=search_keyword)
-                        
-            print("here4 "+str(datetime.now()))
+                    results = results.filter(author_cond)
+                         
+                elif len(search_keyword) > 0:
+                    results = results.autocomplete(text=search_keyword)
+                    #results = results.filter(content=search_keyword)
+                
             # if status is passed then appending it into filter criteria
             if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
                 selected_status = search_data[STATUS].split(",")
                 
                 if len(selected_status) > 0:
+                    status_cond = SQ()
                     if STATUS_RESPONDED in selected_status:
                         del selected_status[selected_status.index(STATUS_RESPONDED)]
                         #now appending filter for responded message
-                        filts.append(SQ(message_thread__isnull=False))
+                        status_cond |= SQ(message_thread_id__gt=-1)
                     
-                    #appending other status filters    
-                    filts.append(SQ(status__in=selected_status))
-            print("here5 "+str(datetime.now()))
+                    #appending other status filters
+                    if len(selected_status) > 0:    
+                        status_cond |= SQ(status__in=selected_status)
+                    filts.append(status_cond)
+            
             # if tags are passed then appending them into filter criteria
             if search_data[TAG] is not None and len(search_data[TAG]) > 0:
                 selected_tags = search_data[TAG].split(TAG_SEPERATOR)
@@ -1206,10 +1178,10 @@ def search(request):
                 
             
             # if from date is passed then appending it into filter criteria
-            # from server side date would be always comes in format of yyyy-MM-dd HH:mm:ss only. 
+            # from server side date would be always comes in format of yyyy-MM-dd only. 
             #If need to be change then change it on the both the place. i.e. client and server
-            # e.g. 2013-09-17 15:50:30
-            print("here6 "+str(datetime.now()))
+            # e.g. 2013-09-17
+            
             date_format = '%Y-%m-%d'
             if search_data[FROMDATE] is not None and len(search_data[FROMDATE]) > 0:
                 from_date = datetime.strptime(search_data[FROMDATE], date_format)
@@ -1221,13 +1193,13 @@ def search(request):
                 filts.append(SQ(message_date__lte=to_date))
             
             
-            print("here7 "+str(datetime.now()))
-            print filts
             for filt in filts:
-                results = results.filter(filt)   
+                print results
+                print filt
+                results = results.filter(filt)
+                print results
+                print "-------"   
             
-            print results
-            print("here8 "+str(datetime.now()))
             results = results.order_by('-message_date')
             #for r in results:
             #    message_forums.append(r.object)
@@ -1239,9 +1211,8 @@ def search(request):
     
     
     #implementing the pagination code here
-    print("here9 "+str(datetime.now()))
     paginator = Paginator(results, VISIBLE_MESSAGE_COUNT) # Show VISIBLE_MESSAGE_COUNT messages per page
-    print("here10 "+str(datetime.now()))
+    
     # Make sure page request is an int. If not, deliver first page.
     try:
         page = int(page)
@@ -1254,7 +1225,6 @@ def search(request):
     except (EmptyPage, InvalidPage):
         messages = paginator.page(paginator.num_pages)
     
-    print("here11 "+str(datetime.now()))
     messageobjs = [r.object for r in messages]
     resp = send_response(messageobjs, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('name', 'moderated', 'responses_allowed', 'posting_allowed', 'routeable')}})
     
@@ -1271,5 +1241,4 @@ def search(request):
         jsons += ', "current_page":'+str(page)
         jsons+= ', "count":'+str(count)+'}]'
         resp.content = jsons
-    print("here12 "+str(datetime.now()))   
     return resp
