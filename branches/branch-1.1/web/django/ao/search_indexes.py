@@ -5,8 +5,8 @@ from haystack import indexes
 class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.EdgeNgramField(document=True, use_template=True)
     message = indexes.CharField(model_attr='message', null=True)
-    forum = indexes.CharField(model_attr='forum', null=True)
-    status = indexes.CharField(model_attr='status', null=True)
+    forum_id = indexes.IntegerField(null=True)
+    status = indexes.IntegerField(model_attr='status', null=True)
     tags = indexes.CharField(model_attr='tags', null=True)
     author_name = indexes.EdgeNgramField(null=True)
     author_number = indexes.EdgeNgramField(null=True)
@@ -14,7 +14,7 @@ class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
     author_taluka = indexes.EdgeNgramField(null=True)
     author_village = indexes.EdgeNgramField(null=True)
     message_date = indexes.DateTimeField(null=True)
-    message_thread = indexes.CharField(null=True)
+    message_thread_id = indexes.IntegerField(null=True)
 
     def get_model(self):
         return Message_forum
@@ -25,8 +25,11 @@ class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_author_name(self, obj):
         return obj.message.user.name
 
-    def prepare_forum(self, obj):
-        return obj.forum
+    def prepare_forum_id(self, obj):
+        return obj.forum.id
+    
+    def prepare_status(self, obj):
+        return obj.status
     
     def prepare_author_number(self, obj):
         return obj.message.user.number
@@ -46,6 +49,9 @@ class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_tags(self, obj):
         return [tag.tag for tag in obj.tags.all()]
     
-    def prepare_message_thread(self, obj):
-        return obj.message.thread
+    def prepare_message_thread_id(self, obj):
+        if obj.message.thread is not None:
+            return obj.message.thread.id
+        else:
+            return -1
     

@@ -96,7 +96,7 @@ public class ForumList extends Composite {
 			Forum f;
 			for (JSOModel model : models) {
 				f = new Forum(model);
-				forumsList.addItem(f.getName(), f.getName());
+				forumsList.addItem(f.getName(), f.getId());
 			}
 		}
 	}
