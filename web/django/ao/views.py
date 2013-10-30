@@ -88,7 +88,7 @@ AUTHOR_DISTRICT = "author_district"
 AUTHOR_TALUKA = "author_taluka"
 AUTHOR_VILLAGE = "author_village"
 STATUS_RESPONDED = "3"
-FORUM = "forum"
+SEARCH_PARAM_FORUM = "forum"
 
 
 # this will be used to get the page from result
@@ -1104,8 +1104,8 @@ def search(request):
     search_data = json.loads(params[SEARCH_PARAM])
     
     forums = []
-    if FORUM in search_data and search_data[FORUM] != '':
-        forums.append(search_data[FORUM])
+    if SEARCH_PARAM_FORUM in search_data and search_data[SEARCH_PARAM_FORUM] != '':
+        forums.append(search_data[SEARCH_PARAM_FORUM])
     else:
         fora = get_forums(request)
         for forum in fora:
@@ -1114,105 +1114,93 @@ def search(request):
     filts = []
     message_forums = []
     
-    if len(forums) > 0:
-        results = SearchQuerySet().filter(SQ(forum_id__in=forums))
-        
-        count = results.count()
-        
-        page = search_data[PAGE_PARAM]
-        
-        if count > 0:
-            #if search keyword is present then checking it against the message author fields
-            search_keyword = search_data[SEARCH_KEYWORD]
-            
-            if search_keyword is not None and len(search_keyword) > 0:
-                if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
-                    selected_author_fields = search_data[AUTHOR].split(",")
-                    
-                    author_cond = SQ()
-                    
-                    if AUTHOR_NAME in selected_author_fields:
-                        #results = results.autocomplete(author_name=search_keyword)
-                        author_cond |= SQ(author_name__contains=search_keyword)
-     
-                    if AUTHOR_NUMBER in selected_author_fields:
-                        author_cond |= SQ(author_number__contains=search_keyword)
-                    
-                    if AUTHOR_DISTRICT in selected_author_fields :
-                        author_cond |= SQ(author_district__contains=search_keyword)
-                    
-                    if AUTHOR_TALUKA in selected_author_fields:
-                        author_cond |= SQ(author_taluka__contains=search_keyword)
-                    
-                    if AUTHOR_VILLAGE in selected_author_fields:
-                        author_cond |= SQ(author_taluka__contains=search_keyword)
-                        
-                    results = results.filter(author_cond)
-                         
-                elif len(search_keyword) > 0:
-                    results = results.autocomplete(text=search_keyword)
-                    #results = results.filter(content=search_keyword)
-                
-            # if status is passed then appending it into filter criteria
-            if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
-                selected_status = search_data[STATUS].split(",")
-                
-                if len(selected_status) > 0:
-                    status_cond = SQ()
-                    if STATUS_RESPONDED in selected_status:
-                        del selected_status[selected_status.index(STATUS_RESPONDED)]
-                        #now appending filter for responded message
-                        status_cond |= SQ(message_thread_id__gt=-1)
-                    
-                    #appending other status filters
-                    if len(selected_status) > 0:    
-                        status_cond |= SQ(status__in=selected_status)
-                    filts.append(status_cond)
-            
-            # if tags are passed then appending them into filter criteria
-            if search_data[TAG] is not None and len(search_data[TAG]) > 0:
-                selected_tags = search_data[TAG].split(TAG_SEPERATOR)
-                
-                if len(selected_tags) > 0:
-                    filts.append(SQ(tags__in=selected_tags))
-                
-            
-            # if from date is passed then appending it into filter criteria
-            # from server side date would be always comes in format of yyyy-MM-dd only. 
-            #If need to be change then change it on the both the place. i.e. client and server
-            # e.g. 2013-09-17
-            
-            date_format = '%Y-%m-%d'
-            if search_data[FROMDATE] is not None and len(search_data[FROMDATE]) > 0:
-                from_date = datetime.strptime(search_data[FROMDATE], date_format)
-                filts.append(SQ(message_date__gte=from_date))
-        
-            # if to date is passed then appending it into filter criteria
-            if search_data[TODATE] is not None and len(search_data[TODATE]) > 0:
-                to_date = datetime.strptime(search_data[TODATE], date_format)
-                filts.append(SQ(message_date__lte=to_date))
-            
-            
-            for filt in filts:
-                print results
-                print filt
-                results = results.filter(filt)
-                print results
-                print "-------"   
-            
-            results = results.order_by('-message_date')
-            #for r in results:
-            #    message_forums.append(r.object)
-            
-            #count = len(message_forums)
-            count = results.count()
-    else:
-        count = 0;
     
+    results = SearchQuerySet().filter(SQ(forum_id__in=forums))    
+    count = results.count()
+        
+    page = search_data[PAGE_PARAM]
+        
+    if count > 0:
+        #if search keyword is present then checking it against the message author fields
+        search_keyword = search_data[SEARCH_KEYWORD]
+            
+        if search_keyword is not None and len(search_keyword) > 0:
+            if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
+                selected_author_fields = search_data[AUTHOR].split(",")
+                    
+                author_cond = SQ()
+                    
+                if AUTHOR_NAME in selected_author_fields:
+                    #results = results.autocomplete(author_name=search_keyword)
+                    author_cond |= SQ(author_name__contains=search_keyword)
+     
+                if AUTHOR_NUMBER in selected_author_fields:
+                    author_cond |= SQ(author_number__contains=search_keyword)
+                    
+                if AUTHOR_DISTRICT in selected_author_fields :
+                    author_cond |= SQ(author_district__contains=search_keyword)
+                    
+                if AUTHOR_TALUKA in selected_author_fields:
+                    author_cond |= SQ(author_taluka__contains=search_keyword)
+                    
+                if AUTHOR_VILLAGE in selected_author_fields:
+                    author_cond |= SQ(author_taluka__contains=search_keyword)
+                        
+                results = results.filter(author_cond)
+                         
+            elif len(search_keyword) > 0:
+                results = results.autocomplete(text=search_keyword)
+                #results = results.filter(content=search_keyword)
+                
+        # if status is passed then appending it into filter criteria
+        if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
+            selected_status = search_data[STATUS].split(",")
+                
+            if len(selected_status) > 0:
+                status_cond = SQ()
+                if STATUS_RESPONDED in selected_status:
+                    del selected_status[selected_status.index(STATUS_RESPONDED)]
+                    #now appending filter for responded message
+                    status_cond |= SQ(message_thread_id__gt=-1)
+                    
+                #appending other status filters
+                if len(selected_status) > 0:    
+                    status_cond |= SQ(status__in=selected_status)
+                filts.append(status_cond)
+            
+        # if tags are passed then appending them into filter criteria
+        if search_data[TAG] is not None and len(search_data[TAG]) > 0:
+            selected_tags = search_data[TAG].split(TAG_SEPERATOR)
+                
+            if len(selected_tags) > 0:
+                for tag in selected_tags:
+                    filts.append(SQ(tags__conatains=tag))
+                
+            
+        # if from date is passed then appending it into filter criteria
+        # from server side date would be always comes in format of yyyy-MM-dd only. 
+        #If need to be change then change it on the both the place. i.e. client and server
+        # e.g. 2013-09-17
+            
+        date_format = '%Y-%m-%d'
+        if search_data[FROMDATE] is not None and len(search_data[FROMDATE]) > 0:
+            from_date = datetime.strptime(search_data[FROMDATE], date_format)
+            filts.append(SQ(message_date__gte=from_date))
+        
+        # if to date is passed then appending it into filter criteria
+        if search_data[TODATE] is not None and len(search_data[TODATE]) > 0:
+            to_date = datetime.strptime(search_data[TODATE], date_format)
+            filts.append(SQ(message_date__lte=to_date))
+            
+            
+        for filt in filts:
+            results = results.filter(filt)
+            
+        results = results.order_by('-message_date')
+        count = results.count()
     
     #implementing the pagination code here
     paginator = Paginator(results, VISIBLE_MESSAGE_COUNT) # Show VISIBLE_MESSAGE_COUNT messages per page
-    
     # Make sure page request is an int. If not, deliver first page.
     try:
         page = int(page)

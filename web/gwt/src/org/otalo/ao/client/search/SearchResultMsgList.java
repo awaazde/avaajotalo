@@ -51,9 +51,9 @@ public class SearchResultMsgList extends Composite {
 	private static final int VISIBLE_MESSAGE_COUNT = 10;
 
 	private HTML countLabel = new HTML();
-	private HTML newerButton = new HTML("<a href='javascript:;'>newer&gt;</a>",
+	private HTML newerButton = new HTML("<a href='javascript:;'>&lt;newer</a>",
 			true);
-	private HTML olderButton = new HTML("<a href='javascript:;'> &lt;older</a>",
+	private HTML olderButton = new HTML("<a href='javascript:;'> older&gt;</a>",
 			true);
 
 	private HandlerRegistration newButtonReg=null, oldButtonReg=null;
@@ -81,9 +81,9 @@ public class SearchResultMsgList extends Composite {
 		// Create the 'navigation' bar at the upper-right.
 		HorizontalPanel innerNavBar = new HorizontalPanel();
 		navBar.setStyleName("mail-ListNavBar");
-		innerNavBar.add(olderButton);
-		innerNavBar.add(countLabel);
 		innerNavBar.add(newerButton);
+		innerNavBar.add(countLabel);
+		innerNavBar.add(olderButton);
 
 		navBar.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
 		navBar.add(innerNavBar);
@@ -360,7 +360,7 @@ public class SearchResultMsgList extends Composite {
 		if (selectedRow == -1 && count > 0) {
 			selectRow(0);
 		} else {
-			Messages.get().getMessageDetail().reset();
+			Messages.get().resetMessageDetail();
 		}
 	}
 

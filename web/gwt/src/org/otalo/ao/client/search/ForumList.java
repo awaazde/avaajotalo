@@ -23,8 +23,6 @@ import org.otalo.ao.client.JSONRequester;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 
@@ -35,23 +33,18 @@ import com.google.gwt.user.client.ui.ListBox;
 public class ForumList extends Composite {
 
 	private ListBox forumsList;
-	private EventObserver notifier; //this notifier will be notified in case of any change in any of the filter criteria.
 	
-	public ForumList(EventObserver notifier) {
+	public ForumList() {
 		forumsList = new ListBox();
 		forumsList.addStyleName("dropdown-select");
-		forumsList.addChangeHandler(new ForumsChangeHandler());
 		fillForumData();
-		this.notifier = notifier;
 		initWidget(forumsList);
 	}
 
-	public ForumList(EventObserver notifier, boolean isMultiSelect) {
+	public ForumList(boolean isMultiSelect) {
 		forumsList = new ListBox(isMultiSelect);
 		forumsList.addStyleName("dropdown-select");
-		forumsList.addChangeHandler(new ForumsChangeHandler());
 		fillForumData();
-		this.notifier = notifier;
 		initWidget(forumsList);
 	}
 	
@@ -64,20 +57,12 @@ public class ForumList extends Composite {
 		request.doFetchURL(AoAPI.FORUM, new ForumDataRequester());
 	}
 	
-	
-	private class ForumsChangeHandler implements ChangeHandler {
-		@Override
-		public void onChange(ChangeEvent event) {
-			ListBox sender = (ListBox) event.getSource();
-			String selectedForum = sender.getValue(sender.getSelectedIndex());
-			if(AoAPI.SearchConstants.FORUM_ANY.equalsIgnoreCase(selectedForum)) {
-				notifier.appendIntoQueryQueue(AoAPI.SearchConstants.FORUM, "");
-			}
-			else {
-				notifier.appendIntoQueryQueue(AoAPI.SearchConstants.FORUM, selectedForum);
-			}
-		}
-		
+	public String getSelectedValue() {
+		String selectedForum = forumsList.getValue(forumsList.getSelectedIndex());
+		if(AoAPI.SearchConstants.FORUM_ANY.equalsIgnoreCase(selectedForum)) 
+			return "";
+		else
+			return selectedForum;
 	}
 	
 	/**
@@ -91,7 +76,7 @@ public class ForumList extends Composite {
 		public void dataReceived(List<JSOModel> models) {
 			//clearing tag input
 			forumsList.clear();
-			forumsList.addItem("Any", "forum_any");
+			forumsList.addItem("Any", AoAPI.SearchConstants.FORUM_ANY);
 			
 			Forum f;
 			for (JSOModel model : models) {

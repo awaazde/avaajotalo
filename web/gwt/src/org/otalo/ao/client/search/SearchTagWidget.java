@@ -16,7 +16,6 @@
 package org.otalo.ao.client.search;
 
 import org.otalo.ao.client.AutoCompleteTagWidget;
-import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent;
 import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent.ChosenChangeHandler;
 
@@ -25,20 +24,19 @@ import org.otalo.ao.client.widget.chlist.event.ChosenChangeEvent.ChosenChangeHan
  *
  */
 public class SearchTagWidget extends AutoCompleteTagWidget {
-
-	private EventObserver notifier; //notifies when any tag is selected or removed
-	
-	public SearchTagWidget(boolean isShowLabel, boolean isEditable, EventObserver notifier) {
+	public SearchTagWidget(boolean isShowLabel, boolean isEditable) {
 		super(isShowLabel, isEditable);
-		this.notifier = notifier;
 		this.tagInput.addChosenChangeHandler(new TagChosenChangeHandler());
+	}
+	
+	public String getSelectedValue() {
+		return selectedTags.getValue();
 	}
 	
 	private class TagChosenChangeHandler implements ChosenChangeHandler {
 		@Override
 		public void onChange(ChosenChangeEvent event) {
 			setSelectedTagData();
-			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.TAG, selectedTags.getValue());
 		}
 	}
 }

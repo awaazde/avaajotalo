@@ -15,12 +15,10 @@
  */
 package org.otalo.ao.client.search;
 
-import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest;
 import org.otalo.ao.client.JSONRequest.AoAPI;
-import org.otalo.ao.client.ConfirmDialog;
 import org.otalo.ao.client.JSONRequester;
 import org.otalo.ao.client.Messages;
 import org.otalo.ao.client.model.JSOModel;
@@ -30,15 +28,16 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -48,7 +47,7 @@ import com.google.gwt.user.datepicker.client.DateBox;
  * @author nikhil
  *
  */
-public class SearchFilterPanel extends Composite implements EventObserver, KeyUpHandler {
+public class SearchFilterPanel extends Composite implements KeyUpHandler {
 
 	private VerticalPanel verticalPanel;
 	private TextBox searchInput;
@@ -62,7 +61,8 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 
 	private SearchResultMsgList searchResultContainer;
 	private final DateTimeFormat formatter = DateTimeFormat.getFormat("yyyy-MM-dd"); //on server side string date should be converted back to date in this format only
-	private Button searchButton, cancelButton;
+	private Button searchButton;
+	private HTML cancelButton;
 
 
 	/**
@@ -91,14 +91,14 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 		searchInput.addKeyUpHandler(this);
 
 		Label searchLbl = new Label();
-		searchLbl.setText("Search Keyword");
+		searchLbl.setText("Keywords");
 		searchLbl.addStyleName("label-txt");
 		searchLbl.addStyleName("search-label");
 
 		Label mstatusLbl = new Label();
 		mstatusLbl.setText("Status");
 		mstatusLbl.addStyleName("label-txt");
-		msgStatusFilter = new MsgStatusFilterCriteria(this);
+		msgStatusFilter = new MsgStatusFilterCriteria();
 
 		Label dateLbl = new Label();
 		dateLbl.setText("From");
@@ -115,8 +115,6 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 
 		fromDate.setFormat(new DateBox.DefaultFormat(formatter));
 		toDate.setFormat(new DateBox.DefaultFormat(formatter));
-		fromDate.addValueChangeHandler(new DateValueChangeHandler());
-		toDate.addValueChangeHandler(new DateValueChangeHandler());
 
 		fromDate.addStyleName("date-txt");
 		toDate.addStyleName("date-txt");
@@ -125,22 +123,21 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 		tagLbl.setText("Tags");
 		tagLbl.addStyleName("label-txt");
 		tagLbl.addStyleName("tag-label");
-		tagsInput = new SearchTagWidget(false, false, this);
+		tagsInput = new SearchTagWidget(false, false);
 		tagsInput.setWidth("255px");
 		tagsInput.loadTags();
 
 		Label forumLbl = new Label();
 		forumLbl.setText("Forum");
 		forumLbl.addStyleName("label-txt");
-		forumList = new ForumList(this);
+		forumList = new ForumList();
 
 		Label authorLbl = new Label();
 		authorLbl.setText("Search By");
 		authorLbl.addStyleName("label-txt");
-		authorFilter = new AuthorFilterCriteria(this);
+		authorFilter = new AuthorFilterCriteria();
 
-		cancelButton = new Button();
-		cancelButton.setText("Cancel");
+		cancelButton = new HTML("<a href='javascript:;'>Cancel</a>");
 		cancelButton.addStyleName("btn-cancel");
 
 		searchButton = new Button();
@@ -185,8 +182,14 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 		fieldGrid.setWidget(11, 0, authorFilter);
 		fieldGrid.getFlexCellFormatter().setColSpan(11, 0, 2);
 
-		fieldGrid.setWidget(12, 0, searchButton);
-		fieldGrid.setWidget(12, 1, cancelButton);
+		HorizontalPanel buttonPlacer = new HorizontalPanel();
+		buttonPlacer.setSpacing(8);
+		
+		buttonPlacer.add(cancelButton);
+		buttonPlacer.add(searchButton);
+		DOM.setStyleAttribute(buttonPlacer.getElement(), "cssFloat", "right");
+		fieldGrid.setWidget(12, 0, buttonPlacer);
+		fieldGrid.getFlexCellFormatter().setColSpan(12, 0, 2);
 
 		verticalPanel.add(fieldGrid);
 
@@ -211,7 +214,31 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 	public void getSearchResult() {
 		//always appending the current value of search box
 		queryParamsMap.add(new QueryParam(searchInput.getName(), searchInput.getText()));
+		
+		//appending selected forums
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.FORUM, forumList.getSelectedValue()));
+		
+		//appending selected status
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.STATUS, msgStatusFilter.getSelectedValue()));
+		
+		//appending dates
+		if(fromDate.getValue() != null)
+			queryParamsMap.add(new QueryParam(fromDate.getName(), formatter.format(fromDate.getValue())));
+		else
+			queryParamsMap.add(new QueryParam(fromDate.getName(), ""));
+		
+		if(toDate.getValue() != null)
+			queryParamsMap.add(new QueryParam(toDate.getName(), formatter.format(toDate.getValue())));
+		else
+			queryParamsMap.add(new QueryParam(toDate.getName(), ""));
 
+		
+		//appending selected status
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.TAG, tagsInput.getSelectedValue()));
+		
+		//appending selected author criteria
+		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.AUTHOR, authorFilter.getSelectedValue()));
+		
 		final SearchFilterPanel filterPanelRef = this;
 		//showing the loader
 		Messages.get().showLoader(true);
@@ -233,32 +260,13 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 		if (sender == searchInput) {
 			int stroke = event.getNativeKeyCode();
 			if(stroke == 13) {
-				if(searchInput.getText() == null || searchInput.getText().isEmpty()) {
-					ConfirmDialog validate = new ConfirmDialog("Please enter a search query");
-					validate.center();
-				}
-				else {
-					//if its search button
-					resetPagingInformation();
-					getSearchResult();
-				}
+				//if its search button
+				resetPagingInformation();
+				getSearchResult();
 			}
 		}
 	}
 
-	@Override
-	public void appendIntoQueryQueue(String searchProperty, String latestState) {
-		//adding into query map, it will automatically prevents duplicates query parameters
-		queryParamsMap.add(new QueryParam(searchProperty, latestState));		
-	}
-
-	@Override
-	public void removeFromQueryQueue(String searchProperty) {
-		//adding into query map, it will automatically prevents duplicates query parameters
-		queryParamsMap.remove(searchProperty);		
-	}
-
-	@Override
 	public void resetPagingInformation() {
 		//appending the paging info
 		queryParamsMap.add(new QueryParam(AoAPI.SearchConstants.PAGE_PARAM, "1"));
@@ -274,12 +282,14 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 	 * Sets the value of searchbox
 	 * @param value
 	 */
-	public void setSearchPharse(String value) {
+	public void setSearchPharse(String value, boolean isAdvanceSearch) {
 		this.searchInput.setText(value);
 		tagsInput.loadTags();
 		resetPagingInformation();
-		if(value != null && !value.isEmpty())
-			getSearchResult();
+		if(value != null && !value.isEmpty()) {
+			if(!isAdvanceSearch)
+				getSearchResult();
+		}
 	}
 
 	private void setDefaults() {
@@ -323,15 +333,6 @@ public class SearchFilterPanel extends Composite implements EventObserver, KeyUp
 		 */
 		public void setName(String name) {
 			this.name = name;
-		}
-	}
-
-	private class DateValueChangeHandler implements ValueChangeHandler<Date> {
-		@Override
-		public void onValueChange(ValueChangeEvent<Date> event) {
-			CustomDateBox source = (CustomDateBox) event.getSource();
-			resetPagingInformation();
-			appendIntoQueryQueue(source.getName(), formatter.format(source.getValue()));
 		}
 	}
 

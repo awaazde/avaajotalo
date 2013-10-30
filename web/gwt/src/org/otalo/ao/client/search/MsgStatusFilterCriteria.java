@@ -37,11 +37,10 @@ public class MsgStatusFilterCriteria extends Composite implements ClickHandler {
 	private CheckBox responses;
 	
 	private CustomStringBuilder selectedStatusQuery; 
-	private EventObserver notifier; //this notifier will be notified in case of any change in any of the filter criteria.
 	/**
 	 * Constructs new author criteria panel
 	 */
-	public MsgStatusFilterCriteria(EventObserver notifier) {
+	public MsgStatusFilterCriteria() {
 		any 		= new CheckBox("Any");
 		inbox 		= new CheckBox("Inbox");
 		approved 	= new CheckBox("Approved");
@@ -74,7 +73,6 @@ public class MsgStatusFilterCriteria extends Composite implements ClickHandler {
 		
 		initWidget(fieldGrid);
 		
-		this.notifier = notifier;
 		selectedStatusQuery = new CustomStringBuilder();
 	}
 	
@@ -84,6 +82,10 @@ public class MsgStatusFilterCriteria extends Composite implements ClickHandler {
 		selectedStatusQuery = new CustomStringBuilder();
 	}
 	
+	public String getSelectedValue() {
+		return selectedStatusQuery.toString();
+	}
+	
 	@Override
 	public void onClick(ClickEvent event) {
 		CheckBox sender = (CheckBox) event.getSource();
@@ -91,19 +93,22 @@ public class MsgStatusFilterCriteria extends Composite implements ClickHandler {
 			//if its any then first disable all others and removing all of them from selected status queue
 			setResetAny();
 			selectedStatusQuery.clear();
-			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.STATUS, "");
 		}
 		else {
 			if(sender.getValue())
 				selectedStatusQuery.add(sender.getName());
 			else
-				selectedStatusQuery.remove(sender.getName());
-			
-			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.STATUS, selectedStatusQuery.toString());
+				selectedStatusQuery.remove(sender.getName());		
 		}
 	}
 	
 	private void setResetAny() {
+		if(any.getValue()) {
+			inbox.setValue(false);
+			approved.setValue(false);
+			rejected.setValue(false);
+			responses.setValue(false);
+		}
 		inbox.setEnabled(!any.getValue());
 		approved.setEnabled(!any.getValue());
 		rejected.setEnabled(!any.getValue());

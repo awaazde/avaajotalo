@@ -173,8 +173,8 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.getResponses(f, start);
   }
   
-  public MessageDetail getMessageDetail() {
-	  return messageDetail;
+  public void resetMessageDetail() {
+	  messageDetail.reset();
   }
   
   public void displayBroadcastPanel(MessageForum thread)
@@ -234,14 +234,14 @@ public class Messages implements EntryPoint, ResizeHandler {
 	topPanel.displaySearch();
   }
   
-  public void displaySearchPanel(String searchPhrase) {
+  public void displaySearchPanel(String searchPhrase, boolean isAdvanceSearch) {
 	  messageDetail.reset();
 	  search.reset();
 	  search.setVisible(true);
 	  shortcuts.setVisible(false);
 	  searchShortCut.setVisible(true);
 	  searchShortCut.showStack(0);
-	  search.setSearchPharse(searchPhrase);
+	  search.setSearchPharse(searchPhrase, isAdvanceSearch);
 	  searchResultMsgList.setVisible(true);
 	  searchResultMsgList.reset();
 	  messageList.setVisible(false);
@@ -261,8 +261,8 @@ public class Messages implements EntryPoint, ResizeHandler {
 	  searchShortCut.setVisible(false);
 	  searchResultMsgList.setVisible(false);
 	  topPanel.displaySearch();
-	  
 	  messageList.setVisible(true);
+	  fora.selectMain();
   }
   
   public void displaySMS(SMSListType type, int start)
@@ -384,16 +384,15 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
-    if(!Messages.get().canManage()) {
-	    searchResultMsgList = new SearchResultMsgList();
-	    searchResultMsgList.setWidth("100%");
-	    searchResultMsgList.setVisible(false);
-    }
     
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
-    if(!canManage())
+    if(!canManage()) {
+    	searchResultMsgList = new SearchResultMsgList();
+	    searchResultMsgList.setWidth("100%");
+	    searchResultMsgList.setVisible(false);
     	rightPanel.add(searchResultMsgList);
+    }
     
     if (line.bcastingAllowed())
     {
@@ -410,6 +409,11 @@ public class Messages implements EntryPoint, ResizeHandler {
 	    rightPanel.add(smsIface);
 	    rightPanel.add(smsList);
     }
+    
+    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
+    shortcuts.setWidth("100%");
+    rightPanel.setWidth("100%");
+    
     if (canManage())
     {
       groupsIface = new ManageGroups(images);
@@ -430,19 +434,13 @@ public class Messages implements EntryPoint, ResizeHandler {
     	messageDetail = new MessageDetail();
     	messageDetail.setWidth("100%");
     	rightPanel.add(messageDetail);
-    }
-    
-    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
-    shortcuts.setWidth("100%");
-    rightPanel.setWidth("100%");
-    
-    if(!canManage()) {
+    	
     	search = new SearchFilterPanel(searchResultMsgList);
     	searchShortCut = new Shortcuts(images, null, null, null, search);
     	searchShortCut.setWidth("100%");
         searchShortCut.setVisible(false);
     }
-
+    
     displayForumPanel();
     
     // creating a loader
@@ -452,11 +450,12 @@ public class Messages implements EntryPoint, ResizeHandler {
 	showLoader(false);
 	
 	rightPanel.add(loaderImage);
-   // Create a dock panel that will contain the menu bar at the top,
+	
+	// Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
     DockPanel outer = new DockPanel();
     //DockLayoutPanel outer = new DockLayoutPanel(Unit.PCT);
-    
+   
     outer.add(topPanel, DockPanel.NORTH);
     outer.add(shortcuts, DockPanel.WEST);
     if(!canManage()) {

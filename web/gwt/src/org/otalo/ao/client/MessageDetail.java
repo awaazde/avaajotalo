@@ -483,14 +483,10 @@ public class MessageDetail extends Composite {
 	{
 		tags.setVisible(tagable);
 	}
-	
-	
 	 
 	public void displayMoveButtons(boolean isDisplay) {
 		this.moveButtons.setVisible(isDisplay);
 	}
-	  
-	
 	
 	/**
 	 * We are keeping track of which button was clicked in this class
