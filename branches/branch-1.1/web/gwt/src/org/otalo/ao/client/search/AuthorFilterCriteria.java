@@ -38,13 +38,12 @@ public class AuthorFilterCriteria extends Composite implements ClickHandler{
 	private CheckBox village;
 	
 	private CustomStringBuilder selectedFieldsQuery; 
-	private EventObserver notifier; //this notifier will be notified in case of any change in any of the filter criteria.
 	
 	/**
 	 * Constructs new author criteria panel
 	 * @param notifier 
 	 */
-	public AuthorFilterCriteria(EventObserver notifier) {
+	public AuthorFilterCriteria() {
 		any 		= new CheckBox("All");
 		name 		= new CheckBox("Name");
 		number 	= new CheckBox("Number");
@@ -66,7 +65,6 @@ public class AuthorFilterCriteria extends Composite implements ClickHandler{
 		taluka.addClickHandler(this);
 		village.addClickHandler(this);
 		
-		this.notifier = notifier;
 		selectedFieldsQuery = new CustomStringBuilder();
 		
 		FlexTable authorFieldTable = new FlexTable();
@@ -91,13 +89,26 @@ public class AuthorFilterCriteria extends Composite implements ClickHandler{
 		selectedFieldsQuery = new CustomStringBuilder();
 	}
 	
+	public String getSelectedValue() {
+		return selectedFieldsQuery.toString();
+	}
+	
 	private void setResetAny() {
+		if(any.getValue()) {
+			name.setValue(false);
+			number.setValue(false);
+			district.setValue(false);
+			taluka.setValue(false);
+			village.setValue(false);
+		}
+		//now disabling everything
 		name.setEnabled(!any.getValue());
 		district.setEnabled(!any.getValue());
 		number.setEnabled(!any.getValue());
 		taluka.setEnabled(!any.getValue());
 		village.setEnabled(!any.getValue());
 	}
+	
 	
 	@Override
 	public void onClick(ClickEvent event) {
@@ -106,15 +117,12 @@ public class AuthorFilterCriteria extends Composite implements ClickHandler{
 			//if its any then first disable all others and removing all of them from selected status queue
 			setResetAny();
 			selectedFieldsQuery.clear();
-			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.AUTHOR, "");
 		}
 		else {
 			if(sender.getValue())
 				selectedFieldsQuery.add(sender.getName());
 			else
 				selectedFieldsQuery.remove(sender.getName());
-			
-			notifier.appendIntoQueryQueue(AoAPI.SearchConstants.AUTHOR, selectedFieldsQuery.toString());
 		}
 	}
 }

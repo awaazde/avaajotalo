@@ -62,7 +62,6 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
    */
   public interface Images extends ClientBundle {
     ImageResource recharge();
-    ImageResource searchbutton();
   }
 
   @UiConstructor
@@ -113,6 +112,7 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 	    searchBtn.setTitle("Search");
 	    searchBtn.addClickHandler(this);
 	    search.add(searchBtn);
+	    searchBtn.setEnabled(false);
 	    asearchLink.addStyleName("advancesearch");
 	    search.add(asearchLink);
 	    outer.add(search);
@@ -134,7 +134,7 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
     }
     else if(sender == asearchLink) {
 		search.setVisible(false);
-		Messages.get().displaySearchPanel(searchBox.getText());
+		Messages.get().displaySearchPanel(searchBox.getText(), true);
     }
     else if(sender == searchBtn) {
     	if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
@@ -143,7 +143,7 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 		}
 		else {
 			search.setVisible(false);
-			Messages.get().displaySearchPanel(searchBox.getText());
+			Messages.get().displaySearchPanel(searchBox.getText(), false);
 		}
     }
   }
@@ -153,16 +153,15 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 	  Object sender = event.getSource();
 	  if (sender == searchBox) {
 		  int stroke = event.getNativeKeyCode();
-		  if(stroke == 13) {
-			  if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
-				  ConfirmDialog validate = new ConfirmDialog("Please enter a search query");
-				  validate.center();
-			  }
-			  else {
+		  if(searchBox.getText() != null && !searchBox.getText().isEmpty()) {
+			  if(stroke == 13) {
 				  search.setVisible(false);
-				  Messages.get().displaySearchPanel(searchBox.getText());
+				  Messages.get().displaySearchPanel(searchBox.getText(), false);
 			  }
+			  searchBtn.setEnabled(true);
 		  }
+		  else
+			  searchBtn.setEnabled(false);
 	  }
   }
   
@@ -170,22 +169,8 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 	  if(!Messages.get().canManage())  {
 		  search.setVisible(true);
 		  searchBox.setText("");
+		  searchBtn.setEnabled(false);
 	  }
-  }
-  
-  //TODO
-  private class SearchButtonHandler implements ClickHandler {
-	@Override
-	public void onClick(ClickEvent event) {
-		if(searchBox.getText() == null || searchBox.getText().isEmpty()) {
-			ConfirmDialog validate = new ConfirmDialog("Please enter a search a query");
-			validate.center();
-		}
-		else {
-			search.setVisible(false);
-			Messages.get().displaySearchPanel(searchBox.getText());
-		}
-	}
   }
   
   private class BalanceRequestor implements JSONRequester {
