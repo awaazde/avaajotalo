@@ -85,7 +85,7 @@ div.qform
 {% endblock %}
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
-   	<form action="{% url awaazde.console.views.createsurvey %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">
+   	<form action="{% url "awaazde.console.views.createsurvey" %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">
    		{% crispy createform %}
    		{% if question_formset %}
    			{% crispy question_formset question_formset.form.helper %}
