@@ -30,9 +30,18 @@ from django.conf import settings
 from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
 from django.core.servers.basehttp import FileWrapper
+import json
 import broadcast
 import otalo_utils, stats_by_phone_num
 import subprocess
+from itertools import chain
+from operator import attrgetter
+from haystack.query import SearchQuerySet
+from haystack.inputs import AutoQuery
+from haystack.query import SQ
+from django.contrib.messages.context_processors import messages
+from django.core.paginator import Paginator
+from django.contrib.admin.templatetags.admin_list import results
 
 
 # Only keep these around as legacy
@@ -63,6 +72,27 @@ INVALID_FILE_FORMAT = "7"
 #This is separator for all the selected tags. From the client side, all the selected tags are coming with this seperatar.
 #Also this constant must be consistent with the same constant in AutoCompleteWidget.java 
 TAG_SEPERATOR = "##"
+#These search related constants must be consistent with the same constant in JSONRequest.AoAPI.SearchConstants class.
+SEARCH_PARAM = "search_data"
+SEARCH_KEYWORD = "search_keyword"
+STATUS = "status"
+FROMDATE = "fromDate"
+TODATE = "toDate"
+TAG = "tags"
+AUTHOR = "author"
+
+AUTHOR_NAME = "author_name"
+AUTHOR_NUMBER = "author_number"
+AUTHOR_DISTRICT = "author_district"
+AUTHOR_TALUKA = "author_taluka"
+AUTHOR_VILLAGE = "author_village"
+STATUS_RESPONDED = "3"
+SEARCH_PARAM_FORUM = "forum"
+
+
+# this will be used to get the page from result
+PAGE_PARAM = "result_page"
+
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
 
@@ -258,6 +288,12 @@ def updatemessage(request):
             for responder in responders:
                 mr = Message_responder(message_forum=m, user=responder, assign_date=t)
                 mr.save();
+    
+    # Always calling save on message_forum model. 
+    # It's require because it will trigger post_save signal on it and this signal is being capture by haystack RealtimeSignal processor
+    # to update the index data. If we don't call save on it then, on updation of tags or any other many-to-many field data, it won't trigger post_save signal 
+    # and so the realtime signal processor won't update index data which would be result in wrong search result. 
+    #m.save()
                 
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
@@ -534,16 +570,21 @@ def updatestatus(request, action):
     
     return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(m.id),)))
 
-def tags(request, forum_id):
-    params = request.GET
+def tags(request, forum_id=None):
     
-    forum = get_object_or_404(Forum, pk=forum_id)
-    tags = Tag.objects.filter(forum=forum).order_by('tag').distinct()
-    
-    if params.__contains__('type'):
-        types = params['type'].split()
-        tags = tags.filter(type__in=types)
-       
+    if forum_id is None:
+        fora = get_forums(request)
+        tags = Tag.objects.filter(forum__in=fora).order_by('tag').distinct()   
+    else:
+        params = request.GET
+        
+        forum = get_object_or_404(Forum, pk=forum_id)
+        tags = Tag.objects.filter(forum=forum).order_by('tag').distinct()
+        
+        if params.__contains__('type'):
+            types = params['type'].split()
+            tags = tags.filter(type__in=types)
+           
     return send_response(tags)
 
 def tagsbyline(request, line_id):
@@ -1044,3 +1085,153 @@ def send_response(query_set, relations=(), excludes=()):
     return response;
 
 
+def combined_resultsets(resultset1, resultset2, sortby):
+    if sortby is not None:
+        resultset1 = sorted(chain(resultset1, resultset2),key=attrgetter(sortby))
+    else:
+        resultset1 = chain(resultset1, resultset2)
+    
+
+def get_forums(request):
+    #getting users's forum first
+    auth_user = request.user
+    if not auth_user.is_superuser:
+        # get all forums that this user has access to
+        fora = Forum.objects.filter(admin__auth_user=auth_user).exclude(status=Forum.STATUS_INACTIVE).distinct()
+    else:
+        fora = Forum.objects.all()
+    
+    return fora
+
+@csrf_exempt
+def search(request):
+    params = request.POST
+    search_data = json.loads(params[SEARCH_PARAM])
+    
+    forums = []
+    if SEARCH_PARAM_FORUM in search_data and search_data[SEARCH_PARAM_FORUM] != '':
+        forums.append(search_data[SEARCH_PARAM_FORUM])
+    else:
+        fora = get_forums(request)
+        for forum in fora:
+            forums.append(forum.id)
+        
+    filts = []
+    message_forums = []
+    
+    
+    results = SearchQuerySet().filter(SQ(forum_id__in=forums))    
+    count = results.count()
+        
+    page = search_data[PAGE_PARAM]
+        
+    if count > 0:
+        #if search keyword is present then checking it against the message author fields
+        search_keyword = search_data[SEARCH_KEYWORD]
+            
+        if search_keyword is not None and len(search_keyword) > 0:
+            if search_data[AUTHOR] is not None and len(search_data[AUTHOR]) > 0:
+                selected_author_fields = search_data[AUTHOR].split(",")
+                    
+                author_cond = SQ()
+                    
+                if AUTHOR_NAME in selected_author_fields:
+                    #results = results.autocomplete(author_name=search_keyword)
+                    author_cond |= SQ(author_name__contains=search_keyword)
+     
+                if AUTHOR_NUMBER in selected_author_fields:
+                    author_cond |= SQ(author_number__contains=search_keyword)
+                    
+                if AUTHOR_DISTRICT in selected_author_fields :
+                    author_cond |= SQ(author_district__contains=search_keyword)
+                    
+                if AUTHOR_TALUKA in selected_author_fields:
+                    author_cond |= SQ(author_taluka__contains=search_keyword)
+                    
+                if AUTHOR_VILLAGE in selected_author_fields:
+                    author_cond |= SQ(author_taluka__contains=search_keyword)
+                        
+                results = results.filter(author_cond)
+                         
+            elif len(search_keyword) > 0:
+                results = results.autocomplete(text=search_keyword)
+                #results = results.filter(content=search_keyword)
+                
+        # if status is passed then appending it into filter criteria
+        if search_data[STATUS] is not None and len(search_data[STATUS]) > 0:
+            selected_status = search_data[STATUS].split(",")
+                
+            if len(selected_status) > 0:
+                status_cond = SQ()
+                if STATUS_RESPONDED in selected_status:
+                    del selected_status[selected_status.index(STATUS_RESPONDED)]
+                    #now appending filter for responded message
+                    status_cond |= SQ(message_thread_id__gt=-1)
+                    
+                #appending other status filters
+                if len(selected_status) > 0:    
+                    status_cond |= SQ(status__in=selected_status)
+                filts.append(status_cond)
+            
+        # if tags are passed then appending them into filter criteria
+        if search_data[TAG] is not None and len(search_data[TAG]) > 0:
+            selected_tags = search_data[TAG].split(TAG_SEPERATOR)
+                
+            if len(selected_tags) > 0:
+                for tag in selected_tags:
+                    filts.append(SQ(tags__conatains=tag))
+                
+            
+        # if from date is passed then appending it into filter criteria
+        # from server side date would be always comes in format of yyyy-MM-dd only. 
+        #If need to be change then change it on the both the place. i.e. client and server
+        # e.g. 2013-09-17
+            
+        date_format = '%Y-%m-%d'
+        if search_data[FROMDATE] is not None and len(search_data[FROMDATE]) > 0:
+            from_date = datetime.strptime(search_data[FROMDATE], date_format)
+            filts.append(SQ(message_date__gte=from_date))
+        
+        # if to date is passed then appending it into filter criteria
+        if search_data[TODATE] is not None and len(search_data[TODATE]) > 0:
+            to_date = datetime.strptime(search_data[TODATE], date_format)
+            filts.append(SQ(message_date__lte=to_date))
+            
+            
+        for filt in filts:
+            results = results.filter(filt)
+            
+        results = results.order_by('-message_date')
+        count = results.count()
+    
+    #implementing the pagination code here
+    paginator = Paginator(results, VISIBLE_MESSAGE_COUNT) # Show VISIBLE_MESSAGE_COUNT messages per page
+    # Make sure page request is an int. If not, deliver first page.
+    try:
+        page = int(page)
+    except ValueError:
+        page = 1
+    
+    # If page request (9999) is out of range, deliver last page of results.
+    try:
+        messages = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        messages = paginator.page(paginator.num_pages)
+    
+    messageobjs = [r.object for r in messages]
+    resp = send_response(messageobjs, {'message':{'relations':{'user':{'fields':('name', 'number',)}}}, 'forum':{'fields':('name', 'moderated', 'responses_allowed', 'posting_allowed', 'routeable')}})
+    
+    if count > 0:
+        # append some meta info about the messages
+        # remove end bracket
+        jsons = resp.content[:-1]
+        jsons += ', {"model":"MESSAGE_METADATA"'
+        if messages.has_next():
+            jsons += ', "previous_page":'+str(messages.next_page_number())
+        if messages.has_previous():
+            jsons += ', "next_page":'+str(messages.previous_page_number())
+        
+        jsons += ', "current_page":'+str(page)
+        jsons+= ', "count":'+str(count)+'}]'
+        resp.content = jsons
+    return resp

@@ -128,11 +128,26 @@ INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'haystack',
     'streamit',
     'awaazde.console',
     'awaazde.xact',
     'rest_framework',
 )
+
+
+import os
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+        'INCLUDE_SPELLING': True
+    },
+}
+
+HAYSTACK_LIMIT_TO_REGISTERED_MODELS = False
+#HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
 # this needs to go first
 INSTALLED_APPS = ("longerusername",) + INSTALLED_APPS
 MAX_USERNAME_LENGTH = 100

@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
@@ -32,6 +32,7 @@ urlpatterns = patterns('',
     (r'^move/$', 'otalo.ao.views.movemessage'),
     (r'^recordorupload/$', 'otalo.ao.views.record_or_upload_message'),
     (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.thread'),
+    (r'^tags/$', 'otalo.ao.views.tags'),
     (r'^tags/(?P<forum_id>\d+)/$', 'otalo.ao.views.tags'),
     (r'^tagsbyline/(?P<line_id>\d+)/$', 'otalo.ao.views.tagsbyline'),
     (r'^messagetag/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.messagetag'),
@@ -53,6 +54,7 @@ urlpatterns = patterns('',
     (r'^sendsms/$', 'otalo.ao.views.sendsms'),
     (r'^smsin/$', 'otalo.ao.views.smsin'),
     (r'^group/$', 'otalo.ao.views.group'),
+    (r'^search/$', 'otalo.ao.views.search'),
     (r'^createaccount/$', 'awaazde.streamit.views.createacct'),
     # s is for streams views
     (r'^s/', include('awaazde.streamit.urls')),
