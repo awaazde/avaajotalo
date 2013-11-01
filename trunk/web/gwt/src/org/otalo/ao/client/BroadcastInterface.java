@@ -1,13 +1,11 @@
 package org.otalo.ao.client;
 
-import java.awt.TextField;
 import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Survey;
@@ -23,8 +21,8 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -33,6 +31,7 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -49,7 +48,8 @@ public class BroadcastInterface extends Composite {
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
 	private VerticalPanel outer, who, what, when;
 	private HorizontalPanel controls = new HorizontalPanel();
-	private Button sendButton, cancelButton;
+	private Button sendButton;
+	private Anchor cancelButton;
 	private TextBox sinceField, bcastNameField;
 	private DatePicker since;
 	private ListBox tags, lastNCallers, templates, hour, backupsBox;
@@ -311,7 +311,8 @@ public class BroadcastInterface extends Composite {
         bcastForm.submit();
       }
     });
-		cancelButton = new Button("Cancel");
+		
+		cancelButton = new Anchor("Cancel");
 		cancelButton.addClickHandler(new ClickHandler(){
 			public void onClick(ClickEvent event) {
 				Messages.get().displayMessages(thread);
@@ -321,6 +322,7 @@ public class BroadcastInterface extends Composite {
 		
 		controls.setSpacing(10);
 		controls.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		controls.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		controls.add(cancelButton);
 		controls.add(sendButton);
 		

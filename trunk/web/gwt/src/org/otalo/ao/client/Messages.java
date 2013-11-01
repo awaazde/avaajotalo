@@ -28,14 +28,20 @@ import org.otalo.ao.client.model.Message.MessageStatus;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Prompt;
 import org.otalo.ao.client.model.User;
+import org.otalo.ao.client.search.SearchFilterPanel;
+import org.otalo.ao.client.search.SearchResultMsgList;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -59,6 +65,7 @@ public class Messages implements EntryPoint, ResizeHandler {
    * application into a single bundle.
    */
   public interface Images extends Shortcuts.Images, Fora.Images, MessageList.Images, BroadcastInterface.Images, Broadcasts.Images, SMSInterface.Images, SMSs.Images, SMSList.Images, ManageGroups.Images, TopPanel.Images {
+	  ImageResource loader();
   }
 
   /**
@@ -84,13 +91,26 @@ public class Messages implements EntryPoint, ResizeHandler {
   private Line line;
   private boolean canManage = false;
 
+  private SearchFilterPanel search;
+  private SearchResultMsgList searchResultMsgList;
+  private Shortcuts searchShortCut;
+
+  private HTML loaderImage;
+ 
+  
   /**
    * Displays the specified item. 
    * 
    * @param messageForum
    */
   public void setItem(MessageForum messageForum) {
-  	if (!canManage()) messageDetail.setItem(messageForum);
+  	if (!canManage()) {
+  		messageDetail.setItem(messageForum);
+  	}
+  }
+  
+  public void displayMoveButtons(boolean isDisplay) {
+	  messageDetail.displayMoveButtons(isDisplay);
   }
   
   public void setTagable(boolean tagable)
@@ -153,6 +173,10 @@ public class Messages implements EntryPoint, ResizeHandler {
   	messageList.getResponses(f, start);
   }
   
+  public void resetMessageDetail() {
+	  messageDetail.reset();
+  }
+  
   public void displayBroadcastPanel(MessageForum thread)
   {
   	broadcastIface.reset(thread);
@@ -188,8 +212,14 @@ public class Messages implements EntryPoint, ResizeHandler {
 		shortcuts.showStack(1);
   }
   
-  private void displayForumPanel()
+  public void displayForumPanel()
   {
+	shortcuts.setVisible(true);
+	if(searchShortCut != null && searchShortCut.isVisible())
+		searchShortCut.setVisible(false);
+	if(searchResultMsgList != null && searchResultMsgList.isVisible())
+		searchResultMsgList.setVisible(false);
+	
   	if (line.bcastingAllowed()) broadcastIface.setVisible(false);
   	messageList.setVisible(true);
   	if (!canManage()) messageDetail.setVisible(true);
@@ -200,6 +230,38 @@ public class Messages implements EntryPoint, ResizeHandler {
 		}
 		if (canManage()) groupsIface.setVisible(false);
 		shortcuts.showStack(0);
+	
+	topPanel.displaySearch();
+  }
+  
+  public void displaySearchPanel(String searchPhrase, boolean isAdvanceSearch) {
+	  messageDetail.reset();
+	  search.setVisible(true);
+	  shortcuts.setVisible(false);
+	  searchShortCut.setVisible(true);
+	  searchShortCut.showStack(0);
+	  search.setSearchPharse(searchPhrase, isAdvanceSearch);
+	  searchResultMsgList.setVisible(true);
+	  searchResultMsgList.reset();
+	  messageList.setVisible(false);
+
+	  if (line.bcastingAllowed()) broadcastIface.setVisible(false);
+	  if (!canManage()) messageDetail.setVisible(true);
+	  if (line.hasSMSConfig()) {
+		  smsList.setVisible(false);
+		  smsIface.setVisible(false);
+	  }
+	  if (canManage()) groupsIface.setVisible(false);
+  }
+  
+  public void hideSearchPanel() {
+	  search.setVisible(false);
+	  shortcuts.setVisible(true);
+	  searchShortCut.setVisible(false);
+	  searchResultMsgList.setVisible(false);
+	  topPanel.displaySearch();
+	  messageList.setVisible(true);
+	  fora.selectMain();
   }
   
   public void displaySMS(SMSListType type, int start)
@@ -321,8 +383,15 @@ public class Messages implements EntryPoint, ResizeHandler {
     messageList = new MessageList(images);
     messageList.setWidth("100%");
     
+    
     // Create the right panel, containing the email list & details.
     rightPanel.add(messageList);
+    if(!canManage()) {
+    	searchResultMsgList = new SearchResultMsgList();
+	    searchResultMsgList.setWidth("100%");
+	    searchResultMsgList.setVisible(false);
+    	rightPanel.add(searchResultMsgList);
+    }
     
     if (line.bcastingAllowed())
     {
@@ -339,37 +408,61 @@ public class Messages implements EntryPoint, ResizeHandler {
 	    rightPanel.add(smsIface);
 	    rightPanel.add(smsList);
     }
+    
+    shortcuts = new Shortcuts(images, fora, bcasts, smss, search);
+    shortcuts.setWidth("100%");
+    rightPanel.setWidth("100%");
+    
     if (canManage())
     {
       groupsIface = new ManageGroups(images);
     	rightPanel.add(groupsIface);
     	
     	//showing help if its stream
-    	RootPanel.get("help_tab").setVisible(true);
-    	RootPanel.get("help_tab").addStyleName("help-tab-show");    	
+    	String helpHtmlStr = "<div id='help_tab' class='help-tab-right'>"
+    			+ "<a href='http://awaaz.de/blog/2013/09/awaaz-de-streams-start-up-guide-and-glossary/' target=_blank  id='help-link>"
+    			+ "<span>H</span>"
+    			+ "<span>E</span>"
+    			+ "<span>L</span>"
+    			+ "<span>P</span></a></div>";
+    	HTML helpHtml = new HTML(helpHtmlStr);
+    	RootPanel.get().add(helpHtml);
     }
     else
     {
     	messageDetail = new MessageDetail();
     	messageDetail.setWidth("100%");
     	rightPanel.add(messageDetail);
+    	
+    	search = new SearchFilterPanel(searchResultMsgList);
+    	searchShortCut = new Shortcuts(images, null, null, null, search);
+    	searchShortCut.setWidth("100%");
+    	searchShortCut.setVisible(false);
     }
     
-    shortcuts = new Shortcuts(images, fora, bcasts, smss);
-    
-    rightPanel.setWidth("100%");
-    shortcuts.setWidth("100%");
-    
     displayForumPanel();
-
-    // Create a dock panel that will contain the menu bar at the top,
+    
+    // creating a loader
+    loaderImage = new HTML(AbstractImagePrototype.create(images.loader()).getHTML());
+	loaderImage.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	loaderImage.addStyleName("loader-img");
+	showLoader(false);
+	
+	rightPanel.add(loaderImage);
+	
+	// Create a dock panel that will contain the menu bar at the top,
     // the shortcuts to the left, and the mail list & details taking the rest.
     DockPanel outer = new DockPanel();
     //DockLayoutPanel outer = new DockLayoutPanel(Unit.PCT);
-    
+   
     outer.add(topPanel, DockPanel.NORTH);
-    //outer.addNorth(topPanel, 100);
     outer.add(shortcuts, DockPanel.WEST);
+    if(!canManage()) {
+    	if(searchShortCut.isVisible())
+    		searchShortCut.setVisible(false);
+    	outer.add(searchShortCut, DockPanel.WEST);
+    }
+    
     //outer.addWest(shortcuts, 100);
     outer.add(rightPanel, DockPanel.CENTER);
     //outer.add(rightPanel);
@@ -403,6 +496,13 @@ public class Messages implements EntryPoint, ResizeHandler {
     onWindowResized(Window.getClientWidth(), Window.getClientHeight());
   }
 
+  
+  public void showLoader(boolean isShow) {
+	  loaderImage.setVisible(isShow);
+  }
+  
+ 
+  
   public void onResize(ResizeEvent event) {
     onWindowResized(event.getWidth(), event.getHeight());
   }

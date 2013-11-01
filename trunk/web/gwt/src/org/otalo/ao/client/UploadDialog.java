@@ -30,6 +30,7 @@ import org.otalo.ao.client.widget.audio.client.AudioRecorderWidget;
 import org.otalo.ao.client.widget.audio.client.RecorderEventObserver;
 
 import com.google.gwt.dom.client.Style.TextAlign;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -44,6 +45,9 @@ import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -63,7 +67,8 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 	private HorizontalPanel numberPanel = new HorizontalPanel();
 	private HorizontalPanel contentPanel = new HorizontalPanel();
 	private HorizontalPanel datePanel;
-	private Button saveButton, cancelButton;
+	private Button saveButton;
+	private Anchor cancelButton;
 	private RadioButton now, date;
 	private ListBox hour, min;
 
@@ -113,7 +118,8 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 			}
 		});
 		
-		cancelButton = new Button("Cancel", new ClickHandler() {
+		cancelButton = new Anchor("Cancel");
+		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				if(recorder.isRecorded())
 					recorder.stopRecording();
@@ -282,8 +288,10 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		// tables don't obey the setHorizontal of parents, and buttons is a table,
 		// so use float instead
 		DOM.setStyleAttribute(buttons.getElement(), "cssFloat", "right");
-		buttons.add(saveButton);
+		buttons.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		buttons.add(cancelButton);
+		buttons.add(saveButton);
+		
 		outer.setWidget(outer.getRowCount(), 1, buttons);
 
 		outer.setWidget(outer.getRowCount(), 0, forumId);

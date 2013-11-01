@@ -38,18 +38,18 @@ public class AutoCompleteTagWidget extends TagWidget{
 	 * This is separator for all the selected tags. On server side, value for selectedTags is splitted using this.
 	 */
 	public static final String TAG_SEPERATOR = "##";
-	private Hidden selectedTags;
+	protected Hidden selectedTags;
 	private MessageForum mf;
-	private ChosenListBox tagInput;
+	protected ChosenListBox tagInput;
 	
-	public AutoCompleteTagWidget() {
+	public AutoCompleteTagWidget(boolean isShowLabel, boolean isEditable) {
 		ChosenOptions options = new ChosenOptions();
 		options.setPlaceholderTextSingle("Select a tag...");
-		options.setPlaceholderTextMultiple("Select tags...");
+		options.setPlaceholderTextMultiple("Begin typing here »");
 		options.setAllowSingleDeselect(true);
 		options.setSingleBackstrokeDelete(true);
 		options.setHideNoResult(true);
-		options.setAddNewOptionVal(true);
+		options.setAddNewOptionVal(isEditable);
 		options.setSearchContains(true);
 
 		tagInput = new ChosenListBox(true, options);
@@ -57,17 +57,29 @@ public class AutoCompleteTagWidget extends TagWidget{
 		tagInput.setHeight("25px");
 
 		tagInput.setName("tags");
-				
-		Label tagLabel = new Label("Tags");
+		
 		selectedTags = new Hidden("selected_tags", "");
 
 		FlexTable tagTable = new FlexTable();
-		tagTable.setWidget(0, 0, tagLabel);
-		tagTable.setWidget(0, 1, tagInput);
+		if(isShowLabel) {
+			Label tagLabel = new Label("Tags");
+			tagTable.setWidget(0, 0, tagLabel);
+			tagTable.setWidget(0, 1, tagInput);
+		}
+		else {
+			tagTable.setWidget(0, 0, tagInput);
+		}
 		tagTable.setWidget(1, 0, selectedTags);
+		
 		initWidget(tagTable);
 	}
 
+	@Override
+	public void loadTags() {
+		JSONRequest request = new JSONRequest();
+	    request.doFetchURL(AoAPI.TAGS, new TagRequestor());
+	}
+	
 	@Override
 	public void loadTags(MessageForum messageForum) {
 		mf = messageForum;
@@ -93,6 +105,20 @@ public class AutoCompleteTagWidget extends TagWidget{
 			selectedTagsStr = selectedTagsStr.substring(0, selectedTagsStr.length()-2);
 		selectedTags.setValue(selectedTagsStr);
 	}
+	
+	public void setHeight(String heightStyleTxt) {
+		if(heightStyleTxt == null || heightStyleTxt.isEmpty())
+			tagInput.setHeight("25px");
+		else
+			tagInput.setHeight(heightStyleTxt);
+	}
+	
+	public void setWidth(String widthStyleTxt) {
+		if(widthStyleTxt == null || widthStyleTxt.isEmpty())
+			tagInput.setWidth("390px");
+		else
+			tagInput.setWidth(widthStyleTxt);
+	}
 
 	/**
 	 * Tag requester class
@@ -114,7 +140,8 @@ public class AutoCompleteTagWidget extends TagWidget{
 
 			// now that tags have been loaded,
 			// check which have been selected
-			loadSelectedTags(mf);
+			if(mf != null)
+				loadSelectedTags(mf);
 			//
 			if(tagInput.getItemCount() > 0)
 				Messages.get().setTagable(true);
