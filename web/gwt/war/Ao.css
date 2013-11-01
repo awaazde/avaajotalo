@@ -2,7 +2,7 @@ body, html {
   height: 100%;
 }
 body {
-  background: #fff;
+  background-color: #fff;
   color: black;
   font-family: Helvetica, Arial, sans-serif;
   font-size: small;
@@ -170,7 +170,8 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 }
 
 .mail-TopPanel {
-  height: 60px;
+	height: 60px;
+	table-layout: fixed;
 }
 
 .mail-TopPanel table {
@@ -330,12 +331,4 @@ html>body .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItem
 .mail-ContactPopupEmail {
   font-size: 80%;
   font-style: italic;
-}
-
-.mail-StackContent {
-  height: 100%;
-}
-
-.mail-Contacts {
-  border-bottom: none;
 }

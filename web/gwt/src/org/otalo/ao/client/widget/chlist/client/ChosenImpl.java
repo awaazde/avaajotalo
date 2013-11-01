@@ -72,7 +72,7 @@ public class ChosenImpl {
         SafeHtml container(String id, String cssClasses);
 
         @Template("<ul class=\"{0}\"><li class=\"{1}\"><input type=\"text\" value=\"{2}\" class=\"{3}\" " +
-                "autocomplete=\"off\" style=\"width:25px;height: 24px;\"/></li></ul><div class=\"{4}\" style=\"{6}\"><ul " +
+                "autocomplete=\"off\" style=\"width:25px;\"/></li></ul><div class=\"{4}\" style=\"{6}\"><ul " +
                 "class=\"{5}\"></ul></div>")
         SafeHtml contentMultiple(String chznChoicesClass, String chznSearchFieldClass,
                 String defaultText, String defaultClass, String chznDropClass, String chznResultClass,
