@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from longerusername.forms import AuthenticationForm
 
 # Uncomment the next two lines to enable the admin:
