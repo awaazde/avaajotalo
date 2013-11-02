@@ -478,27 +478,11 @@ function get_media_subdir()
 		day = '0'..day;
 	end
 	
-	local subdir = year..'/';
+	local subdir = year..'/'..month..'/'..day..'/';
 	
 	-- create it if it doesn't already exist
 	if io.open(sd .. subdir,"rb") == nil then
-		os.execute("mkdir "..sd..subdir);
-		os.execute("chmod 775 "..sd..subdir);
-	end
-	
-	subdir = year..'/'..month..'/';
-	
-	-- create it if it doesn't already exist
-	if io.open(sd .. subdir,"rb") == nil then
-		os.execute("mkdir "..sd..subdir);
-		os.execute("chmod 775 "..sd..subdir);
-	end
-	
-	subdir = year..'/'..month..'/'..day..'/';
-	
-	-- create it if it doesn't already exist
-	if io.open(sd .. subdir,"rb") == nil then
-		os.execute("mkdir "..sd..subdir);
+		os.execute("mkdir -p "..sd..subdir);
 		os.execute("chmod 775 "..sd..subdir);
 	end
 	
