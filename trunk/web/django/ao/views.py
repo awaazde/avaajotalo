@@ -208,9 +208,9 @@ def messages(request, forum_id):
     if count > 0:
         # append some meta info about the messages
         # remove end bracket
-        json = resp.content[:-1]
-        json += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+'}]'
-        resp.content = json
+        jsonresp = resp.content[:-1]
+        jsonresp += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+'}]'
+        resp.content = jsonresp
         
     return resp
 
@@ -288,6 +288,12 @@ def updatemessage(request):
             for responder in responders:
                 mr = Message_responder(message_forum=m, user=responder, assign_date=t)
                 mr.save();
+    
+    # Always calling save on message_forum model. 
+    # It's require because it will trigger post_save signal on it and this signal is being capture by haystack RealtimeSignal processor
+    # to update the index data. If we don't call save on it then, on updation of tags or any other many-to-many field data, it won't trigger post_save signal 
+    # and so the realtime signal processor won't update index data which would be result in wrong search result. 
+    #m.save()
                 
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
@@ -834,9 +840,9 @@ def promptresponses(request, prompt_id):
     if count > 0:
         # append some meta info about the messages
         # remove end bracket
-        json = resp.content[:-1]
-        json += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+'}]'
-        resp.content = json
+        jsonresp = resp.content[:-1]
+        jsonresp += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+'}]'
+        resp.content = jsonresp
     
     return resp
     
@@ -904,9 +910,9 @@ def sms(request, line_id):
     if count > 0:
         # append some meta info about the messages
         # remove end bracket
-        json = resp.content[:-1]
-        json += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+', "type":'+str(type)+'}]'
-        resp.content = json
+        jsonresp = resp.content[:-1]
+        jsonresp += ', {"model":"MESSAGE_METADATA", "start":'+str(start)+', "count":'+str(count)+', "type":'+str(type)+'}]'
+        resp.content = jsonresp
         
     return resp
 
