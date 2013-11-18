@@ -227,30 +227,32 @@ function responder_main()
 		session:setInputCallback("my_cb", "arg");
 	
 		-- sleep for some secs
-		session:sleep(2000);
-		if (session:ready() == true) then
-	
-			logfile:write(sessid, "\t", caller, "\t", destination,
-			"\t", os.time(), "\t", "Start call", "\n");
-			
-			local mainmenu_cnt = 0;
-			while (1) do
-			   read(anssd .. "welcome.wav", 500);
-			   -- ignore any barge-in and move on
-			   input();
-			   
-			   msgs = get_responder_messages(userid);
-	
-			   -- play messages
-			   play_responder_messages(userid, msgs, adminforums);
-			   
-			   mainmenu_cnt = check_abort(mainmenu_cnt, 5);
-			   -- go back to the main menu
-			   read(aosd .. "mainmenu.wav", 1000);
-			end
-			
-			hangup();
+		local ready_cnt = 0
+		while (session:ready() ~= true) do
+			session:sleep(2000);
+			ready_cnt = check_abort(ready_cnt, 3);
 		end
+	
+		logfile:write(sessid, "\t", caller, "\t", destination,
+		"\t", os.time(), "\t", "Start call", "\n");
+		
+		local mainmenu_cnt = 0;
+		while (1) do
+		   read(anssd .. "welcome.wav", 500);
+		   -- ignore any barge-in and move on
+		   input();
+		   
+		   msgs = get_responder_messages(userid);
+
+		   -- play messages
+		   play_responder_messages(userid, msgs, adminforums);
+		   
+		   mainmenu_cnt = check_abort(mainmenu_cnt, 5);
+		   -- go back to the main menu
+		   read(aosd .. "mainmenu.wav", 1000);
+		end
+			
+		hangup();
 	end -- close num_rows check
 end
 
