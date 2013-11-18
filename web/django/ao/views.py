@@ -401,7 +401,7 @@ def record_or_upload_message(request):
     if 'main' in request.FILES:
         main = request.FILES['main']
 
-        if 'upload' in params:
+        if params['options'] == 'upload':
             extension = main.name[main.name.index('.'):]
             if extension != '.mp3':
                 response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_FILE_FORMAT+', "message":"mp3 format required"}]')
