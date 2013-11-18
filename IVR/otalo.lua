@@ -887,9 +887,10 @@ function otalo_main()
 		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 		
 		-- wait a while before testing
-		session:sleep(2000);
-		if (session:ready() == false) then
-			hangup();
+		local ready_cnt = 0
+		while (session:ready() ~= true) do
+			session:sleep(2000);
+			ready_cnt = check_abort(ready_cnt, 3);
 		end
 	else
 		-- No callback allowed; just answer the call
