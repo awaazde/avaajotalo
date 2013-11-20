@@ -403,7 +403,9 @@ def record_or_upload_message(request):
 
         if params['options'] == 'upload':
             extension = main.name[main.name.index('.'):]
-            if extension != '.mp3':
+            # temporary hack to allow wav files secretly
+            #if extension != '.mp3':
+            if extension != '.mp3' and extension != '.wav':
                 response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_FILE_FORMAT+', "message":"mp3 format required"}]')
                 response['Pragma'] = "no cache"
                 response['Cache-Control'] = "no-cache, must-revalidate"
