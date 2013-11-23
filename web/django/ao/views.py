@@ -401,7 +401,7 @@ def record_or_upload_message(request):
     if 'main' in request.FILES:
         main = request.FILES['main']
 
-        if params['options'] == 'upload':
+        if 'options' in params and params['options'] == 'upload':
             extension = main.name[main.name.index('.'):]
             # temporary hack to allow wav files secretly
             #if extension != '.mp3':
