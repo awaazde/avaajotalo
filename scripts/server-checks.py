@@ -35,8 +35,9 @@ def check_freeswitch():
 		print("error FreeSWITCH is down!")
 		report_error("FreeSWITCH is down!")
 		# try to restart
-		p = subprocess.Popen(["freeswitch", "-nc", "-nonat"])
-		p.wait()
+		# UPDATE: this doesn't work, don't do
+		#p = subprocess.Popen(["/etc/init.d/freeswitch", "start"])
+		#p.wait()
 		
 def main():
 	check_freeswitch()
