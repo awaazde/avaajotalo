@@ -19,7 +19,7 @@ from datetime import datetime
 from ESL import *
 
 SCRIPT = 'router.lua: '
-MAX_CHANNELS = 10
+MAX_CHANNELS = 9999
 
 def route_calls(ids, IVR_script, outbound_var_val=False):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
@@ -59,7 +59,7 @@ def route_calls(ids, IVR_script, outbound_var_val=False):
     	#print(SCRIPT + 'running ' + IVR_script + ' (' + str(id) + ')')
     	con.api("luarun " + IVR_script + " " + str(id))
     	# sleep a bit to let the call register with FS
-    	time.sleep(2)
+    	time.sleep(.3)
 	   
 def get_n_channels(con):
     e = con.api("show channels")
