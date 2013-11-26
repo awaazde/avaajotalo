@@ -238,7 +238,7 @@ function survey_main()
 		local ready_cnt = 0
 		while (session:ready() ~= true) do
 			session:sleep(2000);
-			ready_cnt = check_abort(ready_cnt, 5);
+			ready_cnt = check_abort(ready_cnt, 3);
 		end
 	else
 		-- answer the call
