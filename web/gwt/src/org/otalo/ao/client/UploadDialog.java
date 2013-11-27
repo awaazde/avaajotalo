@@ -30,7 +30,6 @@ import org.otalo.ao.client.widget.audio.client.AudioRecorderWidget;
 import org.otalo.ao.client.widget.audio.client.RecorderEventObserver;
 
 import com.google.gwt.dom.client.Style.TextAlign;
-import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -39,16 +38,15 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -521,9 +519,9 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		params.add(new AudioRecordParam(write(messageForumId.getName()), write(messageForumId.getValue())));
 		params.add(new AudioRecordParam(write(forumId.getName()), write(forumId.getValue())));
 		if(recordOpt.getValue())
-			params.add(new AudioRecordParam(write("record"), write("true")));
+			params.add(new AudioRecordParam(write("options"), write("record")));
 		else
-			params.add(new AudioRecordParam(write("upload"), write("true")));
+			params.add(new AudioRecordParam(write("options"), write("upload")));
 		return params.toArray(new AudioRecordParam[0]);
 	}
 	
