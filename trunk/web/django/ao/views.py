@@ -400,9 +400,9 @@ def record_or_upload_message(request):
     params = request.POST
     if 'main' in request.FILES:
         main = request.FILES['main']
-
-        if 'options' in params and params['options'] == 'upload':
-            extension = main.name[main.name.index('.'):]
+        extension = main.name[main.name.index('.'):]
+        
+        if params['options'] == 'upload':
             # temporary hack to allow wav files secretly
             #if extension != '.mp3':
             if extension != '.mp3' and extension != '.wav':
@@ -458,13 +458,11 @@ def record_or_upload_message(request):
             
         mf = createmessage(request, f, main, author, parent, date)
         
-        if 'record' in params:
-            #converting wav to mp3
+        if extension == '.wav':
             wav_file_path = mf.message.file.path
+            #converting wav to mp3
             mp3_file_path=wav_file_path[0:wav_file_path.rfind(".wav")] + ".mp3"
-            
-            cmd = 'lame --preset insane %s' % wav_file_path
-            subprocess.call(cmd, shell=True)
+            convert_to_mp3(wav_file_path)
             
             #updating message object with new mp3 file
             mp3file = open(mp3_file_path)
@@ -482,6 +480,11 @@ def record_or_upload_message(request):
         response['Cache-Control'] = "no-cache, must-revalidate"
         return response
 
+
+def convert_to_mp3(wav_file_path):
+    #converting wav to mp3
+    cmd = 'lame --preset insane %s' % wav_file_path
+    subprocess.call(cmd, shell=True)
 
 def createmessage(request, forum, content, author, parent=None, date=None):
     t = datetime.now()

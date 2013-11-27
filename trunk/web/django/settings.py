@@ -155,7 +155,7 @@ MAX_USERNAME_LENGTH = 100
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
 
 SERIALIZATION_MODULES = {
-    'json': 'wadofstuff.django.serializers.json'
+    'json': 'utils.serializers.custom_json'
 }
 
 CONSOLE_ROOT = '/AO'
