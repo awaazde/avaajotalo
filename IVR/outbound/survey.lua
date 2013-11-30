@@ -127,23 +127,26 @@ function survey_main()
 	session:setHangupHook("hangup");
 	
 	-- wait a while before testing
+	-- do it in increments so we don't wait unnecessarily long
 	local ready_cnt = 0;
-	while (session:ready() ~= true) do
+	while (ready_cnt < 3 and session:ready() ~= true) do
 		-- session:sleep doesn't work!
 		os.execute("sleep 2");
-		ready_cnt = check_abort(ready_cnt, 3);
+		ready_cnt = ready_cnt + 1;
 	end
 	
-	callstarttime = os.time();
-	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", callstarttime, "\t", "Start call", "\n");
-	
-	-- play prompts
-   	play_prompts(prompts);
-   	
-   	-- assume that the survey will make any loops
-   	-- that are necessary itself
-	hangup();
+	if (session:ready() == true) then
+		callstarttime = os.time();
+		logfile:write(sessid, "\t", caller, "\t", destination,
+		"\t", callstarttime, "\t", "Start call", "\n");
+		
+		-- play prompts
+	   	play_prompts(prompts);
+	   	
+	   	-- assume that the survey will make any loops
+	   	-- that are necessary itself
+		hangup();
+	end
 	
 end
 
