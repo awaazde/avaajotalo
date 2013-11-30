@@ -663,7 +663,7 @@ function playforum (forumid)
 			 query = query .. " WHERE forum.id = " .. forumid; 
 			 query = query .. " AND forum_tag.forum_id = forum.id AND forum_tag.tag_id = tag.id ";
 			 query = query .. " AND forum_tag.filtering_allowed = 1 ";
-			 query = query .. " ORDER BY tag.id ASC";
+			 query = query .. " ORDER BY forum_tag.filter_order, tag.id";
 			   
 			 for row in rows (query) do
 			      listen_opts_ids[i] = row[1];
@@ -887,41 +887,44 @@ function otalo_main()
 		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 		
 		-- wait a while before testing
-		local ready_cnt = 0
-		while (session:ready() ~= true) do
+		-- do it in increments so we don't wait unnecessarily long
+		local ready_cnt = 0;
+		while (ready_cnt < 3 and session:ready() ~= true) do
 			-- session:sleep doesn't work!
 			os.execute("sleep 2");
-			ready_cnt = check_abort(ready_cnt, 3);
+			ready_cnt = ready_cnt + 1;
 		end
 	else
 		-- No callback allowed; just answer the call
 		session:answer();
 	end
 	
-	-- put hangup hook after session init in case of missed call;
-	-- if old session closes and hangup() is invoked, the db conn
-	-- and logfile will get clobbered
-	session:setVariable("playback_terminators", "#");
-	session:setHangupHook("hangup");
-	session:setInputCallback("my_cb", "arg");
-	session:set_tts_parms("flite", "awb");
-	
-	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", os.time(), "\t", "Start call", "\n");
-	
-	-- sleep for a sec
-	sleep(1000);
-	
-	local mm_cnt = 0;
-	while (1) do
-	   -- choose a forum
-	   mainmenu();
+	if (session:ready() == true) then
+		-- put hangup hook after session init in case of missed call;
+		-- if old session closes and hangup() is invoked, the db conn
+		-- and logfile will get clobbered
+		session:setVariable("playback_terminators", "#");
+		session:setHangupHook("hangup");
+		session:setInputCallback("my_cb", "arg");
+		session:set_tts_parms("flite", "awb");
 		
-	   -- go back to the main menu
-	   read(aosd .. "mainmenu.wav", 1000);
-	   
-	   -- prevent the non-deterministic spinning forever
-	   mm_cnt = check_abort(mm_cnt, 5)
+		logfile:write(sessid, "\t", caller, "\t", destination,
+		"\t", os.time(), "\t", "Start call", "\n");
+		
+		-- sleep for a sec
+		sleep(1000);
+		
+		local mm_cnt = 0;
+		while (1) do
+		   -- choose a forum
+		   mainmenu();
+			
+		   -- go back to the main menu
+		   read(aosd .. "mainmenu.wav", 1000);
+		   
+		   -- prevent the non-deterministic spinning forever
+		   mm_cnt = check_abort(mm_cnt, 5)
+		end
 	end
 end
 

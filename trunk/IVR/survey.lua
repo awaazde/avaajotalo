@@ -235,31 +235,34 @@ function survey_main()
 		session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 		
 		-- wait a while before testing
-		local ready_cnt = 0
-		while (session:ready() ~= true) do
+		-- do it in increments so we don't wait unnecessarily long
+		local ready_cnt = 0;
+		while (ready_cnt < 3 and session:ready() ~= true) do
 			-- session:sleep doesn't work!
 			os.execute("sleep 2");
-			ready_cnt = check_abort(ready_cnt, 3);
+			ready_cnt = ready_cnt + 1;
 		end
 	else
 		-- answer the call
 		session:answer();
 	end
 	
-	session:setVariable("playback_terminators", "#");
-	session:setHangupHook("hangup");
-	
-	-- sleep for a bit
-	--session:sleep(1000);
-	
-	callstarttime = os.time();
-	logfile:write(sessid, "\t", caller, "\t", destination,
-	"\t", callstarttime, "\t", "Start call", "\n");
-	
-	-- play prompts
-	play_prompts(prompts);
-	
-	hangup();
+	if (session:ready() == true) then
+		session:setVariable("playback_terminators", "#");
+		session:setHangupHook("hangup");
+		
+		-- sleep for a bit
+		--session:sleep(1000);
+		
+		callstarttime = os.time();
+		logfile:write(sessid, "\t", caller, "\t", destination,
+		"\t", callstarttime, "\t", "Start call", "\n");
+		
+		-- play prompts
+		play_prompts(prompts);
+		
+		hangup();
+	end
 end
 
 status, err = pcall(survey_main)
