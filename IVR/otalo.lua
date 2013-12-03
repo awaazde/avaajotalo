@@ -663,7 +663,7 @@ function playforum (forumid)
 			 query = query .. " WHERE forum.id = " .. forumid; 
 			 query = query .. " AND forum_tag.forum_id = forum.id AND forum_tag.tag_id = tag.id ";
 			 query = query .. " AND forum_tag.filtering_allowed = 1 ";
-			 query = query .. " ORDER BY tag.id";
+			 query = query .. " ORDER BY forum_tag.filter_order, tag.id";
 			   
 			 for row in rows (query) do
 			      listen_opts_ids[i] = row[1];

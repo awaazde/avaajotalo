@@ -203,6 +203,7 @@ class Forum_tag(models.Model):
     forum = models.ForeignKey(Forum)
     tag = models.ForeignKey(Tag)
     filtering_allowed = models.BooleanField(default=False)
+    filter_order = models.IntegerField(blank=True, null=True)
     
     def __unicode__(self):
         return unicode(self.forum) + '_' + unicode(self.tag)
