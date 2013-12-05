@@ -35,7 +35,7 @@ if __name__ == "__main__":
     interval = datetime.now() - timedelta(minutes=INTERVAL_MINS)
     #iterating thorough all the message objects
     for m in Message.objects.filter(date__gte=interval):
-        print('found message '+str(m))
+        print('found message '+str(m) + ' file is '+ m.file.path)
         if '.wav' in m.file.path:
             mp3_file_path  = m.file.path[:m.file.path.rfind(".wav")] + ".mp3"
             if not os.path.isfile(mp3_file_path):
