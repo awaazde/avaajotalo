@@ -87,6 +87,8 @@ assert (con:execute ("use otalo"));
 NORMAL_HANGUP = 'NORMAL_HANGUP';
 termination_reason = nil;
 
+RECORD_SOUND_EXT = '.wav';
+
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )
   if "string" == type( v ) then

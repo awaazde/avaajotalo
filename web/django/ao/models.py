@@ -228,6 +228,9 @@ class Message_forum(models.Model):
     position = models.IntegerField(blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, null=True)
     
+    #Used for search index updating
+    last_updated = models.DateTimeField(auto_now=True)
+    
     def __unicode__(self):
         return unicode(self.message) + '_' + unicode(self.forum) + '_(' + str(self.id) + ')'
     

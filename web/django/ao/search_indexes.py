@@ -54,3 +54,6 @@ class Message_forumIndex(indexes.SearchIndex, indexes.Indexable):
             return obj.message.thread.id
         else:
             return -1
+    
+    def get_updated_field(self):
+        return "last_updated"

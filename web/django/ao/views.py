@@ -42,6 +42,8 @@ from haystack.query import SQ
 from django.contrib.messages.context_processors import messages
 from django.core.paginator import Paginator
 from django.contrib.admin.templatetags.admin_list import results
+import subprocess
+from distutils.cmd import Command
 
 
 # Only keep these around as legacy
@@ -403,8 +405,7 @@ def record_or_upload_message(request):
         extension = main.name[main.name.index('.'):]
         
         if params['options'] == 'upload':
-            # temporary hack to allow wav files secretly
-            #if extension != '.mp3':
+            #validating file type, it should be mp3 or wav only
             if extension != '.mp3' and extension != '.wav':
                 response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_FILE_FORMAT+', "message":"mp3 format required"}]')
                 response['Pragma'] = "no cache"
@@ -458,22 +459,19 @@ def record_or_upload_message(request):
             
         mf = createmessage(request, f, main, author, parent, date)
         
-        if extension == '.wav':
-            wav_file_path = mf.message.file.path
-            #converting wav to mp3
-            mp3_file_path=wav_file_path[0:wav_file_path.rfind(".wav")] + ".mp3"
-            convert_to_mp3(wav_file_path)
-            
-            #updating message object with new mp3 file
-            mp3file = open(mp3_file_path)
-            mp3_file_name = os.path.basename(mp3_file_path)
-            mf.message.file.save(mp3_file_name, File(mp3file))
-            
+        #converting file viceversa i.e. from mp3 to wav or from wav to mp3
+        create_wav_mp3_companion(mf.message.file.path)
+        if extension != '.wav':
+            relative_path = mf.message.file.name
+            #updating message object with wav file
+            wav_file_path = relative_path[:relative_path.rfind('.')] + '.wav'
+            mf.message.file = wav_file_path
+            mf.message.save()
             mf = get_list_or_404(Message_forum, pk=mf.id)
             return send_response(mf, {'message':{'fields':()}, 'forum':{}})
         else:
+            #compand_audio(file_path)
             return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(mf.id,)))
-         
     else:
         response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
         response['Pragma'] = "no cache"
@@ -481,10 +479,31 @@ def record_or_upload_message(request):
         return response
 
 
-def convert_to_mp3(wav_file_path):
-    #converting wav to mp3
-    cmd = 'lame --preset insane %s' % wav_file_path
-    subprocess.call(cmd, shell=True)
+'''
+'    If the given file is mp3; create a wav (to play over IVR)
+'    If the given file is wav; create a mp3 (to play over web) and make wav suitable for IVR
+'''
+def create_wav_mp3_companion(file_path):
+    #converting audio file from one to another
+    #getting to path, at this path file could be mp3 or wav
+    if ".wav" in file_path:
+        to_path = file_path[0:file_path.rfind(".wav")] + ".mp3"
+        command = "ffmpeg -y -i %s"%(file_path) + " -f mp3 -ac 1 %s"%(to_path)
+        subprocess.call(command, shell=True)
+        
+        #now resampling file to 8k mono
+        file_path_converted = file_path[0:file_path.index('.')] + "_tmp.wav"
+        command = "ffmpeg -y -i %s"%(file_path) + " -f wav -acodec pcm_mulaw -ar 8000 -ac 1 %s"%(file_path_converted)
+        subprocess.call(command, shell=True)
+        #renaming file to original wav
+        os.rename(file_path_converted, file_path)
+        
+    else:
+        to_path = file_path[0:file_path.rfind(".mp3")] + ".wav"
+        command = "ffmpeg -y -i %s"%(file_path) + " -f wav -acodec pcm_mulaw -ar 8000 -ac 1 %s"%(to_path)
+        subprocess.call(command, shell=True)
+
+    
 
 def createmessage(request, forum, content, author, parent=None, date=None):
     t = datetime.now()
