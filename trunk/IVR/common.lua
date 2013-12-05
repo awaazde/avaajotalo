@@ -230,7 +230,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local okrecordedprompt = okrecordedprompt or aosd .. "okrecorded.wav";
    local mediasubdir = get_media_subdir();
    -- add caller digits to prevent name collisions
-   local partfilename = mediasubdir..os.time() .. caller:sub(caller:len()-1) .. ".mp3";
+   local partfilename = mediasubdir..os.time() .. caller:sub(caller:len()-1) .. RECORD_SOUND_EXT;
    local filename = sd .. partfilename;
 
    repeat
@@ -301,8 +301,8 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    cur:close();
    freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
    
-   query1 = "INSERT INTO ao_message_forum (message_id, forum_id";
-   query2 = " VALUES ("..id[1]..","..forumid;
+   query1 = "INSERT INTO ao_message_forum (message_id, forum_id, last_updated";
+   query2 = " VALUES ("..id[1]..","..forumid..",now()";
       
    local position = "null";
    if (moderated == 'y' and not adminmode) then
@@ -465,10 +465,10 @@ end
 -------------------------------------------
 --]]
 function get_media_subdir()
-	d = os.date('*t');
-	year = d.year;
-	month = d.month;
-	day = d.day;
+	local d = os.date('*t');
+	local year = d.year;
+	local month = d.month;
+	local day = d.day;
 	
 	if month < 10 then
 		month = '0'..month;
@@ -483,7 +483,8 @@ function get_media_subdir()
 	-- create it if it doesn't already exist
 	if io.open(sd .. subdir,"rb") == nil then
 		os.execute("mkdir -p "..sd..subdir);
-		os.execute("chmod 775 "..sd..subdir);
+		-- chmod from the file's root on down
+		os.execute("chmod -R 775 "..sd..year);
 	end
 	
 	return subdir;
@@ -1151,7 +1152,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    maxlength = tonumber(maxlength) or 90;
    -- add callid digits to prevent name collisions
    local mediasubdir = get_media_subdir();
-   local partfilename = mediasubdir..os.time() .. callid:sub(callid:len()-1) .. ".mp3";
+   local partfilename = mediasubdir..os.time() .. callid:sub(callid:len()-1) .. RECORD_SOUND_EXT;
    local filename = sd .. partfilename;
    local lang = lang or 'eng';
    confirm = tonumber(confirm) or 1;
@@ -1254,8 +1255,8 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   cur:close();
 	   freeswitch.consoleLog("info", script_name .. " : ID = " .. tostring(id[1]) .. "\n");
 	   
-	   query = "INSERT INTO ao_message_forum (message_id, forum_id, status) ";
-	   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..")";
+	   query = "INSERT INTO ao_message_forum (message_id, forum_id, status, last_updated) ";
+	   query = query .. " VALUES ("..id[1]..","..forumid..","..MESSAGE_STATUS_PENDING..", now())";
 	   con:execute(query);
    end	
    

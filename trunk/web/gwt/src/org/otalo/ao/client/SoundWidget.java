@@ -23,6 +23,8 @@ public class SoundWidget {
 	
 	public SoundWidget(String filename)
 	{
+		//getting mp3 file path
+		filename = filename.substring(0, filename.lastIndexOf(".")) + ".mp3";
 		sound = new HTML("<object width=\"200\" height=\"24\" type=\"application/x-shockwave-flash\" data=\"ao/swf/player.swf\" id=\"audioplayer2\">"  +
     "<param name=\"movie\" value=\"ao/swf/player.swf\" />" +
     "<param name=\"FlashVars\" value=\"playerID=2&amp;soundFile=" + filename +"\"  />" +
