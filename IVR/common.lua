@@ -1099,7 +1099,7 @@ function play_prompts (prompts)
 	    if (promptfile:sub(0,1) == '/') then
 	    	-- get the full path with trailing slash
 	    	freeswitch.consoleLog("info", script_name .. " found abs path: " .. promptfile .. "\n")
-	    	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 1;
+	    	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 2;
 	    	lang = promptfile:sub(1,pathend);
 	    else
 	    	freeswitch.consoleLog("info", script_name .. " found reg path: " .. promptfile .. "\n")
