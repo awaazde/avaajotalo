@@ -16,7 +16,7 @@
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.deletion import Collector
+from django.contrib.admin.util import NestedObjects
 from django.db.models.fields.related import ForeignKey
 from datetime import datetime
 
@@ -133,7 +133,7 @@ class Survey(models.Model):
         in the order that they should be saved.
         """
         obj = self
-        collector = Collector({})
+        collector = NestedObjects(using='default')
         collector.collect([obj])
         collector.sort()
         related_models = collector.data.keys()
