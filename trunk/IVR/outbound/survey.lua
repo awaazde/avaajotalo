@@ -129,7 +129,7 @@ function survey_main()
 	-- wait a while before testing
 	-- do it in increments so we don't wait unnecessarily long
 	local ready_cnt = 0;
-	while (ready_cnt < 5 and session:ready() ~= true) do
+	while (ready_cnt < 10 and session:ready() ~= true) do
 		-- session:sleep doesn't work!
 		os.execute("sleep 2");
 		ready_cnt = ready_cnt + 1;
