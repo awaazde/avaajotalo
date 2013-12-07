@@ -321,6 +321,7 @@ class Transaction(models.Model):
     TRANSFER_OUT = 4
     TRANSFER_IN = 5
     FORWARD = 6
+    XACT_BCAST = 7
     
     TYPE = (
     (BROADCAST_CALL, 'Broadcast'),
@@ -330,6 +331,7 @@ class Transaction(models.Model):
     (TRANSFER_OUT, 'Transfer out'),
     (TRANSFER_IN, 'Transfer in'),
     (FORWARD, 'Forward'),
+    (XACT_BCAST, 'XACT Bcast'),
     )
     
     user = models.ForeignKey(User)
