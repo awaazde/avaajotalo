@@ -64,7 +64,6 @@
 	-moz-box-shadow: 2px 1px 12px rgba(50, 50, 50, 0.75);
 	box-shadow: 2px 1px 12px rgba(50, 50, 50, 0.75);
 	width: 24px;
-	display: none;
 }
 
 .help-tab-show {
