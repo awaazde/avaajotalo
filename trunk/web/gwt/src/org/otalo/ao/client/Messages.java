@@ -420,7 +420,7 @@ public class Messages implements EntryPoint, ResizeHandler {
     	
     	//showing help if its stream
     	String helpHtmlStr = "<div id='help_tab' class='help-tab-right'>"
-    			+ "<a href='http://awaaz.de/blog/2013/09/awaaz-de-streams-start-up-guide-and-glossary/' target=_blank  id='help-link>"
+    			+ "<a href='http://awaaz.de/blog/2013/09/awaaz-de-streams-start-up-guide-and-glossary/' target=_blank  id='help-link'>"
     			+ "<span>H</span>"
     			+ "<span>E</span>"
     			+ "<span>L</span>"
