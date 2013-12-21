@@ -1,9 +1,0 @@
-{{ object.forum.id }}
-{{ object.tags.tag }}
-{{ object.message.user.name }}
-{{ object.message.user.number }}
-{{ object.message.user.district }}
-{{ object.message.user.taluka }}
-{{ object.message.user.village }}
-{{ object.message.date }}
-{{ object.message_thread_id }}
