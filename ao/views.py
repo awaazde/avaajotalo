@@ -673,7 +673,7 @@ def survey(request):
             if line.outbound_number:
                 numbers.append(line.outbound_number)
         
-        surveys = surveys.filter(number__in=numbers)
+        surveys = surveys.filter(number__in=numbers, created_on__gt=auth_user.date_joined)
     
     surveys = surveys[start:start+BCAST_PAGE_SIZE]
     for survey in surveys:

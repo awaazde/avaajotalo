@@ -18,7 +18,7 @@ from celery.exceptions import MaxRetriesExceededError
 from celery import shared_task
 from celery.task.control import revoke
 from otalo.ao.models import Dialer
-#from ESL import *
+from ESL import *
 
 
 BCAST_SCRIPT= 'AO/outbound/survey.lua'

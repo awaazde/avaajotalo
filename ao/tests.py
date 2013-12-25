@@ -1,7 +1,8 @@
+import sys
 from django.test import TestCase
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User as AuthUser
-from models import *
+from otalo.ao.models import *
 from otalo.surveys.models import *
 import broadcast, tasks
 from awaazde.streamit import streamit
@@ -63,3 +64,41 @@ class BcastTest(TestCase):
         Call.objects.filter(subject__number__in=completed).update(complete=True, duration=60)
         self.assertEqual(Call.objects.filter(complete=True).count(), 5)
         
+'''
+****************************************************************************
+*************************** COMMAND LINE TESTS *****************************
+****************************************************************************
+'''
+
+if __name__=="__main__":
+    if "--create_bcasts" in sys.argv:
+        lineid = sys.argv[2]
+        templateid = sys.argv[3]
+        subjectids = sys.argv[4].split(',')
+        
+        bcast_date = None
+        if len(sys.argv) > 5:
+            bcast_date = datetime.strptime(sys.argv[5], "%m-%d-%Y")
+        
+        line = Line.objects.get(pk=int(lineid))
+        template = Survey.objects.get(pk=int(templateid))
+        subjects = Subject.objects.filter(pk__in=subjectids)
+        
+        
+        # create bcast
+        result = tasks.regular_bcast.delay(line, template, subjects, 0, bcast_date)
+        self.assertTrue(result.successful())
+    elif "--schedule_bcasts" in sys.argv:
+        d = None
+        if len(sys.argv) > 2:
+            d = datetime.strptime(sys.argv[2], "%m-%d-%Y")
+            
+        tasks.schedule_bcasts.delay(time=d)
+    elif "--blank_template" in sys.argv:
+        number = sys.argv[2]
+        lang = sys.argv[3]
+        prefix = sys.argv[4]
+        suffix = ''
+        if len(sys.argv) > 5:
+            suffix = sys.argv[5]
+        blank_template(number, lang)
