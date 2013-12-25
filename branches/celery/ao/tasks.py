@@ -16,7 +16,7 @@
 from datetime import datetime, timedelta
 from celery import shared_task
 from otalo.surveys.models import *
-from models import *
+from otalo.ao.models import *
 import broadcast
 from otalo.surveys import tasks as surveytasks
 
