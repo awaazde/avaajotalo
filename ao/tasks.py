@@ -257,6 +257,6 @@ def schedule_bcasts(time=None, dialers=None):
                 priority = latest_call.priority + 1
                 
             call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, date=bcasttime, priority=priority)
-            surveytasks.schedule_call.s(countdown=BCAST_BUFFER_SECS).delay(call)
+            surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(call)
             #surveytasks.test_task.s().delay(True)
             print('Scheduled call '+ str(call))
