@@ -176,7 +176,7 @@ def schedule_bcasts(time=None, dialers=None):
         if bcasttime is None:
             bcasttime = datetime.now()
             
-        print("Scheduling bcasts for time: "+ broadcast.date_str(bcasttime))
+        print("Scheduling bcasts for dialer " + str(dialer) + "-" + broadcast.date_str(bcasttime))
         '''
         '    Gather all bcasts in the last 12 hours (rolling)
         '    Limit the search since we can assume
