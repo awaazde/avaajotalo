@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User as AuthUser
 from otalo.ao.models import *
 from otalo.surveys.models import *
-import broadcast, tasks
+from otalo.ao import tasks
+import broadcast
 from awaazde.streamit import streamit
 
 class BcastTest(TestCase):
