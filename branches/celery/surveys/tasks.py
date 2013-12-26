@@ -74,7 +74,7 @@ def get_n_channels(con, dialer):
         profile = re.match('sofia/gateway/([\w\d-]+)',dialer.dialstring_prefix).groups()[0]
         profile = 'sofia/' + profile
     
-    
+    print("profile is "+profile)
     e = con.api("show channels like " + profile)
     chan_txt = e.getBody()
     n_chans_txt = chan_txt[chan_txt.rindex('total.')-3:chan_txt.rindex('total.')-1]
