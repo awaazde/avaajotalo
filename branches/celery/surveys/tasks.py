@@ -60,7 +60,7 @@ def test_task(self, retry=False):
 def get_n_channels(con, dialer):
     if dialer.type == Dialer.TYPE_PRI:
         profile = re.match('[\w/\d]+grp(\d+)[\w/\d]+',dialer.dialstring_prefix).groups()[0]
-        profile = 'FreeTDM/' + profile
+        profile = "FreeTDM/" + str(profile)
     else:
         '''
         '    SIP
@@ -72,10 +72,12 @@ def get_n_channels(con, dialer):
         '
         '''
         profile = re.match('sofia/gateway/([\w\d-]+)',dialer.dialstring_prefix).groups()[0]
-        profile = 'sofia/' + profile
+        profile = "sofia/" + str(profile)
     
+    profile = "show channels like " + profile
     print("profile is "+profile)
-    e = con.api("show channels like " + profile)
+    
+    e = con.api(profile)
     chan_txt = e.getBody()
     n_chans_txt = chan_txt[chan_txt.rindex('total.')-3:chan_txt.rindex('total.')-1]
     return int(n_chans_txt)
