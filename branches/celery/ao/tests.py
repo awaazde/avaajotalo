@@ -90,11 +90,14 @@ if __name__=="__main__":
         result = tasks.regular_bcast.delay(line, template, subjects, 0, bcast_date)
         self.assertTrue(result.successful())
     elif "--schedule_bcasts" in sys.argv:
+        dialerids = sys.argv[2].split(',')
+        dialers = Dialer.objects.filter(pk__in=dialerids)
+        
         d = None
-        if len(sys.argv) > 2:
-            d = datetime.strptime(sys.argv[2], "%m-%d-%Y")
+        if len(sys.argv) > 3:
+            d = datetime.strptime(sys.argv[3], "%m-%d-%Y")
             
-        tasks.schedule_bcasts.delay(time=d)
+        tasks.schedule_bcasts.delay(dialers=dialers, time=d)
     elif "--blank_template" in sys.argv:
         number = sys.argv[2]
         lang = sys.argv[3]
