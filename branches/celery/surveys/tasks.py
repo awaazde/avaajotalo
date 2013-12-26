@@ -59,7 +59,7 @@ def test_task(self, retry=False):
 '''
 def get_n_channels(con, dialer):
     if dialer.type == Dialer.TYPE_PRI:
-        profile = re.match('[\w/\d]+grp(\d+)[\w/\d]+',dialer.prefix).groups()[0]
+        profile = re.match('[\w/\d]+grp(\d+)[\w/\d]+',dialer.dialstring_prefix).groups()[0]
         profile = 'FreeTDM/' + profile
     else:
         '''
@@ -71,7 +71,7 @@ def get_n_channels(con, dialer):
         '    naming the gateway in any particular way
         '
         '''
-        profile = re.match('sofia/gateway/([\w\d-]+)',dialer.prefix).groups()[0]
+        profile = re.match('sofia/gateway/([\w\d-]+)',dialer.dialstring_prefix).groups()[0]
         profile = 'sofia/' + profile
     
     
