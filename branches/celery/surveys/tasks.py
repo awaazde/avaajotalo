@@ -35,11 +35,14 @@ def schedule_call(self, call, dialer=None):
     if not dialer:
         dialer = call.dialer
     if con.connected() and get_n_channels(con, dialer) <= dialer.max_parallel_out:
-        con.api("luarun " + BCAST_SCRIPT + " " + str(call.id))
+        command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
+        print("running "+ command)
+        con.api(command)
         # insert a gap between calls for the
         # actual dialing resource to keep up
         time.sleep(BCAST_ESL_GAP_SECS)
     else:
+        print("retrying "+ command) 
         raise self.retry(countdown=RETRY_COUNTDOWN_SECS)
 
 @shared_task(bind=True)
