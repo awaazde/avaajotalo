@@ -240,12 +240,11 @@ def schedule_bcasts(time=None, dialers=None):
 
         #print("sorted list: "+str(flat))       
         
-        # assign calls as they are
-        # found to be available
-        scheduled = {}
-        num_available = dialer.max_parallel_out - Call.objects.filter(dialer=dialer, date=bcasttime).count()
-        to_sched = flat[:num_available]
-        for survey, subject in to_sched:            
+        num_scheduled = 0
+        for survey, subject in flat:
+            # assign calls up to maximum allowable in one burst
+            if num_scheduled >= dialer.max_parallel_out:
+                break
             latest_call = Call.objects.filter(survey=survey, subject=subject).order_by('-priority')
             priority = 1
             if bool(latest_call):
@@ -256,7 +255,6 @@ def schedule_bcasts(time=None, dialers=None):
                     continue
                 priority = latest_call.priority + 1
                 
-            call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, date=bcasttime, priority=priority)
-            surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(call)
-            #surveytasks.test_task.s().delay(True)
-            print('Scheduled call '+ str(call))
+            surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(survey, dialer, subject, priority)
+            #surveytasks.test_task.s().delay(survey, dialer, subject, priority, bcasttime)
+            num_scheduled += 1
