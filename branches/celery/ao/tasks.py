@@ -155,6 +155,28 @@ def regular_bcast(line, template, subjects, num_backups, start_date, bcastname=N
     return bcast
 
 '''
+'    Helper function to run periodic tasks with the scheduler
+'    Don't run as a subtask since it's just a helper
+'''
+@shared_task
+def schedule_bcasts_by_dialers(dialerids):
+    dialers = Dialer.objects.all()
+    if dialerids:
+        dialers = dialers.filter(pk__in=dialerids)
+        
+    schedule_bcasts(dialers=dialers)
+    
+'''
+'    Helper function to run periodic tasks with the scheduler
+'    Don't run as a subtask since it's just a helper
+'''
+@shared_task
+def schedule_bcasts_by_basenums(numbers):
+    dialers = Dialer.objects.filter(base_number__in=numbers)
+    
+    schedule_bcasts(dialers=dialers)
+    
+'''
 '    A periodic task that gets surveys and creates
 '    calls. Why periodic? Because we need to run the scheduling
 '    algorithm on calls to prioritize which go out first between bcasts
