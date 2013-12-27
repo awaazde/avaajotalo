@@ -14,10 +14,12 @@
 #    limitations under the License.
 #===============================================================================
 import re, time
+from datetime import datetime
 from celery.exceptions import MaxRetriesExceededError
 from celery import shared_task
 from celery.task.control import revoke
 from otalo.ao.models import Dialer
+from otalo.surveys.models import Call
 from ESL import *
 
 
@@ -25,29 +27,34 @@ BCAST_SCRIPT= 'AO/outbound/survey.lua'
 BCAST_ESL_GAP_SECS = .3
 RETRY_COUNTDOWN_SECS = 120
    
-'''
-'    Make dialer a separate arg for optimization purposes
-'    save a lookup if it's passed in directly
-'''
 @shared_task(bind=True)
-def schedule_call(self, call, dialer=None):
+def schedule_call(self, survey, dialer, subject, priority):
+    call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
-    if not dialer:
-        dialer = call.dialer
-    if con.connected() and get_n_channels(con, dialer) <= dialer.max_parallel_out:
+    '''
+    '    Do a final check for open channels here even though we assume
+    '    higher level schedulers are doing the congestion control. The reason
+    '    is that if the dialer disconnects (i.e. FS goes down), the queue will
+    '    fill up with backlogged calls as the scheduler continues to work. 
+    '    So this task will have to perform congestion
+    '    control in that case until the backlog naturally reduces. 
+    '''
+    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out:
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
-        print("running "+ command)
         con.api(command)
+        print('Scheduled call '+ str(call))
         # insert a gap between calls for the
-        # actual dialing resource to keep up
+        # physical dialing resource to keep up
         time.sleep(BCAST_ESL_GAP_SECS)
     else:
         print("retrying "+ command) 
         raise self.retry(countdown=RETRY_COUNTDOWN_SECS)
 
 @shared_task(bind=True)
-def test_task(self, retry=False):
-    print("task "+str(self)+"-"+str(test_task.request.id))
+def test_task(self, survey, dialer, subject, priority, date, retry=False):
+    call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
+    print('Scheduled call '+ str(call))
+    #print("task "+str(self)+"-"+str(test_task.request.id))
     if retry:
         try:
             print("retrying")
