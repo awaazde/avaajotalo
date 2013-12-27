@@ -13,7 +13,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-
+import os
+from celery.schedules import crontab
 # Django settings for otalo project.
 
 DEBUG = True
@@ -137,8 +138,6 @@ INSTALLED_APPS = (
     'rest_framework',
 )
 
-
-import os
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
@@ -156,10 +155,18 @@ INSTALLED_APPS = ("longerusername",) + INSTALLED_APPS
 MAX_USERNAME_LENGTH = 100
 
 # Celery Settings
+BCAST_INTERVAL_MINS = 3
 BROKER_URL = "django://"
 CELERY_ALWAYS_EAGER = True
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 CELERY_ROUTES = {'surveys.tasks.schedule_call': {'queue': 'calls'}}
+CELERYBEAT_SCHEDULE = {
+    'schedule_by_dialerids': {
+        'task': 'ao.tasks.schedule_bcasts_by_dialers',
+        'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
+        'args': ([1,]),
+    },
+}
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
 
