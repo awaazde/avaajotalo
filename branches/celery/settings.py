@@ -159,6 +159,7 @@ MAX_USERNAME_LENGTH = 100
 BROKER_URL = "django://"
 CELERY_ALWAYS_EAGER = True
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+CELERY_ROUTES = {'surveys.tasks.schedule_call': {'queue': 'calls'}}
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
 
