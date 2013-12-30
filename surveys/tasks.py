@@ -27,8 +27,8 @@ BCAST_SCRIPT= 'AO/outbound/survey.lua'
 BCAST_ESL_GAP_SECS = .3
 RETRY_COUNTDOWN_SECS = 120
    
-@shared_task(bind=True)
-def schedule_call(self, survey, dialer, subject, priority):
+@shared_task
+def schedule_call(survey, dialer, subject, priority):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     # reload survey to check status for cancellation
     survey = Survey.objects.get(pk=survey.id)
@@ -52,17 +52,17 @@ def schedule_call(self, survey, dialer, subject, priority):
         time.sleep(BCAST_ESL_GAP_SECS)
     elif survey.status != Survey.STATUS_CANCELLED:
         print("retrying "+str(schedule_call.request.id)) 
-        raise self.retry(countdown=RETRY_COUNTDOWN_SECS)
+        schedule_call.retry(countdown=RETRY_COUNTDOWN_SECS)
 
-@shared_task(bind=True)
-def test_task(self, survey, dialer, subject, priority, date, retry=False):
+@shared_task
+def test_task(survey, dialer, subject, priority, date, retry=False):
     call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
     print('Scheduled call '+ str(call))
     #print("task "+str(self)+"-"+str(test_task.request.id))
     if retry:
         try:
             print("retrying")
-            raise self.retry(countdown=RETRY_COUNTDOWN_SECS)
+            test_task.retry(countdown=RETRY_COUNTDOWN_SECS)
         except MaxRetriesExceededError as e:
             print('max retries')
             revoke(test_task.request.id)
