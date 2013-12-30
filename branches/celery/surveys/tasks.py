@@ -50,23 +50,18 @@ def schedule_call(survey, dialer, subject, priority):
         # insert a gap between calls for the
         # physical dialing resource to keep up
         time.sleep(BCAST_ESL_GAP_SECS)
-    elif survey.status != Survey.STATUS_CANCELLED:
-        print("retrying "+str(schedule_call.request.id)) 
-        schedule_call.retry(countdown=RETRY_COUNTDOWN_SECS)
+        
+    '''
+    '    Don't worry about retrying... the higher level scheduling algorithm should be 
+    '    keeping track dynamically of what got scheduled and what didn't through a combo of:
+    '        * beating, so it's trying to pump the queue regularly
+    '        * checking for created Call objects.
+    '''
 
 @shared_task
-def test_task(survey, dialer, subject, priority, date, retry=False):
+def test_task(survey, dialer, subject, priority, date):
     call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
     print('Scheduled call '+ str(call))
-    #print("task "+str(self)+"-"+str(test_task.request.id))
-    if retry:
-        try:
-            print("retrying")
-            test_task.retry(countdown=RETRY_COUNTDOWN_SECS)
-        except MaxRetriesExceededError as e:
-            print('max retries')
-            revoke(test_task.request.id)
-            pass
 
 '''
 '    Mirrors get_num_channels in common.lua(s)
