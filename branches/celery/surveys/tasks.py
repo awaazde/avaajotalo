@@ -51,7 +51,7 @@ def schedule_call(self, survey, dialer, subject, priority):
         # physical dialing resource to keep up
         time.sleep(BCAST_ESL_GAP_SECS)
     elif survey.status != Survey.STATUS_CANCELLED:
-        print("retrying "+ command) 
+        print("retrying "+str(schedule_call.request.id)) 
         raise self.retry(countdown=RETRY_COUNTDOWN_SECS)
 
 @shared_task(bind=True)
