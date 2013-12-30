@@ -19,8 +19,8 @@ from celery.exceptions import MaxRetriesExceededError
 from celery import shared_task
 from celery.task.control import revoke
 from otalo.ao.models import Dialer
-from otalo.surveys.models import Call
-from ESL import *
+from otalo.surveys.models import Call, Survey
+#from ESL import *
 
 
 BCAST_SCRIPT= 'AO/outbound/survey.lua'
@@ -37,16 +37,18 @@ def schedule_call(self, survey, dialer, subject, priority):
     '    is that if the dialer disconnects (i.e. FS goes down), the queue will
     '    fill up with backlogged calls as the scheduler continues to work. 
     '    So this task will have to perform congestion
-    '    control in that case until the backlog naturally reduces. 
+    '    control in that case until the backlog naturally reduces.
+    '    In other words, the queue itself should not be relied on to determine
+    '    how many calls to make (i.e. there are 100 calls in the queue so we should make 100 calls)
     '''
-    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out:
+    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
         con.api(command)
         print('Scheduled call '+ str(call))
         # insert a gap between calls for the
         # physical dialing resource to keep up
         time.sleep(BCAST_ESL_GAP_SECS)
-    else:
+    elif survey.status != Survey.STATUS_CANCELLED:
         print("retrying "+ command) 
         raise self.retry(countdown=RETRY_COUNTDOWN_SECS)
 
