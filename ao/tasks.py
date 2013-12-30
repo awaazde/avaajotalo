@@ -20,7 +20,7 @@ from otalo.ao.models import *
 import broadcast
 from otalo.surveys import tasks as surveytasks
 
-BCAST_BUFFER_SECS = 5 * 60
+BCAST_BUFFER_SECS = 0 * 60
 
 
 @shared_task
@@ -278,5 +278,5 @@ def schedule_bcasts(time=None, dialers=None):
                 priority = latest_call.priority + 1
                 
             surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(survey, dialer, subject, priority)
-            #surveytasks.test_task.s().delay(survey, dialer, subject, priority, bcasttime)
+            #surveytasks.test_task.s().delay(survey, dialer, subject, priority, bcasttime, retry=True)
             num_scheduled += 1
