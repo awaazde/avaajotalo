@@ -13,12 +13,11 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import re, time
+import time
 from datetime import datetime
 from celery.exceptions import MaxRetriesExceededError
 from celery import shared_task
 from celery.task.control import revoke
-from otalo.ao.models import Dialer
 from otalo.surveys.models import Call, Survey
 from ESL import *
 
@@ -33,16 +32,13 @@ def schedule_call(survey, dialer, subject, priority):
     # reload survey to check status for cancellation
     survey = Survey.objects.get(pk=survey.id)
     '''
-    '    Do a final check for open channels here even though we assume
-    '    higher level schedulers are doing the congestion control. The reason
-    '    is that if the dialer disconnects (i.e. FS goes down), the queue will
-    '    fill up with backlogged calls as the scheduler continues to work. 
-    '    So this task will have to perform congestion
-    '    control in that case until the backlog naturally reduces.
-    '    In other words, the queue itself should not be relied on to determine
-    '    how many calls to make (i.e. there are 100 calls in the queue so we should make 100 calls)
+    '    Do not do any congestion control down here because we assume
+    '    Higher level schedulers are beating and sending tasks based on
+    '    the available resources. In addition, calls won't pile up due to
+    '    physical dialing resource downtime (i.e. FS) since we are only creating
+    '    calls if we can connect via ESL.
     '''
-    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
+    if con.connected() and survey.status != Survey.STATUS_CANCELLED:
         call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
         con.api(command)
@@ -62,31 +58,3 @@ def schedule_call(survey, dialer, subject, priority):
 def test_task(survey, dialer, subject, priority, date):
     call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
     print('Scheduled call '+ str(call))
-
-'''
-'    Mirrors get_num_channels in common.lua(s)
-'''
-def get_n_channels(con, dialer):
-    if dialer.type == Dialer.TYPE_PRI:
-        profile = re.match('[\w/\d]+grp(\d+)[\w/\d]+',dialer.dialstring_prefix).groups()[0]
-        profile = "FreeTDM/" + str(profile)
-    else:
-        '''
-        '    SIP
-        '    ASSUMES profile name is same as gateway name
-        '    FS show channels names calls by profile name, not gateway name.
-        '    so if we need multiple gateways in a profile that could be a problem 
-        '    if it there is not physical limit to SIP calls, safe to not worry about
-        '    naming the gateway in any particular way
-        '
-        '''
-        profile = re.match('sofia/gateway/([\w\d-]+)',dialer.dialstring_prefix).groups()[0]
-        profile = "sofia/" + str(profile)
-    
-    profile = "show channels like " + profile
-    print("profile is "+profile)
-    
-    e = con.api(profile)
-    chan_txt = e.getBody()
-    n_chans_txt = chan_txt[chan_txt.rindex('total.')-3:chan_txt.rindex('total.')-1]
-    return int(n_chans_txt)
