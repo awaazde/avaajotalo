@@ -29,7 +29,6 @@ RETRY_COUNTDOWN_SECS = 120
    
 @shared_task(bind=True)
 def schedule_call(self, survey, dialer, subject, priority):
-    call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     '''
     '    Do a final check for open channels here even though we assume
@@ -42,6 +41,7 @@ def schedule_call(self, survey, dialer, subject, priority):
     '    how many calls to make (i.e. there are 100 calls in the queue so we should make 100 calls)
     '''
     if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
+        call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
         con.api(command)
         print('Scheduled call '+ str(call))

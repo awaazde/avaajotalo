@@ -761,11 +761,11 @@ def bcast(request):
 
     if mf is not None:
         responseprompt = params.__contains__('response')
-        #survey = broadcast.thread(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
-        tasks.thread.delay(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
+        # make synchronous in order to update the bcasts view immediately
+        tasks.thread(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
     else:
-        #survey = broadcast.regular_bcast(line, template, subjects, num_backups, start_date, bcastname)
-        tasks.regular_bcast.delay(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
+        # make synchronous in order to update the bcasts view immediately
+        tasks.regular_bcast(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(params['messageforumid']),)))
