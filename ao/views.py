@@ -765,7 +765,7 @@ def bcast(request):
         tasks.thread(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
     else:
         # make synchronous in order to update the bcasts view immediately
-        tasks.regular_bcast(mf, template, subjects, responseprompt, num_backups, start_date, bcastname)
+        tasks.regular_bcast(line, template, subjects, num_backups, start_date, bcastname)
     
     if params['messageforumid']:
         return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(int(params['messageforumid']),)))
