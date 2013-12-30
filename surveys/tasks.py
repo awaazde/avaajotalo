@@ -30,6 +30,8 @@ RETRY_COUNTDOWN_SECS = 120
 @shared_task(bind=True)
 def schedule_call(self, survey, dialer, subject, priority):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
+    # reload survey to check for canellation
+    survey = Survey.object.get(pk=survey.id)
     '''
     '    Do a final check for open channels here even though we assume
     '    higher level schedulers are doing the congestion control. The reason
