@@ -21,6 +21,7 @@ import broadcast
 from otalo.surveys import tasks as surveytasks
 
 BCAST_BUFFER_SECS = 0 * 60
+SOUND_EXT = '.wav'
 
 @shared_task
 def thread(messageforum, template, subjects, responseprompt, num_backups, start_date, bcastname=None):
