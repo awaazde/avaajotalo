@@ -20,7 +20,7 @@ from celery import shared_task
 from celery.task.control import revoke
 from otalo.ao.models import Dialer
 from otalo.surveys.models import Call, Survey
-#from ESL import *
+from ESL import *
 
 
 BCAST_SCRIPT= 'AO/outbound/survey.lua'
