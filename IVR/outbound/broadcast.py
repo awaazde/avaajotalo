@@ -21,6 +21,7 @@ from django.db.models import Q, Max, Min
 from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag, Dialer
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
+from otalo.surveys import tasks as surveytasks
 
 SOUND_EXT = ".wav"
 # Minimum number of times a caller
@@ -33,6 +34,8 @@ DEF_INTERVAL_MINS = 5
 # Wait at least this many
 # mins before sending a backup call
 BACKUP_THRESH_MINS = 30
+
+BCAST_BUFFER_SECS = 0 * 60
 
 # should match the interval of the cron running this script
 ANSWER_CALL_INTERVAL_HOURS = 1
@@ -232,7 +235,8 @@ def regular_bcast(line, template, subjects, num_backups, start_date, bcastname=N
         bcast.subjects.add(su)
     for d in line.dialers.all():
         bcast.dialers.add(d)
-        
+    
+    print("Created regular bcast "+ str(bcast) + " time " + str(bcast.created_on))
     return bcast
 
 def clone_template(template, newname, num_backups, start_date):
@@ -270,9 +274,9 @@ def schedule_bcasts(time=None, dialers=None):
     for dialer in dialers:
         bcasttime = time
         if bcasttime is None:
-            bcasttime = get_most_recent_interval(dialer)
+            bcasttime = datetime.now()
             
-        print("Scheduling bcasts for time: "+ date_str(bcasttime))
+        print("Scheduling bcasts for dialer " + str(dialer) + "-" + date_str(bcasttime))
         '''
         '    Gather all bcasts in the last 12 hours (rolling)
         '    Limit the search since we can assume
@@ -336,12 +340,11 @@ def schedule_bcasts(time=None, dialers=None):
 
         #print("sorted list: "+str(flat))       
         
-        # assign calls as they are
-        # found to be available
-        scheduled = {}
-        num_available = dialer.max_parallel_out - Call.objects.filter(dialer=dialer, date=bcasttime).count()
-        to_sched = flat[:num_available]
-        for survey, subject in to_sched:            
+        num_scheduled = 0
+        for survey, subject in flat:
+            # assign calls up to maximum allowable in one burst
+            if num_scheduled >= dialer.max_parallel_out:
+                break
             latest_call = Call.objects.filter(survey=survey, subject=subject).order_by('-priority')
             priority = 1
             if bool(latest_call):
@@ -352,8 +355,9 @@ def schedule_bcasts(time=None, dialers=None):
                     continue
                 priority = latest_call.priority + 1
                 
-            call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, date=bcasttime, priority=priority)
-            print('Scheduled call '+ str(call))
+            surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(survey, dialer, subject, priority)
+            #surveytasks.test_task.s().delay(survey, dialer, subject, priority, bcasttime)
+            num_scheduled += 1
 
 '''
 ****************************************************************************
@@ -495,20 +499,7 @@ def date_str(date):
 ****************************************************************************
 '''
 if __name__=="__main__":
-    if "--schedule_bcasts_by_dialers" in sys.argv:
-        dialers = Dialer.objects.all()
-        if len(sys.argv) > 2:
-            dialerids = sys.argv[2].split(',')
-            dialerids = [int(id.strip()) for id in dialerids]
-            dialers = dialers.filter(pk__in=dialerids)
-        
-        schedule_bcasts(dialers=dialers)
-    elif "--schedule_bcasts_by_base_numbers" in sys.argv:
-        numbers = sys.argv[2].split(',')
-        numbers = [num.strip() for num in numbers]
-        dialers = Dialer.objects.filter(base_number__in=numbers)
-        schedule_bcasts(dialers=dialers)
-    elif "--answer_calls" in sys.argv: 
+    if "--answer_calls" in sys.argv: 
         check_unsent_responses()
     elif "--main" in sys.argv:        
         print("NONE")
