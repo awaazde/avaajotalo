@@ -33,8 +33,7 @@ class BcastTest(TestCase):
         template = Survey.objects.create(number=line.number, template=True, created_on=d, name='TEST_TEMPLATE')
         
         # create bcast
-        result = tasks.regular_bcast.delay(line, template, subjects, 0, d)
-        self.assertTrue(result.successful())
+        broadcast.regular_bcast(line, template, subjects, 0, d)
         
         # schedule bcasts
         tasks.schedule_bcasts.delay(time=d, dialers=dialers)
