@@ -16,6 +16,7 @@
 from datetime import datetime, timedelta
 from celery import shared_task
 import broadcast
+from otalo.ao.models import Dialer
 
 '''
 '    Helper function to run periodic tasks with the scheduler
