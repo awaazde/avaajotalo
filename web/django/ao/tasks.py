@@ -23,7 +23,7 @@ from otalo.ao.models import Dialer
 '    Don't run as a subtask since it's just a helper
 '''
 @shared_task
-def schedule_bcasts_by_dialers(dialerids):
+def schedule_bcasts_by_dialers(*dialerids):
     dialers = Dialer.objects.all()
     if dialerids:
         dialers = dialers.filter(pk__in=dialerids)
@@ -35,7 +35,7 @@ def schedule_bcasts_by_dialers(dialerids):
 '    Don't run as a subtask since it's just a helper
 '''
 @shared_task
-def schedule_bcasts_by_basenums(numbers):
+def schedule_bcasts_by_basenums(*numbers):
     dialers = Dialer.objects.filter(base_number__in=numbers)
     
     schedule_bcasts(dialers=dialers)

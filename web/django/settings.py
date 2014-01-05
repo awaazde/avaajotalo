@@ -156,13 +156,13 @@ HAYSTACK_LIMIT_TO_REGISTERED_MODELS = False
 BCAST_INTERVAL_MINS = 3
 BROKER_URL = "django://"
 CELERY_ALWAYS_EAGER = True
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+#TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 CELERY_ROUTES = {'otalo.surveys.tasks.schedule_call': {'queue': 'calls'}}
 CELERYBEAT_SCHEDULE = {
     'schedule_by_dialerids': {
         'task': 'otalo.ao.tasks.schedule_bcasts_by_dialers',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
-        'args': ([1],),
+        'args': (1,),
     },
 }
 
