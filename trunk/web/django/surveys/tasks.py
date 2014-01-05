@@ -32,13 +32,28 @@ def schedule_call(survey, dialer, subject, priority):
     # reload survey to check status for cancellation
     survey = Survey.objects.get(pk=survey.id)
     '''
-    '    Do not do any congestion control down here because we assume
-    '    Higher level schedulers are beating and sending tasks based on
-    '    the available resources. In addition, calls won't pile up due to
-    '    physical dialing resource downtime (i.e. FS) since we are only creating
-    '    calls if we can connect via ESL.
+    '    Do congestion control down here because we assume
+    '    higher level schedulers are *not* sending tasks based on
+    '    the available resources. Schedulers may just be sending
+    '    according to the dialers max_parallel_out, not knowing about
+    '    other schedulers working with the same dialer are doing the same.
+    '    Why are there multiple schedulers? Because there are different kinds
+    '    of calls that may be sent at different priorities. Having different
+    '    schedulers handle different types of calls allows them to be prioritized
+    '    according to call type (within a scheduler, calls of the same type
+    '    can be prioritized between each other).
+    '        
+    '    Another reason for congestion control down here is efficiency.
+    '    A higher-level scheduler can at best schedule calls up to max_parallel_out
+    '    every interval, but we should be able to send the next call as soon as
+    '    a channel is free. Since this task is not on beat, it can opportunistically
+    '    look for free channels and send a call out accordingly. This can come into
+    '    play if schedulers schedule more calls than max_parallel_out per beat
+    '
+    '    Note calls piling up due to physical dialing resource downtime (i.e. FS) is *not* a reason
+    '    for congestion control here, since we are only creating calls if we can connect via ESL.
     '''
-    if con.connected() and survey.status != Survey.STATUS_CANCELLED:
+    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
         call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
         con.api(command)
@@ -58,3 +73,31 @@ def schedule_call(survey, dialer, subject, priority):
 def test_task(survey, dialer, subject, priority, date):
     call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
     print('Scheduled call '+ str(call))
+    
+'''
+'    Mirrors get_num_channels in common.lua(s)
+'''
+def get_n_channels(con, dialer):
+    if dialer.type == Dialer.TYPE_PRI:
+        profile = re.match('[\w/\d]+grp(\d+)[\w/\d]+',dialer.dialstring_prefix).groups()[0]
+        profile = "FreeTDM/" + str(profile)
+    else:
+        '''
+        '    SIP
+        '    ASSUMES profile name is same as gateway name
+        '    FS show channels names calls by profile name, not gateway name.
+        '    so if we need multiple gateways in a profile that could be a problem
+        '    if it there is not physical limit to SIP calls, safe to not worry about
+        '    naming the gateway in any particular way
+        '
+        '''
+        profile = re.match('sofia/gateway/([\w\d-]+)',dialer.dialstring_prefix).groups()[0]
+        profile = "sofia/" + str(profile)
+   
+    profile = "show channels like " + profile
+    print("profile is "+profile)
+   
+    e = con.api(profile)
+    chan_txt = e.getBody()
+    n_chans_txt = chan_txt[chan_txt.rindex('total.')-3:chan_txt.rindex('total.')-1]
+    return int(n_chans_txt)
