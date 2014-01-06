@@ -440,27 +440,6 @@ def answer_call(line, answer):
 ************************** UTILS *******************************************
 ****************************************************************************
 '''
-        
-def get_most_recent_interval(dialer):
-    interval = datetime.now()
-    # round up to nearest minute
-    if interval.second != 0 or interval.microsecond != 0:
-        interval = datetime(year=interval.year, month=interval.month, day=interval.day, hour=interval.hour, minute=interval.minute)
-    # go into the future in order to avoid
-    # race conditions with survey.py
-    interval += timedelta(minutes=2)
-        
-    # Locate most recent stack of
-    # scheduled messages
-    interval_mins = dialer.interval_mins or DEF_INTERVAL_MINS
-    nums = get_dialer_numbers(dialer)
-    dates = Call.objects.filter(survey__number__in=nums, survey__broadcast=True, date__gt=interval-timedelta(minutes=interval_mins), date__lte=interval).order_by('date').values('date')
-    dates = [d.values()[0] for d in dates]
-    if dates:
-        interval = dates[0]
-    print("Found most recent interval: "+date_str(interval)) 
-    return interval
-
 '''
 '     Find out if there are any backup calls left to do
 '     Exclude subjects with a complete call, or who have scheduled a call up to max number of backups
