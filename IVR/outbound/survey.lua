@@ -67,9 +67,26 @@ complete_after_idx = tonumber(res[4]);
 local DIALSTRING_PREFIX = "";
 -- suffix isn't used, so don't fetch it.
 local DIALSTRING_SUFFIX = "";
-local dialer = get_table_one_row('ao_dialer', 'id='..res[6], 'dialstring_prefix, channel_vars');
+local dialer = get_table_one_row('ao_dialer', 'id='..res[6], 'dialstring_prefix, channel_vars, country_code, min_number_len');
+local country_code = dialer[3];
+local min_len = dialer[4];
+local phone_num = nil;
+
+freeswitch.consoleLog("info", script_name .. ": country code = " .. tostring(country_code) .. " , minlen = " .. tostring(min_len) .."\n");
+if (country_code ~= nil and country_code ~= '' and min_len ~= nil) then
+	pattern = '('..string.rep('%d', min_len)..'%d*)';			
+	phone_num = string.match(caller, '1?'..country_code..pattern) or string.match(caller, pattern);
+	--freeswitch.consoleLog("info", script_name .. ": country code = " .. country_code .. " , minlen = " .. tostring(min_len) .. " , pattern = " .. pattern .. " , phone_num = " .. phone_num .."\n");
+end
+
+if (phone_num ~= nil) then
+	caller = phone_num;
+else
+	-- default
+	country_code = '';
+end
 if (dialer[1] ~= nil) then
-	DIALSTRING_PREFIX = dialer[1];
+	DIALSTRING_PREFIX = dialer[1] .. country_code;
 end
 CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..',origination_caller_id_name='..destination;
 if (dialer[2] ~= nil and dialer[2] ~= '') then
@@ -121,6 +138,7 @@ function survey_main()
 	prompts = get_prompts(surveyid);
 	
 	-- make the call
+	freeswitch.consoleLog("info", script_name .. CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX .. "\n");
 	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	session:setVariable("caller_id_number", caller)
 	session:setVariable("playback_terminators", "#");
