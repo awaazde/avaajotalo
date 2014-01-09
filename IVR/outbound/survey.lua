@@ -138,7 +138,7 @@ function survey_main()
 	prompts = get_prompts(surveyid);
 	
 	-- make the call
-	freeswitch.consoleLog("info", script_name .. CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX .. "\n");
+	--freeswitch.consoleLog("info", script_name .. CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX .. "\n");
 	session = freeswitch.Session(CALLID_VAR .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	session:setVariable("caller_id_number", caller)
 	session:setVariable("playback_terminators", "#");
