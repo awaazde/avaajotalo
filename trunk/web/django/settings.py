@@ -155,14 +155,31 @@ HAYSTACK_LIMIT_TO_REGISTERED_MODELS = False
 # Celery Settings
 BCAST_INTERVAL_MINS = 3
 BROKER_URL = "django://"
-CELERY_ALWAYS_EAGER = True
+#CELERY_ALWAYS_EAGER = True
 #TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-CELERY_ROUTES = {'otalo.surveys.tasks.schedule_call': {'queue': 'calls'}}
+class CallsRouter(object):
+    def route_for_task(self, task, args=None, kwargs=None):
+        if task == 'otalo.surveys.tasks.schedule_call':
+            dialer = args[1]
+            machine_id = dialer.machine_id or ''
+            return {'queue': 'calls'+str(machine_id)}
+        return None
+    
+CELERY_ROUTES = (CallsRouter(), )
 CELERYBEAT_SCHEDULE = {
     'schedule_by_dialerids': {
         'task': 'otalo.ao.tasks.schedule_bcasts_by_dialers',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
-        'args': (1,),
+        'args': (1,2,3,25,5,6,),
+    },
+    'gws_intl': {
+        'task': 'otalo.ao.tasks.schedule_bcasts_by_basenums',
+        'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS)),
+        'args': (7961555000,),
+    },
+    'streams_bcasts': {
+        'task': 'streamit.tasks.create_schedule_bcasts',
+        'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
     },
 }
 
