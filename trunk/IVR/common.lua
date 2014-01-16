@@ -231,7 +231,7 @@ function recordmessage (forumid, thread, moderated, maxlength, rgt, adminmode, c
    local mediasubdir = get_media_subdir();
    -- add caller digits to prevent name collisions
    local partfilename = mediasubdir..os.time() .. caller:sub(caller:len()-1) .. RECORD_SOUND_EXT;
-   local filename = sd .. partfilename;
+   local filename = recordsd .. partfilename;
 
    repeat
       read(aosd .. "pleaserecord.wav", 1000);
@@ -482,9 +482,9 @@ function get_media_subdir()
 	
 	-- create it if it doesn't already exist
 	if io.open(sd .. subdir,"rb") == nil then
-		os.execute("mkdir -p "..sd..subdir);
+		os.execute("mkdir -p "..recordsd..subdir);
 		-- chmod from the file's root on down
-		os.execute("chmod -R 775 "..sd..year);
+		os.execute("chmod -R 775 "..recordsd..year);
 	end
 	
 	return subdir;
@@ -1153,20 +1153,21 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    -- add callid digits to prevent name collisions
    local mediasubdir = get_media_subdir();
    local partfilename = mediasubdir..os.time() .. callid:sub(callid:len()-1) .. RECORD_SOUND_EXT;
-   local filename = sd .. partfilename;
+   local filename = recordsd .. partfilename;
    local lang = lang or 'eng';
    confirm = tonumber(confirm) or 1;
    local firstiter = true;
+   local recprompts = nil;
    
    if (lang:sub(0,1) == '/') then
-   	  recordsd = lang .. '/';
+   	  recprompts = lang .. '/';
    else
-   	  recordsd = aosd .. lang .. '/';
+   	  recprompts = aosd .. lang .. '/';
    end
    
    repeat
-      if (firstiter == false and io.open(recordsd .. "pleaserecord.wav","rb") ~= nil) then
-	   	  read(recordsd .. "pleaserecord.wav", 1000);
+      if (firstiter == false and io.open(recprompts .. "pleaserecord.wav","rb") ~= nil) then
+	   	  read(recprompts .. "pleaserecord.wav", 1000);
 	  end
       local d = input();
 	  
@@ -1186,9 +1187,9 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
       if (confirm == 1) then
 	      local review_cnt = 0;
 	      while (d ~= "1" and d ~= "2" and d ~= "3") do
-			 read(recordsd .. "hererecorded.wav", 1000);
+			 read(recprompts .. "hererecorded.wav", 1000);
 			 read(filename, 1000);
-			 read(recordsd .. "notsatisfied.wav", 2000);
+			 read(recprompts .. "notsatisfied.wav", 2000);
 			 sleep(6000)
 			 d = input();
 			 review_cnt = check_abort(review_cnt, 3)
@@ -1197,7 +1198,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	     if (d ~= "1" and d ~= "2") then
 		 	 os.remove(filename);
 			 if (d == "3") then
-			    read(recordsd .. "messagecancelled.wav", 500);
+			    read(recprompts .. "messagecancelled.wav", 500);
 			    return d;
 			 end
 	     end
@@ -1260,7 +1261,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
 	   con:execute(query);
    end	
    
-   read(recordsd .. "okrecorded.wav",500);
+   read(recprompts .. "okrecorded.wav",500);
    return d;
 end
 

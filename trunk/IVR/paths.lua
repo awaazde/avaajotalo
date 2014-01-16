@@ -77,6 +77,10 @@ basedir = "/usr/local/freeswitch";
 bsd = basedir .. "/sounds/en/us/callie/";
 
 sd = "/Users/neil/Development/media/";
+-- make this different in case you want to
+-- playback from a different place than record
+-- (for e.g. playback remotely record locally)
+recordsd = sd;
 logfileroot = "/Users/neil/Documents/"
 
 luasql = require "luasql.mysql";
