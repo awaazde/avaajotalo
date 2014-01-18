@@ -1093,15 +1093,12 @@ function play_prompts (prompts)
 	    local oncancel = tonumber(params[OPARAM_ONCANCEL]);
 	    local mfid = tonumber(params[OPARAM_MFID]);
 	    local confirm = tonumber(params[OPARAM_CONFIRM_REC]);
-	    -- kind of a hack, but I don't want to add this
-	    -- to the Survey model. Get the survey lang subdir
-	    -- by stripping the promptfile name. Assumes they are
-	    -- in the home sounds directory of the lang bundle of the same name
-	    local lang = "";
-    	-- get the full path with trailing slash
+		-- assume recording prompts are
+		-- in the same folder as the prompt that
+		-- got us to the recording step
     	freeswitch.consoleLog("info", script_name .. " found path: " .. promptfile .. "\n")
     	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 2;
-    	lang = promptfile:sub(1,pathend);
+    	local lang = promptfile:sub(1,pathend);
 	    freeswitch.consoleLog("info", script_name .. " lang is: " .. lang .. "\n")
 	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid, confirm);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
