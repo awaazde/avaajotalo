@@ -951,15 +951,17 @@ function play_prompts (prompts)
    	  
    	  if (bargein == 1) then
    	  	if (promptfile:sub(0,1) == '/') then
+   	  		-- DEPRECATED: no files should have absolute paths for the sake of remote file access
    	  		read(promptfile, delay, inputlen);
    	  	else
-   	  		read(sursd .. promptfile, delay, inputlen);
+   	  		read(sd .. promptfile, delay, inputlen);
    	  	end
   	  else
   	  	if (promptfile:sub(0,1) == '/') then
+  	  		-- DEPRECATED: no files should have absolute paths for the sake of remote file access
   	  		read_no_bargein(promptfile, delay);
   	  	else
-  			read_no_bargein(sursd .. promptfile, delay);
+  			read_no_bargein(sd .. promptfile, delay);
   		end
    	  end
    	  
@@ -1096,15 +1098,10 @@ function play_prompts (prompts)
 	    -- by stripping the promptfile name. Assumes they are
 	    -- in the home sounds directory of the lang bundle of the same name
 	    local lang = "";
-	    if (promptfile:sub(0,1) == '/') then
-	    	-- get the full path with trailing slash
-	    	freeswitch.consoleLog("info", script_name .. " found abs path: " .. promptfile .. "\n")
-	    	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 2;
-	    	lang = promptfile:sub(1,pathend);
-	    else
-	    	freeswitch.consoleLog("info", script_name .. " found reg path: " .. promptfile .. "\n")
-	    	lang = promptfile:sub(1,promptfile:find('/')-1);
-	    end
+    	-- get the full path with trailing slash
+    	freeswitch.consoleLog("info", script_name .. " found path: " .. promptfile .. "\n")
+    	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 2;
+    	lang = promptfile:sub(1,pathend);
 	    freeswitch.consoleLog("info", script_name .. " lang is: " .. lang .. "\n")
 	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid, confirm);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well

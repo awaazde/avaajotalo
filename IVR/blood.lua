@@ -33,7 +33,7 @@ dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 script_name = "blood.lua";
 
 -- script-specific sounds
-bsd = basedir .. "/scripts/AO/sounds/blood/";
+bsd = sd .. "/forum/blood/";
 
 digits = "";
 arg = {};

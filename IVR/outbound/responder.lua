@@ -163,9 +163,9 @@ function responder_main()
 		-- a responder belongs to multiple lines (then billing the call is an issue)
 		if (row == nil) then
 		   -- default
-		   aosd = basedir .. "/scripts/AO/sounds/eng/";
+		   aosd = sd .. "forum/eng/";
 		else
-		   aosd = basedir .. "/scripts/AO/sounds/" .. row[1] .. "/";
+		   aosd = sd .. "forum/" .. row[1] .. "/";
 		   lineid = row[4];
 		end	
 		

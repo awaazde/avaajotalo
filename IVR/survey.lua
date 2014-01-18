@@ -32,9 +32,7 @@ dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 dofile("/usr/local/freeswitch/scripts/AO/db.lua");
 
 script_name = "survey.lua";
-aosd = basedir .. "/scripts/AO/sounds/";
--- script-specific sounds
-sursd = aosd .. "survey/";
+aosd = sd;
 
 digits = "";
 arg = {};
