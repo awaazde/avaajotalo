@@ -24,7 +24,7 @@ import otalo_utils, stats_by_phone_num
 from otalo.surveys import tasks as surveytasks
 
 SOUND_EXT = ".wav"
-OUTBOUND_SOUNDS_SUBDIR = 'forums/outbound/'
+OUTBOUND_SOUNDS_SUBDIR = 'forum/outbound/'
 # Minimum number of times a caller
 # must have called in to count in outbound broadcast
 # (if getting subjects by log)
