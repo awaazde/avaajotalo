@@ -53,8 +53,24 @@ def schedule_call(survey, dialer, subject, priority):
     '
     '    Note calls piling up due to physical dialing resource downtime (i.e. FS) is *not* a reason
     '    for congestion control here, since we are only creating calls if we can connect via ESL.
+    '
+    '    Have check to make sure Call doesn't already exist. Multiple tasks with the same
+    '    Call params can happen if:
+    '    a) you have multiple dialers spanning the same number range but connected to different
+    '        physical dialers, and the scheduler doesn't check that the same call is schedule across
+    '        different dialers
+    '    b) the calls queue is backed up and the same scheduler attempts to schedule the same call repeatedly
+    '    
+    '    Because of the second reason, it's not enough to keep track of scheduled calls in one rev of
+    '    a scheduler that manages multiple dialers, because on the next rev if the previous task is
+    '    still in the queue, it will get double-scheduled. How can the calls queue get backed up? If
+    '    for some reason the worker on a calls queue goes down but the scheduler stays alive. This is more
+    '    likely to happen with call queues on remote machines.
+    '
+    '    We never want to have a call be double-scheduled, so take a hit and do the db query here.
+    '    Note the query should *not* filter by dialer, since we want to check for the call across all dialers
     '''
-    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
+    if not bool(Call.objects.filter(survey=survey, subject=subject, priority=priority)) and con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
         call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
         con.api(command)
@@ -72,8 +88,9 @@ def schedule_call(survey, dialer, subject, priority):
 
 @shared_task
 def test_task(survey, dialer, subject, priority, date):
-    call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
-    print('Scheduled call '+ str(call))
+    if not bool(Call.objects.filter(survey=survey, subject=subject, priority=priority)):
+        call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=date)
+        print('Scheduled call '+ str(call))
     
 '''
 '    Mirrors get_num_channels in common.lua(s)
