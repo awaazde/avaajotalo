@@ -43,7 +43,7 @@ end
 freeswitch.consoleLog("info", script_name .. " : destination = " .. destination .. "\n");
 -- set the language, check if line is restricted
 line_info = row("SELECT language, open, callback, personalinbox, quota, id, checkpendingmsgs FROM ao_line WHERE number LIKE '%" .. destination .. "%'");
-aosd = basedir .. "/scripts/AO/sounds/" .. line_info[1] .. "/";		
+aosd = sd .. 'forum/' .. line_info[1] .. "/";		
 
 -- responder section-specific sounds
 anssd = aosd .. "answer/";

@@ -73,9 +73,6 @@ GLOBAL_MENU_SEEK_BACK = "7";
 GLOBAL_MENU_REPLAY = "8";
 GLOBAL_MENU_SEEK_FWD = "9";
 GLOBAL_JUMP_MESSAGE=9;
-basedir = "/usr/local/freeswitch";
-bsd = basedir .. "/sounds/en/us/callie/";
-
 sd = "/Users/neil/Development/media/";
 -- make this different in case you want to
 -- playback from a different place than record

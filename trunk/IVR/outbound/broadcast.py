@@ -24,6 +24,7 @@ import otalo_utils, stats_by_phone_num
 from otalo.surveys import tasks as surveytasks
 
 SOUND_EXT = ".wav"
+OUTBOUND_SOUNDS_SUBDIR = 'forums/outbound/'
 # Minimum number of times a caller
 # must have called in to count in outbound broadcast
 # (if getting subjects by log)
@@ -112,7 +113,7 @@ def subjects_by_log(line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
 # and you want to bcast the whole thread (flattened)
 def thread(messageforum, template, subjects, responseprompt, num_backups, start_date, bcastname=None):
     line = messageforum.forum.line_set.all()[0]
-    language = line.language
+    language = OUTBOUND_SOUNDS_SUBDIR + line.language
     if line.outbound_number:
         num = line.outbound_number
     else:
@@ -168,7 +169,7 @@ def thread(messageforum, template, subjects, responseprompt, num_backups, start_
     
     #fill in the missing prompt with the given thread
     order = thread_start
-    origpost = Prompt(file=messageforum.message.file.path, order=order, bargein=True, survey=bcast)
+    origpost = Prompt(file=messageforum.message.file.name, order=order, bargein=True, survey=bcast)
     origpost.save()
     origpost_opt = Option(number="1", action=Option.NEXT, prompt=origpost)
     origpost_opt.save()
@@ -189,7 +190,7 @@ def thread(messageforum, template, subjects, responseprompt, num_backups, start_
         responseintro_opt2.save()
         order += 1
         
-        responsecontent = Prompt(file=response.message.file.path, order=order, bargein=True, survey=bcast)
+        responsecontent = Prompt(file=response.message.file.name, order=order, bargein=True, survey=bcast)
         responsecontent.save()
         responsecontent_opt = Option(number="1", action=Option.NEXT, prompt=responsecontent)
         responsecontent_opt.save()
@@ -387,6 +388,7 @@ def answer_call(line, answer):
         
     now = datetime.now()
     num = line.outbound_number or line.number
+    language = OUTBOUND_SOUNDS_SUBDIR + line.language
         
     s = Survey.objects.create(broadcast=True, name=Survey.ANSWER_CALL_DESIGNATOR +'_' + str(asker), complete_after=0, number=num, created_on=now, backup_calls=1)
     s.subjects.add(asker)
@@ -396,29 +398,29 @@ def answer_call(line, answer):
     order = 1
     
     # welcome
-    welcome = Prompt.objects.create(file=line.language+"/welcome_responsecall.wav", order=order, bargein=True, survey=s)
+    welcome = Prompt.objects.create(file=language+"/welcome_responsecall.wav", order=order, bargein=True, survey=s)
     welcome_opt = Option.objects.create(number="", action=Option.NEXT, prompt=welcome)
     welcome_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=welcome)
     order += 1
     
-    original = Prompt.objects.create(file=parent.file.path, order=order, bargein=True, survey=s)
+    original = Prompt.objects.create(file=parent.file.name, order=order, bargein=True, survey=s)
     original_opt = Option.objects.create(number="", action=Option.NEXT, prompt=original)
     original_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=original)
     order += 1
     
-    response = Prompt.objects.create(file=line.language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
+    response = Prompt.objects.create(file=language+"/response_responsecall.wav", order=order, bargein=True, survey=s)
     response_opt = Option.objects.create(number="", action=Option.NEXT, prompt=response)
     response_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=response)
     order += 1
         
 
-    a = Prompt.objects.create(file=answer.message.file.path, order=order, bargein=True, survey=s)
+    a = Prompt.objects.create(file=answer.message.file.name, order=order, bargein=True, survey=s)
     a_opt = Option.objects.create(number="", action=Option.NEXT, prompt=a)
     a_opt2 = Option.objects.create(number="1", action=Option.NEXT, prompt=a)
     order += 1
     
     if answer.forum.respondtoresponse_allowed:
-        record = Prompt.objects.create(file=line.language+"/record_responsecall.wav", order=order, bargein=True, survey=s, delay=3000)
+        record = Prompt.objects.create(file=language+"/record_responsecall.wav", order=order, bargein=True, survey=s, delay=3000)
         record_opt = Option.objects.create(number="", action=Option.GOTO, prompt=record)
         param = Param.objects.create(option=record_opt, name=Param.IDX, value=order+2)
         record_opt2 = Option.objects.create(number="1", action=Option.RECORD, prompt=record)
@@ -426,12 +428,12 @@ def answer_call(line, answer):
         param3 = Param.objects.create(option=record_opt2, name=Param.ONCANCEL, value=order+2)
         order += 1
         
-        recordthanks = Prompt.objects.create(file=line.language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s, delay=0)
+        recordthanks = Prompt.objects.create(file=language+"/thankyourecord_responsecall.wav", order=order, bargein=True, survey=s, delay=0)
         recordthanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=recordthanks)
         order += 1
     
     # thanks
-    thanks = Prompt.objects.create(file=line.language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
+    thanks = Prompt.objects.create(file=language+"/thankyou_responsecall.wav", order=order, bargein=True, survey=s)
     thanks_opt = Option.objects.create(number="", action=Option.NEXT, prompt=thanks)
     order += 1
             
