@@ -74,9 +74,6 @@ GLOBAL_MENU_REPLAY = "8";
 GLOBAL_MENU_SEEK_FWD = "9";
 GLOBAL_JUMP_MESSAGE=9;
 
-FORWARD_DISALLOW_BALANCE_THRESH = 0;
-ALLOW_NON_ACCOUNT_FORWARDING = false;
-
 sd = "/Users/neil/Development/media/";
 -- make this different in case you want to
 -- playback from a different place than record
@@ -84,8 +81,8 @@ sd = "/Users/neil/Development/media/";
 recordsd = sd;
 logfileroot = "/Users/neil/Documents/"
 
-luasql = require "luasql.mysql";
-env = assert (luasql.mysql());
+luasql = require "luasql.odbc";
+env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 assert (con:execute ("use otalo"));
 

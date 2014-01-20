@@ -47,6 +47,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 PHONE_NUM_TIMEOUTS = 3;
 DEF_INPUT_DELAY = 4000;
 PROMPT_SOUND_EXT = '.wav';
+ALLOW_FREE_FORWARDING = true;
 
 -- Should be consistent with Forum model's constants
 NO_FORWARD = 0;
@@ -108,7 +109,7 @@ function forward(userid, messageid, forumid, surveyid, promptsd)
 	local d = nil;
 	
 	-- check balance before proceeding
-	if (is_sufficient_balance(userid)) then
+	if (ALLOW_FREE_FORWARDING == true or is_sufficient_balance(userid)) then
 		-- do this right away and add recipients in real time
 		-- because we don't know when the hangup will happen
 		local forwardid = create_forward_request(userid, messageid, forumid, surveyid);
