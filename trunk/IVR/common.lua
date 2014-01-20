@@ -388,31 +388,10 @@ function is_sufficient_balance(userid)
 		-- way to create a user
 		return false;
 	else
-		-- check account balance
 		local balance = get_table_field("ao_user", "balance", "id="..userid);
 		balance = tonumber(balance);
-		if (balance == nil) then
-			-- non-account holder
-			return ALLOW_NON_ACCOUNT_FORWARDING;
-		else
-			balance = round(balance,2);
-			return balance > FORWARD_DISALLOW_BALANCE_THRESH;
-		end
+		return balance ~= nil and (balance > 0 or balance == -1);
 	end
-end
-
---[[
--------------------------------------------
-------------- round ----------------------- 
--------------------------------------------
-
-	Round the given number to the given
-	number of decimal places
--------------------------------------------
---]]
-function round(num, idp)
-  local mult = 10^(idp or 0);
-  return math.floor(num * mult + 0.5) / mult;
 end
 
 --[[
