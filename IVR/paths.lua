@@ -73,6 +73,10 @@ GLOBAL_MENU_SEEK_BACK = "7";
 GLOBAL_MENU_REPLAY = "8";
 GLOBAL_MENU_SEEK_FWD = "9";
 GLOBAL_JUMP_MESSAGE=9;
+
+FORWARD_DISALLOW_BALANCE_THRESH = 0;
+ALLOW_NON_ACCOUNT_FORWARDING = false;
+
 sd = "/Users/neil/Development/media/";
 -- make this different in case you want to
 -- playback from a different place than record
