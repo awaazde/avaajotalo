@@ -466,11 +466,13 @@ def record_or_upload_message(request):
             wav_file_path = relative_path[:relative_path.rfind('.')] + '.wav'
             mf.message.file = wav_file_path
             mf.message.save()
-            mf = get_list_or_404(Message_forum, pk=mf.id)
-            return send_response(mf, {'message':{'fields':()}, 'forum':{}})
-        else:
-            #compand_audio(file_path)
-            return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(mf.id,)))
+        
+        # do this after createmessage so that an answer call will use the wav file
+        # which was just saved above
+        if parent and mf.status == Message_forum.STATUS_APPROVED and mf.forum.response_calls:
+            broadcast.answer_call(f.line_set.all()[0], mf)
+            
+        return HttpResponseRedirect(reverse('otalo.ao.views.messageforum', args=(mf.id,)))
     else:
         response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+',"message":"content required"}]')
         response['Pragma'] = "no cache"
@@ -502,8 +504,6 @@ def create_wav_mp3_companion(file_path):
         command = "ffmpeg -y -i %s"%(file_path) + " -f wav -acodec pcm_mulaw -ar 8000 -ac 1 %s"%(to_path)
         subprocess.call(command, shell=True)
 
-    
-
 def createmessage(request, forum, content, author, parent=None, date=None):
     t = datetime.now()
 
@@ -528,8 +528,6 @@ def createmessage(request, forum, content, author, parent=None, date=None):
     
     if parent:
         add_child(msg, parent.message)
-        if msg_forum.status == Message_forum.STATUS_APPROVED and msg_forum.forum.response_calls:
-            broadcast.answer_call(forum.line_set.all()[0], msg_forum)
 
     return msg_forum
 
