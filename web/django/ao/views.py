@@ -252,6 +252,7 @@ def updatemessage(request):
     
     if selected_tags_input != '':
         selected_tags = selected_tags_input.split(TAG_SEPERATOR);
+        selected_tags = [t.encode('ascii', 'ignore') for t in selected_tags]
         for sel_tag in selected_tags:
             # getting all the tags reference having tag name
             tag_refs = Tag.objects.filter(tag=sel_tag)
