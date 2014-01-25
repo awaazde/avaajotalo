@@ -1163,7 +1163,7 @@ function recordsurveyinput (callid, promptid, lang, maxlength, mfid, confirm)
    end
    
    repeat
-      if (firstiter == false and io.open(recprompts .. "pleaserecord.wav","rb") ~= nil) then
+      if (firstiter == false) then
 	   	  read(recprompts .. "pleaserecord.wav", 1000);
 	  end
       local d = input();
