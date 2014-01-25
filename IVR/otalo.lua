@@ -320,12 +320,7 @@ function mainmenu ()
    else
 	   for i,fname in ipairs(forumnames) do
 	      read(aosd .. "listento_pre.wav", 0);
-	      if io.open(aosd .. fname,"rb") ~= nil then
-	      	read(aosd .. fname, 0);
-	      else
-	      	local forumname = fname:sub(1,-5)
-	      	speak(forumname);
-	      end
+	      read(aosd .. fname, 0);
 	      read(aosd .. "listento_post.wav", 0);
 	      read(aosd .. "digits/" .. i .. ".wav", 500);
 	   end
@@ -360,12 +355,7 @@ function mainmenu ()
    if (d ~= nil and d > 0 and d <= numforums) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
       read(aosd .. "okyouwant_pre.wav", 0);
-      if io.open(aosd .. forumnames[d],"rb") ~= nil then
-      	read(aosd .. forumnames[d], 0);
-      else
-      	local forumname = forumnames[d]:sub(1,-5)
-      	session:speak(forumname);
-      end
+      read(aosd .. forumnames[d], 0);
       read(aosd .. "okyouwant_post.wav", 0);
       playforum(forumids[d]);
    elseif (d == chkrepliesidx and personal_inbox == 1) then
@@ -379,11 +369,7 @@ function mainmenu ()
       -- leave the flag as 'n'
       playmessages(getpendingmessages(lineid), 'n');
    elseif (d == responderidx and responder) then
-   	  if (io.open(aosd .. "okresponder.wav","rb") ~= nil) then
-   	  	read(aosd .. "okresponder.wav", 0);
-   	  else
-   	  	read(aosd .. "okresponder.mp3", 0);
-   	  end
+   	  read(aosd .. "okresponder.wav", 0);
       input();
    	  local rmsgs = get_responder_messages(userid, lineid);
       play_responder_messages(userid, rmsgs, adminforums);
