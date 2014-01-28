@@ -186,9 +186,9 @@ CELERYBEAT_SCHEDULE = {
     },   
     'update_search_index': {
         'task': 'otalo.ao.tasks.update_search_index',
-        'schedule': crontab(minute='01', hour='7-22'),
+        'schedule': crontab(minute='01', hour='7,19'),
         # interval_mins: should match how often the cron runs
-        'args': (60,),
+        'args': (12,),
     },           
     'gws_intl': {
         'task': 'otalo.ao.tasks.schedule_bcasts_by_basenums',

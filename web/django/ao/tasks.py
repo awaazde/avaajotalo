@@ -75,5 +75,5 @@ def convert_audio(interval_mins):
 '    Update haystack search index
 '''
 @shared_task
-def update_search_index(interval_mins):
-    update_index.Command().handle()
+def update_search_index(interval_hours):
+    update_index.Command().handle(age=interval_hours)
