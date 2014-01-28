@@ -38,9 +38,6 @@ BACKUP_THRESH_MINS = 30
 
 BCAST_BUFFER_SECS = 0 * 60
 
-# should match the interval of the cron running this script
-ANSWER_CALL_INTERVAL_HOURS = 1
-
 def subjects_by_numbers(numbers):
     subjects = []
     
@@ -365,8 +362,8 @@ def schedule_bcasts(time=None, dialers=None):
 ************************** ANSWER_CALL RELATED *****************************
 ****************************************************************************
 '''
-def check_unsent_responses():
-    interval = timedelta(hours=ANSWER_CALL_INTERVAL_HOURS)
+def check_unsent_responses(interval_hours):
+    interval = timedelta(hours=interval_hours)
     now = datetime.now()
     # Get responses in the last INTERVAL_HOURS
     responses = Message_forum.objects.filter(message__lft__gt=1, message__date__gte=now-interval, status=Message_forum.STATUS_APPROVED)
@@ -480,9 +477,7 @@ def date_str(date):
 ****************************************************************************
 '''
 if __name__=="__main__":
-    if "--answer_calls" in sys.argv: 
-        check_unsent_responses()
-    elif "--main" in sys.argv:        
+    if "--main" in sys.argv:        
         print("NONE")
     else:
         print("Command not found.")

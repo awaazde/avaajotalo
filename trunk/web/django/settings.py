@@ -175,6 +175,8 @@ CELERYBEAT_SCHEDULE = {
     'response_calls': {
         'task': 'otalo.ao.tasks.response_calls',
         'schedule': crontab(minute='01', hour='8-21'),
+        # interval_hours: should match how often the cron runs
+        'args': (1,),
     },                   
     'gws_intl': {
         'task': 'otalo.ao.tasks.schedule_bcasts_by_basenums',
