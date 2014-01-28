@@ -54,3 +54,10 @@ def schedule_bcasts_by_basenums(*numbers):
 def schedule_bcasts(time=None, dialers=None):
     broadcast.schedule_bcasts(time, dialers)
     
+'''
+'    To send responses that were not triggered throug
+'    the web (i.e. an admin records a response over IVR)
+'''
+@shared_task
+def response_calls():
+    broadcast.check_unsent_responses()
