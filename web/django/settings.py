@@ -172,6 +172,10 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
         'args': (1,2,3,25,5,6,),
     },
+    'response_calls': {
+        'task': 'otalo.ao.tasks.response_calls',
+        'schedule': crontab(minute='01', hour='8-21'),
+    },                   
     'gws_intl': {
         'task': 'otalo.ao.tasks.schedule_bcasts_by_basenums',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS)),
@@ -179,6 +183,10 @@ CELERYBEAT_SCHEDULE = {
     },
     'streams_bcasts': {
         'task': 'streamit.tasks.create_schedule_bcasts',
+        'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
+    },
+    'create_xact_bcasts': {
+        'task': 'xact.tasks.create_bcasts',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
     },
 }
