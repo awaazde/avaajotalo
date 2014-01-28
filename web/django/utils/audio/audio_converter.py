@@ -19,10 +19,6 @@ import os, time, subprocess
 from datetime import datetime, timedelta
 from ao.models import Message 
 
-
-# This should match with how often the cron runs
-INTERVAL_MINS = 10
-
 def convert_to_mp3(file_path):
     #converting audio file to mp3
     if ".wav" in file_path:
@@ -31,8 +27,8 @@ def convert_to_mp3(file_path):
         subprocess.call(command, shell=True)
         print "converted %s"%(to_path)
     
-if __name__ == "__main__":
-    interval = datetime.now() - timedelta(minutes=INTERVAL_MINS)
+def main(interval_mins):
+    interval = datetime.now() - timedelta(minutes=interval_mins)
     #iterating thorough all the message objects
     for m in Message.objects.filter(date__gte=interval):
         print('found message '+str(m) + ' file is '+ m.file.path)

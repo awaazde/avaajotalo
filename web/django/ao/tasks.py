@@ -15,6 +15,8 @@
 #===============================================================================
 from datetime import datetime, timedelta
 from celery import shared_task
+from haystack.management.commands import update_index
+from otalo.utils.audio import audio_converter
 import broadcast
 from otalo.ao.models import Dialer
 
@@ -61,4 +63,17 @@ def schedule_bcasts(time=None, dialers=None):
 @shared_task
 def response_calls(interval_hours):
     broadcast.check_unsent_responses(interval_hours)
-    broadcast.check_unsent_responses()
+
+'''
+'    Convert mp3 to wav files
+'''
+@shared_task
+def convert_audio(interval_mins):
+    audio_converter.main(interval_mins)
+    
+'''
+'    Update haystack search index
+'''
+@shared_task
+def update_search_index(interval_mins):
+    update_index.Command().handle()
