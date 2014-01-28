@@ -61,8 +61,8 @@ def schedule_bcasts(time=None, dialers=None):
 '    the web (i.e. an admin records a response over IVR)
 '''
 @shared_task
-def response_calls(interval_hours):
-    broadcast.check_unsent_responses(interval_hours)
+def response_calls(interval_mins):
+    broadcast.check_unsent_responses(interval_mins)
 
 '''
 '    Convert mp3 to wav files
