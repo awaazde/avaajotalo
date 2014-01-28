@@ -362,8 +362,8 @@ def schedule_bcasts(time=None, dialers=None):
 ************************** ANSWER_CALL RELATED *****************************
 ****************************************************************************
 '''
-def check_unsent_responses(interval_hours):
-    interval = timedelta(hours=interval_hours)
+def check_unsent_responses(interval_mins):
+    interval = timedelta(minutes=interval_mins)
     now = datetime.now()
     # Get responses in the last INTERVAL_HOURS
     responses = Message_forum.objects.filter(message__lft__gt=1, message__date__gte=now-interval, status=Message_forum.STATUS_APPROVED)

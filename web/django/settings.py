@@ -175,8 +175,8 @@ CELERYBEAT_SCHEDULE = {
     'response_calls': {
         'task': 'otalo.ao.tasks.response_calls',
         'schedule': crontab(minute='01', hour='8-21'),
-        # interval_hours: should match how often the cron runs
-        'args': (1,),
+        # interval_mins: should match how often the cron runs
+        'args': (60,),
     },      
     'convert_audio': {
         'task': 'otalo.ao.tasks.convert_audio',
@@ -187,7 +187,7 @@ CELERYBEAT_SCHEDULE = {
     'update_search_index': {
         'task': 'otalo.ao.tasks.update_search_index',
         'schedule': crontab(minute='01', hour='7,19'),
-        # interval_mins: should match how often the cron runs
+        # interval_hours: should match how often the cron runs
         'args': (12,),
     },           
     'gws_intl': {
