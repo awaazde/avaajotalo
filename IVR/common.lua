@@ -36,9 +36,6 @@ function hangup()
    		local query = "UPDATE surveys_call SET duration="..callduration.." WHERE id="..callid;
 	    con:execute(query);
 	    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-   else
-   		-- for debugging purposes
-   		freeswitch.consoleLog("info", script_name .. " *hangup*: callid is " .. tostring(callid) .. " callstarttime is ".. tostring(callstarttime) .."\n");
    end
    
    -- cleanup
