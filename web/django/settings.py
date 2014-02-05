@@ -200,7 +200,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS)),
     },
     'streams_schedule_bcasts': {
-        'task': 'streamit.tasks.schedule_bcasts',
+        'task': 'streamit.tasks.schedule_all_bcasts',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
     },
     'create_xact_bcasts': {
