@@ -80,9 +80,7 @@ div.qform
 
 </style>
 {% endblock %}
-{% block pretitle %}
-<p class="offset11"><a href="{% settings_value "PROJECT_MOUNT_POINT" %}/logout">{% trans 'Log out' %}</a></p>
-{% endblock %}
+
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
    	<form action="{% url "awaazde.console.views.createsurvey" %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">

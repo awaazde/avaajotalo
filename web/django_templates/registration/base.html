@@ -12,6 +12,7 @@
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
 </head>
 {% load i18n %}
+{% load common %}
 
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
 
@@ -24,7 +25,7 @@
         <div id="branding">
         {% block branding %}{% endblock %}
         </div>
-        {% if user.is_authenticated and user.is_staff %}
+        {% if user.is_authenticated%}
         <div id="user-tools">
             {% trans 'Welcome,' %}
             <strong>{% firstof user.first_name user.username %}</strong>.
@@ -33,20 +34,28 @@
                 {% if docsroot %}
                     <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
                 {% endif %}
-                {% url "admin:password_change" as password_change_url %}
-                {% if password_change_url %}
-                    <a href="{{ password_change_url }}">
-                {% else %}
-                    <a href="{{ root_path }}password_change/">
-                {% endif %}
-                {% trans 'Change password' %}</a> /
-                {% url "admin:logout" as logout_url %}
-                {% if logout_url %}
-                    <a href="{{ logout_url }}">
-                {% else %}
-                    <a href="{{ root_path }}logout/">
-                {% endif %}
-                {% trans 'Log out' %}</a>
+                
+                
+                {% if user.is_staff %} 
+	                {% url "admin:password_change" as password_change_url %}
+	                {% if password_change_url %}
+	                    <a href="{{ password_change_url }}">
+	                {% else %}
+	                    <a href="{{ root_path }}password_change/">
+	                {% endif %}
+	                {% trans 'Change password' %}</a> /
+	                
+	                {% url "admin:logout" as logout_url %}
+	                {% if logout_url %}
+	                    <a href="{{ logout_url }}">
+	                {% else %}
+	                    <a href="{{ root_path }}logout/">
+	                {% endif %}
+	                {% trans 'Log out' %}</a>
+	            {% else %}
+	            	<a href="{% settings_value "PROJECT_MOUNT_POINT" %}/logout">{% trans 'Log out' %}</a>
+				{% endif %}
+				
             {% endblock %}
         </div>
         {% endif %}
