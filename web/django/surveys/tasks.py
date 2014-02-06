@@ -24,7 +24,7 @@ from ESL import *
 
 
 BCAST_SCRIPT= 'AO/outbound/survey.lua'
-BCAST_ESL_GAP_SECS = .3
+BCAST_ESL_GAP_SECS = .5
 RETRY_COUNTDOWN_SECS = 120
    
 @shared_task
