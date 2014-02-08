@@ -203,10 +203,6 @@ CELERYBEAT_SCHEDULE = {
         'task': 'awaazde.streamit.tasks.schedule_all_bcasts',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
     },
-    'create_xact_bcasts': {
-        'task': 'awaazde.xact.tasks.create_bcasts',
-        'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
-    },
 }
 
 STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
