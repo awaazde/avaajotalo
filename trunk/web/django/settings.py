@@ -222,6 +222,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap'
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "signup@awaaz.de"
+EMAIL_HOST_PASSWORD = 'xxx'
+DEFAULT_FROM_EMAIL = 'Awaaz.De Team <signup@awaaz.de>'
+SERVER_EMAIL = EMAIL_HOST_USER
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REPORTS_ROOT = '/Users/neil/Documents/'
 '''
