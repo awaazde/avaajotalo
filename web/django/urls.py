@@ -30,7 +30,14 @@ urlpatterns = patterns('',
 
    # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
+    (r'^accounts/', include('django.contrib.auth.urls')),
     (r'^accounts/login/$', 'django.contrib.auth.views.login', {'authentication_form': AuthenticationForm}),
+    (r'^accounts/password/reset/$','django.contrib.auth.views.password_reset', {'post_reset_redirect' : '/accounts/password/reset/done/'}),
+    (r'^accounts/password/reset/done/$',
+        'django.contrib.auth.views.password_reset_done'),
+    (r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', 'django.contrib.auth.views.password_reset_confirm', {'post_reset_redirect' : '/accounts/password/done/'}),
+    (r'^accounts/password/done/$', 
+        'django.contrib.auth.views.password_reset_complete'),
     (r'^logout/$', 'otalo.views.log_out'),
 
 )
