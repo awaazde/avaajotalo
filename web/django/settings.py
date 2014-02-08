@@ -196,15 +196,15 @@ CELERYBEAT_SCHEDULE = {
         'args': (7961555000,),
     },
     'streams_create_bcasts': {
-        'task': 'streamit.tasks.create_bcasts',
+        'task': 'awaazde.streamit.tasks.create_bcasts',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS)),
     },
     'streams_schedule_bcasts': {
-        'task': 'streamit.tasks.schedule_all_bcasts',
+        'task': 'awaazde.streamit.tasks.schedule_all_bcasts',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
     },
     'create_xact_bcasts': {
-        'task': 'xact.tasks.create_bcasts',
+        'task': 'awaazde.xact.tasks.create_bcasts',
         'schedule': crontab(minute='*/'+str(BCAST_INTERVAL_MINS), hour='8-21'),
     },
 }
