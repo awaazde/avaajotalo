@@ -131,7 +131,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'crispy_forms',
     'haystack',
-    'streamit',
+    'awaazde.streamit',
     'awaazde.console',
     'awaazde.xact',
     'rest_framework',
