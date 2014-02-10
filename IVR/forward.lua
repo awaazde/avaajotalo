@@ -117,11 +117,19 @@ function forward(userid, messageid, forumid, surveyid, promptsd)
 			read_phone_num(nil, promptsd);
 			d = input();
 			if (d ~= nil and d ~= "") then
-				add_forward_recipient(forwardid, d)
-				play_prompt("okforwarded", nil, promptsd);
-				-- ignore any input during confirmation
-				input();
-				num_recipients = num_recipients + 1;
+				-- validate 10-digit number (no stars or hashes)
+				if (string.match(d,'%d%d%d%d%d%d%d%d%d%d') == d) then
+					add_forward_recipient(forwardid, d)
+					play_prompt("okforwarded", nil, promptsd);
+					-- ignore any input during confirmation
+					input();
+					num_recipients = num_recipients + 1;
+				else
+					play_prompt("invalidnumber", nil, promptsd);
+					-- ignore any input during confirmation
+					input();
+				end
+				
 			else
 				-- if user is unable to successfully add a number, stop prompting
 				break;
