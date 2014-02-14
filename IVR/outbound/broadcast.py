@@ -30,8 +30,6 @@ OUTBOUND_SOUNDS_SUBDIR = 'forum/outbound/'
 # (if getting subjects by log)
 DEFAULT_CALL_THRESHOLD = 2
 
-DEF_INTERVAL_MINS = 5
-
 # Wait at least this many
 # mins before sending a backup call
 BACKUP_THRESH_MINS = 30
