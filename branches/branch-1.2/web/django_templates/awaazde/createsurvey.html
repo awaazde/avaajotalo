@@ -43,7 +43,7 @@ input[name="submit"] {
 	padding: 4px 10px; 
 }
 
-input[name="refresh"]{
+input[name="refresh"], input[name="load_survey"]{
 	background: #5BB75B;
 	border-style: solid;
 	border-color: #5BB75B;
@@ -78,11 +78,21 @@ div.qform
 	margin: 10px;
 }
 
+.alert {
+	margin-top: 30px;
+	margin-bottom: 50px;
+}
+
+.prompt_file {
+	clear: both;
+}
+
 </style>
 {% endblock %}
 
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
+	{% if error %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ error }}</strong></div>{% endif %}
    	<form action="{% url "awaazde.console.views.createsurvey" %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">
    		{% crispy createform %}
    		{% if question_formset %}
@@ -261,9 +271,9 @@ div.qform
 				var opt_type = {{ opts.type }};
 				var $advanced = $parent_form.find("input[name*='advanced'][value='"+opt_type+"']");
 				$advanced.attr('checked', true).trigger('change');
-				// init the original skip rul with the first vals 
-				$('#id_form-'+formIdx+'-skip_rule_q').val({{opts.firstq}}-1)
-				$('#id_form-'+formIdx+'-skip_rule_val').val({{opts.firstval}}-1)
+				// init the original skip rul with the first vals
+				$('#id_form-'+formIdx+'-skip_rule_q').val({{opts.firstq}})
+				$('#id_form-'+formIdx+'-skip_rule_val').val({{opts.firstval}})
 				if (opt_type == ADVANCED_OPTION_TYPE_SKIP)
 				{
 					{% for q, val in opts.rules.items %}
@@ -282,6 +292,31 @@ div.qform
 				}
 				
 			{% endfor %}
+			
+			
+			{% if prompt_files %}
+				{% for fileIdx, file in prompt_files.items %}
+					var fileLIdx = {{ fileIdx }};
+					{% if file.is_alt %}
+						var innerAltHTML = '';
+						{% for altFileIdx, altFile in file.alt_prompt_data.items %}
+							{% if altFile.file_exists %}
+								innerAltHTML += '<a href="{{altFile.file_path}}" class="prompt_file pull-right">{{altFile.file_name}}</a>';
+							{% else %}
+								innerAltHTML += '<span class="prompt_file pull-right">{{altFile.file_name}} cannot be found</span>';
+							{% endif %}
+						{% endfor %}
+						fileLIdx.innerHTML = innerAltHTML; 
+					{% else %}
+						{% if file.file_exists %}
+							fileLIdx.innerHTML = '<a href="{{file.file_path}}" class="prompt_file pull-right">{{file.file_name}}</a>';
+						{% else %}
+							fileLIdx.innerHTML = '<span class="prompt_file pull-right">{{file.file_name}} cannot be found</span>';
+						{% endif %}
+					{% endif %}
+				{% endfor %}	
+			{% endif %}	
+			
    		{% endif %}
    	{% endif %}
 
