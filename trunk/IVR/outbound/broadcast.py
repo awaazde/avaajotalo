@@ -38,27 +38,26 @@ BCAST_BUFFER_SECS = 0 * 60
 
 def subjects_by_numbers(numbers):
     subjects = []
+    # clean up the numbers, but don't limit to 10-digit (to alllow int'l bcasts)
+    numbers = [number.encode('ascii', 'ignore').strip() for number in numbers]
+    filter(lambda n: n != '', numbers)
     
-    for number in numbers:
-        number = number.strip()
-        # allow variable length numbers
-        # on bcast
-        #number = number[-10:]
-        if number == '':
-            continue
-        u = User.objects.filter(number=number)
-        if bool(u) and u[0].allowed == 'n':
-            continue
-        
-        s = Subject.objects.filter(number = number)
-        if not bool(s):
-            s = Subject(number=str(number))
-            #print ("adding subject " + str(s))
-            s.save()
-            subjects.append(s)
+    # filter out black-listed numbers
+    disallowed = User.objects.filter(number__in=numbers, allowed='n').values('number')
+    disallowed = [n.values()[0] for n in disallowed]
+    numbers = list(set(numbers) - set(disallowed))
+    
+    existing = Subject.objects.filter(number__in=numbers)
+    existing_dict = {}
+    for s in existing:
+        existing_dict[s.number] = s
+    for n in numbers:
+        if n in existing_dict:
+            subjects.append(existing_dict[n])
         else:
-            subjects.append(s[0])
-
+            s = Subject.objects.create(number=number)
+            subjects.append(s)
+            
     return subjects
 
 def subjects_by_tags(tags, line):
