@@ -55,7 +55,7 @@ def subjects_by_numbers(numbers):
         if n in existing_dict:
             subjects.append(existing_dict[n])
         else:
-            s = Subject.objects.create(number=number)
+            s = Subject.objects.create(number=n)
             subjects.append(s)
             
     return subjects
