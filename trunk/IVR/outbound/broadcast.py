@@ -266,6 +266,7 @@ def schedule_bcasts(time=None, dialers=None):
     if not dialers:
         dialers = Dialer.objects.all()
     
+    scheduled = []
     for dialer in dialers:
         bcasttime = time
         if bcasttime is None:
@@ -337,6 +338,11 @@ def schedule_bcasts(time=None, dialers=None):
         
         num_scheduled = 0
         for survey, subject in flat:
+            # don't schedule a subject multiple times across
+            # dialers. Can happen if the subject's survey
+            # is attached to multiple dialers
+            if subject in scheduled:
+                continue
             # assign calls up to maximum allowable in one burst
             if num_scheduled >= dialer.max_parallel_out:
                 break
@@ -352,6 +358,7 @@ def schedule_bcasts(time=None, dialers=None):
                 
             surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(survey, dialer, subject, priority)
             #surveytasks.test_task.s().delay(survey, dialer, subject, priority, bcasttime)
+            scheduled.append(subject)
             num_scheduled += 1
 
 '''
