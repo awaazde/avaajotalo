@@ -32,15 +32,16 @@ def send_sms_from_line(from_line, recipients, content, date=None):
     
 def send_sms(config, recipients, content, sender, date=None):
     if date:
-        msg = SMSMessage(sender=sender,sent_on=date,text=content)
+        msg = SMSMessage.objects.create(sender=sender,sent_on=date,text=content)
     else:
-        msg = SMSMessage(sender=sender,text=content)
-    msg.save()
-    recipients_str = ''
+        msg = SMSMessage.objects.create(sender=sender,text=content)
+        
     for u in recipients:
         msg.recipients.add(u)
-        recipients_str += (config.country_code or '')+ u.number +','
-    recipients_str = recipients_str[:-1]
+        
+    recipients_str = [(config.country_code or '')+ u.number for u in recipients]
+    recipients_str = ",".join(recipients_str)
+        
     data = {config.to_param_name:recipients_str, config.text_param_name:content}
     if date and config.date_param_format:
         date_str = date.strftime(config.date_param_format)
@@ -50,8 +51,8 @@ def send_sms(config, recipients, content, sender, date=None):
     for param in params:
         data[param.name] = param.value
         
-    http = httplib2.Http()
-    resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
+    #http = httplib2.Http()
+    #resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
     return True
@@ -86,8 +87,8 @@ def send_multiple_sms(config, recipients, texts, sender, date=None):
     for param in params:
         data[param.name] = param.value
         
-    http = httplib2.Http()
-    resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
+    #http = httplib2.Http()
+    #resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
     return True
