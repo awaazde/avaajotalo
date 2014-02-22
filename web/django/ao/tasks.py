@@ -24,7 +24,7 @@ from otalo.ao.models import Dialer
 '    Helper function to run periodic tasks with the scheduler
 '    Don't run as a subtask since it's just a helper
 '''
-@shared_task
+@shared_task(time_limit=300)
 def schedule_bcasts_by_dialers(*dialerids):
     dialers = Dialer.objects.all()
     if dialerids:
