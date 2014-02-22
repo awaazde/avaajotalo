@@ -51,8 +51,8 @@ def send_sms(config, recipients, content, sender, date=None):
     for param in params:
         data[param.name] = param.value
         
-    #http = httplib2.Http()
-    #resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
+    http = httplib2.Http()
+    resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
     return True
@@ -87,8 +87,8 @@ def send_multiple_sms(config, recipients, texts, sender, date=None):
     for param in params:
         data[param.name] = param.value
         
-    #http = httplib2.Http()
-    #resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
+    http = httplib2.Http()
+    resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
     return True
