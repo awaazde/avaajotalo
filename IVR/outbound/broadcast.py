@@ -49,15 +49,23 @@ def subjects_by_numbers(numbers):
     
     existing = Subject.objects.filter(number__in=numbers)
     existing_dict = {}
+    new_subjects = []
     for s in existing:
         existing_dict[s.number] = s
     for n in numbers:
         if n in existing_dict:
             subjects.append(existing_dict[n])
         else:
-            s = Subject.objects.create(number=n)
-            subjects.append(s)
-            
+            new_subjects.append(Subject(number=n))
+    
+    if new_subjects:
+        Subject.objects.bulk_create(new_subjects)
+        # get objects with their primary keys
+        new_nums = [s.number for s in new_subjects]
+        new_subjects = Subject.objects.filter(number__in=new_nums)
+        new_subjects = [s for s in new_subjects]
+        subjects += new_subjects
+        
     return subjects
 
 def subjects_by_tags(tags, line):
