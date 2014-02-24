@@ -290,11 +290,12 @@ def updatemessage(request):
                 mr = Message_responder(message_forum=m, user=responder, assign_date=t)
                 mr.save();
     
-    # Always calling save on message_forum model. 
+    # Always calling save on message_forum model when using update_index command for haystack. 
     # It's require because it will trigger post_save signal on it and this signal is being capture by haystack RealtimeSignal processor
     # to update the index data. If we don't call save on it then, on updation of tags or any other many-to-many field data, it won't trigger post_save signal 
-    # and so the realtime signal processor won't update index data which would be result in wrong search result. 
-    #m.save()
+    # and so the realtime signal processor won't update index data which would be result in wrong search result.
+    #in case if not using rebuild_index command to update index data then this is not required. 
+    m.save()
                 
     # Always return an HttpResponseRedirect after successfully dealing
     # with POST data. This prevents data from being posted twice if a
