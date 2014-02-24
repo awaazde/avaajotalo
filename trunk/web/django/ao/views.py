@@ -681,14 +681,19 @@ def survey(request):
 @csrf_exempt
 def bcast(request):
     params = request.POST
+    surveyid = params['survey']
+    template = get_object_or_404(Survey, pk=surveyid)
     if params['messageforumid']:
         message_forum_id = int(params['messageforumid'])
         mf = get_object_or_404(Message_forum, pk=message_forum_id)
         line = mf.forum.line_set.all()[0]
     else:
         mf = None
-        line = get_object_or_404(Line, pk=int(params['lineid']))
-        
+        # can't trust line ID in case of an account with multiple lines (like a survey account)
+        # in that case the best place to get the line is from the template's number
+        # order by -id in case we forget to deactivate the forums of an older line
+        # NOTE: excluding by Inactive forum status will filter out Lines with *at least* one inactive forum (not all inactive forums)
+        line = Line.objects.filter(number=template.number).exclude(forums__status=Forum.STATUS_INACTIVE).order_by('-id')[0]
     
     subjects = []
     # Get subjects
@@ -727,10 +732,6 @@ def bcast(request):
     
     # remove dups
     subjects = list(set(subjects))
-    
-    # Get template
-    surveyid = params['survey']
-    template = get_object_or_404(Survey, pk=surveyid)
     
     # Get name
     bcastname = params['bcastname']

@@ -53,7 +53,7 @@ public class BroadcastInterface extends Composite {
 	private TextBox sinceField, bcastNameField;
 	private DatePicker since;
 	private ListBox tags, lastNCallers, templates, hour, backupsBox;
-	private Hidden messageforumid, lineid, dateField;
+	private Hidden messageforumid, dateField;
 	private CheckBox numbers, usersByTag, usersByLog;
 	private RadioButton now, date;
 	//private FileUpload fileUpload;
@@ -331,9 +331,6 @@ public class BroadcastInterface extends Composite {
 		outer.add(controls);
 		messageforumid = new Hidden("messageforumid");
 		outer.add(messageforumid);
-		lineid = new Hidden("lineid");
-		lineid.setValue(Messages.get().getLine().getId());
-		outer.add(lineid);
 		
 		initWidget(bcastForm);
 	}
