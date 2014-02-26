@@ -108,6 +108,12 @@ div.qform
 {% upload_js %}
 
 <script>
+	// make consistent with forms.py
+	var QTYPE_MULTI=1
+    var QTYPE_DIGITS=2
+    var QTYPE_RECORD=3
+    var QTYPE_RANDOM=4
+    
 	var $include_id = $('input[name="include_id"]'),
     	$id_length = $('select[name="id_length"]');
 	$include_id.change(function() {
@@ -136,16 +142,27 @@ div.qform
 		
 		// parse out the index of this questionform
 		var formidx = this.id.split('-')[1];
+		// if question type is set to record, disable
+		// the number_opts dropdown
+		// if question type is random, reveal the random
+		// options field
 		if (this.id.indexOf('-type_') > -1)
 		{
 			$number_opts = $('#id_form-'+formidx+'-num_options');
-			if (this.value == 1 || this.value == 2)
+			// enable dropdown
+			$number_opts.removeAttr('disabled');
+			// hide random opts
+			var $parent_form = $(this).parents('.qform');
+			$parent_form.find('.random_opts').hide(); 
+			if (this.value == QTYPE_RECORD)
 			{
-				$number_opts.removeAttr('disabled');
-			}
-			else if (this.value == 3)
-			{
+				// disable number dropdown
 				$number_opts.attr('disabled', 'disabled');
+			}
+			else if (this.value == QTYPE_RANDOM)
+			{
+				// unhide random opt and clone up to number_opts
+				update_random_opts($number_opts.val(), formidx);
 			}
 		}
 		else if (this.id.indexOf('-advanced_') > -1)
@@ -180,6 +197,24 @@ div.qform
 			}
 		}
 	});
+	
+	// update random options on number change (if rand option selected)
+	$('select[id*="num_options"]').change(function() 
+	{
+		var formidx = this.id.split('-')[1];
+		var type = $('input[name="form-'+formidx+'-type"]:checked').val()
+		if (type == QTYPE_RANDOM)
+		{
+			update_random_opts(this.value, formidx);
+		}
+		else
+		{
+			// hide everything
+			var $parent_form = $(this).parents('.qform');
+			$random_opts = $parent_form.find('.random_opts');
+			$random_opts.hide();
+		}
+	}).trigger('change');
 	
 	$('.advanced-row').hide();
 	$('.form-actions').addClass('span10');
@@ -319,6 +354,26 @@ div.qform
 			
    		{% endif %}
    	{% endif %}
+   	
+   	function update_random_opts(max_number, formidx)
+   	{
+   		// remove any cloned random opts
+		var $parent_form = $('#div_id_form-'+formidx+'-type').parents(".qform");
+		$parent_form.find("*[id*='random_opt_clone']").remove();
+		$random_opts = $parent_form.find('.random_opts');
+		$random_opts.show();
+		
+		for (var cloneId = 1; cloneId <= max_number; cloneId++)
+		{
+    		var $random_opt = $parent_form.find(".random_opt").clone()
+        		.appendTo($random_opts)
+        		.attr("id", "random_opt_clone_form-" + formidx + "-" + cloneId)
+        		// remove the class so the clone above will
+        		// only duplicate the original element next time
+        		.removeClass('random_opt');
+        	$random_opt.find("label").html("Option "+cloneId);
+        }
+   	}
 
 </script>
 {% endblock %}

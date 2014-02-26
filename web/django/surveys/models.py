@@ -212,6 +212,8 @@ class Prompt(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
     # the prompt to be played is based on input from some other prompt
     dependson = models.ForeignKey('self', blank=True, null=True)
+    # the prompt has sub-prompts to be played in random order
+    random = models.NullBooleanField() 
     
     def __unicode__(self):
         if self.name and self.name != '':
@@ -237,6 +239,12 @@ class Option(models.Model):
     
     prompt = models.ForeignKey(Prompt)
     
+    def __unicode__(self):
+        if self.number == '':
+            return 'noinput-' + str(self.action)
+        else:
+            return self.number + '-' + str(self.action)
+    
 class Param(models.Model):
     option = models.ForeignKey(Option)
     
@@ -257,6 +265,9 @@ class Param(models.Model):
     name = models.CharField(max_length=24)
     
     value = models.CharField(max_length=128)
+    
+    def __unicode__(self):
+        return self.name + '-' + self.value
     
 class Input(models.Model):
     '''
