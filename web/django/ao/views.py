@@ -242,9 +242,6 @@ def updatemessage(request):
 
     m = get_object_or_404(Message_forum, pk=params['messageforumid'])
 
-    if not params.__contains__('position'):
-        m.position = None
-        m.save()
         
     # Save tags
     selected_tags_input = params['selected_tags']
