@@ -11,7 +11,10 @@
 <script src="{{ STATIC_URL }}js/fileupload/tmpl.min.js"></script>
 <script src="{{ STATIC_URL }}js/fileupload/load-image.min.js"></script>
 <script src="{{ STATIC_URL }}js/fileupload/canvas-to-blob.min.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+
+<!-- commenting out this one becuase bootstrap.js already included in base html -->
+<!-- script src="{{ STATIC_URL }}js/bootstrap.min.js"></script> -->
+
 <script src="{{ STATIC_URL }}js/bootstrap-image-gallery.min.js"></script>
 <script src="{{ STATIC_URL }}js/jquery.iframe-transport.js"></script>
 <script src="{{ STATIC_URL }}js/jquery.fileupload.js"></script>
@@ -87,6 +90,9 @@ div.qform
 	clear: both;
 }
 
+div.modal-header {
+	border-bottom: none;
+}
 </style>
 {% endblock %}
 
@@ -100,6 +106,8 @@ div.qform
    		{% endif %}
    		
    	</form>
+   	
+   	<div id="modal-container"></div>
 {% endblock %}
 
 
@@ -332,16 +340,29 @@ div.qform
 			{% if prompt_files %}
 				{% for fileIdx, file in prompt_files.items %}
 					var fileLIdx = {{ fileIdx }};
-					{% if file.is_alt %}
-						var innerAltHTML = '';
-						{% for altFileIdx, altFile in file.alt_prompt_data.items %}
-							{% if altFile.file_exists %}
-								innerAltHTML += '<a href="{{altFile.file_path}}" class="prompt_file pull-right">{{altFile.file_name}}</a>';
+					{% if file.is_sub %}
+						var innerSubHTML = '<a href="#modal{{fileIdx}}" class="prompt_file pull-right" data-toggle="modal" role="button">Click here to view files</a>';
+						var modelBodyHTML = '<ul>';
+						{% for subFileIdx, subFile in file.sub_prompt_data.items %}
+							modelBodyHTML += '<li>';
+							{% if subFile.file_exists %}
+								modelBodyHTML += '<a href="{{subFile.file_path}}" class="prompt_file">{{subFile.file_name}}</a>';
 							{% else %}
-								innerAltHTML += '<span class="prompt_file pull-right">{{altFile.file_name}} cannot be found</span>';
+								modelBodyHTML += '<span class="prompt_file">{{subFile.file_name}} cannot be found</span>';
 							{% endif %}
+							modelBodyHTML += '</li>';
 						{% endfor %}
-						fileLIdx.innerHTML = innerAltHTML; 
+						fileLIdx.innerHTML = innerSubHTML;
+						
+						modelBodyHTML += '</ul>';
+						var modaldialog = '<div id="modal{{fileIdx}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal{{fileIdx}}Label" aria-hidden="true">';
+						
+						modaldialog += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button></div>';
+						modaldialog += '<div class="modal-body">';
+						modaldialog += modelBodyHTML;
+						modaldialog += '</div></div>';
+						
+						$("#modal-container").append(modaldialog);
 					{% else %}
 						{% if file.file_exists %}
 							fileLIdx.innerHTML = '<a href="{{file.file_path}}" class="prompt_file pull-right">{{file.file_name}}</a>';
@@ -357,12 +378,27 @@ div.qform
    	
    	function update_random_opts(max_number, formidx)
    	{
+   		//getting value of options set in survey so that they can be displayed while loading existing survey
+   		var random_opts_data = [];
+   		{% if random_opts_data %}
+   			{% for qstIdx, val in random_opts_data.items %}
+   				if(formidx == "{{qstIdx}}") {
+   					{% for ropt_val in val %}
+   						random_opts_data.push("{{ropt_val}}");
+   					{% endfor %}		
+   				}
+   			{% endfor %}
+   		{% endif %}
+   		
    		// remove any cloned random opts
 		var $parent_form = $('#div_id_form-'+formidx+'-type').parents(".qform");
 		$parent_form.find("*[id*='random_opt_clone']").remove();
 		$random_opts = $parent_form.find('.random_opts');
 		$random_opts.show();
-		
+		//setting first option value
+		if(random_opts_data[0] != '-1')
+        	$parent_form.find(".random_opt").find("input").val(random_opts_data[0]);
+        		
 		for (var cloneId = 1; cloneId <= max_number; cloneId++)
 		{
     		var $random_opt = $parent_form.find(".random_opt").clone()
@@ -372,6 +408,10 @@ div.qform
         		// only duplicate the original element next time
         		.removeClass('random_opt');
         	$random_opt.find("label").html("Option "+cloneId);
+        	if(random_opts_data[cloneId] != '-1')
+        		$random_opt.find("input").val(random_opts_data[cloneId]);
+        	else
+        		$random_opt.find("input").val("");
         }
    	}
 
