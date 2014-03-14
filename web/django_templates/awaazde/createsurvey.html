@@ -143,7 +143,7 @@ div.modal-header {
         	$min_digits.val(DEFAULT_MIN_DIGITS);
     	}
 	}).trigger('change'); // added trigger to calculate initial state
-
+	
 	
 	$('input[type="radio"]').change(function() {
 		// set dynamism for Type for each questionform
@@ -428,6 +428,11 @@ div.modal-header {
 				if (this.value == QTYPE_RECORD) {
 					// disable number dropdown
 					$number_opts.attr('disabled', 'disabled');
+				}
+				else if (this.value == QTYPE_RANDOM)
+				{
+					// unhide random opt and clone up to number_opts
+					update_random_opts($number_opts.val(), formidx);
 				}
 			}
 		});
