@@ -334,9 +334,10 @@ div.modal-header {
 					$alt.val({{opts.q}});					
 				}
 				
-			{% endfor %}
-			
-			
+			{% endfor %}		
+   		{% endif %}
+   	{% endif %}
+   	
 			{% if prompt_files %}
 				{% for fileIdx, file in prompt_files.items %}
 					var fileLIdx = {{ fileIdx }};
@@ -372,9 +373,6 @@ div.modal-header {
 					{% endif %}
 				{% endfor %}	
 			{% endif %}	
-			
-   		{% endif %}
-   	{% endif %}
    	
    	function update_random_opts(max_number, formidx)
    	{
@@ -414,7 +412,26 @@ div.modal-header {
         		$random_opt.find("input").val("");
         }
    	}
-
+   	
+   	$(document).ready(function() {
+	   	$('input:radio:checked').each(function () {
+		   	var formidx = this.id.split('-')[1];
+			
+			if (this.id.indexOf('-type_') > -1)
+			{
+				$number_opts = $('#id_form-'+formidx+'-num_options');
+				// enable dropdown
+				$number_opts.removeAttr('disabled');
+				// hide random opts
+				var $parent_form = $(this).parents('.qform');
+				$parent_form.find('.random_opts').hide();
+				if (this.value == QTYPE_RECORD) {
+					// disable number dropdown
+					$number_opts.attr('disabled', 'disabled');
+				}
+			}
+		});
+	});
 </script>
 {% endblock %}
 
