@@ -397,7 +397,7 @@ div.modal-header {
 		if(random_opts_data[0] != '-1')
         	$parent_form.find(".random_opt").find("input").val(random_opts_data[0]);
         		
-		for (var cloneId = 1; cloneId <= max_number; cloneId++)
+		for (var cloneId = 2; cloneId <= max_number; cloneId++)
 		{
     		var $random_opt = $parent_form.find(".random_opt").clone()
         		.appendTo($random_opts)
