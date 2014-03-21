@@ -342,7 +342,7 @@ div.modal-header {
 				{% for fileIdx, file in prompt_files.items %}
 					var fileLIdx = {{ fileIdx }};
 					{% if file.is_sub %}
-						var innerSubHTML = '<a href="#modal{{fileIdx}}" class="prompt_file pull-right" data-toggle="modal" role="button">Click here to view files</a>';
+						var innerSubHTML = '<a href="#modal{{fileIdx}}" class="prompt_file pull-right" data-toggle="modal" role="button">View files</a>';
 						var modelBodyHTML = '<ul>';
 						{% for subFileIdx, subFile in file.sub_prompt_data.items %}
 							modelBodyHTML += '<li>';
@@ -406,8 +406,8 @@ div.modal-header {
         		// only duplicate the original element next time
         		.removeClass('random_opt');
         	$random_opt.find("label").html("Option "+cloneId);
-        	if(random_opts_data[cloneId] != '-1')
-        		$random_opt.find("input").val(random_opts_data[cloneId]);
+        	if(random_opts_data[cloneId-1] != '-1')
+        		$random_opt.find("input").val(random_opts_data[cloneId-1]);
         	else
         		$random_opt.find("input").val("");
         }
