@@ -380,7 +380,7 @@ def check_unsent_responses(interval_mins):
     # Get responses in the last INTERVAL_HOURS
     responses = Message_forum.objects.filter(message__lft__gt=1, message__date__gte=now-interval, status=Message_forum.STATUS_APPROVED)
     for response in responses:
-        if not Prompt.objects.filter(file__contains=response.message.file.name):
+        if not Prompt.objects.filter(file__contains=response.message.file.name) and response.forum.response_calls:
             answer_call(response.forum.line_set.all()[0], response)
 
 def answer_call(line, answer):
