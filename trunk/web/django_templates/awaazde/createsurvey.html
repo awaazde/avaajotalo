@@ -347,7 +347,7 @@ div.modal-header {
 						{% for subFileIdx, subFile in file.sub_prompt_data.items %}
 							modelBodyHTML += '<li>';
 							{% if subFile.file_exists %}
-								modelBodyHTML += '<a href="{{subFile.file_path}}" class="prompt_file">{{subFile.file_name}}</a>';
+								modelBodyHTML += '<a href="{{subFile.file_path}}" class="prompt_file" download>{{subFile.file_name}}</a>';
 							{% else %}
 								modelBodyHTML += '<span class="prompt_file">{{subFile.file_name}} cannot be found</span>';
 							{% endif %}
@@ -366,7 +366,7 @@ div.modal-header {
 						$("#modal-container").append(modaldialog);
 					{% else %}
 						{% if file.file_exists %}
-							fileLIdx.innerHTML = '<a href="{{file.file_path}}" class="prompt_file pull-right">{{file.file_name}}</a>';
+							fileLIdx.innerHTML = '<a href="{{file.file_path}}" class="prompt_file pull-right" download>{{file.file_name}}</a>';
 						{% else %}
 							fileLIdx.innerHTML = '<span class="prompt_file pull-right">{{file.file_name}} cannot be found</span>';
 						{% endif %}
