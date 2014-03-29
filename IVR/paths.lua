@@ -89,7 +89,8 @@ assert (con:execute ("use otalo"));
 NORMAL_HANGUP = 'NORMAL_HANGUP';
 termination_reason = nil;
 
-RECORD_SOUND_EXT = '.wav';
+SOUND_EXT = '.wav';
+RECORD_SOUND_EXT = SOUND_EXT;
 
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )
