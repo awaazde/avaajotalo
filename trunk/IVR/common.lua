@@ -481,7 +481,7 @@ function get_media_subdir()
 	local subdir = year..'/'..month..'/'..day..'/';
 	
 	-- create it if it doesn't already exist
-	if io.open(sd .. subdir,"rb") == nil then
+	if io.open(recordsd .. subdir,"rb") == nil then
 		os.execute("mkdir -p "..recordsd..subdir);
 		-- chmod from the file's root on down
 		os.execute("chmod -R 775 "..recordsd..year);
@@ -847,7 +847,7 @@ end
 -----------
 
 function get_prompts(surveyid)
-	local query = 	"SELECT id, file, bargein, delay, inputlen, dependson_id, survey_id ";
+	local query = 	"SELECT id, file, bargein, delay, inputlen, dependson_id, survey_id, random ";
 	query = query .. " FROM surveys_prompt ";
 	query = query .. " WHERE survey_id = " .. surveyid;
 	query = query .. " ORDER BY surveys_prompt.order ASC ";
@@ -915,6 +915,7 @@ function play_prompts (prompts)
    local replay_cnt = 0;
    local optionid = "";
    local action = nil;
+   local randomized_prompts = nil;
    
    -- a complete_after 0 means it's complete if they've picked up the call
    if (complete_after_idx ~= nil and complete_after_idx == 0) then
@@ -929,6 +930,7 @@ function play_prompts (prompts)
    	  local inputlen = tonumber(current_prompt[5]);
    	  local dependson = tonumber(current_prompt[6]);
    	  local surveyid = tonumber(current_prompt[7]);
+   	  local random = tonumber(current_prompt[8]);
    	  
    	  if (dependson ~= nil) then
    	  	local query = "SELECT input FROM surveys_input ";
@@ -947,23 +949,32 @@ function play_prompts (prompts)
 		promptfile = promptfile .. result .. ".wav";
 	  end
 		
-   	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");
+   	  freeswitch.consoleLog("info", script_name .. " : playing prompt " .. promptfile .. "\n");	  
    	  
-   	  if (bargein == 1) then
-   	  	if (promptfile:sub(0,1) == '/') then
-   	  		-- DEPRECATED: no files should have absolute paths for the sake of remote file access
-   	  		read(promptfile, delay, inputlen);
-   	  	else
-   	  		read(sd .. promptfile, delay, inputlen);
-   	  	end
-  	  else
-  	  	if (promptfile:sub(0,1) == '/') then
-  	  		-- DEPRECATED: no files should have absolute paths for the sake of remote file access
-  	  		read_no_bargein(promptfile, delay);
-  	  	else
-  			read_no_bargein(sd .. promptfile, delay);
-  		end
-   	  end
+   	  if (random == 1) then
+   	  	  -- preserve (i.e. don't reset) randomized order of 
+   	  	  -- the random prompt if it is repeating itself
+   	  	  if (action ~= OPTION_REPLAY) then
+   	  	  	randomized_prompts = nil;
+   	  	  end
+   	  	  randomized_prompts = play_random_prompt(current_prompt, promptfile, randomized_prompts);
+   	  else
+	   	  if (bargein == 1) then
+	   	  	if (promptfile:sub(0,1) == '/') then
+	   	  		-- DEPRECATED: no files should have absolute paths for the sake of remote file access
+	   	  		read(promptfile, delay, inputlen);
+	   	  	else
+	   	  		read(sd .. promptfile, delay, inputlen);
+	   	  	end
+	  	  else
+	  	  	if (promptfile:sub(0,1) == '/') then
+	  	  		-- DEPRECATED: no files should have absolute paths for the sake of remote file access
+	  	  		read_no_bargein(promptfile, delay);
+	  	  	else
+	  			read_no_bargein(sd .. promptfile, delay);
+	  		end
+	   	  end
+	  end
    	  
    	  -- Do this check right after the prompt plays in case of there are no more prompts
 	  if (complete_after_idx ~= nil and current_prompt_idx == complete_after_idx) then
@@ -974,7 +985,13 @@ function play_prompts (prompts)
    	  inputval = d;
    	  
    	  -- get option
-   	  option = get_option(promptid, inputval);
+   	  local option = nil;
+   	  if (random == 1) then
+   	  	option = randomized_prompts[inputval];
+   	  else
+   	  	option = get_option(promptid, inputval);
+   	  end
+   	  
    	  if (option ~= nil) then
    	  	optionid = tonumber(option[1]);
    	  	action = tonumber(option[2]);
@@ -1099,10 +1116,10 @@ function play_prompts (prompts)
 		-- assume recording prompts are
 		-- in the same folder as the prompt that
 		-- got us to the recording step
-    	freeswitch.consoleLog("info", script_name .. " found path: " .. promptfile .. "\n")
+    	--freeswitch.consoleLog("info", script_name .. " found path: " .. promptfile .. "\n");
     	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 2;
     	local lang = promptfile:sub(1,pathend);
-	    freeswitch.consoleLog("info", script_name .. " lang is: " .. lang .. "\n")
+	    --freeswitch.consoleLog("info", script_name .. " lang is: " .. lang .. "\n");
 	  	outcome = recordsurveyinput(callid, promptid, lang, maxlength, mfid, confirm);
 	  	-- move forward by default. Why? bc it seems overkill to have a goto as well
 	  	-- if you need a goto, build it into the next prompt with a blank recording
@@ -1139,6 +1156,119 @@ function play_prompts (prompts)
    if (complete_after_idx == nil) then
    		set_survey_complete(callid);
    end
+end
+
+--[[ 
+*********************************************************************
+****************** play_random_prompt ******************************* 
+*********************************************************************
+	Pass in promptfile separately in case the filename was dyanmically
+	altered based on a depending prompt. Pass in randomized_opts in case
+	you want to fix the ordering (like when the question repeats on
+	none or invalid input).
+	
+	1. Play the fixed beginning
+	2. determine which sub-prompt options are static
+		and which options are to be randomized
+	3. Assign an ordering with static subprompts set
+		and random subprompts randomized
+	4. Play the subprompts in the randomized ordering
+	
+	Return the prompt ordering back to interpret the input
+*********************************************************************
+--]]
+
+function play_random_prompt (prompt, promptfile, randomized_opts)
+	local promptid = prompt[1];
+  	local bargein = tonumber(prompt[3]);
+  	local delay = tonumber(prompt[4]);
+  	local inputlen = tonumber(prompt[5]);
+  	
+	-- numbers dir. Unzip makes everything flat
+	local pathend = promptfile:find("[a-zA-Z-_0-9]+\.wav") - 1;
+    local nums_sd  = sd .. promptfile:sub(1,pathend);
+	
+	-- remove the extension if it's there (may not be if it's a dependent prompt)
+	promptfile = promptfile:gsub(SOUND_EXT,'');
+		
+	-- arrange the subprompts in the order
+	-- that they should play
+	local subprompts = {};
+	if (randomized_opts == nil) then
+		randomized_opts = {};
+		local random_opts = {};
+		local random_slots = {};
+		
+		-- get options. Get action for the return value (randomized_prompts). The caller will need it
+		local options = get_table_rows("surveys_option", "prompt_id = "..promptid .. " AND number != ''", "id, action, number");
+		local opt = options();
+		-- gather the random and static options individually
+		while (opt ~= nil) do
+			local optionid = opt[1];
+			local number = opt[3];
+			local params = get_params(optionid);
+			freeswitch.consoleLog("info", script_name .. " found opt: " .. optionid .. " number: " .. number .. "\n");
+			if (next(params) ~= nil and params[OPARAM_NAME] ~= nil) then
+				-- to be randomized, since it has a symbolic name
+				table.insert(random_opts, opt);
+				table.insert(random_slots, number);
+				freeswitch.consoleLog("info", script_name .. " to be randomized \n");
+			else
+				-- static prompt, slot into the final play list
+				-- index +1 accounting for the starting static prompt
+				subprompts[tonumber(number)] = promptfile .. '-opt' .. number .. SOUND_EXT;
+				randomized_opts[number] = opt;
+				freeswitch.consoleLog("info", script_name .. " to be static \n");
+			end
+			opt = options();
+		end
+		
+		--freeswitch.consoleLog("info", script_name .. ": random_slots= "..  table.tostring(random_slots) .."\n");
+	    --freeswitch.consoleLog("info", script_name .. ": random_opts= "..  table.tostring(random_opts) .."\n");
+		-- assign the random opts to slots
+		for i,slot in ipairs(random_slots) do
+			-- get random subprompt
+			local idx = math.random(#random_opts);
+			local subprompt = random_opts[idx];
+			-- assign the slot
+			subprompts[tonumber(slot)] = promptfile .. '-opt' .. subprompt[3] .. SOUND_EXT;
+			freeswitch.consoleLog("info", script_name .. " assigned slot: " .. slot .. " subprompt: " .. promptfile .. '-opt' .. subprompt[3] .. "\n");
+			-- remove the subprompt from consideration for next slot(s)
+			table.remove(random_opts,idx);
+			-- need to make it string because this will
+			-- be indexed on dtmf input value in play_prompts
+			-- (and also to be consistent with indexing of static subprompts)
+			randomized_opts[tostring(slot)] = subprompt;
+		end
+	else
+		-- make sure subprompts is number indexed to work with ipairs below
+		for i,subprompt in pairs(randomized_opts) do
+			subprompts[tonumber(i)] = promptfile .. '-opt' .. subprompt[3] .. SOUND_EXT;
+		end
+	end
+	--freeswitch.consoleLog("info", script_name .. ": subprompts= "..  table.tostring(subprompts) .."\n");
+	
+	-- Prompt always starts off with a static part (question)
+	if (bargein == 1) then
+		read(sd.. promptfile .. SOUND_EXT, 0, inputlen);
+	else
+		read(sd .. promptfile .. SOUND_EXT, 0);
+	end
+	-- play the subprompts in the randomized ordering
+	for i,subprompt in ipairs(subprompts) do
+		freeswitch.consoleLog("info", script_name .. " playing subprompt " .. subprompt .. " with num " .. tostring(i) .. "\n");
+		if (bargein == 1) then
+		  	read(sd .. subprompt, 0, inputlen);
+		  	read(nums_sd .. tostring(i) .. SOUND_EXT, 0, inputlen);
+		else
+			read_no_bargein(sd .. subprompt, 0);
+			read_no_bargein(nums_sd .. tostring(i) .. SOUND_EXT, 0);
+		end
+	end
+	
+	sleep(delay);
+	return randomized_opts;
+	
 end
 
 -----------
