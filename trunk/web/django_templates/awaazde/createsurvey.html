@@ -11,7 +11,10 @@
 <script src="{{ STATIC_URL }}js/fileupload/tmpl.min.js"></script>
 <script src="{{ STATIC_URL }}js/fileupload/load-image.min.js"></script>
 <script src="{{ STATIC_URL }}js/fileupload/canvas-to-blob.min.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+
+<!-- commenting out this one becuase bootstrap.js already included in base html -->
+<!-- script src="{{ STATIC_URL }}js/bootstrap.min.js"></script> -->
+
 <script src="{{ STATIC_URL }}js/bootstrap-image-gallery.min.js"></script>
 <script src="{{ STATIC_URL }}js/jquery.iframe-transport.js"></script>
 <script src="{{ STATIC_URL }}js/jquery.fileupload.js"></script>
@@ -43,7 +46,7 @@ input[name="submit"] {
 	padding: 4px 10px; 
 }
 
-input[name="refresh"]{
+input[name="refresh"], input[name="load_survey"]{
 	background: #5BB75B;
 	border-style: solid;
 	border-color: #5BB75B;
@@ -78,11 +81,24 @@ div.qform
 	margin: 10px;
 }
 
+.alert {
+	margin-top: 30px;
+	margin-bottom: 50px;
+}
+
+.prompt_file {
+	clear: both;
+}
+
+div.modal-header {
+	border-bottom: none;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
+	{% if error %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ error }}</strong></div>{% endif %}
    	<form action="{% url "awaazde.console.views.createsurvey" %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">
    		{% crispy createform %}
    		{% if question_formset %}
@@ -90,6 +106,8 @@ div.qform
    		{% endif %}
    		
    	</form>
+   	
+   	<div id="modal-container"></div>
 {% endblock %}
 
 
@@ -98,6 +116,12 @@ div.qform
 {% upload_js %}
 
 <script>
+	// make consistent with forms.py
+	var QTYPE_MULTI=1
+    var QTYPE_DIGITS=2
+    var QTYPE_RECORD=3
+    var QTYPE_RANDOM=4
+    
 	var $include_id = $('input[name="include_id"]'),
     	$id_length = $('select[name="id_length"]');
 	$include_id.change(function() {
@@ -119,23 +143,34 @@ div.qform
         	$min_digits.val(DEFAULT_MIN_DIGITS);
     	}
 	}).trigger('change'); // added trigger to calculate initial state
-
+	
 	
 	$('input[type="radio"]').change(function() {
 		// set dynamism for Type for each questionform
 		
 		// parse out the index of this questionform
 		var formidx = this.id.split('-')[1];
+		// if question type is set to record, disable
+		// the number_opts dropdown
+		// if question type is random, reveal the random
+		// options field
 		if (this.id.indexOf('-type_') > -1)
 		{
 			$number_opts = $('#id_form-'+formidx+'-num_options');
-			if (this.value == 1 || this.value == 2)
+			// enable dropdown
+			$number_opts.removeAttr('disabled');
+			// hide random opts
+			var $parent_form = $(this).parents('.qform');
+			$parent_form.find('.random_opts').hide(); 
+			if (this.value == QTYPE_RECORD)
 			{
-				$number_opts.removeAttr('disabled');
-			}
-			else if (this.value == 3)
-			{
+				// disable number dropdown
 				$number_opts.attr('disabled', 'disabled');
+			}
+			else if (this.value == QTYPE_RANDOM)
+			{
+				// unhide random opt and clone up to number_opts
+				update_random_opts($number_opts.val(), formidx);
 			}
 		}
 		else if (this.id.indexOf('-advanced_') > -1)
@@ -170,6 +205,24 @@ div.qform
 			}
 		}
 	});
+	
+	// update random options on number change (if rand option selected)
+	$('select[id*="num_options"]').change(function() 
+	{
+		var formidx = this.id.split('-')[1];
+		var type = $('input[name="form-'+formidx+'-type"]:checked').val()
+		if (type == QTYPE_RANDOM)
+		{
+			update_random_opts(this.value, formidx);
+		}
+		else
+		{
+			// hide everything
+			var $parent_form = $(this).parents('.qform');
+			$random_opts = $parent_form.find('.random_opts');
+			$random_opts.hide();
+		}
+	}).trigger('change');
 	
 	$('.advanced-row').hide();
 	$('.form-actions').addClass('span10');
@@ -261,9 +314,9 @@ div.qform
 				var opt_type = {{ opts.type }};
 				var $advanced = $parent_form.find("input[name*='advanced'][value='"+opt_type+"']");
 				$advanced.attr('checked', true).trigger('change');
-				// init the original skip rul with the first vals 
-				$('#id_form-'+formIdx+'-skip_rule_q').val({{opts.firstq}}-1)
-				$('#id_form-'+formIdx+'-skip_rule_val').val({{opts.firstval}}-1)
+				// init the original skip rul with the first vals
+				$('#id_form-'+formIdx+'-skip_rule_q').val({{opts.firstq}})
+				$('#id_form-'+formIdx+'-skip_rule_val').val({{opts.firstval}})
 				if (opt_type == ADVANCED_OPTION_TYPE_SKIP)
 				{
 					{% for q, val in opts.rules.items %}
@@ -281,10 +334,109 @@ div.qform
 					$alt.val({{opts.q}});					
 				}
 				
-			{% endfor %}
+			{% endfor %}		
    		{% endif %}
    	{% endif %}
-
+   	
+			{% if prompt_files %}
+				{% for fileIdx, file in prompt_files.items %}
+					var fileLIdx = {{ fileIdx }};
+					{% if file.is_sub %}
+						var innerSubHTML = '<a href="#modal{{fileIdx}}" class="prompt_file pull-right" data-toggle="modal" role="button">View files</a>';
+						var modelBodyHTML = '<ul>';
+						{% for subFileIdx, subFile in file.sub_prompt_data.items %}
+							modelBodyHTML += '<li>';
+							{% if subFile.file_exists %}
+								modelBodyHTML += '<a href="{{subFile.file_path}}" class="prompt_file">{{subFile.file_name}}</a>';
+							{% else %}
+								modelBodyHTML += '<span class="prompt_file">{{subFile.file_name}} cannot be found</span>';
+							{% endif %}
+							modelBodyHTML += '</li>';
+						{% endfor %}
+						fileLIdx.innerHTML = innerSubHTML;
+						
+						modelBodyHTML += '</ul>';
+						var modaldialog = '<div id="modal{{fileIdx}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="modal{{fileIdx}}Label" aria-hidden="true">';
+						
+						modaldialog += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button></div>';
+						modaldialog += '<div class="modal-body">';
+						modaldialog += modelBodyHTML;
+						modaldialog += '</div></div>';
+						
+						$("#modal-container").append(modaldialog);
+					{% else %}
+						{% if file.file_exists %}
+							fileLIdx.innerHTML = '<a href="{{file.file_path}}" class="prompt_file pull-right">{{file.file_name}}</a>';
+						{% else %}
+							fileLIdx.innerHTML = '<span class="prompt_file pull-right">{{file.file_name}} cannot be found</span>';
+						{% endif %}
+					{% endif %}
+				{% endfor %}	
+			{% endif %}	
+   	
+   	function update_random_opts(max_number, formidx)
+   	{
+   		//getting value of options set in survey so that they can be displayed while loading existing survey
+   		var random_opts_data = [];
+   		{% if random_opts_data %}
+   			{% for qstIdx, val in random_opts_data.items %}
+   				if(formidx == "{{qstIdx}}") {
+   					{% for ropt_val in val %}
+   						random_opts_data.push("{{ropt_val}}");
+   					{% endfor %}		
+   				}
+   			{% endfor %}
+   		{% endif %}
+   		
+   		// remove any cloned random opts
+		var $parent_form = $('#div_id_form-'+formidx+'-type').parents(".qform");
+		$parent_form.find("*[id*='random_opt_clone']").remove();
+		$random_opts = $parent_form.find('.random_opts');
+		$random_opts.show();
+		//setting first option value
+		if(random_opts_data[0] != '-1')
+        	$parent_form.find(".random_opt").find("input").val(random_opts_data[0]);
+        		
+		for (var cloneId = 2; cloneId <= max_number; cloneId++)
+		{
+    		var $random_opt = $parent_form.find(".random_opt").clone()
+        		.appendTo($random_opts)
+        		.attr("id", "random_opt_clone_form-" + formidx + "-" + cloneId)
+        		// remove the class so the clone above will
+        		// only duplicate the original element next time
+        		.removeClass('random_opt');
+        	$random_opt.find("label").html("Option "+cloneId);
+        	if(random_opts_data[cloneId-1] != '-1')
+        		$random_opt.find("input").val(random_opts_data[cloneId-1]);
+        	else
+        		$random_opt.find("input").val("");
+        }
+   	}
+   	
+   	$(document).ready(function() {
+	   	$('input:radio:checked').each(function () {
+		   	var formidx = this.id.split('-')[1];
+			
+			if (this.id.indexOf('-type_') > -1)
+			{
+				$number_opts = $('#id_form-'+formidx+'-num_options');
+				// enable dropdown
+				$number_opts.removeAttr('disabled');
+				// hide random opts
+				var $parent_form = $(this).parents('.qform');
+				$parent_form.find('.random_opts').hide();
+				if (this.value == QTYPE_RECORD) {
+					// disable number dropdown
+					$number_opts.attr('disabled', 'disabled');
+				}
+				else if (this.value == QTYPE_RANDOM)
+				{
+					// unhide random opt and clone up to number_opts
+					update_random_opts($number_opts.val(), formidx);
+				}
+			}
+		});
+	});
 </script>
 {% endblock %}
 
