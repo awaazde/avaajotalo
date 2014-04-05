@@ -420,7 +420,7 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		{
 			String balance = Messages.get().getModerator().getBalance();
 
-			if (!User.FREE_TRIAL_BALANCE.equals(balance) && Double.valueOf(balance) <= Double.valueOf(User.BCAST_DISALLOW_BALANCE_THRESH) && (f.getStatus() == Forum.ForumStatus.BCAST_CALL_SMS || f.getStatus() == Forum.ForumStatus.BCAST_CALL))
+			if (!User.UNLIMITED_BALANCE.equals(balance) && Double.valueOf(balance) <= Double.valueOf(User.BCAST_DISALLOW_BALANCE_THRESH) && (f.getStatus() == Forum.ForumStatus.BCAST_CALL_SMS || f.getStatus() == Forum.ForumStatus.BCAST_CALL))
 			{
 				ConfirmDialog recharge = new ConfirmDialog("Your balance is too low for sending broadcast calls. Please recharge your account.");
 				recharge.center();
