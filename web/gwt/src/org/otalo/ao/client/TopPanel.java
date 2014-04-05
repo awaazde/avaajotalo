@@ -189,7 +189,7 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 			String balance = Messages.get().getModerator().getBalance();
 			if ("null".equals(balance))
 				balance = "0";
-			else if (User.FREE_TRIAL_BALANCE.equals(balance))
+			else if (User.UNLIMITED_BALANCE.equals(balance))
 			{
 				balance = "TRIAL";
 			}
