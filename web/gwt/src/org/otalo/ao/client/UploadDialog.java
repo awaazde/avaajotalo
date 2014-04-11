@@ -301,6 +301,12 @@ public class UploadDialog extends DialogBox implements RecorderEventObserver {
 		outer.getFlexCellFormatter().setColSpan(trblCell, 0, 2);
 		outer.getFlexCellFormatter().addStyleName(trblCell, 0, "left-align");
 		
+		HTML brodtime_text = new HTML("<span>Broadcast calls will only be scheduled between 8am and 10pm IST.</span>");
+		brodtime_text.addStyleName("brodcast-time-text");
+		outer.setWidget(trblCell+1, 0,brodtime_text);
+		outer.getFlexCellFormatter().setColSpan(trblCell+1, 0, 2);
+		outer.getFlexCellFormatter().addStyleName(trblCell+1, 0, "left-align");
+		
 		uploadForm.setWidget(outer);
 
 		setSaveButtonSate();
