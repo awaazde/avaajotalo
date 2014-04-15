@@ -26,6 +26,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^console/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
     (r'^', include('otalo.ao.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
@@ -35,7 +36,6 @@ urlpatterns = patterns('',
    # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
     url(r'^accounts/register/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
-    url(r'^console/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
     (r'^accounts/', include('registration.backends.default.urls')),
     (r'^accounts/', include('django.contrib.auth.urls')),
     (r'^accounts/login/$', 'django.contrib.auth.views.login', {'authentication_form': AuthenticationForm}),
