@@ -16,58 +16,35 @@
 
 from django.conf.urls import *
 from django.conf import settings
+from longerusername.forms import AuthenticationForm
+
+from registration.backends.default.views import RegistrationView
+from awaazde.streamit.forms import CreateAcctForm
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'^$', 'otalo.ao.views.index'),
-    (r'^forum/$', 'otalo.ao.views.forum'),
-    (r'^messages/(?P<forum_id>\d+)/$', 'otalo.ao.views.messages'),
-    (r'^messageforum/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.messageforum'),
-    (r'^user/(?P<user_id>\d+)/$', 'otalo.ao.views.user'),
-    (r'^update/message/$', 'otalo.ao.views.updatemessage'),
-    (r'^update/status/(?P<action>\w+)/$', 'otalo.ao.views.updatestatus'),
-    (r'^move/$', 'otalo.ao.views.movemessage'),
-    (r'^recordorupload/$', 'otalo.ao.views.record_or_upload_message'),
-    (r'^thread/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.thread'),
-    (r'^tags/$', 'otalo.ao.views.tags'),
-    (r'^tags/(?P<forum_id>\d+)/$', 'otalo.ao.views.tags'),
-    (r'^tagsbyline/(?P<line_id>\d+)/$', 'otalo.ao.views.tagsbyline'),
-    (r'^messagetag/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.messagetag'),
-    (r'^responders/(?P<forum_id>\d+)/$', 'otalo.ao.views.responders'),
-    (r'^messageresponder/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.messageresponder'),
-    (r'^moderator/$', 'otalo.ao.views.moderator'),
-    (r'^line/$', 'otalo.ao.views.line'),
-    (r'^download/(?P<model>\w+)/(?P<model_id>\d+)/$', 'otalo.ao.views.download'),
-    (r'^survey/$', 'otalo.ao.views.survey'),
-    (r'^bcast/$', 'otalo.ao.views.bcast'),
-    (r'^fwdthread/(?P<message_forum_id>\d+)/$', 'otalo.ao.views.forwardthread'),
-    (r'^surveyinput/(?P<survey_id>\d+)/$', 'otalo.ao.views.surveyinput'),
-    (r'^promptresponses/(?P<prompt_id>\d+)/$', 'otalo.ao.views.promptresponses'),
-    (r'^cancelsurvey/(?P<survey_id>\d+)/$', 'otalo.ao.views.cancelsurvey'),
-    (r'^surveydetails/(?P<survey_id>\d+)/$', 'otalo.ao.views.surveydetails'),
-    (r'^regularbcast/$', 'otalo.ao.views.regularbcast'),
-    (r'^sms/(?P<line_id>\d+)/$', 'otalo.ao.views.sms'),
-    (r'^smsrecipients/(?P<smsmsg_id>\d+)/$', 'otalo.ao.views.smsrecipients'),
-    (r'^sendsms/$', 'otalo.ao.views.sendsms'),
-    (r'^smsin/$', 'otalo.ao.views.smsin'),
-    (r'^group/$', 'otalo.ao.views.group'),
-    (r'^search/$', 'otalo.ao.views.search'),
-    (r'^createaccount/$', 'awaazde.streamit.views.createacct'),
-    # s is for streams views
-    (r'^s/', include('awaazde.streamit.urls')),
-    # 2 is for gen2 console views
-    (r'^2/', include('awaazde.console.urls')),
-    (r'^xact/', include('awaazde.xact.urls')),
-    (r'^xact-auth/', include('rest_framework.urls', namespace='rest_framework')),
-)
+    (r'^console/', include('otalo.ao.urls')),
 
-if settings.DEVELOPMENT:
-    urlpatterns += patterns('', 
-        (r'^(?P<path>.*\.(css|js|html|jpg|png|gif|swf))$', 'django.views.static.serve',
-            {'document_root': settings.STATIC_DOCUMENT_ROOT}),
-        (r'^(?P<path>.*\.(mp3|wav))$', 'django.views.static.serve',
-            {'document_root': settings.MEDIA_ROOT}),
-    )
+    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
+    # to INSTALLED_APPS to enable admin documentation:
+    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+
+   # Uncomment the next line to enable the admin:
+    (r'^admin/', include(admin.site.urls)),
+    url(r'^accounts/register/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
+    url(r'^console/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
+    (r'^accounts/', include('registration.backends.default.urls')),
+    (r'^accounts/', include('django.contrib.auth.urls')),
+    (r'^accounts/login/$', 'django.contrib.auth.views.login', {'authentication_form': AuthenticationForm}),
+    (r'^accounts/password/reset/$','django.contrib.auth.views.password_reset', {'post_reset_redirect' : settings.PROJECT_MOUNT_POINT+'/accounts/password/reset/done/'}),
+    (r'^accounts/password/reset/done/$',
+        'django.contrib.auth.views.password_reset_done'),
+    (r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', 'django.contrib.auth.views.password_reset_confirm', {'post_reset_redirect' : settings.PROJECT_MOUNT_POINT+'/accounts/password/done/'}),
+    (r'^accounts/password/done/$', 
+        'django.contrib.auth.views.password_reset_complete'),
+    (r'^logout/$', 'otalo.views.log_out'),
+    (r'^captcha/', include('captcha.urls')),
+)

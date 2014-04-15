@@ -1,0 +1,34 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+{% load common %}
+
+{% block extrahead %}
+<style>
+a.login-link {
+	color: #f36;
+	text-decoration: underline;
+}
+
+a.login-link:hover {
+	color: #f36;
+}
+</style>
+
+{% endblock %}
+
+{% block content %}
+	
+	<div class="container">
+		<div class="content">
+			<div class="header">
+				<a class="signup-brand " href="#">Awaaz.De</a>
+			</div>
+			<div class="body">
+		   		<p>
+					Your account has been activated successfully. You may want to <a class="login-link" href="{% settings_value "CONSOLE_ROOT" %}">{% trans 'Log in' %}</a> now.
+				</p>
+			</div>
+   		</div>
+   	</div>
+	
+{% endblock %}
