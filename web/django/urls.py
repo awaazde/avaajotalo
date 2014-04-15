@@ -26,7 +26,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^console/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
+    url(r'^createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
     (r'^', include('otalo.ao.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
