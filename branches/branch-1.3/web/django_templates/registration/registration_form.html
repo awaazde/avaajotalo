@@ -1,0 +1,21 @@
+{% extends 'registration/registration_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block extrahead %}
+
+
+{% endblock %}
+
+{% block content %}
+	
+	<div class="container">
+		<div class="content">
+			<div class="header">
+				<a class="signup-brand " href="#">Awaaz.De</a>
+			</div>
+	   		{% crispy form %}
+   		</div>
+   	</div>
+	
+{% endblock %}
+

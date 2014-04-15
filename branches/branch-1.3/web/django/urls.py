@@ -18,12 +18,15 @@ from django.conf.urls import *
 from django.conf import settings
 from longerusername.forms import AuthenticationForm
 
+from registration.backends.default.views import RegistrationView
+from awaazde.streamit.forms import CreateAcctForm
+
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'^AO/', include('otalo.ao.urls')),
+    (r'^console/', include('otalo.ao.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
@@ -31,6 +34,9 @@ urlpatterns = patterns('',
 
    # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
+    url(r'^accounts/register/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
+    url(r'^console/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),
+    (r'^accounts/', include('registration.backends.default.urls')),
     (r'^accounts/', include('django.contrib.auth.urls')),
     (r'^accounts/login/$', 'django.contrib.auth.views.login', {'authentication_form': AuthenticationForm}),
     (r'^accounts/password/reset/$','django.contrib.auth.views.password_reset', {'post_reset_redirect' : settings.PROJECT_MOUNT_POINT+'/accounts/password/reset/done/'}),
@@ -40,5 +46,5 @@ urlpatterns = patterns('',
     (r'^accounts/password/done/$', 
         'django.contrib.auth.views.password_reset_complete'),
     (r'^logout/$', 'otalo.views.log_out'),
-
+    (r'^captcha/', include('captcha.urls')),
 )
