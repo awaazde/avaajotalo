@@ -1,34 +1,12 @@
 {% extends "registration/registration_base.html" %}
 {% load i18n %}
 
-{% block extrahead %}
-<style>
-a.contact-link {
-	color: #f36;
-	text-decoration: underline;
-}
 
-a.contact-link:hover {
-	color: #f36;
-}
-</style>
-
-{% endblock %}
-
-{% block content %}
-	
-	<div class="container">
-		<div class="content">
-			<div class="header">
-				<a class="signup-brand " href="#">Awaaz.De</a>
-			</div>
-			<div class="body">
-		   		<p>
-					Sorry, for some reason your account couldn't be activated. Either the activation link is expired or invalid. 
-					Please contact our <a class="contact-link" href="mailto:support@awaaz.de">support team</a>.
-				</p>
-			</div>
-   		</div>
-   	</div>
-	
+{% block page_content %}
+	<div class="body">
+		<p>
+			Sorry, for some reason your account couldn't be activated. Either the activation link is expired or invalid. 
+			Please contact our <a class="contact-link" href="mailto:support@awaaz.de">support team</a>.
+		</p>
+	</div>
 {% endblock %}

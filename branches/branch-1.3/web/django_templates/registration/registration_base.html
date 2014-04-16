@@ -65,11 +65,12 @@ body:after {
 } 
 
 a {
-	color: #fff;
+	color: #f36;
+	text-decoration: underline;
 }
 
 a:hover {
-	color: #fff;
+	color: #f36;
 }
 
 /* Helper Classes */
@@ -144,7 +145,7 @@ select {
 .content .header {
 	position: relative;
 	background: #323a45;
-	padding: 30px 0 30px 0;
+	padding: 10px 0 10px 0;
 	-webkit-border-radius: 8px 8px 0 0;
 	-moz-border-radius: 8px 8px 0 0;
 	border-radius: 8px 8px 0 0;
@@ -164,15 +165,20 @@ select {
 }
 
 .signup-brand {
-	font-size: 24px;
+	font-size: 26px;
 	font-weight: 700;
-	background-image: url('http://localhost/other/land1/img/logo.png');
 	background-position: left center;
 	background-repeat: no-repeat;
 	padding-left: 68px;
 	padding-top: 8px;
+	color: #fff;
+	text-decoration: none;
 }
 
+.signup-brand:hover {
+	text-decoration: none;
+	color: #fff;
+}
 
 .row-signup {
   	padding-top: 2em;
@@ -199,6 +205,8 @@ select {
 .btn-signup:hover, .btn-signup:focus {
 	background-color: #f36;
 }
+
+
 </style>
 </head>
 {% load i18n %}
@@ -215,6 +223,16 @@ select {
         {% block content %}
         {% block object-tools %}{% endblock %}
         {{ content }}
+        
+        <!--  header -->
+        
+		<div class="container">
+		<div class="content">
+			<div class="header">
+				<a class="signup-brand" href="/"><img src="/img/logo.png" /> Awaaz.De</a>
+			</div>
+			{% block page_content %}
+			{% endblock %}
         {% endblock %}
         {% block sidebar %}{% endblock %}
         <br class="clear" />
