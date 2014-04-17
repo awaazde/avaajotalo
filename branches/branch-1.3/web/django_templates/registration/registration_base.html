@@ -238,10 +238,13 @@ select {
         <br class="clear" />
     </div>
     <!-- END Content -->
-
+	
     {% block footer %}{% endblock %}
 </div>
 <!-- END Container -->
 
+<script src="http://code.jquery.com/jquery-1.8.3.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}js/bootstrap.js" media="all" type="text/javascript"></script>
+	{% block extrascripts %}{% endblock %}
 </body>
 </html>
