@@ -55,7 +55,6 @@ urlpatterns = patterns('',
     (r'^smsin/$', 'otalo.ao.views.smsin'),
     (r'^group/$', 'otalo.ao.views.group'),
     (r'^search/$', 'otalo.ao.views.search'),
-    #(r'^createaccount/$', 'awaazde.streamit.views.createacct'),
     # s is for streams views
     (r'^s/', include('awaazde.streamit.urls')),
     # 2 is for gen2 console views
