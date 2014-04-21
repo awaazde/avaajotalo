@@ -76,7 +76,8 @@ logfile:setvbuf("line");
 
 complete_after_idx = tonumber(res[2]);
 local callback_allowed = tonumber(res[3]);
-local outbound_number = nil;
+-- keep global for access in replace_channel_vars...()
+outbound_number = nil;
 if (res[4] ~= nil and res[4] ~= '') then
 	outbound_number = res[4];
 end

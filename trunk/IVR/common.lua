@@ -501,7 +501,7 @@ function replace_channel_vars_wildcards(channel_vars)
 	end
 	
 	-- add all supported wildcards here for substitutions
-	channel_vars = channel_vars:gsub('__destination__', destination);
+	channel_vars = channel_vars:gsub('__destination__', outbound_number or destination);
 	
 	return channel_vars;
 end
