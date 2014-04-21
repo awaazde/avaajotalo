@@ -1,12 +1,11 @@
 
 
-Welcome to Awaaz.De!
 
-Thank you so much for choosing Awaaz.De!
+Hi,
 
 You'll need to visit following confirmation link in order to gain access to your Awaaz.De account.
 
-http://{{ site.domain }}/console/accounts/activate/{{activation_key}}
+http://{{ site.domain }}/accounts/activate/{{activation_key}}
 
 Please note that this link is valid for {{expiration_days}} days only.
 
