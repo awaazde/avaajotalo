@@ -131,11 +131,18 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'crispy_forms',
     'haystack',
+    'registration',
     'awaazde.streamit',
     'awaazde.console',
     'awaazde.xact',
     'rest_framework',
+    'captcha'
 )
+
+ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; we can use a different value.
+CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
+CAPTCHA_LETTER_ROTATION = None
+CAPTCHA_FONT_SIZE = 32
 
 # this needs to go first
 INSTALLED_APPS = ("longerusername",) + INSTALLED_APPS
@@ -155,6 +162,8 @@ HAYSTACK_LIMIT_TO_REGISTERED_MODELS = False
 # Celery Settings
 BCAST_INTERVAL_MINS = 3
 BROKER_URL = "django://"
+
+INSTALLED_APPS += ('kombu.transport.django', )
 #CELERY_ALWAYS_EAGER = True
 #TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 class CallsRouter(object):
