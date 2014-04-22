@@ -1,0 +1,13 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+{% load common %}
+
+{% block title %}Awaaz.De | Activatation completed{% endblock %}
+
+{% block page_content %}
+	<div class="body">
+		<p>
+			Your account has been activated successfully. You may want to <a class="login-link" href="{% settings_value "CONSOLE_ROOT" %}">{% trans 'Log in' %}</a> now.
+		</p>
+	</div>
+{% endblock %}

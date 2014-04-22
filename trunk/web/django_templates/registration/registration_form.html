@@ -1,0 +1,23 @@
+{% extends 'registration/registration_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Awaaz.De | Sign up for free{% endblock %}
+
+{% block extrahead %}
+{% endblock %}
+
+{% block page_content %}
+	{% crispy form %}
+{% endblock %}
+
+
+{% block extrascripts %}
+<script type="text/javascript">
+
+$(".registration-form").on("submit", function() {
+	$("input[name='username']").val($("input[name='email']").val());
+	return true;
+});
+</script>
+{% endblock %}
+
