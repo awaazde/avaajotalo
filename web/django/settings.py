@@ -162,8 +162,6 @@ HAYSTACK_LIMIT_TO_REGISTERED_MODELS = False
 # Celery Settings
 BCAST_INTERVAL_MINS = 3
 BROKER_URL = "django://"
-
-INSTALLED_APPS += ('kombu.transport.django', )
 #CELERY_ALWAYS_EAGER = True
 #TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 class CallsRouter(object):
@@ -228,6 +226,10 @@ INBOUND_LOG_ROOT = '/Users/neil/Documents/inbound_'
 OUTBOUND_LOG_ROOT = '/Users/neil/Documents/outbound_'
 LOG_ROOT = '/Users/neil/Documents/'
 CRISPY_TEMPLATE_PACK = 'bootstrap' 
+EMAIL_HOST_USER = 'signup@awaaz.de'
+EMAIL_HOST_PASSWORD = 'awaaz123'
+DEFAULT_FROM_EMAIL = 'Awaaz.De Team <signup@awaaz.de>'
+SERVER_EMAIL = EMAIL_HOST_USER
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
