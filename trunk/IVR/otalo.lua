@@ -675,11 +675,11 @@ function playforum (forumid)
 	  end
 	  -- if the option was either legally chosen or there is only the option to record
 	  if (((postingallowed == 'y' or adminmode) and d == "1") or (postingallowed == 'y' and listeningallowed == 0)) then
+	  	 -- if listening is not allowed, there is no other option so confirming record option choice is redundant
 	  	 if (listeningallowed == 1) then
-	  	    -- otherwise this is redundant
 	     	read(aosd .. "okrecord.wav", 1000);
 	     end
-	     if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode, confirm_recordings) == GLOBAL_MENU_MAINMENU) then
+	     if (recordmessage(forumid, nil, moderated, maxlength, nil, adminmode, confirm_recordings) == GLOBAL_MENU_MAINMENU or listeningallowed == 0) then
 	        return;
 	     end
 	     read(aosd .. "backtoforum.wav", 1000);
