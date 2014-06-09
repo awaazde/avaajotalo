@@ -65,9 +65,10 @@ complete_after_idx = tonumber(res[4]);
 local DIALSTRING_PREFIX = "";
 -- suffix isn't used, so don't fetch it.
 local DIALSTRING_SUFFIX = "";
-local dialer = get_table_one_row('ao_dialer', 'id='..res[6], 'dialstring_prefix, channel_vars, country_code, min_number_len');
+local dialer = get_table_one_row('ao_dialer', 'id='..res[6], 'dialstring_prefix, channel_vars, country_code, min_number_len, type');
 local country_code = dialer[3];
 local min_len = dialer[4];
+local dialer_type = dialer[5];
 local phone_num = nil;
 
 freeswitch.consoleLog("info", script_name .. ": country code = " .. tostring(country_code) .. " , minlen = " .. tostring(min_len) .."\n");
@@ -143,13 +144,28 @@ function survey_main()
 	session:setHangupHook("hangup");
 	
 	-- wait a while before testing
-	-- do it in increments so we don't wait unnecessarily long
-	local ready_cnt = 0;
-	while (ready_cnt < 10 and session:ready() ~= true) do
-		-- session:sleep doesn't work!
-		os.execute("sleep 2");
-		ready_cnt = ready_cnt + 1;
+	pause_for_session_ready();
+	
+	--[[
+		BEGIN section for CONTINGENCY approaches. These may be Dialer type specific kinds of things
+		Basically hacks based on dialer and operator quirks
+	--]]
+	
+	if (session:ready() ~= true) then
+		--session:hangup();
+		-- If PRI and the hangup_cause was a technical error try a series of other approaches
+		local hangup_cause = session:hangupCause();
+		if (dialer_type == DIALER_TYPE_PRI and hangup_cause == 'REQUESTED_CHAN_UNAVAIL') then
+			-- try hunting channels from the other end
+			local prefix = DIALSTRING_PREFIX:gsub('/a/','/A/');
+			session = freeswitch.Session(vars .. prefix .. caller .. DIALSTRING_SUFFIX);
+			-- wait a while before testing
+			pause_for_session_ready();
+		end
 	end
+	--[[
+		END CONTINGENCY SECTION
+	--]]
 	
 	if (session:ready() == true) then
 		callstarttime = os.time();

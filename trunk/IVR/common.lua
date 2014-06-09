@@ -72,6 +72,26 @@ function transfer_hangup()
    
 end
 
+--[[ 
+*********************************************************************
+****************** pause_for_session_ready ************************** 
+*********************************************************************
+	For different providers and dialer types (and potentially FS quirks)
+	originated calls from Session() take an extra pause of time for
+	session:ready() to be actually true. Call this funtion after
+	
+*********************************************************************
+--]]
+function pause_for_session_ready()
+	-- do it in increments so we don't wait unnecessarily long
+	local ready_cnt = 0;
+	while (ready_cnt < 10 and session:ready() ~= true) do
+		-- session:sleep doesn't work!
+		os.execute("sleep 2");
+		ready_cnt = ready_cnt + 1;
+	end
+end
+
 -----------
 -- rows 
 -----------
@@ -132,7 +152,8 @@ function read(file, delay, len)
       logfile:write(sessid, "\t",
 		    caller, "\t", destination, "\t",
 		    os.time(), "\t", "Prompt", "\t", file, "\n");
-      digits = session:read(1, len, file, delay, "#");
+	  -- timeout (4th) param delays forever if it is set to 0, so make it at least 1ms
+      digits = session:playAndGetDigits (1, len, 1, math.max(delay,1), "#", file, "", "\\d+|\\w+|\\*", "", math.max(delay,MULTI_DIGIT_INPUT_THRESH));
       if (digits ~= "") then
 	 logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "dtmf", "\t", file, "\t", digits, "\n"); 
       end
