@@ -92,6 +92,19 @@ termination_reason = nil;
 SOUND_EXT = '.wav';
 RECORD_SOUND_EXT = SOUND_EXT;
 
+--[[
+When a prompt is being read for multi-digit input,
+we want to set a minimum value for the delay. Prompt.delay
+is meant to indicate the amount of time to wait for the *first*
+digit. If it is too small, like 0, for multi-digit input there
+won't be enough time between digits.
+
+So change common.read() from session:read to session:playAndGetDigits which
+allows specification of timeout and interdigit timeout, and set
+interdigit to at least the threshhold.
+--]]
+MULTI_DIGIT_INPUT_THRESH = 4000;
+
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )
   if "string" == type( v ) then
