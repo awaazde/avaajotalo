@@ -40,6 +40,7 @@ def subjects_by_numbers(numbers):
     subjects = []
     # clean up the numbers, but don't limit to 10-digit (to alllow int'l bcasts)
     numbers = [number.encode('ascii', 'ignore').strip() for number in numbers]
+    numbers = [number.replace(' ','') for number in numbers]
     filter(lambda n: n != '', numbers)
     
     # filter out black-listed numbers
