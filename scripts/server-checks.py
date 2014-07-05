@@ -50,6 +50,14 @@ def check_freeswitch():
 	if out != '':
 		print("LuaSQL out of memory!")
 		report_error("LuaSQL memory is down!")
+		
+	
+	p = subprocess.Popen(['grep', '"Originate Resulted in Error Cause: 111 [PROTOCOL_ERROR]"', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	out,err = p.communicate()
+	
+	if out != '':
+		print("PROTOCOL ERROR")
+		report_error("[PROTOCOL_ERROR] is down!")
 		# try to restart
 		# UPDATE: this doesn't work, don't do
 		#p = subprocess.Popen(["/etc/init.d/freeswitch", "start"])
