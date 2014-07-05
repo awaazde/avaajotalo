@@ -34,6 +34,22 @@ def check_freeswitch():
 	if out == '':
 		print("error FreeSWITCH is down!")
 		report_error("FreeSWITCH is down!")
+		
+	
+	p = subprocess.Popen(['grep', '"LuaSQL: Error connecting to database."', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	out,err = p.communicate()
+	
+	if out != '':
+		print("LuaSQL database connection issue!")
+		report_error("MySQL connection is down!")
+		
+	
+	p = subprocess.Popen(['grep', '"LuaSQL: Error connecting: Out of memory."', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	out,err = p.communicate()
+	
+	if out != '':
+		print("LuaSQL out of memory!")
+		report_error("LuaSQL memory is down!")
 		# try to restart
 		# UPDATE: this doesn't work, don't do
 		#p = subprocess.Popen(["/etc/init.d/freeswitch", "start"])
