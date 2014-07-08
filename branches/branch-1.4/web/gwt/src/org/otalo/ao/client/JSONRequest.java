@@ -83,6 +83,8 @@ public final class JSONRequest {
 		public static final String DOWNLOAD_STREAM_REPORT = "s/download/streamreport/";
 		public static final String BALANCE = "s/balance/";
 		
+		public static final String BUY_CREDIT = "payment/buycredits/";
+		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
 		public static final String POSTS_RESPONSES = "responses";
@@ -214,7 +216,7 @@ public final class JSONRequest {
 
   }
 
-  public static final String BASE_URL = "/AO/";
+  public static final String BASE_URL = "/console/";
   private JSONRequester requester;
   
   /*

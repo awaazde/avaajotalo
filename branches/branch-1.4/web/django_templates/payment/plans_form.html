@@ -1,0 +1,641 @@
+{% extends 'payment/payment_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Awaaz.De | Buy more credits{% endblock %}
+
+{% block extrahead %}
+<style>
+.pricing-plan-container {
+	background: #ffffff;
+	min-height: 226px;
+	position: relative;
+	margin-top: -100px;
+	-moz-box-shadow: 0 0 5px #888;
+	-webkit-box-shadow: 0 0 5px #888;
+	box-shadow: 0 0 5px #888;
+	padding: 0px;
+	margin-left: auto;
+	margin-right: auto;
+	float: none;
+}
+.pricing {
+	padding-top: 0px;
+	margin: 0px;
+}
+.header {
+	min-height: 100px;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+.pricing-list {
+	list-style: none;
+	padding: 0px;
+	margin-left: 15px;
+	margin-right: 15px;
+}
+.pricing-list li {
+	float: left;
+	width: 33.3333%;
+	margin: 0px;
+	border-right: 1px solid rgba(50, 58, 69,0.2);
+}
+.pricing-list li:last-of-type {
+	border-right: 0px;
+}
+.pricing-plan {
+	background: #ffffff;
+	color: rgba(50, 58, 69,0.8);	
+}
+.btn-price {
+	display: block;
+	width: 86%;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: #f36;
+	border-color: #f36;
+	color: #fff;
+}
+.btn-price:hover {
+	color: #fff;
+}
+.top-text {
+	padding-top: 12%;
+}
+
+.top-text h2, p {
+	color: #fff !important;
+}
+.custom-link a, .control-label a {
+	color: #f36;
+	text-decoration: none;
+}
+
+.small-text {
+	display: inline-block;
+}
+
+input[type="text"],input[type="number"] {
+	font-size: 13px;
+	color: #323a45;
+	border: 1px solid #e8ecef;
+	-webkit-transition: border 0.4s;
+	-moz-transition: border 0.4s;
+	transition: border 0.4s;
+	box-shadow: none;
+	border-width: 2px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 4px;
+}
+
+input[type="text"]:focus,input[type="password"]:focus, input[type="email"]:focus {
+	outline: none;
+	border-color: #d0d4d7;
+	box-shadow: none;
+}
+
+.field {
+	margin-top: 20px;
+}
+
+#customize {
+	padding-top: 20px;
+}
+.table-bordered, .table-bordered tr th {
+	text-align: center;
+}
+.plan-footer-detail {
+	list-style: none;
+	text-align: left;
+	margin-bottom: 60px;
+	color: #636363;
+}
+
+.field-error {
+	border: 2px solid #ff3366 !important;
+}
+
+.label-error {
+	color: #ff3366 !important;
+}
+
+.label-success-c {
+	color: #06ba8f !important;
+}
+
+.btn-apply {
+	background: #06ba8f;
+	border-color: #06ba8f
+}
+.btn-apply:hover, .btn-apply:focus {
+	color: #fff;
+}
+
+#pricing-container {
+	margin-top: 70px;
+}
+
+#pricetblLabel {
+	font-size: 22px;
+	text-transform: uppercase;
+	font-weight: 700!important;
+	margin-bottom: 30px;
+	margin-top: 20px;
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+<div class="col-lg-7 pricing-plan-container">
+	<!-- pricing -->
+	<div class="row pricing" id="pricing">
+		<!-- div class="row">
+			<ul class="pricing-list">
+				<li class="pricing-plan plan1">
+					<div class="price">
+						<h2>
+							<sup>&#8377;</sup><span>650</span>
+						</h2>
+					</div>
+					<div class="crdits-count">1000 Credits</div> <a
+					href="/console/createaccount/" class="btn btn-price">Select</a>
+				</li>
+
+				<li class="pricing-plan plan2">
+					<div class="price">
+						<h2>
+							<sup>&#8377;</sup><span>6,000</span>
+						</h2>
+					</div>
+					<div class="crdits-count">10,000 Credits</div> <a
+					href="/console/createaccount/" class="btn btn-price">Select</a>
+				</li>
+
+				<li class="pricing-plan plan3">
+					<div class="price">
+						<h2>
+							<sup>&#8377;</sup><span>40,000</span>
+						</h2>
+					</div>
+					<div class="crdits-count">1,00,000 Credits</div> 
+					<a href="/console/createaccount/" class="btn btn-price">Select</a>
+				</li>
+			</ul>
+		</div>
+		
+		<div class="row">
+			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center custom-link">
+				<h4><a href="" id="customize-link">or customize</a></h4>
+			</div>
+		</div -->
+		
+			<div id="customize">
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
+						<div class="form-group">
+							<label for="number"
+								class="col-sm-2 col-lg-2 col-md-2 col-xs-6 col-sm-offset-2 col-md-offset-1 col-lg-offset-1 control-label">No. of credits
+								<small class="small-text"><a href="" data-toggle="modal" data-target="#pricetblModal">(View Pricing)</a></small></label>
+							<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
+								<input type="text" class="form-control" id="nocredits" name="nocredits"
+									placeholder="Enter No. of credits" ondrop="return false;" onpaste="return false;" maxlength="12"/>
+							</div>
+							<div class="col-sm-3 col-lg-3 col-md-3 col-xs-6">
+								x <label id="pricecredit">0.00</label> = &#8377; <label id="total_pr">0.00</label> 
+							</div>
+						</div>
+					</div>
+				</div>
+		
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
+						<div class="form-group">
+						<label for="number" 
+							class="col-sm-2 col-lg-2 col-md-2 col-xs-6 col-sm-offset-2 col-md-offset-1 col-lg-offset-1 control-label">
+								Coupon
+								</label>
+							<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
+								<input type="text" class="form-control"
+									name="coupon" placeholder="Enter coupon here if you have any" maxlength="20" id="coupon" />
+								<p id="couponErrorLbl"></p>
+							</div>
+							<div class="col-sm-2 col-lg-2 col-md-2 col-xs-6">
+								<a href="" class="btn btn-apply" id="applyBtn" data-loading-text="Applying">Apply</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<form action="{{ ebs_url }}" method="POST" name="frmTransaction" id="frmTransaction">
+				{{ form.as_table }}
+				<div class="row">
+					<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 field">
+						<button type="submit" class="btn btn-price" disabled="disabled" id="btnpay">Pay &#8377; <span id="total_prbtn">0.00</span></button>
+					</div>
+				</div>
+				</form>
+			</div>
+	</div>
+</div>
+<!-- ./pricing -->
+
+
+<div class="row">
+	<div class="container" id="pricing-container">
+		<div class="col-lg-8 col-md-8 col-sm-8 col-lg-offset-2 col-md-offset-2">
+		<h2 class="text-center" id="pricetblLabel">Parameter value which is going to be submit</h2>
+		<pre id="formvalues"></pre>
+		
+		
+			<!-- h2 class="text-center" id="pricetblLabel">Pricing for Awaaz.De Streams</h2>
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>No. of Credits</th>
+						<th>Price (Rs./Credit)</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>1000-4999</td>
+						<td>0.65</td>
+					</tr>
+					<tr>
+						<td>5000-19999</td>
+						<td>0.60</td>
+					</tr>
+					<tr>
+						<td>20000-49999</td>
+						<td>0.50</td>
+					</tr>
+					<tr>
+						<td>50000-99999</td>
+						<td>0.45</td>
+					</tr>
+					<tr>
+						<td>100000+</td>
+						<td>0.40</td>
+					</tr>
+				</tbody>
+			</table>
+			
+			<ul class="plan-footer-detail">
+					<li><small>* For each plan validity is 1 Year only</small></li>
+					<li><small>* 1 credit = 30 seconds airtime</small></li>
+					<li><small>* Follow-up SMSs are an extra 0.5 credits per recipient</small></li>
+					<li><small>* Prices	are	inclusive of all taxes</small></li>
+				</ul-->
+		</div>
+	</div>
+</div>
+
+<!-- pricetblModal -->
+<div class="modal fade" id="pricetblModal" tabindex="-1" role="dialog"
+	aria-labelledby="pricetblModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">
+					<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+				</button>
+				<h4 class="modal-title" id="pricetblModalLabel">Pricing for Awaaz.De Streams</h4>
+			</div>
+			<div class="modal-body">
+				<table class="table table-bordered">
+					<thead>
+						<tr>
+							<th>No. of Credits</th>
+							<th>Price (Rs./Credit)</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>1000-4999</td>
+							<td>0.65</td>
+						</tr>
+						<tr>
+							<td>5000-19999</td>
+							<td>0.60</td>
+						</tr>
+						<tr>
+							<td>20000-49999</td>
+							<td>0.50</td>
+						</tr>
+						<tr>
+							<td>50000-99999</td>
+							<td>0.45</td>
+						</tr>
+						<tr>
+							<td>100000+</td>
+							<td>0.40</td>
+						</tr>
+					</tbody>
+				</table>
+				
+				<ul class="plan-footer-detail">
+					<li><small>* For each plan validity is 1 Year only</small></li>
+					<li><small>* 1 credit = 30 seconds airtime</small></li>
+					<li><small>* Follow-up SMSs are an extra 0.5 credits per recipient</small></li>
+					<li><small>* Prices	are	inclusive of all taxes</small></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row" id="footer">
+	<div class="container FadeIn animated fadeInUp">
+		<div class="row">
+			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-10 col">
+				<h5>Get in touch with us in case of any problem</h5>
+				<ul>
+					<li>(e) <a href="mailto:info@awaaz.de" title="info@awaaz.de">info@awaaz.de</a></li>
+					<li><a href="call:">(I) +91 7940086740</a></li>
+				</ul>
+			</div>
+			<!-- ./col-->
+		</div>
+		<!-- ./row -->
+
+		<hr class="footer-line">
+		<div class="row">
+			<div class="col-lg-7 col-md-7 col-sm-6 col-xs-6">
+				<p class="copyright-text">Copyright © 2014 Awaaz.De</p>
+			</div>
+			<div class="col-lg-5 col-md-5 col-sm-6 col-xs-6">
+				<ul class="social">
+					<li><a href="http://twitter.com/awaazde"><i
+							class="social-twitter-bird"></i></a></li>
+					<li><a href="http://www.facebook.com/AwaazDe"><i
+							class="social-facebook"></i></a></li>
+					<li><a href="http://www.linkedin.com/company/awaaz-de"><i
+							class="social-linkedin"></i></a></li>
+					<li><a href="/blog"><i class="social-wordpress"></i></a></li>
+				</ul>
+			</div>
+		</div>
+		<!-- ./row -->
+	</div>
+</div>
+{% endblock %} {% block extrascripts %}
+<script type="text/javascript">
+	//payment calculation
+	jQuery(function ($) {
+		'use strict';
+		
+		//contains pricing plan information
+		var PricingPlan = {
+			$pricingContainer: [
+				{
+					start_range: 0,
+					end_range: 999,
+					credit_price: 0.65
+				},
+				{
+					start_range: 1000,
+					end_range: 4999,
+					credit_price: 0.65
+				},
+				{
+					start_range: 5000,
+					end_range: 19999,
+					credit_price: 0.60
+				},
+				{
+					start_range: 20000,
+					end_range: 49999,
+					credit_price: 0.50
+				},
+				{
+					start_range: 50000,
+					end_range: 99999,
+					credit_price: 0.45
+				},
+				{
+					start_range: 100000,
+					end_range: 1000000000000,
+					credit_price: 0.40
+				}
+			],
+			getPricePerCredit: function(selVal) {
+				for(var objIdx = 0; objIdx < this.$pricingContainer.length; objIdx++) {
+					var priceObj = this.$pricingContainer[objIdx];
+					if(selVal >= priceObj.start_range && selVal <= priceObj.end_range)
+						return priceObj.credit_price; 
+				}
+				return 0;
+			},
+		};
+		
+		
+		//csrf
+		var Csrf = {
+			$csrfToken: null,
+			init: function() {
+				this.$csrfToken = this.getCookie('csrftoken');
+				/* setting up ajax */
+				$.ajaxSetup({
+					beforeSend: function(xhr, settings) {
+						if (!(/^http:./.test(settings.url) || /^https:./.test(settings.url))) {
+			                                   // Only send the token to relative URLs i.e. locally.
+			                                   xhr.setRequestHeader("X-CSRFToken", this.$csrfToken);
+			                               }
+			                           }
+			                       });
+				
+				return this;
+			},
+			getToken: function() {
+				if(typeof (this.$csrfToken) == 'undefined')
+					this.$csrfToken = this.getCookie('csrftoken');
+				return this.$csrfToken;
+			},
+			setHeader: function(xhr) {
+				xhr.setRequestHeader("X-CSRFToken", this.$csrfToken);
+			},
+			getCookie: function (name) {
+				var cookieValue = null;
+				if (document.cookie && document.cookie != '') {
+					var cookies = document.cookie.split(';');
+					for (var i = 0; i < cookies.length; i++) {
+						var cookie = jQuery.trim(cookies[i]);
+			                   // Does this cookie string begin with the name we want?
+			                   
+			                   if (cookie.substring(0, name.length + 1) == (name + '=')) {
+			                   	cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+			                   	break;
+			                   }
+			               }
+			           }
+			           return cookieValue;
+			       }
+			   };
+		
+		//pricing calculator
+		var PayCal = {
+			$priceCreditLbl: $("#pricecredit"),
+			$totalPrice: $("#total_pr"),
+			$totalPriceBtn: $("#total_prbtn"),
+			$noCreditInp: $("#nocredits"),
+			$applyBtn: $("#applyBtn"),
+			$couponValInp: $("#coupon"),
+			$couponErrorLbl: $("#couponErrorLbl"),
+			$payBtn: $("#btnpay"),
+			$secureAmt: $("#id_secure_hash"),
+			$amtHidden: $("#id_amount"),
+			$refNoHidden: $("#id_reference_no"),
+			$form: $("#frmTransaction"),
+			$specialKeys: [18,37,38,39,40,8,20,17,46,35,13,27,36,45,144,33,34,16,9,91], //special chars/keys
+			$csrf: Csrf.init(),
+        		
+			init: function() {
+				this.$specialKeys.push(8); //Backspace
+				this.$specialKeys.push(16); //Shift
+				this.$specialKeys.push(17); //Ctl
+				this.$specialKeys.push(18); //Alt
+				this.bindEvents();
+			},
+			bindEvents: function() {
+				this.$noCreditInp.on('keyup', this.calPrice.bind(this));
+				this.$applyBtn.on('click', this.applyCoupon.bind(this));
+				this.$payBtn.on('click', this.getSecureHash.bind(this));
+			},
+			getSecureHash: function() {
+				var $this = this;
+				$.ajax({
+					type: "POST",
+					withCredentials: true,
+					async: false,
+					url: "/console/payment/securehash/",
+					headers: { csrftoken: this.$csrf.getToken() },
+					data: {
+						csrfmiddlewaretoken: this.$csrf.getToken(),
+						amount: this.$amtHidden.val(),
+						refrenceno: this.$refNoHidden.val(),
+					},
+					success: function (json) {
+						$this.$secureAmt.val((json.token));
+						$("#formvalues").text($this.$form.serialize());
+						return true;
+					},
+					error: function (jqxhr, textStatus, errorThrown) {
+						console.log(jqxhr);
+						console.log(textStatus);
+						console.log(errorThrown);
+						$this.$applyBtn.button('reset');
+						return false;
+					}
+				});
+			},
+			applyCoupon: function() {
+				this.$applyBtn.button('loading');
+				if(this.$noCreditInp.val() == '' || typeof(this.$noCreditInp.val()) == 'undefined') {
+					this.$noCreditInp.addClass('field-error');
+					this.$couponErrorLbl.text("Please enter no. of credits first");
+					this.$couponErrorLbl.addClass("label-error");
+					this.$applyBtn.button('reset');
+				}
+				else if(this.$couponValInp.val() == '' || typeof(this.$couponValInp.val()) == 'undefined') {
+					this.$noCreditInp.removeClass('field-error');
+					this.$couponValInp.addClass('field-error');
+					this.$couponErrorLbl.text("Please enter coupon code");
+					this.$couponErrorLbl.addClass("label-error");
+					this.$applyBtn.button('reset');
+				} else {
+					this.$noCreditInp.removeClass('field-error');
+					this.$couponValInp.removeClass('field-error');
+					
+					var $this = this;
+					$.ajax({
+					   	type: "POST",
+					   	withCredentials: true,
+					   	async: false,
+					   	url: "/console/payment/applycoupon/",
+					   	headers: { csrftoken: this.$csrf.getToken() },
+					   	data: {
+					   		csrfmiddlewaretoken: this.$csrf.getToken(),
+					   		code: this.$couponValInp.val(),
+					   		amount: this.$amtHidden.val()
+					   	},
+					   	success: function (json) {
+					   		if(typeof(json.error) != 'undefined' && json.error != '') {
+					   			$this.$couponErrorLbl.text(json.error);
+								$this.$couponErrorLbl.addClass("label-error");
+								$this.$couponValInp.addClass('field-error');
+					   		} else {
+					   			$this.$couponErrorLbl.text(json.success);
+								$this.$couponErrorLbl.removeClass("label-error");
+								$this.$couponErrorLbl.addClass("label-success-c");
+								$this.$couponValInp.removeClass('field-error');
+								$this.$totalPriceBtn.text(json.new_amount);
+            					$this.$amtHidden.val(json.new_amount);
+					   		}
+					   		$this.$applyBtn.button('reset');
+					   	},
+					   	error: function (jqxhr, textStatus, errorThrown) {
+					   		console.log(jqxhr);
+					   		console.log(textStatus);
+					   		console.log(errorThrown);
+					   		$this.$applyBtn.button('reset');
+					   	}
+					});
+				}
+				return false;
+			},
+			getFormattedNo: function(number) {
+				var num = number.toString();
+				var afterPoint = '';
+				if(num.indexOf('.') > 0)
+				   afterPoint = num.substring(num.indexOf('.'), num.length);
+				num = Math.floor(num);
+				num = num.toString();
+				var lastThree = num.substring(num.length-3);
+				var otherNumbers = num.substring(0,num.length-3);
+				if(otherNumbers != '')
+				    lastThree = ',' + lastThree;
+				return (otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint);
+			},
+			calPrice: function(e) {
+				var keyCode = e.which ? e.which : e.keyCode;
+            	var ret = ((keyCode >= 48 && keyCode <= 57) || (keyCode >= 96 && keyCode <= 105) || this.$specialKeys.indexOf(keyCode) != -1);
+            	var selVal = this.$noCreditInp.val();
+            	if(!ret)
+            		this.$noCreditInp.val(selVal.substring(0,selVal.length - 1));
+            	else {
+            		var selIntVal = parseFloat(selVal);
+            		//selecting pricing plan
+            		var priceCredit = PricingPlan.getPricePerCredit(selIntVal);
+            		if(isNaN(selIntVal))
+            			selIntVal = 0.00;
+            		
+            		this.$priceCreditLbl.text(priceCredit);
+            		var famt = this.getFormattedNo((priceCredit * selIntVal).toFixed(2));
+            		this.$totalPrice.text(famt);
+            		this.$totalPriceBtn.text(famt);
+            		this.$amtHidden.val((priceCredit * selIntVal).toFixed(2));
+            		
+            		//temp
+            		this.getSecureHash();
+            		$("#formvalues").html(JSON.stringify(this.$form.serializeArray(), undefined, 4));
+            	}
+            	
+            	if(this.$noCreditInp.val() != '' && typeof(this.$noCreditInp.val()) != 'undefined') 
+            		this.$payBtn.removeAttr("disabled");
+            	else
+            		this.$payBtn.attr("disabled", "disabled");
+            	return ret;
+			}
+		};
+		//init payment calculator
+		PayCal.init();
+	});
+	
+	/*
+	$(document).ready(function() {
+		$("#customize-link").click(function() {
+			$("#customize").slideToggle(500);
+			return false;
+		});
+	});*/
+</script>
+{% endblock %}
+
