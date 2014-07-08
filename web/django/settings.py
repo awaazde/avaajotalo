@@ -135,6 +135,7 @@ INSTALLED_APPS = (
     'awaazde.streamit',
     'awaazde.console',
     'awaazde.xact',
+    'awaazde.payment',
     'rest_framework',
     'captcha'
 )
@@ -244,3 +245,10 @@ REPORTS_ROOT = '/Users/neil/Documents/'
 '    servers making calls, you don't need to change this
 '''
 MACHINE_ID = None
+
+#Configs for EBS Payment
+EBS_ACCOUNT_ID = '5880'   #This is a test id. 
+EBS_SECRET_KEY = 'ebskey' #This is a test key.
+EBS_ACTION_URL = 'https://secure.ebs.in/pg/ma/sale/pay' #Do not edit this URL.
+EBS_RETURN_URL = 'http://awaaz.de/console/payment/response/' #Enter your domain URL instead of 127.0.0.1:8000.
+EBS_MODE = 'TEST' # or on prod 'LIVE' its transaction mode

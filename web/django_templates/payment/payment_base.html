@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ LANGUAGE_CODE }}" xml:lang="{{ LANGUAGE_CODE }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="keywords" content="voice SMS API, transactional voice SMS, bulk voice SMS, free voice SMS, voice messaging API, voice messaging, ICT4D, Mobiles for development, Mobiles for Health, Mobiles for education, indian language voice SMS, Rural voice messagging, Farmer voice messaging, Rural SMS platform, hindi voice SMS, marathi voice SMS, punjabi voice SMS, tamil voice SMS">
+
+    <meta name="description" content="Awaaz De is a group voice SMS messaging platform. Create & share audio content on any phone via our web interface or voice SMS API. Try it free now! Track responses & analytics online. Simple, pre-paid billing.">
+
+    <meta name="author" content="awaaz.de">
+
+    <link rel="shortcut icon" href="img/favicon.ico">
+	
+
+<title>{% block title %}{% endblock %}</title>
+
+<!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Lato:400,700,900,400italic' rel='stylesheet' type='text/css'>
+
+    <!-- other styles -->
+    <link rel="stylesheet" href="http://awaaz.de/css/social-icon.css">
+     <!--if IE 7
+      link(rel='stylesheet', href='css/social-icon-ie7.css')
+    -->
+
+    <!--link rel="stylesheet" href="css/animate.css"-->
+    <link rel="stylesheet" href="http://awaaz.de/css/slider.css">
+    <!-- custom styles -->
+    <link rel="stylesheet" href="http://awaaz.de/css/styles.css">
+
+    <!-- google analytics code -->
+   <script>
+	  
+	</script>
+	
+<style>
+.bg-row {
+	font-family: 'Lato', sans-serif;
+	color: #323a45;
+	letter-spacing: 1px;
+	overflow-x: hidden;
+	padding-bottom: 0;
+	margin-bottom: 0px;
+	background: url('http://awaaz.de/img/slide4.jpg') no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	position: relative;
+	width: 100%;
+	min-height: 460px;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+.color-correction {
+	position: absolute;
+	z-index: 0;
+	background-color: rgba(1,1,1,0.6);
+	margin-left: 0px;
+	margin-right: 0px;
+	width: 100%;
+	height: 100%;
+	top: 0;
+}
+</style>
+
+{% block extrahead %}
+{% endblock %}
+  </head>
+<!-- NAVBAR
+================================================== -->
+  <body>
+  <!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+	<div class="navbar-wrapper">
+		<div class="container">
+			<div class="navbar navbar-custom navbar-static-top" role="navigation">
+				<div class="container">
+					<div class="navbar-header">
+						<button type="button" class="navbar-toggle" data-toggle="collapse"
+							data-target=".navbar-collapse">
+							<span class="sr-only">Toggle navigation</span> <span
+								class="icon-bar"></span> <span class="icon-bar"></span> <span
+								class="icon-bar"></span>
+						</button>
+						<a class="navbar-brand" href="#">Awaaz.De</a>
+					</div>
+					<div class="navbar-collapse collapse">
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="/console">Hello! {{ user.name }}</a></li>
+							<li class="active"><a>&#124;&nbsp;&nbsp;&nbsp;&nbsp;Call:
+									+91 7405123455</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	
+	<div class="row bg-row">
+		<div class="color-correction"></div>
+		<div class="row">
+			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center header-row top-text">
+              <h2>Prepaid Pricing</h2>
+              <p>No setup or hidden fees; Inclusive of taxes</p>
+            </div>
+		</div>
+	</div>
+	{% block page_content %}{% endblock %}
+	    
+	<!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    {% block extrascripts %}{% endblock %}
+</body>
+</html>

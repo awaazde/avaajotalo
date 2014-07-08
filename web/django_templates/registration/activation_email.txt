@@ -7,6 +7,8 @@ You'll need to visit following confirmation link in order to gain access to your
 
 http://{{ site.domain }}/console/accounts/activate/{{activation_key}}
 
+(In case if you are not able to open it in browse, simply copy it and paste it in your browser)
+
 Please note that this link is valid for {{expiration_days}} days only.
 
 Feel free to contact us on support@awaaz.de for any help regarding any problem with activation.

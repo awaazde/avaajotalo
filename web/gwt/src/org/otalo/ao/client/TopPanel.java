@@ -197,9 +197,11 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 			Label balanceAmount = new Label(balance);
 			AbstractImagePrototype rechargeHTML = AbstractImagePrototype.create(images.recharge());
   	  //HTML rechargeButton = new HTML(rechargeHTML.getHTML());
-  	  Anchor rechargeButton = new Anchor(rechargeHTML.getHTML(), true);
+  	  Anchor rechargeButton = new Anchor(rechargeHTML.getHTML(), true, AoAPI.BUY_CREDIT);
   	  rechargeButton.setStyleName("clickableimage");
-			rechargeButton.addClickHandler(new ClickHandler() {
+		
+  	  /*
+  	  rechargeButton.addClickHandler(new ClickHandler() {
 				
 				public void onClick(ClickEvent event) {
 					ConfirmDialog recharge = new ConfirmDialog("Online payment coming soon! For now, please send us a cheque or contact info@awaaz.de for bank e-transfer details.");
@@ -208,7 +210,7 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 					
 				}
 			});
-			
+		*/	
 			// insert items right to left
 			inner.insert(new Label(" | "), 1);
 			inner.insert(rechargeButton, 1);
