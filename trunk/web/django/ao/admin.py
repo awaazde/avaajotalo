@@ -22,7 +22,6 @@ class OrderingAdmin(admin.ModelAdmin):
 
 class MessageAdmin(OrderingAdmin):
     list_display = ('date', 'user')
-    list_filter = ['date', 'user']
     search_fields = ['user__name', 'user__number']   
 
 class UserAdmin(OrderingAdmin):

@@ -26,8 +26,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^console/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),                   
-    (r'^AO', include('otalo.ao.urls')),   
+    url(r'^AO/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),                   
+    (r'^AO/', include('otalo.ao.urls')),   
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:

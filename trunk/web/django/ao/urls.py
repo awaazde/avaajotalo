@@ -61,6 +61,11 @@ urlpatterns = patterns('',
     (r'^2/', include('awaazde.console.urls')),
     (r'^xact/', include('awaazde.xact.urls')),
     (r'^xact-auth/', include('rest_framework.urls', namespace='rest_framework')),
+        # for streams API
+    (r'^streams-api/', include('awaazde.streamit.urls_api')),
+    # for surveys API
+    (r'^surveys-api/', include('awaazde.console.urls_api')),
+    (r'^api/docs/', include('rest_framework_swagger.urls')),
 )
 
 if settings.DEVELOPMENT:
