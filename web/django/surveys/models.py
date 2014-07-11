@@ -107,7 +107,7 @@ class Survey(models.Model):
         
         if self.subjects.all():
             backup_calls = self.backup_calls or 0
-            complete_cnt = self.subjects.filter(Q(call__complete=True) | Q(call__priority=self.backup_calls+1), call__survey=self).distinct().count()
+            complete_cnt = self.subjects.filter(Q(call__complete=True) | Q(call__priority=(self.backup_calls or 0)+1), call__survey=self).distinct().count()
             pendingcallcnt = self.subjects.all().count() - complete_cnt
         else:
             # for legacy (pre-survey.subjects) purposes
@@ -199,7 +199,7 @@ class Call(models.Model):
     dialer = models.ForeignKey('ao.Dialer', blank=True, null=True)
     
     def __unicode__(self):
-        return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
+        return unicode(self.subject) + '-' + unicode(self.survey)
     
 class Prompt(models.Model):
     file = models.CharField(max_length=128)

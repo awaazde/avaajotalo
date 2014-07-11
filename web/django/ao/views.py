@@ -25,7 +25,6 @@ from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
 from django.core import serializers
-from django.core.files import File
 from django.conf import settings
 from django.db.models import Min, Max, Count, Q
 from datetime import datetime, timedelta
@@ -454,16 +453,7 @@ def record_or_upload_message(request):
         else:
             f = get_object_or_404(Forum, pk=params['forumid'])
             
-        mf = createmessage(request, f, main, author, parent, date)
-        
-        #converting file viceversa i.e. from mp3 to wav or from wav to mp3
-        create_wav_mp3_companion(mf.message.file.path)
-        if extension != '.wav':
-            relative_path = mf.message.file.name
-            #updating message object with wav file
-            wav_file_path = relative_path[:relative_path.rfind('.')] + '.wav'
-            mf.message.file = wav_file_path
-            mf.message.save()
+        mf = createmessage(f, main, author, parent, date)
         
         # do this after createmessage so that an answer call will use the wav file
         # which was just saved above
@@ -502,13 +492,8 @@ def create_wav_mp3_companion(file_path):
         command = "ffmpeg -y -i %s"%(file_path) + " -f wav -acodec pcm_mulaw -ar 8000 -ac 1 %s"%(to_path)
         subprocess.call(command, shell=True)
 
-def createmessage(request, forum, content, author, parent=None, date=None):
-    t = datetime.now()
-
-    extension = content.name[content.name.index('.'):]
-    filename = t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + extension
-    content.name = filename
-    
+def createmessage(forum, content, author, parent=None, date=None):
+    content.name = generate_filename(content)
     pos = None
     msg = Message.objects.create(date=date or t, file=content, user=author)
     
@@ -521,14 +506,25 @@ def createmessage(request, forum, content, author, parent=None, date=None):
                 pos = msgs[0].position + 1
     else:
         status = Message_forum.STATUS_PENDING
-    msg_forum = Message_forum(message=msg, forum=forum,  status=status, position = pos)
-    msg_forum.save()
-    
+    msg_forum = Message_forum.objects.create(message=msg, forum=forum,  status=status, position = pos)
     if parent:
         add_child(msg, parent.message)
-
+        
+    #converting file from mp3 to wav or from wav to mp3
+    create_wav_mp3_companion(msg_forum.message.file.path)
+    if '.wav' not in msg_forum.message.file.name:
+        relative_path = msg_forum.message.file.name
+        #updating message object with wav file
+        wav_file_path = relative_path[:relative_path.rfind('.')] + '.wav'
+        msg_forum.message.file = wav_file_path
+        msg_forum.message.save()
     return msg_forum
 
+def generate_filename(f):
+    t = datetime.now()
+    extension = f.name[f.name.index('.'):]
+    return t.strftime("%m-%d-%Y_%H%M%S") + str(t.microsecond)[-3] + extension
+    
 def thread(request, message_forum_id):
     m = get_object_or_404(Message_forum, pk=message_forum_id)
     msg = m.message
@@ -1074,7 +1070,7 @@ def get_phone_number(number):
     # number entry styles
     if number is None:
         return number
-    number = re.sub(r'[^\d]+','',number)
+    number = re.sub(r'[^\d]+','',str(number))
     if len(number) >= 10:
         return number[-10:]
     else:

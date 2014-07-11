@@ -31,13 +31,6 @@ ALLOWED_HOSTS = ['*']
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'mysql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'otalo'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'otalo'             # Not used with sqlite3.
-DATABASE_PASSWORD = 'otalo'         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -74,7 +67,7 @@ MEDIA_ROOT = '/Users/neil/Development/media'
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = 'http://awaaz.de/console/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -136,6 +129,7 @@ INSTALLED_APPS = (
     'awaazde.console',
     'awaazde.xact',
     'rest_framework',
+    'rest_framework_swagger',
     'captcha'
 )
 
@@ -216,6 +210,10 @@ STATIC_DOCUMENT_ROOT = '/Users/neil/Development/workspace/ao/war'
 
 SERIALIZATION_MODULES = {
     'json': 'utils.serializers.custom_json'
+}
+
+REST_FRAMEWORK = {
+    'PAGINATE_BY': 100,
 }
 
 CONSOLE_ROOT = '/AO'

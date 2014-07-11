@@ -177,6 +177,10 @@ class Forum(models.Model):
     add_member_credits = models.IntegerField(blank=True, null=True)
     backup_calls = models.IntegerField(blank=True, null=True)
     
+    def get_language(self):
+        line = self.line_set.all()[0]
+        return line.language
+    
     '''
     '    Adapted fields (to avoid creating extra fields)
     '    ----------------------------------------------
@@ -277,7 +281,7 @@ class Membership(models.Model):
     STATUS_DNC = 5
     
     STATUS = (
-    (STATUS_SUBSCRIBED, 'Joined'),
+    (STATUS_SUBSCRIBED, 'Subscribed'),
     (STATUS_UNSUBSCRIBED, 'Unsubscribed'),
     (STATUS_REQUESTED, 'Requested'),
     (STATUS_INVITED, 'Pending'),

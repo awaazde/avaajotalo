@@ -26,16 +26,13 @@ class NameSearchAdmin(OrderingAdmin):
 class SurveyAdmin(NameSearchAdmin):
     exclude = ('subjects',)
    
-
-class DateDisplayAdmin(OrderingAdmin):
-    list_display = ('call', 'date', 'subject')
-    
-    def call(self, obj):
-        return unicode(obj)
+class CallAdmin(OrderingAdmin):
+    list_display = ('date', 'subject', 'survey', 'priority')
+    exclude = ('subject',)
 
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Subject, NameSearchAdmin)
-admin.site.register(Call, DateDisplayAdmin)
+admin.site.register(Call, CallAdmin)
 admin.site.register(Prompt, OrderingAdmin)
 admin.site.register(Option, OrderingAdmin)
 admin.site.register(Input, OrderingAdmin)
