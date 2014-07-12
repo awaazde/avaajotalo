@@ -37,3 +37,7 @@ def main(interval_mins):
             if not os.path.isfile(mp3_file_path):
                 print('converting to mp3')
                 convert_to_mp3(m.file.path)
+                
+if __name__=="__main__":
+    mins = sys.argv[2]
+    main(int(mins))
