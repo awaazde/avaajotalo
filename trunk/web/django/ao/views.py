@@ -495,7 +495,7 @@ def create_wav_mp3_companion(file_path):
 def createmessage(forum, content, author, parent=None, date=None):
     content.name = generate_filename(content)
     pos = None
-    msg = Message.objects.create(date=date or t, file=content, user=author)
+    msg = Message.objects.create(date=date or datetime.now(), file=content, user=author)
     
     if bool(Admin.objects.filter(user=author,forum=forum)):
         status = Message_forum.STATUS_APPROVED
