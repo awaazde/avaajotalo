@@ -15,7 +15,7 @@
 #===============================================================================
 
 from django.conf import settings
-import os, time, subprocess
+import sys, os, time, subprocess
 from datetime import datetime, timedelta
 from ao.models import Message 
 
