@@ -24,7 +24,7 @@ from django.shortcuts import render
 '''
 def log_out(request):
     logout(request)
-    referrer = request.META['HTTP_REFERER']
+    referrer = request.META.get('HTTP_REFERER',settings.CONSOLE_ROOT)
     referrer = referrer[referrer.find(settings.CONSOLE_ROOT):]
     return render(request, 'registration/logged_out.html', {'referrer':referrer})
     
