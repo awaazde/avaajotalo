@@ -37,7 +37,6 @@ BACKUP_THRESH_MINS = 30
 BCAST_BUFFER_SECS = 0 * 60
 
 def subjects_by_numbers(numbers):
-    subjects = []
     # clean up the numbers, but don't limit to 10-digit (to alllow int'l bcasts)
     numbers = [number.encode('ascii', 'ignore').strip() for number in numbers]
     numbers = [number.replace(' ','') for number in numbers]
@@ -47,7 +46,14 @@ def subjects_by_numbers(numbers):
     disallowed = User.objects.filter(number__in=numbers, allowed='n').values('number')
     disallowed = [n.values()[0] for n in disallowed]
     numbers = list(set(numbers) - set(disallowed))
-    
+        
+    return numbers_to_subjects(numbers)
+
+'''
+'    Given a list of numbers, return a list of subjects
+'''
+def numbers_to_subjects(numbers):
+    subjects = []
     existing = Subject.objects.filter(number__in=numbers)
     existing_dict = {}
     new_subjects = []
