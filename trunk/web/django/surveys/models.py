@@ -199,7 +199,7 @@ class Call(models.Model):
     dialer = models.ForeignKey('ao.Dialer', blank=True, null=True)
     
     def __unicode__(self):
-        return unicode(self.subject) + '-' + unicode(self.survey)
+        return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
     
 class Prompt(models.Model):
     file = models.CharField(max_length=128)
