@@ -96,6 +96,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'utils.middlewares.middleware.ImpersonateMiddleware',
 )
 
 ROOT_URLCONF = 'otalo.urls'
@@ -114,7 +115,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.sites',
-	'otalo.ao',
+    'otalo.ao',
     'otalo.surveys',
     'otalo.sms',
     'django.contrib.admin',
@@ -130,6 +131,7 @@ INSTALLED_APPS = (
     'awaazde.xact',
     'rest_framework',
     'rest_framework_swagger',
+    'awaazde.payment',
     'captcha'
 )
 
@@ -242,3 +244,14 @@ REPORTS_ROOT = '/Users/neil/Documents/'
 '    servers making calls, you don't need to change this
 '''
 MACHINE_ID = None
+
+#Config for payment gateway
+PAYMENT_GATEWAY_CONFIG = {
+    'account_id': '5880',   #This is a test id. Actual account id needs to be put in prod
+    'secret_key': 'ebskey', #This is a test key.Actual secret key needs to be put in prod
+    'action_url': 'https://secure.ebs.in/pg/ma/sale/pay', #Action url where payment request needs to be submitted
+    'return_url': 'http://awaazde/console/payment/buycredits/', #url where payment response would be returened by payment gateway
+    'mode'      : 'TEST', # or on prod 'LIVE' its transaction mode
+}
+
+

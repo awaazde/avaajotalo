@@ -22,18 +22,21 @@ class OrderingAdmin(admin.ModelAdmin):
     
 class NameSearchAdmin(OrderingAdmin):
    search_fields = ['name', 'number']
-   
+
 class SurveyAdmin(NameSearchAdmin):
-    exclude = ('subjects',)
+    raw_id_fields = ('subjects',)
+    
+class PromptAdmin(OrderingAdmin):
+    raw_id_fields = ('survey',)
    
 class CallAdmin(OrderingAdmin):
     list_display = ('date', 'subject', 'survey', 'priority')
-    exclude = ('subject',)
+    raw_id_fields = ('subject', 'survey')
 
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Subject, NameSearchAdmin)
 admin.site.register(Call, CallAdmin)
-admin.site.register(Prompt, OrderingAdmin)
+admin.site.register(Prompt, PromptAdmin)
 admin.site.register(Option, OrderingAdmin)
 admin.site.register(Input, OrderingAdmin)
 
