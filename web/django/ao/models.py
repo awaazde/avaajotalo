@@ -325,6 +325,7 @@ class Transaction(models.Model):
     TRANSFER_OUT = 4
     TRANSFER_IN = 5
     FORWARD = 6
+    PAYMENT_GATEWAY_RECHARGE = 7
     
     TYPE = (
     (BROADCAST_CALL, 'Broadcast'),
@@ -334,12 +335,40 @@ class Transaction(models.Model):
     (TRANSFER_OUT, 'Transfer out'),
     (TRANSFER_IN, 'Transfer in'),
     (FORWARD, 'Forward'),
+    (PAYMENT_GATEWAY_RECHARGE, 'Payment Gateway Recharge'),
     )
+    
+    
+    '''
+    Status - this is for payment gateway/third party payment
+    '''
+    PAYMENT_STATUS_SUCCESSFUL = 0
+    PAYMENT_STATUS_FAILED     = 1
+    PAYMENT_STATUS_HOLD       = 2
+    PAYMENT_STATUS_INITIATED = 3
+    PAYMENT_STATUS_CANCELLED  = 4
+    
+    PAYMENT_STATUS = (
+    (PAYMENT_STATUS_SUCCESSFUL, 'Transaction Successful'),
+    (PAYMENT_STATUS_FAILED, 'Transaction Failed'),
+    (PAYMENT_STATUS_INITIATED, 'Transaction Initiated'),
+    (PAYMENT_STATUS_HOLD, 'Transaction was successful but its still processing recharge'),
+    (PAYMENT_STATUS_CANCELLED, 'User cancelled transaction'),
+    )
+    
     
     user = models.ForeignKey(User)
     type = models.IntegerField(choices=TYPE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2) #this is storing no. of credits
     date = models.DateTimeField(auto_now_add=True)
+    
+    currency_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True) # this is actual amount paid in Rs.
+    
+    #Third party(payment gateway) related fields
+    order_ref_no = models.CharField(max_length=20, blank=True, null=True, db_index=True)
+    thirdparty_transaction_id = models.CharField(max_length=20, blank=True, null=True)
+    thirdparty_name = models.CharField(max_length=12, blank=True, null=True)
+    payment_status = models.IntegerField(choices=PAYMENT_STATUS, default=PAYMENT_STATUS_INITIATED, blank=True, null=True)
     
     '''
     ' In order to link transactions back to specific calls

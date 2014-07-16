@@ -66,6 +66,7 @@ urlpatterns = patterns('',
     # for surveys API
     (r'^surveys-api/', include('awaazde.console.urls_api')),
     (r'^api/docs/', include('rest_framework_swagger.urls')),
+    (r'^payment/', include('awaazde.payment.urls')),
 )
 
 if settings.DEVELOPMENT:

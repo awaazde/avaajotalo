@@ -20,6 +20,10 @@ from django.contrib import admin
 class OrderingAdmin(admin.ModelAdmin):
     ordering = ('-id',)
 
+class ADAdmin(OrderingAdmin):
+    raw_id_fields = ('user', 'auth_user', 'forum')
+
+
 class MessageAdmin(OrderingAdmin):
     list_display = ('date', 'user')
     search_fields = ['user__name', 'user__number']   
@@ -35,20 +39,29 @@ class ForumTagInline(admin.TabularInline):
 class ForumAdmin(OrderingAdmin):
     inlines = (ForumTagInline,)
     search_fields = ['name']
-    exclude = ('responders',)
+    raw_id_fields = ('responders',)
 
 class LineAdmin(OrderingAdmin):
     search_fields = ['name', 'number']
 
+class MembershipAdmin(OrderingAdmin):
+    raw_id_fields = ('user', 'group')
+
+class MessageForumAdmin(OrderingAdmin):
+    raw_id_fields = ('message', 'forum')
+    
+class TransactionAdmin(OrderingAdmin):
+    raw_id_fields = ('user','call')
+    
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Tag, OrderingAdmin)
-admin.site.register(Admin, OrderingAdmin)
+admin.site.register(Admin, ADAdmin)
 admin.site.register(Line, LineAdmin)
-admin.site.register(Message_forum, OrderingAdmin)
-admin.site.register(Membership, OrderingAdmin)
-admin.site.register(Transaction, OrderingAdmin)
+admin.site.register(Message_forum, MessageForumAdmin)
+admin.site.register(Membership, MembershipAdmin)
+admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Forward, OrderingAdmin)
 admin.site.register(Dialer, OrderingAdmin)
 
