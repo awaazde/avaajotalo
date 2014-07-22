@@ -160,15 +160,18 @@ BCAST_INTERVAL_MINS = 3
 BROKER_URL = "django://"
 #CELERY_ALWAYS_EAGER = True
 #TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-class CallsRouter(object):
+class ADRouter(object):
     def route_for_task(self, task, args=None, kwargs=None):
         if task == 'otalo.surveys.tasks.schedule_call':
             dialer = args[1]
             machine_id = dialer.machine_id or ''
             return {'queue': 'calls'+str(machine_id)}
+        elif task == 'otalo.ao.tasks.cache_audio':
+            machine_id = args[1] or ''
+            return {'queue': 'audio_cache'+str(machine_id)}
         return None
-    
-CELERY_ROUTES = (CallsRouter(), )
+
+CELERY_ROUTES = (ADRouter())
 CELERYBEAT_SCHEDULE = {
     'schedule_by_dialerids': {
         'task': 'otalo.ao.tasks.schedule_bcasts_by_dialers',

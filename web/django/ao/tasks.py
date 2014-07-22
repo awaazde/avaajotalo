@@ -16,7 +16,7 @@
 from datetime import datetime, timedelta
 from celery import shared_task
 from haystack.management.commands import update_index
-from otalo.utils.audio import audio_converter
+from otalo.utils import audio_utils
 import broadcast
 from otalo.ao.models import Dialer
 
@@ -69,8 +69,30 @@ def response_calls(interval_mins):
 '''
 @shared_task
 def convert_audio(interval_mins):
-    audio_converter.main(interval_mins)
+    audio_utils.convert_audio(interval_mins)
     
+'''
+'    Stash audio for this survey at the
+'    machines it may play at
+'''
+@shared_task
+def cache_survey_audio(s, dialers=None):
+    if not dialers:
+        dialers = s.dialers.all()
+    for d in dialers:
+        machine_ids.append(d.machine_id)
+        machine_ids = list(set(machine_ids))
+    
+    for mid in machine_ids:
+        cache_audio.s().delay(s, machine_id)
+
+'''
+'    Stash audio for this survey at this machine
+'''
+@shared_task
+def cache_audio(s, machine_id):
+    audio_utils.cache_survey_audio(s)
+        
 '''
 '    Update haystack search index
 '''
