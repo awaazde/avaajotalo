@@ -77,6 +77,7 @@ def convert_audio(interval_mins):
 '''
 @shared_task
 def cache_survey_audio(s, dialers=None):
+    machine_ids = []
     if not dialers:
         dialers = s.dialers.all()
     for d in dialers:
