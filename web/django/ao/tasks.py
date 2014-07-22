@@ -85,6 +85,7 @@ def cache_survey_audio(s, dialers=None):
         machine_ids = list(set(machine_ids))
     
     for mid in machine_ids:
+        mid = mid or ''
         cache_audio.s().delay(s, mid)
 
 '''
