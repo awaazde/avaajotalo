@@ -85,7 +85,7 @@ def cache_survey_audio(s, dialers=None):
         machine_ids = list(set(machine_ids))
     
     for mid in machine_ids:
-        cache_audio.s().delay(s, machine_id)
+        cache_audio.s().delay(s, mid)
 
 '''
 '    Stash audio for this survey at this machine
