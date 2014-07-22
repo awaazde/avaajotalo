@@ -47,7 +47,10 @@ BUFFER_MINS = 2
 def cache_survey_audio(survey):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     for p in Prompt.objects.filter(survey=survey):
-        url = settings.MEDIA_URL + '/' + p.file
+        # cast to string in order for SWIG
+        # to deal with unicode coming from django db
+        # see http://stackoverflow.com/questions/20905702/typeerror-argument-of-type-char-const
+        url = str(settings.MEDIA_URL + p.file)
         print('prefetching '+url)
         con.api("http_prefetch "+ url)
             
