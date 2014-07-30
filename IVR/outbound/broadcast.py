@@ -22,7 +22,10 @@ from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag, Dial
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
 from otalo.surveys import tasks as surveytasks
-from otalo.ao import tasks as aotasks
+# this is a circular reference, so change
+# how we import slightly to avoid importErrors
+# (see http://stackoverflow.com/a/746067/199754)
+import otalo.ao.tasks
 
 SOUND_EXT = ".wav"
 OUTBOUND_SOUNDS_SUBDIR = 'forum/outbound/'
@@ -319,7 +322,7 @@ def schedule_bcasts(time=None, dialers=None):
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
             if not scheduled_subjs.exists():
                 # no calls have been scheduled yet, so prefetch the audio
-                aotasks.cache_survey_audio.delay(bcast)
+                otalo.ao.tasks.cache_survey_audio.delay(bcast)
             # next line purely for query optimization purposes
             scheduled_subjs = [subj.values()[0] for subj in scheduled_subjs]
             recipients = bcast.subjects.all()
