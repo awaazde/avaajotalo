@@ -7,7 +7,7 @@
 <style>
 .pricing-plan-container {
 	background: #ffffff;
-	min-height: 226px;
+	min-height: 238px;
 	position: relative;
 	margin-top: -100px;
 	-moz-box-shadow: 0 0 5px #888;
@@ -409,7 +409,8 @@ input[type="text"]:focus,input[type="password"]:focus, input[type="email"]:focus
 				this.$couponValInp.val('');
 				this.calPriceChange();
 			},
-			getSecureHash: function() {
+			getSecureHash: function(event) {
+				event.preventDefault();
 				var $this = this;
 				$.ajax({
 					type: "POST",
@@ -424,14 +425,24 @@ input[type="text"]:focus,input[type="password"]:focus, input[type="email"]:focus
 						credits: this.$noCreditInp.val()
 					},
 					success: function (json) {
-						$this.$secureAmt.val((json.token));
-						return true;
+						if(typeof(json.error) != 'undefined' && json.error != '') {
+					   		$this.$couponErrorLbl.html(json.error);
+					   		$this.$couponErrorLbl.removeClass("label-success-c");
+							$this.$couponErrorLbl.addClass("label-error");
+							$this.$noCreditInp.addClass('field-error');
+							event.stopPropagation();
+						}
+						else {
+							$this.$secureAmt.val((json.token));
+							$this.$form.submit();
+						}
 					},
 					error: function (jqxhr, textStatus, errorThrown) {
 						console.log(jqxhr);
 						console.log(textStatus);
 						console.log(errorThrown);
 						$this.$applyBtn.button('reset');
+						event.stopPropagation();
 						return false;
 					}
 				});
@@ -469,6 +480,7 @@ input[type="text"]:focus,input[type="password"]:focus, input[type="email"]:focus
 					   	success: function (json) {
 					   		if(typeof(json.error) != 'undefined' && json.error != '') {
 					   			$this.$couponErrorLbl.html(json.error);
+					   			$this.$couponErrorLbl.removeClass("label-success-c");
 								$this.$couponErrorLbl.addClass("label-error");
 								$this.$couponValInp.addClass('field-error');
 								$this.$totalPriceBtn.text(json.new_amount);

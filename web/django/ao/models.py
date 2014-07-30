@@ -18,6 +18,7 @@ from decimal import *
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
 from otalo.surveys.models import Survey, Call
+from awaazde.payment.models import Coupon
 from datetime import datetime
 from django.db.models import F
 
@@ -369,6 +370,7 @@ class Transaction(models.Model):
     thirdparty_transaction_id = models.CharField(max_length=20, blank=True, null=True)
     thirdparty_name = models.CharField(max_length=12, blank=True, null=True)
     payment_status = models.IntegerField(choices=PAYMENT_STATUS, default=PAYMENT_STATUS_INITIATED, blank=True, null=True)
+    coupon = models.ForeignKey(Coupon, blank=True, null=True) #stores coupon if applied any
     
     '''
     ' In order to link transactions back to specific calls
@@ -381,7 +383,13 @@ class Transaction(models.Model):
         
     def __unicode__(self):
         return unicode(self.user) + '_' + unicode(self.type) +"-"+ unicode(self.call) + "-" + unicode(self.amount)
-
+    
+    '''
+    Adds coupon reference for the transaction
+    ''' 
+    def add_coupon(self, coupon):
+        self.coupon = coupon
+        self.save()
 '''
 '    Represents a forward request from a requestor to some number
 '    of recipients. Doesn't give any information on the actual calls

@@ -3,7 +3,9 @@
 
 Hi,
 
-You'll need to visit following confirmation link in order to gain access to your Awaaz.De account.
+Thank you for joining our force. Your email is your username for your Awaaz.De account. 
+
+Also you'll need to visit following confirmation link in order to gain access to your Awaaz.De account.
 
 http://{{ site.domain }}/console/accounts/activate/{{activation_key}}
 

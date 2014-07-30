@@ -19,7 +19,7 @@ import sys, os, time, subprocess, urllib
 from datetime import datetime, timedelta
 from ao.models import Message 
 from surveys.models import Survey, Prompt
-from ESL import *
+#from ESL import *
 
 '''
 Allow some buffer of time to look for audio to convert,
