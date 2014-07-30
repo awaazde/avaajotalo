@@ -3,6 +3,7 @@
 #--------------------------------------------
 
 from django import http
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
@@ -23,7 +24,8 @@ class ImpersonateMiddleware(object):
             request.session['__impersonate'] = request.user.username
             request.session.modified = True  # Let's make sure...
         elif request.user.is_superuser:
-            raise PermissionDenied()
+            if request.get_full_path() == settings.CONSOLE_ROOT or request.get_full_path() == settings.CONSOLE_ROOT + "/":
+                raise PermissionDenied()
 
     def process_response(self, request, response):
         if not hasattr(request, 'user'):
