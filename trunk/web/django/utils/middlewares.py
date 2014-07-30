@@ -3,6 +3,8 @@
 #--------------------------------------------
 
 from django import http
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 
 class ImpersonateMiddleware(object):
@@ -13,16 +15,15 @@ class ImpersonateMiddleware(object):
             else:
                  impersonate = request.session['__impersonate']
                 
-            user = User.objects.filter(username=impersonate)
-            if bool(user):
-                request.user = user[0]
-                if '__impersonate' in request.session and request.session['__impersonate'] != request.user.username:
-                    del request.session['__impersonate']
-                request.session['__impersonate'] = request.user.username
-                request.session.modified = True  # Let's make sure...
-            else:
-                if '__impersonate' in request.session:
-                    del request.session['__impersonate']
+            user = get_object_or_404(User, username=impersonate)
+            
+            request.user = user
+            if '__impersonate' in request.session and request.session['__impersonate'] != request.user.username:
+                del request.session['__impersonate']
+            request.session['__impersonate'] = request.user.username
+            request.session.modified = True  # Let's make sure...
+        elif request.user.is_superuser:
+            raise PermissionDenied()
 
     def process_response(self, request, response):
         if not hasattr(request, 'user'):

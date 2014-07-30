@@ -51,7 +51,7 @@ class MessageForumAdmin(OrderingAdmin):
     raw_id_fields = ('message', 'forum')
     
 class TransactionAdmin(OrderingAdmin):
-    raw_id_fields = ('user','call')
+    raw_id_fields = ('user','call', 'coupon')
     
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
