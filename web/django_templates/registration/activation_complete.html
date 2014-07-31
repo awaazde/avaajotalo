@@ -4,10 +4,76 @@
 
 {% block title %}Awaaz.De | Activatation completed{% endblock %}
 
+{% block extrastyle %}
+<style>
+.btn-signup {
+	color: #fff;
+	text-decoration: none;
+	margin-top: 2%;
+	border-bottom: 2px solid transparent;
+}
+
+.btn-signup:hover, .btn-signup:focus {
+	color: #fff;
+	text-decoration: none;
+	border-bottom: 2px solid #f36;
+}
+</style>
+{% endblock %}
 {% block page_content %}
 	<div class="body">
-		<p>
-			Your account has been activated successfully. You may want to <a class="login-link" href="{% settings_value "CONSOLE_ROOT" %}">{% trans 'Log in' %}</a> now.
-		</p>
+		<h2>Congratulations! Your account has been activated successfully.</h2>
+		
+		<br class="clear" />
+		<br class="clear" />
+		<p><a class="btn-signup" href="{% settings_value "CONSOLE_ROOT" %}">{% trans 'Log in now' %}</a></p>
+		<br class="clear" />
+		<br class="clear" />
+		<h3>Get started now! Here are 5 steps to being a Happy Haathi:</h3>
+		<br class="clear" />
+		<ol class="text-left">
+			<li>
+				<h4>Add Members to Your Group</h4>
+				<p>Go to 'Manage' and then 'Members'. Add numbers by pasting or uploading an Excel file</p>
+				<img src="/img/members_screen.png" alt='step1' />
+				<br class="clear" />
+				<br class="clear" />
+			</li>
+			
+			<li>
+				<h4>Set Up Your Group</h4>
+				<p>Go to 'Manage' and then 'Settings'. </p>
+				<p>Here you can see your unique group phone number, set what kinds of responses you want to take from your listeners (Numeric or Voice), set missed call features on or off and more! </p>
+				<p>If you add your phone number into the 'Multiple Publishers' box, you will be able ti record messages directly from your phone.</p>
+				<img src="/img/settings_screen.png" alt='step2' />
+				<br class="clear" />
+				<br class="clear" />
+			</li>
+			
+			<li>
+				<h4>Record Your First Message!</h4>
+				<p>Click on the Record/Upload button. You can upload a pre-recorded mp3 or wav format from your computer, or you can record directly by pressing the 'Record' button.</p>
+				<p>Once your message is recorded, it is ready to send.</p>
+				<p>Here, you can also schedule your message, by selecting when you want your message to send.</p>
+				<img src="/img/record_screen.png" alt='step3' />
+				<br class="clear" />
+				<br class="clear" />
+			</li>
+			
+			<li>
+				<h4>Track Your Impact</h4>
+				<p>Click 'Manage' then 'Reports' to see how your call did. For calls sent, you will see a report. For inbound calls received, the buttin below, 'Call-In Report', reflects the calls received on your group number. Any voice responses received can be viewed in your 'Inbox'.</p>
+				<img src="/img/reports_screen.png" alt='step4' />
+				<br class="clear" />
+				<br class="clear" />
+			</li>
+			
+			<li>
+				<h4>Ask for Help!</h4>
+				<p>We are always happy to speak with you. If you get stuck or lost, first click the big red 'HELP' tab on the right of your screen. If you don't find an answer, call us on our customer service helpline any time at 07405 123455.</p>
+			</li> 
+		</ol>
+		
+		<h3>That's it! You're all ready to begin. GET STARTED NOW by <a href="{% settings_value "CONSOLE_ROOT" %}" class="login-link">clicking here</a>.</h3>
 	</div>
 {% endblock %}
