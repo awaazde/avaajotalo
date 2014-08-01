@@ -151,7 +151,6 @@ function survey_main()
 		Basically hacks based on dialer and operator quirks
 	--]]
 	
-	--[[
 	if (session:ready() ~= true) then
 		-- If PRI and the hangup_cause was a technical error try a series of other approaches
 		local hangup_cause = session:hangupCause();
@@ -163,7 +162,6 @@ function survey_main()
 			pause_for_session_ready();
 		end
 	end
-	--]]
 	
 	--[[
 		END CONTINGENCY SECTION
