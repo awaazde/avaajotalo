@@ -43,7 +43,7 @@ prevprompts = {};
 callid = argv[1];
 
 -- get subject id, phone number, and survey id
-query = 		"SELECT subject.id, subject.number, survey.id, survey.complete_after, survey.number, c.dialer_id ";
+query = 		"SELECT subject.id, subject.number, survey.id, survey.complete_after, survey.number, c.dialer_id, survey.outbound_number ";
 query = query .. " FROM surveys_survey survey, surveys_subject subject, surveys_call c ";
 query = query .. " WHERE c.id = " .. callid;
 query = query .. " AND c.survey_id = survey.id AND c.subject_id = subject.id ";
@@ -61,6 +61,11 @@ logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
 complete_after_idx = tonumber(res[4]);
+-- keep global for access in replace_channel_vars...()
+outbound_number = nil;
+if (res[7] ~= nil and res[7] ~= '') then
+	outbound_number = res[7];
+end
 
 local DIALSTRING_PREFIX = "";
 -- suffix isn't used, so don't fetch it.
@@ -87,7 +92,7 @@ end
 if (dialer[1] ~= nil) then
 	DIALSTRING_PREFIX = dialer[1] .. country_code;
 end
-CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..destination..',origination_caller_id_name='..destination;
+CALLID_VAR = '{ao_survey=true,ignore_early_media=true,origination_caller_id_number='..(outbound_number or destination)..',origination_caller_id_name='..(outbound_number or destination);
 if (dialer[2] ~= nil and dialer[2] ~= '') then
 	local channel_vars = dialer[2];
 	channel_vars = replace_channel_vars_wildcards(channel_vars);

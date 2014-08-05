@@ -72,8 +72,6 @@ logfilename = logfileroot .. "survey_in_" .. destination .. ".log";
 logfile = io.open(logfilename, "a");
 logfile:setvbuf("line");
 
-
-
 complete_after_idx = tonumber(res[2]);
 local callback_allowed = tonumber(res[3]);
 -- keep global for access in replace_channel_vars...()
