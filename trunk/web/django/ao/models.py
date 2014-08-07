@@ -82,6 +82,12 @@ class User(models.Model):
     # from indirect sources (log, based on tags, etc.)
     indirect_bcasts_allowed = models.BooleanField(default=True)
     tags = models.ManyToManyField('Tag', blank=True, null=True)
+    
+    ''' number of groups this user (i.e. account) can create
+        This will become a user setting value in 2.0 architecture
+    '''
+    DISABLE_GROUP_ADD_REMOVE = -1;
+    max_groups = models.IntegerField(blank=True, null=True)
 
     def __unicode__(self):
         if self.name and self.name != '':

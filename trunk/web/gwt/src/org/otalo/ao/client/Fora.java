@@ -16,9 +16,7 @@
 package org.otalo.ao.client;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
@@ -26,6 +24,7 @@ import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
 import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.Message.MessageStatus;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -41,8 +40,8 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -132,14 +131,24 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 			widgets.add(w);
 		}
 	  
-	  if (Messages.get().canManage())
+	  if (Messages.get().canManage() && Messages.get().getModerator().getMaxGroups() != User.DISABLE_GROUP_ADD_REMOVE)
 	  {
 	  	Button create = new Button("Create group");
 		  create.addClickHandler(new ClickHandler() {
 				
 				public void onClick(ClickEvent event) {
-					createGroupDlg.reset();
-					createGroupDlg.center();
+					int maxGroups = Messages.get().getModerator().getMaxGroups(); 
+					if (maxGroups == User.MAX_GROUPS_NO_LIMIT || maxGroups > widgets.size())
+					{
+						createGroupDlg.reset();
+						createGroupDlg.center();
+					}
+					else
+					{
+						ConfirmDialog dlg = new ConfirmDialog("You have reached your group limit. Please contact us to request more groups");
+						dlg.show();
+						dlg.center();
+					}
 					
 				}
 			});
@@ -272,8 +281,10 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 		public void validationError(ValidationError error, String msg)
 		{
 			HTML msgHTML = new HTML("<span style='color:red'>("+msg+")</span>");
-			if ((error == ValidationError.NO_CONTENT || error == ValidationError.INVALID_GROUPNAME) && namePanel.getWidgetCount() == 1)
+			if ((error == ValidationError.NO_CONTENT || error == ValidationError.INVALID_GROUPNAME || error == ValidationError.MAX_GROUPS_REACHED) )
 			{
+				if (namePanel.getWidgetCount() == 2)
+					namePanel.remove(1);
 				namePanel.insert(msgHTML, 1);
 			}
 		}

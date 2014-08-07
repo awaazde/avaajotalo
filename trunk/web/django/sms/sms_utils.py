@@ -14,12 +14,23 @@
     limitations under the License.
 '''
 from datetime import datetime
+from decimal import Decimal
+from django.db.models import F
 from openpyxl.reader.excel import load_workbook
 from urllib import urlencode
 import httplib2
 from datetime import datetime
-from otalo.ao.models import Line, User
+from otalo.ao.models import Line, User, Transaction
+'''
+# this is a circular reference, so change
+# how we import slightly to avoid importErrors
+# (see http://stackoverflow.com/a/746067/199754)
+'''
+import otalo.ao.views
 from otalo.sms.models import Config, ConfigParam, SMSMessage
+
+# in credits
+DEF_CHARGE_PER_SMS = .5
 
 def send_sms_from_line(from_line, recipients, content, date=None):
     sender = User.objects.filter(number=from_line.number)
@@ -92,6 +103,22 @@ def send_multiple_sms(config, recipients, texts, sender, date=None):
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
     return True
+
+def charge_sms_credits(user, num_sms, date=None, credits_per_sms=DEF_CHARGE_PER_SMS):
+    if user.balance != Decimal(str(otalo.ao.views.UNLIMITED_BALANCE)):
+        amount = Decimal(credits_per_sms * num_sms)
+        xact = Transaction.objects.create(user=user, type=Transaction.SMS, amount=amount)
+        '''
+        ' NOTE: This should only be set from testing programs.
+        ' In production setting this value will throw an error
+        ' since Transaction.date is immutable
+        '''
+        if date:
+            xact.date = date
+            xact.save()
+        print("Created xact "+str(xact))
+        # Make update atomic with F() function
+        User.objects.filter(pk=user.id).update(balance = F('balance') - amount)
 
 #DND_FILE=''
 #def updateDND():

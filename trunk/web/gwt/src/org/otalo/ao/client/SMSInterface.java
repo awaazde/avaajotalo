@@ -7,19 +7,12 @@ import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.Message.MessageStatus;
-import org.otalo.ao.client.model.MessageForum;
-import org.otalo.ao.client.model.Survey;
 import org.otalo.ao.client.model.Tag;
 
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -34,13 +27,11 @@ import com.google.gwt.user.client.ui.DecoratedStackPanel;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -49,19 +40,17 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 public class SMSInterface extends Composite {
 	private FormPanel smsForm;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
-	private VerticalPanel outer, who, what, when;
+	private VerticalPanel outer, who, what;
 	private HorizontalPanel controls = new HorizontalPanel();
 	private Button sendButton;
-	private TextBox sinceField, smsDateField;
+	private TextBox sinceField;
 	private TextArea txtArea;
-	private DatePicker since, smsDate;
-	private ListBox tags, lastNCallers, hour, min;
+	private DatePicker since;
+	private ListBox tags, lastNCallers, groups;
 	private Hidden lineid;
 	private CheckBox numbers, usersByTag, usersByLog;
-	private RadioButton now, date;
 	private Label remainingCharsLabel;
-	private final int SMS_MAX_LENGTH = 140;
-	//private FileUpload fileUpload;
+	private final int SMS_MAX_LENGTH = 160;
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -84,8 +73,6 @@ public class SMSInterface extends Composite {
 		who.setSize("100%", "100%");
 		what = new VerticalPanel();
 		what.setSize("100%", "100%");
-		when = new VerticalPanel();
-		when.setSize("100%", "100%");
 		
 		VerticalPanel whoPanel = new VerticalPanel();
 		whoPanel.setSize("100%", "100%");
@@ -126,6 +113,10 @@ public class SMSInterface extends Composite {
 		}
 		lastNCallers.addItem("All", "ALL");
 		
+		groups = new ListBox();
+		groups.addItem("", "-1");
+		groups.setName("group");
+		
 		Label usersSince = new Label("callers since");
 		sinceField = new TextBox();
 		sinceField.setName("since");
@@ -148,28 +139,39 @@ public class SMSInterface extends Composite {
 			}
 		});
 		
-		HorizontalPanel numbersPanel = new HorizontalPanel();
-		numbersPanel.setSpacing(10);
-		numbersPanel.add(numbers);
-		numbersPanel.add(numbersArea);
-		
-		HorizontalPanel tagPanel = new HorizontalPanel();
-		tagPanel.setSpacing(10);
-		tagPanel.add(usersByTag);
-		tagPanel.add(tags);
-		
-		HorizontalPanel logPanel = new HorizontalPanel();
-		logPanel.setSpacing(10);
-		logPanel.add(usersByLog);
-		logPanel.add(lastNCallers);
-		logPanel.add(usersSince);
-		logPanel.add(sinceField);
-		since.setVisible(false);
-		logPanel.add(since);
-		
-		whoPanel.add(numbersPanel);
-		whoPanel.add(tagPanel);
-		whoPanel.add(logPanel);
+		if (Messages.get().canManage())
+		{
+			HorizontalPanel groupPanel = new HorizontalPanel();
+			groupPanel.setSpacing(10);
+			groupPanel.add(groups);
+			
+			whoPanel.add(groupPanel);
+		}
+		else
+		{
+			HorizontalPanel numbersPanel = new HorizontalPanel();
+			numbersPanel.setSpacing(10);
+			numbersPanel.add(numbers);
+			numbersPanel.add(numbersArea);
+			
+			HorizontalPanel tagPanel = new HorizontalPanel();
+			tagPanel.setSpacing(10);
+			tagPanel.add(usersByTag);
+			tagPanel.add(tags);
+			
+			HorizontalPanel logPanel = new HorizontalPanel();
+			logPanel.setSpacing(10);
+			logPanel.add(usersByLog);
+			logPanel.add(lastNCallers);
+			logPanel.add(usersSince);
+			logPanel.add(sinceField);
+			since.setVisible(false);
+			logPanel.add(since);
+			
+			whoPanel.add(numbersPanel);
+			whoPanel.add(tagPanel);
+			whoPanel.add(logPanel);
+		}
 		
 		who.add(whoPanel);
 		
@@ -193,94 +195,9 @@ public class SMSInterface extends Composite {
   	what.setSpacing(10);
   	what.add(txtArea);
   	what.add(remainCharsPanel);
-  	
-  	HorizontalPanel whenPanel = new HorizontalPanel();
-  	whenPanel.setSpacing(10);
-  	now = new RadioButton("when","Start now");
-  	now.setFormValue("now");
-		date = new RadioButton("when","Date:");
-		date.setFormValue("date");
-		
-		smsDateField = new TextBox();
-		smsDateField.setName("smsday");
-		smsDate = new DatePicker();
-		smsDate.addValueChangeHandler(new ValueChangeHandler<Date>() {
-
-			public void onValueChange(ValueChangeEvent<Date> event) {
-				Date d = event.getValue();
-				smsDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
-				smsDate.setVisible(false);
-				now.setValue(false);
-				date.setValue(true);
-				
-			}
-		});
-		
-		smsDateField.addFocusHandler(new FocusHandler() {
-			
-			public void onFocus(FocusEvent event) {
-				smsDate.setVisible(true);
-				now.setValue(false);
-				date.setValue(true);
-			}
-		});
-  	
-		Label timeLbl = new Label("Time: ");
-		hour = new ListBox();
-		hour.setName("hour");
-		min = new ListBox();
-		min.setName("min");
-		for(int i=1; i < 24; i++)
-		{
-			hour.addItem(String.valueOf(i));
-		}
-		for (int i=0; i < 60; i+=5)
-		{
-			String minStr = String.valueOf(i);
-			if (i < 10)
-				minStr = "0"+minStr;
-			min.addItem(minStr, String.valueOf(i));
-		}
-		
-		hour.addFocusHandler(new FocusHandler() {
-			
-			public void onFocus(FocusEvent event) {
-				now.setValue(false);
-				date.setValue(true);
-				
-			}
-		});
-		
-		min.addFocusHandler(new FocusHandler() {
-			
-			public void onFocus(FocusEvent event) {
-				now.setValue(false);
-				date.setValue(true);
-				
-			}
-		});
-		
-		HorizontalPanel nowPanel = new HorizontalPanel();
-		nowPanel.setSpacing(10);
-		nowPanel.add(now);
-		
-		HorizontalPanel datePanel = new HorizontalPanel();
-		datePanel.setSpacing(10);
-		datePanel.add(date);
-		datePanel.add(smsDateField);
-		smsDate.setVisible(false);
-		datePanel.add(smsDate);
-		datePanel.add(timeLbl);
-		datePanel.add(hour);
-		datePanel.add(new Label(":"));
-		datePanel.add(min);
-		
-		when.add(nowPanel);
-		when.add(datePanel);
 		
 		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
 		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Message"), true);
-		stackPanel.add(when, createHeaderHTML(images.calendar(), "Schedule"), true);
 		
 		controls = new HorizontalPanel();
 		
@@ -306,6 +223,7 @@ public class SMSInterface extends Composite {
 		initWidget(smsForm);
 		
 		loadTags();
+		loadGroups();
 	}
 	
 	public void loadTags()
@@ -318,7 +236,7 @@ public class SMSInterface extends Composite {
 		if (tags.getItemCount() < 2)
 		{
 			JSONRequest request = new JSONRequest();		
-			request.doFetchURL(AoAPI.TAGS_BY_LINE + Messages.get().getLine().getId() + "/", new TagRequestor());
+			request.doFetchURL(AoAPI.TAGS, new TagRequestor());
 		}
 	}
 	
@@ -336,10 +254,28 @@ public class SMSInterface extends Composite {
 		}
 	 }
 	 
-	 public void newSMS()
-	 { 
-		 loadTags();
-	 }
+	 public void loadGroups()
+	 {	
+			if (groups.getItemCount() < 2)
+			{
+				JSONRequest request = new JSONRequest();		
+				request.doFetchURL(AoAPI.GROUP + "?forums=1", new GroupRequestor());
+			}
+		}
+		
+		 private class GroupRequestor implements JSONRequester {
+			 
+			public void dataReceived(List<JSOModel> models) {
+				Forum g;
+				
+				for (JSOModel model : models)
+			  	{
+						g = new Forum(model);
+						groups.addItem(g.getName(), g.getId());
+			  	}
+
+			}
+		 }
 	 
 	 private class SMSComplete implements SubmitCompleteHandler {
 			
@@ -373,8 +309,6 @@ public class SMSInterface extends Composite {
 		 numbers.setValue(false);
 		 usersByTag.setValue(false);
 		 usersByLog.setValue(false);
-		 // Select 10am by default
-		 hour.setItemSelected(9, true);
 		 lastNCallers.setItemSelected(3, true);
 		 
 		 remainingCharsLabel.setText(Integer.toString(SMS_MAX_LENGTH));
@@ -383,12 +317,6 @@ public class SMSInterface extends Composite {
 		 Date today = new Date();
 		 since.setValue(today);
 		 since.setVisible(false);
-		 today.setDate(today.getDate() + 1);
-		 smsDateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(today));
-		 smsDate.setValue(today);
-		 smsDate.setVisible(false);
-
-		 date.setValue(true);
 		 
 		 stackPanel.showStack(0);
 	 }
