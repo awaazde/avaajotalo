@@ -918,11 +918,11 @@ def sms(request, line_id):
     type = int(params['type'])
     
     line = get_object_or_404(Line, pk=int(line_id))
-    line_user = User.objects.filter(number=line.number)[0]
+    line_user = User.objects.filter(number=line.number)
     console_user = get_console_user(request)
     
     if type == SMSListType_SENT:  
-        msgs = SMSMessage.objects.filter(sender__in=[line_user, console_user]).order_by('-id')
+        msgs = SMSMessage.objects.filter(sender__in=[line_user[0] if line_user else None, console_user]).order_by('-id')
     elif type == SMSListType_IN:
         msgs = SMSMessage.objects.filter(recipients__number__in=[line.number]).order_by('-id')
     
