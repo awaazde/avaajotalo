@@ -143,6 +143,7 @@ public class SMSInterface extends Composite {
 		{
 			HorizontalPanel groupPanel = new HorizontalPanel();
 			groupPanel.setSpacing(10);
+			groupPanel.add(new Label("Group: "));
 			groupPanel.add(groups);
 			
 			whoPanel.add(groupPanel);
