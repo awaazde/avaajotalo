@@ -3,6 +3,7 @@
 {% load upload_tags %}
 {% load i18n %}
 {% load common_tags %}
+{% load common %}
 
 {% block extrahead %}
 <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
@@ -69,10 +70,10 @@ input[type="text"], input[type="password"] {
 			{% for user in users %}
 				<tr>
 					<td>{{ forloop.counter }}</td>
-					<td>{{ user.name }}</td>
+					<td>{{ user.name }} <br /> <a href="{% settings_value "CONSOLE_ROOT" %}/2/streamaccountsettings/?number={{user.number}}">Edit Settings</a></td>
 					<td>{{ user.number }}</td>
 					<td>{{ user.email }}</td>
-					<td><a href="/console/2/recharge/?number={{user.number}}">{{ user.balance }}</a></td>
+					<td><a href="{% settings_value "CONSOLE_ROOT" %}/2/recharge/?number={{user.number}}">{{ user.balance }}</a></td>
 					{% if user.admin_set.all %}
 					<td>
 						{% for admin in user.admin_set.all %}

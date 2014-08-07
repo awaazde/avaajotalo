@@ -15,15 +15,8 @@
  */
 package org.otalo.ao.client;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.otalo.ao.client.JSONRequest.AoAPI;
 import org.otalo.ao.client.SMSList.SMSListType;
-import org.otalo.ao.client.model.JSOModel;
-import org.otalo.ao.client.model.SMSMessage;
-import org.otalo.ao.client.model.Survey;
+import org.otalo.ao.client.model.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -32,12 +25,8 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * A panel of SMSs, each presented as a tree.
@@ -75,18 +64,27 @@ public class SMSs extends Composite {
 	  
 	  inboxHTML = imageItemHTML(images.responses(), "Inbox", SMSListType.IN);
 	  sentHTML = imageItemHTML(images.sent(), "Sent", SMSListType.SENT);
-	  Anchor newsms = new Anchor("New SMS");
+	  Anchor newsms = new Anchor("Compose");
 	  newsms.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				Messages.get().displaySMSInterface();
+				String balance = Messages.get().getModerator().getBalance();
+				if (!User.UNLIMITED_BALANCE.equals(balance) && Double.valueOf(balance) <= Double.valueOf(User.BCAST_DISALLOW_BALANCE_THRESH))
+				{
+					ConfirmDialog recharge = new ConfirmDialog("Your balance is too low for sending SMS. Please recharge your account.");
+					recharge.center();
+				}
+				else
+					Messages.get().displaySMSInterface();
 			}
 	  	
 	  });
 	 
-	  p.add(inboxHTML);
-	  p.add(sentHTML);
 	  p.add(newsms);
+	  if (!Messages.get().canManage())
+	  	p.add(inboxHTML);
+	  p.add(sentHTML);
+	  
   
 	  initWidget(p);
   }

@@ -14,6 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 import os, stat, re
+from decimal import Decimal
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404, render
@@ -23,7 +24,7 @@ from django.template import RequestContext
 from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
-from otalo.sms import sms_utils
+import otalo.sms.sms_utils
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Max, Count, Q
@@ -65,6 +66,7 @@ MEMBER_CREDITS_EXCEEDED = "4"
 INVALID_DATE = "5"
 INVALID_GROUP_SETTING = "6"
 INVALID_FILE_FORMAT = "7"
+MAX_GROUPS_REACHED = "8"
 
 
 #Tags related constants
@@ -99,6 +101,13 @@ SMS_LENGTH = 140
 # corresponds to enum in SMSList.java
 SMSListType_IN = 0
 SMSListType_SENT = 1
+
+# a secret amount of money that signals
+# that this is account has unlimited credits. Choose an amount
+# that can't actually be reached through any
+# combo of transactions
+UNLIMITED_BALANCE = 999
+SMS_DISALLOW_BALANCE_THRESH = 0 
 
 @login_required
 def index(request):
@@ -642,7 +651,7 @@ def line(request):
     
     if not auth_user.is_superuser:
         # get all lines associated with this login
-        line = Line.objects.filter(forums__admin__auth_user=auth_user).distinct().order_by('-id')
+        line = Line.objects.filter(forums__admin__auth_user=auth_user).exclude(forums__status=Forum.STATUS_INACTIVE).distinct().order_by('-id')
     else:
         line = Line.objects.filter(pk=1)
         
@@ -910,9 +919,10 @@ def sms(request, line_id):
     
     line = get_object_or_404(Line, pk=int(line_id))
     line_user = User.objects.filter(number=line.number)[0]
+    console_user = get_console_user(request)
     
     if type == SMSListType_SENT:  
-        msgs = SMSMessage.objects.filter(sender=line_user).order_by('-id')
+        msgs = SMSMessage.objects.filter(sender__in=[line_user, console_user]).order_by('-id')
     elif type == SMSListType_IN:
         msgs = SMSMessage.objects.filter(recipients__number__in=[line.number]).order_by('-id')
     
@@ -1013,22 +1023,31 @@ def sendsms(request):
                 u.save()
             recipients.append(u) 
     
+    if params.__contains__('group'):
+        group = params['group']
+        # if not selected, group will be an invalid ID
+        users = User.objects.filter(membership__status=Membership.STATUS_SUBSCRIBED, membership__group=group)
+        
+        for u in users:
+            recipients.append(u)
+        
     # remove dups
     recipients = list(set(recipients))
     
     # Get msg
     smstext = params['txt'][:SMS_LENGTH]
-     
-    # Get schedule
-    when = params['when']
-    # now by default
-    send_date = None
-    if when == 'date':
-        bcastday = params['smsday']
-        send_date = datetime.strptime(bcastday, '%b-%d-%Y')
-        send_date = send_date + timedelta(hours=int(params['hour']), minutes=int(params['min']))
-        
-    sms_utils.send_sms_from_line(line, recipients, smstext, send_date)
+    
+    # charge the customer if this is a paying customer
+    sender = get_console_user(request)
+    # check balance in backend in case UI check fails to capture negative balance
+    # (i.e. if user hasn't refreshed his screen in a while and UI doesn't update in real time)
+    if recipients:
+        if sender.balance is not None: 
+            if sender.balance > Decimal(str(SMS_DISALLOW_BALANCE_THRESH)):
+                otalo.sms.sms_utils.charge_sms_credits(sender, len(recipients))
+                otalo.sms.sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
+        else:
+            otalo.sms.sms_utils.send_sms_from_line(line, recipients, smstext)
     
     return HttpResponseRedirect(reverse('otalo.ao.views.forum'))
 
