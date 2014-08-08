@@ -191,7 +191,7 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 				balance = "0";
 			else if (User.UNLIMITED_BALANCE.equals(balance))
 			{
-				balance = "TRIAL";
+				balance = "N/A";
 			}
 				
 			Label balanceAmount = new Label(balance);

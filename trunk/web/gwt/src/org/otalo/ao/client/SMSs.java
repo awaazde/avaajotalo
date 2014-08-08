@@ -69,7 +69,7 @@ public class SMSs extends Composite {
 
 			public void onClick(ClickEvent event) {
 				String balance = Messages.get().getModerator().getBalance();
-				if (!User.UNLIMITED_BALANCE.equals(balance) && Double.valueOf(balance) <= Double.valueOf(User.BCAST_DISALLOW_BALANCE_THRESH))
+				if (!"null".equals(balance) && !"".equals(balance) && !User.UNLIMITED_BALANCE.equals(balance) && Double.valueOf(balance) <= Double.valueOf(User.BCAST_DISALLOW_BALANCE_THRESH))
 				{
 					ConfirmDialog recharge = new ConfirmDialog("Your balance is too low for sending SMS. Please recharge your account.");
 					recharge.center();
