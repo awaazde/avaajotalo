@@ -67,6 +67,7 @@ INVALID_DATE = "5"
 INVALID_GROUP_SETTING = "6"
 INVALID_FILE_FORMAT = "7"
 MAX_GROUPS_REACHED = "8"
+NOT_ENOUGH_BALANCE = "9"
 
 
 #Tags related constants
@@ -954,7 +955,6 @@ def smsrecipients(request, smsmsg_id):
 def sendsms(request):
     params = request.POST
     line = get_object_or_404(Line, pk=int(params['lineid']))
-        
     
     recipients = []
     # Get recipients
@@ -1034,8 +1034,19 @@ def sendsms(request):
     # remove dups
     recipients = list(set(recipients))
     
+    if len(recipients) == 0:
+        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+', "message":"No recipients specified"}]')
+        response['Pragma'] = "no cache"
+        response['Cache-Control'] = "no-cache, must-revalidate"
+        return response
+    
     # Get msg
     smstext = params['txt'][:SMS_LENGTH]
+    if smstext == '':
+        response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+', "message":"Please enter some text"}]')
+        response['Pragma'] = "no cache"
+        response['Cache-Control'] = "no-cache, must-revalidate"
+        return response
     
     # charge the customer if this is a paying customer
     sender = get_console_user(request)
@@ -1043,9 +1054,14 @@ def sendsms(request):
     # (i.e. if user hasn't refreshed his screen in a while and UI doesn't update in real time)
     if recipients:
         if sender.balance is not None: 
-            if sender.balance > Decimal(str(SMS_DISALLOW_BALANCE_THRESH)):
+            if sender.balance == Decimal(str(UNLIMITED_BALANCE)) or sender.balance > Decimal(str(SMS_DISALLOW_BALANCE_THRESH)):
                 otalo.sms.sms_utils.charge_sms_credits(sender, len(recipients))
                 otalo.sms.sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
+            else:
+                response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NOT_ENOUGH_BALANCE+', "message":"Insufficient balance to send SMS"}]')
+                response['Pragma'] = "no cache"
+                response['Cache-Control'] = "no-cache, must-revalidate"
+                return response
         else:
             otalo.sms.sms_utils.send_sms_from_line(line, recipients, smstext)
     

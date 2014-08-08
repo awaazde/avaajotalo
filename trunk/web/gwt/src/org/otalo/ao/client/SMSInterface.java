@@ -4,9 +4,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.otalo.ao.client.JSONRequest.AoAPI;
+import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Tag;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -281,12 +283,30 @@ public class SMSInterface extends Composite {
 	 private class SMSComplete implements SubmitCompleteHandler {
 			
 			public void onSubmitComplete(SubmitCompleteEvent event) {
-				ConfirmDialog sent = new ConfirmDialog("SMS Scheduled!");
-				sent.show();
-				sent.center();
+				JSOModel model = JSONRequest.getModels(event.getResults()).get(0);
+				if (model.get("model").equals("VALIDATION_ERROR"))
+				{
+					String msg = model.get("message");
+					int type = Integer.valueOf(model.get("type"));
+					ConfirmDialog dlg = new ConfirmDialog(msg);
+					dlg.show();
+					dlg.center();
+					
+					sendComplete();
+				}
+				else
+				{
+					ConfirmDialog sent = new ConfirmDialog("SMS Scheduled!");
+					sent.show();
+					sent.center();
+					
+					sendComplete();
+					Messages.get().displaySMS(SMSListType.SENT, 0);
+					
+				}
 				
-				sendComplete();
-				Messages.get().displaySMS(SMSListType.SENT, 0);
+				
+				
 		}
 	 }
 
