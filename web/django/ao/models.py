@@ -75,8 +75,17 @@ class User(models.Model):
     district = models.CharField(max_length=128, blank=True, null=True)
     taluka = models.CharField(max_length=128, blank=True, null=True)
     village = models.CharField(max_length=128, blank=True, null=True)
+    
+    # a secret amount of money that signals
+    # that this is account has unlimited credits. Choose an amount
+    # that can't actually be reached through any
+    # combo of transactions
+    UNLIMITED_BALANCE = 999
+    # Disallow bcasting if balance below this amount
+    BCAST_DISALLOW_BALANCE_THRESH = 0
     balance = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     balance_last_updated = models.DateTimeField(blank=True, null=True)
+    
     email = models.CharField(max_length=64, blank=True, null=True)
     # whether broadcasts should consider this number if found
     # from indirect sources (log, based on tags, etc.)

@@ -18,13 +18,13 @@ package org.otalo.ao.client.model;
 import java.math.BigDecimal;
 
 public class User extends BaseModel {
+	// make all of the following consistent with ao:models.py
+	public static final int DISABLE_GROUP_ADD_REMOVE = -1;
 	public static final String UNLIMITED_BALANCE = "999.00";
 	public static final String BCAST_DISALLOW_BALANCE_THRESH = "0";
 	// this doesn't have a backend equivalent because its represented by null
 	// set it here because of strongly typed methods
 	public static final int MAX_GROUPS_NO_LIMIT = -101;
-	// make all of the following consistent with ao:models.py
-	public static final int DISABLE_GROUP_ADD_REMOVE = -1;
 	
 	public User(JSOModel data) {
 		super(data);
