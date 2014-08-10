@@ -24,7 +24,7 @@ from django.template import RequestContext
 from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
-import otalo.sms.sms_utils
+from otalo.sms import sms_utils
 from django.core import serializers
 from django.conf import settings
 from django.db.models import Min, Max, Count, Q
@@ -102,13 +102,6 @@ SMS_LENGTH = 140
 # corresponds to enum in SMSList.java
 SMSListType_IN = 0
 SMSListType_SENT = 1
-
-# a secret amount of money that signals
-# that this is account has unlimited credits. Choose an amount
-# that can't actually be reached through any
-# combo of transactions
-UNLIMITED_BALANCE = 999
-SMS_DISALLOW_BALANCE_THRESH = 0 
 
 @login_required
 def index(request):
@@ -1054,16 +1047,16 @@ def sendsms(request):
     # (i.e. if user hasn't refreshed his screen in a while and UI doesn't update in real time)
     if recipients:
         if sender.balance is not None: 
-            if sender.balance == Decimal(str(UNLIMITED_BALANCE)) or sender.balance > Decimal(str(SMS_DISALLOW_BALANCE_THRESH)):
-                otalo.sms.sms_utils.charge_sms_credits(sender, len(recipients))
-                otalo.sms.sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
+            if sender.balance == Decimal(str(User.UNLIMITED_BALANCE)) or sender.balance > Decimal(str(sms_utils.SMS_DISALLOW_BALANCE_THRESH)):
+                sms_utils.charge_sms_credits(sender, len(recipients))
+                sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
             else:
                 response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NOT_ENOUGH_BALANCE+', "message":"Insufficient balance to send SMS"}]')
                 response['Pragma'] = "no cache"
                 response['Cache-Control'] = "no-cache, must-revalidate"
                 return response
         else:
-            otalo.sms.sms_utils.send_sms_from_line(line, recipients, smstext)
+            sms_utils.send_sms_from_line(line, recipients, smstext)
     
     return HttpResponseRedirect(reverse('otalo.ao.views.forum'))
 

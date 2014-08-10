@@ -21,16 +21,11 @@ from urllib import urlencode
 import httplib2
 from datetime import datetime
 from otalo.ao.models import Line, User, Transaction
-'''
-# this is a circular reference, so change
-# how we import slightly to avoid importErrors
-# (see http://stackoverflow.com/a/746067/199754)
-'''
-import otalo.ao.views
 from otalo.sms.models import Config, ConfigParam, SMSMessage
 
 # in credits
 DEF_CHARGE_PER_SMS = .5
+SMS_DISALLOW_BALANCE_THRESH = 0 
 
 def send_sms_from_line(from_line, recipients, content, date=None):
     sender = User.objects.filter(number=from_line.number)
@@ -105,7 +100,7 @@ def send_multiple_sms(config, recipients, texts, sender, date=None):
     return True
 
 def charge_sms_credits(user, num_sms, date=None, credits_per_sms=DEF_CHARGE_PER_SMS):
-    if user.balance != Decimal(str(otalo.ao.views.UNLIMITED_BALANCE)):
+    if user.balance != Decimal(str(User.UNLIMITED_BALANCE)):
         amount = Decimal(credits_per_sms * num_sms)
         xact = Transaction.objects.create(user=user, type=Transaction.SMS, amount=amount)
         '''
