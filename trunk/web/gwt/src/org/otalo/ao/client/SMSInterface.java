@@ -8,6 +8,7 @@ import org.otalo.ao.client.JSONRequest.AoAPI.ValidationError;
 import org.otalo.ao.client.SMSList.SMSListType;
 import org.otalo.ao.client.model.Forum;
 import org.otalo.ao.client.model.JSOModel;
+import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Tag;
 
@@ -258,12 +259,15 @@ public class SMSInterface extends Composite {
 	 
 	 public void loadGroups(List<JSOModel> models)
 	 {	
+		 Line l;
 		 Forum g;
 		 groups.clear();
 		 
 		 for (JSOModel model : models)
 		 {
-				g = new Forum(model);
+			 	l = new Line(model);
+				// ASSUME one group per line
+				g = l.getForums().get(0);
 				groups.addItem(g.getName(), g.getId());
 		  }
 		}
