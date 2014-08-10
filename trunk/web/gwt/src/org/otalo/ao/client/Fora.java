@@ -101,7 +101,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
   }
 
 	public void dataReceived(List<JSOModel> models) {
-		loadFora(models);
+		Messages.get().reloadGroups(models);
 	}
 	
 	public void loadFora(List<JSOModel> models)
@@ -325,7 +325,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 				// These models are Lines with connected forums. Lines since 
 				// line info can be shared to also populate 
 				// the group management UI (save a server hit)
-				loadFora(models);
+				Messages.get().reloadGroups(models);
 			}
 
 		}

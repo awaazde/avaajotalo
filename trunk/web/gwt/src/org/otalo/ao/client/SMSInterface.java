@@ -226,7 +226,6 @@ public class SMSInterface extends Composite {
 		initWidget(smsForm);
 		
 		loadTags();
-		loadGroups();
 	}
 	
 	public void loadTags()
@@ -257,28 +256,17 @@ public class SMSInterface extends Composite {
 		}
 	 }
 	 
-	 public void loadGroups()
+	 public void loadGroups(List<JSOModel> models)
 	 {	
-			if (groups.getItemCount() < 2)
-			{
-				JSONRequest request = new JSONRequest();		
-				request.doFetchURL(AoAPI.GROUP + "?forums=1", new GroupRequestor());
-			}
+		 Forum g;
+		 groups.clear();
+		 
+		 for (JSOModel model : models)
+		 {
+				g = new Forum(model);
+				groups.addItem(g.getName(), g.getId());
+		  }
 		}
-		
-		 private class GroupRequestor implements JSONRequester {
-			 
-			public void dataReceived(List<JSOModel> models) {
-				Forum g;
-				
-				for (JSOModel model : models)
-			  	{
-						g = new Forum(model);
-						groups.addItem(g.getName(), g.getId());
-			  	}
-
-			}
-		 }
 	 
 	 private class SMSComplete implements SubmitCompleteHandler {
 			

@@ -310,6 +310,7 @@ public class Messages implements EntryPoint, ResizeHandler {
   public void reloadGroups(List<JSOModel> models)
   {
   	fora.loadFora(models);
+  	smsIface.loadGroups(models);
   }
   
   /**
