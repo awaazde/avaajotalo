@@ -1,13 +1,23 @@
 import sys, subprocess
+import requests, json
+from requests.exceptions import ConnectionError
 from otalo.ao.models import Line, User, Dialer
 from otalo.sms.models import Config
 from otalo.sms import sms_utils
 
+
 SERVER_NAME = 'voicebox'
 NUM_PRIS = 7
 SENDER = User.objects.get(pk=2)
-ADMINS = User.objects.filter(pk__in=[2])
+ADMINS = User.objects.filter(pk__in=[2,69016])
 CONFIG = Config.objects.get(pk=1)
+
+#celery flower api base url e.g. http://awaaz.de:5555/api/
+WS_BASE_URL = ''
+WS_WORKER = 'workers'
+
+# names of workers e.g. w1@voicebox
+WORKERS = []
 
 def report_error(msg):
 	sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
@@ -62,9 +72,35 @@ def check_freeswitch():
 		# UPDATE: this doesn't work, don't do
 		#p = subprocess.Popen(["/etc/init.d/freeswitch", "start"])
 		#p.wait()
-		
+
+def check_celery():
+	error_msg = []
+	
+	if WORKERS and len(WORKERS) > 0:
+		try:
+			response = requests.get(WS_BASE_URL + WS_WORKER)
+			if response.status_code == 200:
+				workers_data = response.json()
+				for worker in WORKERS:
+					if worker in workers_data:
+						status = workers_data[worker]['status']
+						if status != True and status != 'True':
+							error_msg.append('Worker off-line : ' + worker)
+					else:
+						error_msg.append('Worker not connected : ' + worker)
+			else:
+				error_msg.append(response.text)
+		except ConnectionError as e:
+			error_msg.append('Flower is down')
+	
+	if len(error_msg) > 0:
+		print error_msg
+		report_error(str(error_msg)) 
+
+
 def main():
 	check_freeswitch()
 	check_pris()
+	check_celery()
 	
 main()
