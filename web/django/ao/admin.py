@@ -14,7 +14,7 @@
 #    limitations under the License.
 #===============================================================================
 
-from otalo.ao.models import Forum, Message, User, Tag, Admin, Line, Message_forum, Forum_tag, Membership, Transaction, Forward, Dialer
+from otalo.ao.models import Forum, Message, User, Tag, Admin, Line, Message_forum, Forum_tag, Membership, Transaction, Forward, Dialer, Coupon
 from django.contrib import admin
 
 class OrderingAdmin(admin.ModelAdmin):
@@ -52,6 +52,9 @@ class MessageForumAdmin(OrderingAdmin):
     
 class TransactionAdmin(OrderingAdmin):
     raw_id_fields = ('user','call', 'coupon')
+
+class CouponAdmin(OrderingAdmin):
+    raw_id_fields = ('user',)
     
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
@@ -64,4 +67,4 @@ admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Forward, OrderingAdmin)
 admin.site.register(Dialer, OrderingAdmin)
-
+admin.site.register(Coupon, CouponAdmin)

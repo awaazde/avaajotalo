@@ -14,13 +14,14 @@
 #    limitations under the License.
 #===============================================================================
 
+import random, string
 from decimal import *
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
 from otalo.surveys.models import Survey, Call
-from awaazde.payment.models import Coupon
 from datetime import datetime
 from django.db.models import F
+from django.utils.translation import ugettext_lazy as _
 
 class Line(models.Model):
     number = models.CharField(max_length=24)
@@ -384,8 +385,8 @@ class Transaction(models.Model):
     order_ref_no = models.CharField(max_length=20, blank=True, null=True, db_index=True)
     thirdparty_transaction_id = models.CharField(max_length=20, blank=True, null=True)
     thirdparty_name = models.CharField(max_length=12, blank=True, null=True)
-    payment_status = models.IntegerField(choices=PAYMENT_STATUS, default=PAYMENT_STATUS_INITIATED, blank=True, null=True)
-    coupon = models.ForeignKey(Coupon, blank=True, null=True) #stores coupon if applied any
+    payment_status = models.IntegerField(choices=PAYMENT_STATUS, blank=True, null=True)
+    coupon = models.ForeignKey('Coupon', blank=True, null=True) #stores coupon if applied any
     
     '''
     ' In order to link transactions back to specific calls
@@ -546,3 +547,45 @@ class Dialer(models.Model):
             return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix) + '_' + unicode(self.country_code)
         else:
             return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)
+        
+
+'''
+Payment related models - We might need to move it into payment app
+'''
+class Coupon(models.Model):
+    MONETARY = 'monetary'
+    PERCENTAGE = 'percentage'
+    
+    COUPON_TYPES = (
+        (MONETARY, 'Money based coupon'),
+        (PERCENTAGE, 'Percentage discount'),
+    )
+    
+    CODE_LENGTH = 15
+    CODE_CHARS = string.letters+string.digits
+    
+    value = models.IntegerField(_("Value"), help_text=_("Arbitrary coupon value"))
+    code = models.CharField(_("Code"), max_length=30, unique=True, blank=True,
+        help_text=_("Leaving this field empty will generate a random code."))
+    type = models.CharField(_("Type"), max_length=20, choices=COUPON_TYPES)
+    user = models.ForeignKey(AuthUser, verbose_name=_("User"), null=True, blank=True,
+        help_text=_("You may specify a user you want to restrict this coupon to."))
+    created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
+    expires_at = models.DateTimeField(_("Expires at"), blank=True, null=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = _("Coupon")
+        verbose_name_plural = _("Coupons")
+
+    def __unicode__(self):
+        return self.code
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = Coupon.generate_code()
+        super(Coupon, self).save(*args, **kwargs)
+
+    @classmethod
+    def generate_code(cls):
+        return "".join(random.choice(Coupon.CODE_CHARS) for i in xrange(Coupon.CODE_CHARS))
