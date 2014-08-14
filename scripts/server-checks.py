@@ -7,7 +7,8 @@ from otalo.sms import sms_utils
 
 
 SERVER_NAME = 'voicebox'
-NUM_PRIS = 7
+#specify active PRIs
+NUM_PRIS = []
 SENDER = User.objects.get(pk=2)
 ADMINS = User.objects.filter(pk__in=[2,69016])
 CONFIG = Config.objects.get(pk=1)
@@ -23,7 +24,7 @@ def report_error(msg):
 	sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
 	
 def check_pris():
-	for i in range(1,NUM_PRIS+1):	
+	for i in NUM_PRIS:#range(1,NUM_PRIS+1):	
 		p = subprocess.Popen(["wanpipemon", "-i", "w"+str(i)+"g1", "-c", "xm"], stdout=subprocess.PIPE)
 		out,err = p.communicate()
 		
