@@ -84,12 +84,16 @@ def check_celery():
 					if worker in workers_data:
 						status = workers_data[worker]['status']
 						if not status:
+							print(worker + 'status is down')
 							report_error(worker + 'status is down') 
 					else:
+						print(worker + 'is down')
 						report_error(worker + 'is down') 
 			else:
+				print('Flower response is down')
 				report_error('Flower response is down')
 		except ConnectionError as e:
+			print('Flower connection is down')
 			report_error('Flower connection is down')
 
 def main():
