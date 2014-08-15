@@ -75,9 +75,7 @@ def check_freeswitch():
 		#p.wait()
 
 def check_celery():
-	error_msg = []
-	
-	if WORKERS and len(WORKERS) > 0:
+	if WORKERS:
 		try:
 			response = requests.get(WS_BASE_URL + WS_WORKER)
 			if response.status_code == 200:
@@ -85,19 +83,14 @@ def check_celery():
 				for worker in WORKERS:
 					if worker in workers_data:
 						status = workers_data[worker]['status']
-						if status != True and status != 'True':
-							error_msg.append('Worker off-line : ' + worker)
+						if not status:
+							report_error(worker + 'status is down') 
 					else:
-						error_msg.append('Worker not connected : ' + worker)
+						report_error(worker + 'is down') 
 			else:
-				error_msg.append(response.text)
+				report_error('Flower response is down')
 		except ConnectionError as e:
-			error_msg.append('Flower is down')
-	
-	if len(error_msg) > 0:
-		print error_msg
-		report_error(str(error_msg)) 
-
+			report_error('Flower connection is down')
 
 def main():
 	check_freeswitch()
