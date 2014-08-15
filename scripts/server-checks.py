@@ -11,7 +11,7 @@ SERVER_NAME = 'voicebox'
 NUM_PRIS = []
 SENDER = User.objects.get(pk=2)
 ADMINS = User.objects.filter(pk__in=[2,69016])
-CONFIG = Config.objects.get(pk=1)
+CONFIG = Config.objects.get(pk=2)
 
 #celery flower api base url e.g. http://awaaz.de:5555/api/
 WS_BASE_URL = ''
@@ -84,17 +84,17 @@ def check_celery():
 					if worker in workers_data:
 						status = workers_data[worker]['status']
 						if not status:
-							print(worker + 'status is down')
-							report_error(worker + 'status is down') 
+							print(worker + ' status is down')
+							report_error(worker + ' status is down!') 
 					else:
-						print(worker + 'is down')
-						report_error(worker + 'is down') 
+						print(worker + ' is down!')
+						report_error(worker + ' is down!') 
 			else:
-				print('Flower response is down')
-				report_error('Flower response is down')
+				print('Flower response is down!')
+				report_error('Flower response is down!')
 		except ConnectionError as e:
 			print('Flower connection is down')
-			report_error('Flower connection is down')
+			report_error('Flower connection is down!')
 
 def main():
 	check_freeswitch()
