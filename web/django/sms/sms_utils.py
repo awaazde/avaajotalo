@@ -34,7 +34,7 @@ def send_sms_from_line(from_line, recipients, content, date=None):
     else:
         sender = User.objects.create(name=from_line.name, number=from_line.number, allowed='y')
     
-    send_sms(from_line.sms_config, recipients, content, sender, date)
+    return send_sms(from_line.sms_config, recipients, content, sender, date)
     
 def send_sms(config, recipients, content, sender, date=None):
     if date:
@@ -61,7 +61,7 @@ def send_sms(config, recipients, content, sender, date=None):
     resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
-    return True
+    return msg
 
 '''
 '    Send different SMSs to different recipients on the same api call
@@ -97,7 +97,7 @@ def send_multiple_sms(config, recipients, texts, sender, date=None):
     resp, content = http.request(config.url, "POST", headers=Config.HEADER, body=urlencode(data) )
     #print "SMS TO GATEWAY HTTP", resp, content
     #print "SMS TO GATEWAY ", data
-    return True
+    return msg
 
 def charge_sms_credits(user, num_sms, date=None, credits_per_sms=DEF_CHARGE_PER_SMS):
     if user.balance != Decimal(str(User.UNLIMITED_BALANCE)):

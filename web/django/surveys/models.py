@@ -102,6 +102,20 @@ class Survey(models.Model):
     '############################################################################
     '''
     
+    '''
+    A way to trace SMS messages sent on behalf of a survey (usually a broadcast)
+    This is important for making sure that asynchrous brodcasts can account for
+    all SMS sent, for example, in order to limit to one per recipient.
+    
+    This field will store comma-separated SMSids. Can't use OneToManyField because
+    Django currently doesn't support one. Can't use foreign key on SMSMessage because
+    that model is a utility and should not be associated with app-specific objects whereever
+    possible (even User should eventually be Django User).
+    
+    Use a text field to support variable number of potentially large-digit SMSids
+    '''
+    sms_ids = models.TextField(blank=True, null=True)
+    
     def getstatus(self):
         now = datetime.now()
         
