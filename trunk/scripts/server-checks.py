@@ -47,7 +47,7 @@ def check_freeswitch():
 		report_error("FreeSWITCH is down!")
 		
 	
-	p = subprocess.Popen(['grep', '"LuaSQL: Error connecting to database."', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	p = subprocess.Popen(['grep', 'LuaSQL: Error connecting to database.', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
 	if out != '':
@@ -55,7 +55,7 @@ def check_freeswitch():
 		report_error("MySQL connection is down!")
 		
 	
-	p = subprocess.Popen(['grep', '"LuaSQL: Error connecting: Out of memory."', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	p = subprocess.Popen(['grep', 'LuaSQL: Error connecting: Out of memory.', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
 	if out != '':
@@ -63,7 +63,7 @@ def check_freeswitch():
 		report_error("LuaSQL memory is down!")
 		
 	
-	p = subprocess.Popen(['grep', '"Originate Resulted in Error Cause: 111 [PROTOCOL_ERROR]"', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	p = subprocess.Popen(['grep', 'Originate Resulted in Error Cause: 111 [PROTOCOL_ERROR]', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
 	if out != '':
