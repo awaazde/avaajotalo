@@ -242,12 +242,6 @@ DEFAULT_FROM_EMAIL = 'Awaaz.De Team <signup@awaaz.de>'
 SERVER_EMAIL = EMAIL_HOST_USER
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REPORTS_ROOT = '/Users/neil/Documents/'
-'''
-'    For multi-server dialing setups. If you don't have multiple
-'    servers making calls, you don't need to change this
-'''
-MACHINE_ID = None
-
 #Config for payment gateway
 PAYMENT_GATEWAY_CONFIG = {
     'account_id': '5880',   #This is a test id. Actual account id needs to be put in prod
@@ -256,5 +250,16 @@ PAYMENT_GATEWAY_CONFIG = {
     'return_url': 'http://awaazde/console/payment/buycredits/', #url where payment response would be returened by payment gateway
     'mode'      : 'TEST', # or on prod 'LIVE' its transaction mode
 }
+
+SWAGGER_SETTINGS = {
+    "api_path": CONSOLE_ROOT,
+}
+
+'''
+'    For multi-server dialing setups. If you don't have multiple
+'    servers making calls, you don't need to change this
+'''
+MACHINE_ID = None
+
 
 
