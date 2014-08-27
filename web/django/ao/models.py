@@ -120,15 +120,28 @@ class Message(models.Model):
 class Forum(models.Model):
     name = models.CharField(max_length=128)
     name_file = models.CharField(max_length=24, blank=True, null=True)
+    '''
+    # y if messages need to be approved or rejected, n if they should be approved by default
+    # In the console, setting this to y will result in an Inbox, Approved, and Rejected
+    # folders to appear, with new messages being status PENDING by default. If set to n,
+    # There will only be an Approved folder
+    '''
     moderated = models.CharField(max_length=1)
+    ''' y if this forum has the option to record a new message (i.e. new thread), n if not '''
     posting_allowed = models.CharField(max_length=1)
+    ''' y if callers to this forum can record a response to an existing message, n if not '''
     responses_allowed = models.CharField(max_length=1)
+    '''
     #===========================================================
     # To determine whether a moderated forum suggests
     # responders to route top-level posts to upon approval
+    # i.e., is there a listbox with responders listed to assign a message to?
+    '''
     routeable = models.CharField(max_length=1)
+    '''
     #===========================================================
-    # purely for the phone interface. If this false, then 
+    # True if this forum has the option to listen to (approved) messages, n if not
+    '''
     listening_allowed = models.BooleanField(default=True)
     
     '''
@@ -136,8 +149,10 @@ class Forum(models.Model):
     ' be scheduled to the original poster?
     '''
     response_calls = models.BooleanField(default=True)
+    '''
     # On answer calls that go out, do you want to prompt for a response
     # to the response that was played
+    '''
     respondtoresponse_allowed = models.BooleanField(default=False)
     # The coded value specified for the object must be consistent with paths.lua
     FILTER_CODE_ALL_ONLY = 0
@@ -156,13 +171,17 @@ class Forum(models.Model):
     ########################################################################################
     
     maxlength = models.IntegerField()
+    ''' maximum length in seconds of a responder's message '''
     max_responder_len = models.IntegerField(blank=True, null=True)
     MAX_RESPONDER_LEN_DEF = 300
+    ''' maximum length in seconds of a caller to the forum's response to another caller's message '''
     max_user_resp_len = models.IntegerField(blank=True, null=True)
     MAX_USER_RESP_LEN_DEF = 60
     
     messages = models.ManyToManyField(Message, through="Message_forum", blank=True, null=True)
     bcast_template = models.ForeignKey(Survey, blank=True, null=True)
+    # True if the IVR system should playback a recorded message and ask to approve/re-record/cancel it before
+    # saving, False if the first recording should be automatically saved
     confirm_recordings = models.BooleanField(default=True)
     # How messages from this forum can be user-forwarded
     # On inbound calls, outbound calls, both, or neither?
