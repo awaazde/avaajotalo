@@ -24,7 +24,7 @@ BUFFER_MINS = 15
 
 def report_error(msg):
 	now = datetime.now()
-	if not SMSMessage.objects.filter(text=msg, sent_on__gt=now-timedelta(minutes=BUFFER_MINS)).exists():
+	if not SMSMessage.objects.filter(text=SERVER_NAME+': '+msg, sent_on__gt=now-timedelta(minutes=BUFFER_MINS)).exists():
 		sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
 	
 def check_pris():
