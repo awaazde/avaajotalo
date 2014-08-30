@@ -63,7 +63,7 @@ def check_freeswitch():
 		report_error("LuaSQL memory is down!")
 		
 	
-	p = subprocess.Popen(['grep', 'Originate Resulted in Error Cause: 111 [PROTOCOL_ERROR]', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	p = subprocess.Popen(['grep', 'Originate Resulted in Error Cause: 111 \[PROTOCOL_ERROR\]', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
 	if out != '':
