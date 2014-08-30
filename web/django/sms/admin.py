@@ -19,8 +19,11 @@ from django.contrib import admin
 
 class OrderingAdmin(admin.ModelAdmin):
     ordering = ('-id',)
+    
+class MessageAdmin(OrderingAdmin):
+    raw_id_fields = ('sender','recipients',)
 
 admin.site.register(Config, OrderingAdmin)
 admin.site.register(ConfigParam, OrderingAdmin)
-admin.site.register(SMSMessage, OrderingAdmin)
+admin.site.register(SMSMessage, MessageAdmin)
 
