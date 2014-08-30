@@ -25,7 +25,7 @@ def report_error(msg):
 	
 def check_pris():
 	for i in NUM_PRIS:#range(1,NUM_PRIS+1):	
-		p = subprocess.Popen(["wanpipemon", "-i", "w"+str(i)+"g1", "-c", "xm"], stdout=subprocess.PIPE)
+		p = subprocess.Popen(["/usr/sbin/wanpipemon", "-i", "w"+str(i)+"g1", "-c", "xm"], stdout=subprocess.PIPE)
 		out,err = p.communicate()
 		
 		if 'Low' in out:
