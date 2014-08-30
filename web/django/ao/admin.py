@@ -46,12 +46,14 @@ class LineAdmin(OrderingAdmin):
 
 class MembershipAdmin(OrderingAdmin):
     raw_id_fields = ('user', 'group')
+    readonly_fields = ('added','last_updated')
 
 class MessageForumAdmin(OrderingAdmin):
     raw_id_fields = ('message', 'forum')
     
 class TransactionAdmin(OrderingAdmin):
     raw_id_fields = ('user','call', 'coupon')
+    readonly_fields = ('date',)
 
 class CouponAdmin(OrderingAdmin):
     raw_id_fields = ('user',)
