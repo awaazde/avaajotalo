@@ -1,8 +1,9 @@
 import sys, subprocess
 import requests, json
+from datetime import datetime, timedelta
 from requests.exceptions import ConnectionError
 from otalo.ao.models import Line, User, Dialer
-from otalo.sms.models import Config
+from otalo.sms.models import Config, SMSMessage
 from otalo.sms import sms_utils
 
 
@@ -19,9 +20,12 @@ WS_WORKER = 'workers'
 
 # names of workers e.g. w1@voicebox
 WORKERS = []
+BUFFER_MINS = 15
 
 def report_error(msg):
-	sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
+	now = datetime.now()
+	if not SMSMessage.objects.filter(text=msg, sent_on__gt=now-timedelta(minutes=BUFFER_MINS)).exists():
+		sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
 	
 def check_pris():
 	for i in NUM_PRIS:
