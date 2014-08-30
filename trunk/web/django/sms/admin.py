@@ -22,6 +22,7 @@ class OrderingAdmin(admin.ModelAdmin):
     
 class MessageAdmin(OrderingAdmin):
     raw_id_fields = ('sender','recipients',)
+    readonly_fields = ('created_on','sent_on')
 
 admin.site.register(Config, OrderingAdmin)
 admin.site.register(ConfigParam, OrderingAdmin)
