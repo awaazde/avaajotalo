@@ -20,7 +20,7 @@ WS_WORKER = 'workers'
 
 # names of workers e.g. w1@voicebox
 WORKERS = []
-BUFFER_MINS = 15
+BUFFER_MINS = 5
 
 def report_error(msg):
 	now = datetime.now()
