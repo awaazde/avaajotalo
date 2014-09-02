@@ -20,11 +20,11 @@ WS_WORKER = 'workers'
 
 # names of workers e.g. w1@voicebox
 WORKERS = []
-BUFFER_MINS = 5
+DEFAULT_BUFFER_MINS = 5
 
-def report_error(msg):
+def report_error(msg, buffer=DEFAULT_BUFFER_MINS):
 	now = datetime.now()
-	if not SMSMessage.objects.filter(text=SERVER_NAME+': '+msg, sent_on__gt=now-timedelta(minutes=BUFFER_MINS)).exists():
+	if not SMSMessage.objects.filter(text=SERVER_NAME+': '+msg, sent_on__gt=now-timedelta(minutes=buffer)).exists():
 		sms_utils.send_sms(CONFIG, ADMINS, SERVER_NAME+": "+msg, SENDER)
 	
 def check_pris():
@@ -56,7 +56,7 @@ def check_freeswitch():
 	
 	if out != '':
 		print("LuaSQL database connection issue!")
-		report_error("MySQL connection is down!")
+		report_error("MySQL connection " + str(len(out)) + " is down!", 6*60)
 		
 	
 	p = subprocess.Popen(['grep', 'LuaSQL: Error connecting: Out of memory.', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
@@ -64,15 +64,17 @@ def check_freeswitch():
 	
 	if out != '':
 		print("LuaSQL out of memory!")
-		report_error("LuaSQL memory is down!")
+		report_error("LuaSQL memory " + str(len(out)) + " is down!", 6*60)
 		
 	
 	p = subprocess.Popen(['grep', 'Originate Resulted in Error Cause: 111 \[PROTOCOL_ERROR\]', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
 	if out != '':
+		# include the length of the output
+		# to tell whether new errors are happening
 		print("PROTOCOL ERROR")
-		report_error("[PROTOCOL_ERROR] is down!")
+		report_error("[PROTOCOL_ERROR] " + str(len(out)) + " is down!", 6*60)
 		# try to restart
 		# UPDATE: this doesn't work, don't do
 		#p = subprocess.Popen(["/etc/init.d/freeswitch", "start"])
@@ -89,10 +91,10 @@ def check_celery():
 						status = workers_data[worker]['status']
 						if not status:
 							print(worker + ' status is down')
-							report_error(worker + ' status is down!') 
+							report_error('celery ' + worker + ' status is down!') 
 					else:
 						print(worker + ' is down!')
-						report_error(worker + ' is down!') 
+						report_error('celery ' +worker + ' is down!') 
 			else:
 				print('Flower response is down!')
 				report_error('Flower response is down!')
