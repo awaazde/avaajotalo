@@ -471,8 +471,7 @@ function get_available_line(api, prefixes, maxparallels, dialer_types)
 		end
 	end
 	
-	-- return the first prefix by default
-	return prefixes[1];
+	-- means all qualified dialers are full. Return nothing
 end
 
 --[[
