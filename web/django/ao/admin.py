@@ -27,7 +27,7 @@ class ADAdmin(OrderingAdmin):
 class MessageAdmin(OrderingAdmin):
     list_display = ('date', 'user')
     search_fields = ['user__name', 'user__number']
-    raw_id_fields = ('user',)   
+    raw_id_fields = ('user','thread')   
 
 class UserAdmin(OrderingAdmin):
    search_fields = ['name', 'number']
