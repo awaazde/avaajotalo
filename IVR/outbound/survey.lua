@@ -183,6 +183,12 @@ function survey_main()
 	   	-- assume that the survey will make any loops
 	   	-- that are necessary itself
 		hangup();
+	else
+		-- if there was a hangup due to a technical line error, delete and let scheduler try again
+		local hangup_cause = session:hangupCause();
+		if TECHNICAL_ERRORS[hangup_cause] ~= nil then
+			delete_from_table('surveys_call', 'id = '.. callid);
+		end
 	end
 	
 end
