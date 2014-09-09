@@ -149,6 +149,31 @@ end
 
 --[[
 -------------------------------------------
+------- delete_table ---------------------- 
+-------------------------------------------
+
+	deletes from the given table
+	for records with the given condition
+
+	returns nothing
+-------------------------------------------
+--]]
+
+function delete_from_table(table, cond)
+	local sql_statement = " DELETE FROM " .. table;
+	
+	if (cond ~= nil) then
+		sql_statement = sql_statement .. " WHERE " .. cond;
+	end
+	
+	freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n");
+	con:execute(sql_statement);
+	return;
+	
+end
+
+--[[
+-------------------------------------------
 ----------------- rows -------------------- 
 -------------------------------------------
 
