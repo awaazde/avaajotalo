@@ -40,7 +40,7 @@ def check_pris():
 				error_msg += " (grp"+str(i)+ ")"
 			error_msg += ' is down!'
 			print("error "+error_msg)
-			report_error(error_msg)
+			report_error(error_msg, 10)
 
 def check_freeswitch():
 	p = subprocess.Popen(["pgrep", "freeswitch"], stdout=subprocess.PIPE)
@@ -75,10 +75,6 @@ def check_freeswitch():
 		# to tell whether new errors are happening
 		print("PROTOCOL ERROR")
 		report_error("[PROTOCOL_ERROR] " + str(len(out)) + " is down!", 6*60)
-		# try to restart
-		# UPDATE: this doesn't work, don't do
-		#p = subprocess.Popen(["/etc/init.d/freeswitch", "start"])
-		#p.wait()
 
 def check_celery():
 	if WORKERS:
