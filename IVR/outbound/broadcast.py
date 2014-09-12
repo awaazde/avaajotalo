@@ -18,6 +18,7 @@ from operator import itemgetter
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.db.models import Q, Max, Min
+from celery import group
 from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag, Dialer
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
@@ -38,7 +39,8 @@ DEFAULT_CALL_THRESHOLD = 2
 # mins before sending a backup call
 BACKUP_THRESH_MINS = 30
 
-BCAST_BUFFER_SECS = 0 * 60
+# making this a minute for calls awaiting an audio prefetch
+PREFETCH_BUFFER_SECS = 1 * 60
 
 def subjects_by_numbers(numbers):
     # clean up the numbers, but don't limit to 10-digit (to alllow int'l bcasts)
@@ -300,6 +302,7 @@ def schedule_bcasts(time=None, dialers=None):
         '''
         new_bcasts = {}
         backups = {}
+        prefetches = {}
         
         '''
         '    Get all possible numbers rather than relying on
@@ -322,7 +325,7 @@ def schedule_bcasts(time=None, dialers=None):
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
             if not scheduled_subjs.exists():
                 # no calls have been scheduled yet, so prefetch the audio
-                otalo.ao.tasks.cache_survey_audio.delay(bcast)
+                prefetches[bcast] = otalo.ao.tasks.cache_survey_audio.s(bcast)
             # next line purely for query optimization purposes
             scheduled_subjs = [subj.values()[0] for subj in scheduled_subjs]
             recipients = bcast.subjects.all()
@@ -360,6 +363,7 @@ def schedule_bcasts(time=None, dialers=None):
         
         num_scheduled = 0
         for survey, subject in flat:
+            calls = []
             # don't schedule a subject multiple times across
             # dialers. Can happen if the subject's survey
             # is attached to multiple dialers
@@ -377,11 +381,24 @@ def schedule_bcasts(time=None, dialers=None):
                 if latest_call.date > bcasttime - timedelta(minutes=BACKUP_THRESH_MINS):
                     continue
                 priority = latest_call.priority + 1
-                
-            surveytasks.schedule_call.s().set(countdown=BCAST_BUFFER_SECS).delay(survey, dialer, subject, priority)
-            #surveytasks.test_task.s().delay(survey, dialer, subject, priority, bcasttime)
+            
+            # Use si for immutable subtasks, to be used with the chain below in case there is a prefetch
+            # Don't pass on the result of the prefetch task as an arg to the calls 
+            #calls.append(surveytasks.schedule_call.si(survey, dialer, subject, priority))
+            calls.append(surveytasks.test_task.si(survey, dialer, subject, priority, bcasttime))
+            
             scheduled.append(subject)
             num_scheduled += 1
+            
+            if calls:
+                prefetch = prefetches.get(survey,None)
+                if prefetch:
+                    g = group([t.set(countdown=PREFETCH_BUFFER_SECS) for t in calls])
+                    (prefetch | g).delay()
+                else:
+                    g = group([t for t in calls])
+                    g.delay()
+            
 
 '''
 ****************************************************************************
