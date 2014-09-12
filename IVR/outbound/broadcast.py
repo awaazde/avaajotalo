@@ -384,8 +384,8 @@ def schedule_bcasts(time=None, dialers=None):
             
             # Use si for immutable subtasks, to be used with the chain below in case there is a prefetch
             # Don't pass on the result of the prefetch task as an arg to the calls 
-            #calls.append(surveytasks.schedule_call.si(survey, dialer, subject, priority))
-            calls.append(surveytasks.test_task.si(survey, dialer, subject, priority, bcasttime))
+            calls.append(surveytasks.schedule_call.si(survey, dialer, subject, priority))
+            #calls.append(surveytasks.test_task.si(survey, dialer, subject, priority, bcasttime))
             
             scheduled.append(subject)
             num_scheduled += 1
