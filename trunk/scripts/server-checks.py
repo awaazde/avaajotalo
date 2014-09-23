@@ -24,7 +24,7 @@ DEFAULT_BUFFER_MINS = 5
 
 MYSQL_CONNECTION_THRESH = 2000
 PROTOCOL_ERROR_THRESH = 3000
-CALL_REJECTED_ERROR_THRESH = 0
+CALL_REJECTED_ERROR_THRESH = 4000
 
 def report_error(msg, buffer=DEFAULT_BUFFER_MINS):
 	now = datetime.now()
@@ -89,7 +89,7 @@ def check_freeswitch():
 		# include the length of the output
 		# to tell whether new errors are happening
 		print("CALL REJECTED")
-		report_error("[CALL_REJECTED] " + str(len(out)) + " is down!", 6*60)
+		report_error("[CALL_REJECTED] " + str(len(out)) + " is down!", 3*60)
 
 def check_celery():
 	if WORKERS:
