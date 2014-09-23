@@ -22,6 +22,10 @@ WS_WORKER = 'workers'
 WORKERS = []
 DEFAULT_BUFFER_MINS = 5
 
+MYSQL_CONNECTION_THRESH = 2000
+PROTOCOL_ERROR_THRESH = 3000
+CALL_REJECTED_ERROR_THRESH = 0
+
 def report_error(msg, buffer=DEFAULT_BUFFER_MINS):
 	now = datetime.now()
 	if not SMSMessage.objects.filter(text=SERVER_NAME+': '+msg, sent_on__gt=now-timedelta(minutes=buffer)).exists():
@@ -48,16 +52,18 @@ def check_freeswitch():
 	
 	if out == '':
 		print("error FreeSWITCH is down!")
-		report_error("FreeSWITCH is down!")
-		
+		report_error("FreeSWITCH is down!")	
 	
 	p = subprocess.Popen(['grep', 'LuaSQL: Error connecting to database.', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
 	if out != '':
-		print("LuaSQL database connection issue!")
-		report_error("MySQL connection " + str(len(out)) + " is down!", 6*60)
-		
+		if 'Too many connections' in out:
+			print("LuaSQL database too many connections!")
+			report_error("MySQL too many connections " + str(len(out)) + " is down!", 6*60)
+		elif len(out) > MYSQL_CONNECTION_THRESH:
+			print("LuaSQL database connection issue!")
+			report_error("MySQL connection " + str(len(out)) + " is down!", 3*60)
 	
 	p = subprocess.Popen(['grep', 'LuaSQL: Error connecting: Out of memory.', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
@@ -70,11 +76,20 @@ def check_freeswitch():
 	p = subprocess.Popen(['grep', 'Originate Resulted in Error Cause: 111 \[PROTOCOL_ERROR\]', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
 	
-	if out != '':
+	if out != '' and len(out) > PROTOCOL_ERROR_THRESH:
 		# include the length of the output
 		# to tell whether new errors are happening
 		print("PROTOCOL ERROR")
-		report_error("[PROTOCOL_ERROR] " + str(len(out)) + " is down!", 6*60)
+		report_error("[PROTOCOL_ERROR] " + str(len(out)) + " is down!", 3*60)
+		
+	p = subprocess.Popen(['grep', 'Originate Resulted in Error Cause: 21 \[CALL_REJECTED\]', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	out,err = p.communicate()
+	
+	if out != '' and len(out) > CALL_REJECTED_ERROR_THRESH:
+		# include the length of the output
+		# to tell whether new errors are happening
+		print("CALL REJECTED")
+		report_error("[CALL_REJECTED] " + str(len(out)) + " is down!", 6*60)
 
 def check_celery():
 	if WORKERS:
