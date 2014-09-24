@@ -24,8 +24,6 @@ from ESL import *
 
 
 BCAST_SCRIPT= 'AO/outbound/survey.lua'
-BCAST_ESL_GAP_SECS = .5
-RETRY_COUNTDOWN_SECS = 120
    
 @shared_task
 def schedule_call(survey, dialer, subject, priority):
@@ -75,9 +73,16 @@ def schedule_call(survey, dialer, subject, priority):
         command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
         con.api(command)
         print('Scheduled call '+ str(call))
-        # insert a gap between calls for the
-        # physical dialing resource to keep up
-        time.sleep(BCAST_ESL_GAP_SECS)
+        '''
+        # insert any additionally required gap
+        # to the queue's natural gap (based on concurrency settings)
+        # for physical dialing resource to keep up
+        # Do it here since higher level schedulers would get too complicated
+        # managing chains of calls based on common queues
+        # As long as sleeping in a task is safe, this is simpler since
+        # the task itself will implement the gap it needs to in whatever queue it is in
+        '''
+        time.sleep(dialer.call_gap_secs or Dialer.DEFAULT_CALL_GAP_SECS)
         
     '''
     '    Don't worry about retrying... the higher level scheduling algorithm should be 

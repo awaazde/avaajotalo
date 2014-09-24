@@ -461,6 +461,7 @@ class Dialer(models.Model):
     (TYPE_VOIP, 'VoIP'),
     )
     
+    description = models.CharField(max_length=128, blank=True, null=True)
     base_number = models.CharField(max_length=24)
     max_nums = models.IntegerField()
     type = models.IntegerField(choices=TYPES)
@@ -543,7 +544,7 @@ class Dialer(models.Model):
     '
     '    In most setups, multi-tenant telephony servers won't be needed, so make this a nullable field
     '''
-    machine_id = models.IntegerField(blank=True, null=True)
+    machine_id = models.CharField(max_length=24, blank=True, null=True)
     '''
     ****************************************************************************************************
     '''
@@ -561,8 +562,28 @@ class Dialer(models.Model):
     '''
     channel_vars = models.CharField(max_length=200, blank=True, null=True)
     
+    
+    '''
+    '    Specify a gap between calls on this dialing resource. Each dialer filters into a queue
+    '    for calls to be scheduled. That queue (identified by the machine_id) may collect calls from multiple dialers
+    '    or a single dialer. Different dialers (esp PRI vs. VoIP) or groups of dialers will have different gap requirements.
+    '
+    '    Note that this gap is *in addition* to any natural gap introduced by the worker. I.e the queueing system will take
+    '    its own time to send a call to the dialing resource. Additionally, depending on the queue's number of parallel
+    '    processes executing tasks, calls may execute with much smaller gaps. This setting affects the gap between the worker executing
+    '    one and the next set of tasks, if there are multiple processes accessible to the worker.
+    ' 
+    '    It is the responsibility of the admin to group dialers into queues so that their gap requirements are met. I.e. if you
+    '    have PRI dialers, it's your responsibility to define different queues per PRI and set the concurrency to 1. If you have a bunch
+    '    of VoIP dialers, you may be OK to put them into a single queue with concurrent processes and with no gap.
+    '''
+    DEFAULT_CALL_GAP_SECS = 1
+    call_gap_secs = models.IntegerField(blank=True, null=True)
+    
     def __unicode__(self):
-        if self.country_code:
+        if self.description:
+            return unicode(self.description)
+        elif self.country_code:
             return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix) + '_' + unicode(self.country_code)
         else:
             return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)

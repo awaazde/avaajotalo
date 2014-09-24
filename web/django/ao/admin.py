@@ -58,6 +58,10 @@ class TransactionAdmin(OrderingAdmin):
 
 class CouponAdmin(OrderingAdmin):
     raw_id_fields = ('user',)
+
+class DialerAdmin(OrderingAdmin):
+    list_display = ('description', 'base_number', 'dialstring_prefix', 'country_code', 'machine_id')
+    search_fields = ['description', 'dialstring_prefix']
     
 admin.site.register(Forum, ForumAdmin)
 admin.site.register(User, UserAdmin)
@@ -69,5 +73,5 @@ admin.site.register(Message_forum, MessageForumAdmin)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Forward, OrderingAdmin)
-admin.site.register(Dialer, OrderingAdmin)
+admin.site.register(Dialer, DialerAdmin)
 admin.site.register(Coupon, CouponAdmin)
