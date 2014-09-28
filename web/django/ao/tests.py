@@ -12,7 +12,7 @@ class BcastTest(TestCase):
     INTERVAL_MINS = 10
     
     def setUp(self):
-        d1 = Dialer.objects.create(base_number=5002, type=Dialer.TYPE_PRI, max_nums=10, max_parallel_out=4, dialstring_prefix='user/', interval_mins=self.INTERVAL_MINS)                
+        d1 = Dialer.objects.create(base_numbers=5002, type=Dialer.TYPE_PRI, series_lengths=10, max_parallel_out=4, dialstring_prefix='user/', interval_mins=self.INTERVAL_MINS)                
     
     def test_bcast(self):
         dialers = Dialer.objects.all()

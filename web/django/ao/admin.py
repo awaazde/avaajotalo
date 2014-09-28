@@ -60,7 +60,7 @@ class CouponAdmin(OrderingAdmin):
     raw_id_fields = ('user',)
 
 class DialerAdmin(OrderingAdmin):
-    list_display = ('description', 'base_number', 'dialstring_prefix', 'country_code', 'machine_id')
+    list_display = ('description', 'base_numbers', 'dialstring_prefix', 'country_code', 'machine_id')
     search_fields = ['description', 'dialstring_prefix']
     
 admin.site.register(Forum, ForumAdmin)

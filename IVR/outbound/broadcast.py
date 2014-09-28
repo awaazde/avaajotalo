@@ -318,7 +318,7 @@ def schedule_bcasts(time=None, dialers=None):
         '    which country code you want to dial with.
         '
         '''
-        nums = get_dialer_numbers(dialer)
+        nums = dialer.get_dialer_numbers()
         bcasts = Survey.objects.filter(broadcast=True, created_on__gt=bcasttime-timedelta(hours=12), created_on__lte=bcasttime, number__in=nums, dialers=dialer).exclude(status=Survey.STATUS_CANCELLED)   
         for bcast in bcasts:
             #print("pending bcast: "+ str(bcast))
@@ -502,13 +502,6 @@ def get_pending_backup_calls(survey, max_backup_calls):
     #print('backups to sched: '+str(to_sched))
     
     return to_sched
-
-
-'''
-'    Get all possible numbers associated with this dialer
-'''
-def get_dialer_numbers(dialer):
-    return map(str, range(int(dialer.base_number),int(dialer.base_number)+dialer.max_nums))
     
 def date_str(date):
     #return date.strftime('%Y-%m-%d')

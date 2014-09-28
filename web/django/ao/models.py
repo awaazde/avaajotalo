@@ -464,6 +464,30 @@ class Dialer(models.Model):
     description = models.CharField(max_length=128, blank=True, null=True)
     base_number = models.CharField(max_length=24)
     max_nums = models.IntegerField()
+    '''
+    '    Dialers can support (multiple) ranges of numbers
+    '    The two below fields work together to define them.
+    '    Both are comma-separated.
+    '
+    '    NOTE outside code should not reference them directly
+    '    and instead use the instance method below to access
+    '    a dialer's number range
+    '''
+    base_numbers = models.CharField(max_length=128)
+    series_lengths = models.CharField(max_length=128)
+    
+    '''
+    ' Get all possible numbers associated with this dialer
+    '''
+    def get_dialer_numbers(self):
+        nums = []
+        bases = self.base_numbers.split(',')
+        ranges = self.series_lengths.split(',')
+        for base, l in zip(bases, ranges):
+            nums += map(str, range(int(base),int(base)+int(l)))
+            
+        return nums
+
     type = models.IntegerField(choices=TYPES)
     
     '''
@@ -584,9 +608,9 @@ class Dialer(models.Model):
         if self.description:
             return unicode(self.description)
         elif self.country_code:
-            return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix) + '_' + unicode(self.country_code)
+            return unicode(self.base_numbers) + '_' + unicode(self.dialstring_prefix) + '_' + unicode(self.country_code)
         else:
-            return unicode(self.base_number) + '_' + unicode(self.dialstring_prefix)
+            return unicode(self.base_numbers) + '_' + unicode(self.dialstring_prefix)
         
 
 '''
