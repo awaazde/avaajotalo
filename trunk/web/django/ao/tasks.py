@@ -38,7 +38,7 @@ def schedule_bcasts_by_dialers(*dialerids):
 '''
 @shared_task
 def schedule_bcasts_by_basenums(*numbers):
-    dialers = Dialer.objects.filter(base_number__in=numbers)
+    dialers = Dialer.objects.filter(base_numbers__in=numbers)
     
     schedule_bcasts(dialers=dialers)
     
