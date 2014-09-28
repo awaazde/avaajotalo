@@ -462,8 +462,6 @@ class Dialer(models.Model):
     )
     
     description = models.CharField(max_length=128, blank=True, null=True)
-    base_number = models.CharField(max_length=24)
-    max_nums = models.IntegerField()
     '''
     '    Dialers can support (multiple) ranges of numbers
     '    The two below fields work together to define them.
