@@ -36,7 +36,8 @@ def check_pris():
 		p = subprocess.Popen(["/usr/sbin/wanpipemon", "-i", "w"+str(i)+"g1", "-c", "xm"], stdout=subprocess.PIPE)
 		out,err = p.communicate()
 		
-		if 'Low' in out:
+		# Check for not high instead of low, since there may be other error conditions besides low
+		if 'High' not in out:
 			dialer = Dialer.objects.filter(dialstring_prefix__contains='grp'+str(i))
 			error_msg = 'PRI line w'+str(i)+'g1'
 			if bool(dialer):
