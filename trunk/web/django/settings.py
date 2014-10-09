@@ -91,6 +91,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -129,8 +130,10 @@ INSTALLED_APPS = (
     'awaazde.streamit',
     'awaazde.console',
     'awaazde.xact',
+    'corsheaders',
     'rest_framework',
     'rest_framework_swagger',
+    'rest_framework.authtoken',
     'awaazde.payment',
     'captcha'
 )
@@ -218,8 +221,23 @@ SERIALIZATION_MODULES = {
     'json': 'utils.serializers.custom_json'
 }
 
+CORS_ORIGIN_WHITELIST = ('awaaz.de', 'classlynx.co') #allowing classlynx
+
+CORS_ALLOW_HEADERS = (
+        'x-requested-with',
+        'content-type',
+        'accept',
+        'origin',
+        'Authorization',
+        'x-csrftoken'
+)
+
 REST_FRAMEWORK = {
     'PAGINATE_BY': 100,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # optional
+    ),
 }
 
 CONSOLE_ROOT = '/AO'
