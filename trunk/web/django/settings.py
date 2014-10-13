@@ -235,6 +235,7 @@ CORS_ALLOW_HEADERS = (
 REST_FRAMEWORK = {
     'PAGINATE_BY': 100,
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',  
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # optional
     ),
