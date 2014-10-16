@@ -319,13 +319,13 @@ div.modal-header {
 				$('#id_form-'+formIdx+'-skip_rule_val').val({{opts.firstval}})
 				if (opt_type == ADVANCED_OPTION_TYPE_SKIP)
 				{
-					{% for q, val in opts.rules.items %}
+					{% for val in opts.rules %}
 						$skip_rule = add_skip_rule($parent_form);
 						// set values
 						$q = $skip_rule.find('select[id*="skip_rule_q"]');
-						$q.val({{q}});
+						$q.val({{val}}[0]);
 						$v = $skip_rule.find('select[id*="skip_rule_val"]');
-						$v.val({{val}});
+						$v.val({{val}}[1]);
 					{% endfor %}
 				} else if (opt_type == ADVANCED_OPTION_TYPE_ALT)
 				{
