@@ -354,9 +354,7 @@ function mainmenu ()
    
    if (d ~= nil and d > 0 and d <= numforums) then
       freeswitch.consoleLog("info", script_name .. " : Selected Forum : " .. forumnames[d] .. "\n");
-      read(aosd .. "okyouwant_pre.wav", 0);
-      read(aosd .. forumnames[d], 0);
-      read(aosd .. "okyouwant_post.wav", 0);
+      read(aosd .. "okyouwant_"..forumnames[d], 0);
       playforum(forumids[d]);
    elseif (d == chkrepliesidx and personal_inbox == 1) then
       read(aosd .. "okyourreplies.wav", 0);
