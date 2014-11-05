@@ -15,6 +15,7 @@
 #===============================================================================
 import time, re
 from datetime import datetime
+from django.db import IntegrityError
 from celery.exceptions import MaxRetriesExceededError
 from celery import shared_task
 from celery.task.control import revoke
@@ -67,22 +68,37 @@ def schedule_call(survey, dialer, subject, priority):
     '
     '    We never want to have a call be double-scheduled, so take a hit and do the db query here.
     '    Note the query should *not* filter by dialer, since we want to check for the call across all dialers
+    
+    '    UPDATE: It is not enough to do a db check for whether the call obj has already been created, because of multi-worker
+    '    race condition. Imagine the same task is scheduled in two different queues. If both of those tasks enter at the
+    '    same time, their db sessions (transactions) would not be able to update against each other and both could
+    '    create the object. Django's get_or_create is also not threadsafe: http://stackoverflow.com/questions/6416213/is-get-or-create-thread-safe
+    
+    '    To prevent the race condition, have to enforce consistency at the DB level through
+    '    unique constraints. Account for the db constraint here by catching the error and simply moving on if it happens.
     '''
-    if not bool(Call.objects.filter(survey=survey, subject=subject, priority=priority)) and con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
-        call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
-        command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
-        con.api(command)
-        print('Scheduled call '+ str(call))
-        '''
-        # insert any additionally required gap
-        # to the queue's natural gap (based on concurrency settings)
-        # for physical dialing resource to keep up
-        # Do it here since higher level schedulers would get too complicated
-        # managing chains of calls based on common queues
-        # As long as sleeping in a task is safe, this is simpler since
-        # the task itself will implement the gap it needs to in whatever queue it is in
-        '''
-        time.sleep(dialer.call_gap_secs or Dialer.DEFAULT_CALL_GAP_SECS)
+    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
+        try:
+            call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
+            
+            command = "luarun " + BCAST_SCRIPT + " " + str(call.id)
+            con.bgapi(command)
+            print('Scheduled call '+ str(call))
+        
+            '''
+            # insert any additionally required gap
+            # to the queue's natural gap (based on concurrency settings)
+            # for physical dialing resource to keep up
+            # Do it here since higher level schedulers would get too complicated
+            # managing chains of calls based on common queues
+            # As long as sleeping in a task is safe, this is simpler since
+            # the task itself will implement the gap it needs to in whatever queue it is in
+            '''
+            time.sleep(dialer.call_gap_secs or Dialer.DEFAULT_CALL_GAP_SECS)
+            
+        except IntegrityError as e:
+            print(e)
+            pass
         
     '''
     '    Don't worry about retrying... the higher level scheduling algorithm should be 
@@ -118,7 +134,7 @@ def get_n_channels(con, dialer):
         profile = "sofia/" + str(profile)
    
     profile = "show channels like " + profile
-    print("profile is "+profile)
+    #print("profile is "+profile)
    
     e = con.api(profile)
     chan_txt = e.getBody()

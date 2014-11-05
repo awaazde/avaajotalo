@@ -198,7 +198,12 @@ class Call(models.Model):
     subject = models.ForeignKey(Subject)
     survey = models.ForeignKey(Survey)
     date = models.DateTimeField()
-    priority = models.IntegerField()
+    # Don't set priority for inbound calls. If you do, then the
+    # below integrity constraint will be violoated.
+    # Note that only MySQL follows this spec. If we
+    # use another db, you may get data integrity errors
+    # see http://stackoverflow.com/questions/3712222/does-mysql-ignore-null-values-on-unique-constraints
+    priority = models.IntegerField(blank=True, null=True)
     complete = models.NullBooleanField(default=False)
     
     duration = models.IntegerField(blank=True, null=True)
@@ -211,6 +216,19 @@ class Call(models.Model):
     '    Nullable because we don't set this with inbound (missed calls)
     '''
     dialer = models.ForeignKey('ao.Dialer', blank=True, null=True)
+     
+    class Meta:
+#         '''  Add a unique key constraint to prevent asynchronous task scheduling from 
+#         '    adding extra objects due to race conditions on creation of a Call object
+#         '    by multiple workers. E.g.:
+#         '
+#         '    1. scheduler schedules a task t1 to queue q1 for subj/survey/pri combo c1
+#         '    2. t1 is enqueued, but does not execute
+#         '    3. schedule schedules a task t2 to queue q2 for same c1 combo
+#         '    4. t1 executes and creates call object for c1
+#         '    5. t2 executes and creates call object for c1 in a race
+#         '''
+         unique_together = ('subject', 'survey', 'priority')
     
     def __unicode__(self):
         return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
