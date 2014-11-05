@@ -150,7 +150,7 @@ else
 end
 
 -- create the call
-query = "INSERT INTO surveys_call (subject_id, survey_id, date, priority ) VALUES (" ..subjectid..","..surveyid..",now(),1) ";
+query = "INSERT INTO surveys_call (subject_id, survey_id, date ) VALUES (" ..subjectid..","..surveyid..",now()) ";
 con:execute(query);
 freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
 local cur = con:execute("SELECT LAST_INSERT_ID()");
