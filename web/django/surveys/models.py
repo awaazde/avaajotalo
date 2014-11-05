@@ -218,17 +218,17 @@ class Call(models.Model):
     dialer = models.ForeignKey('ao.Dialer', blank=True, null=True)
      
     class Meta:
-#         '''  Add a unique key constraint to prevent asynchronous task scheduling from 
-#         '    adding extra objects due to race conditions on creation of a Call object
-#         '    by multiple workers. E.g.:
-#         '
-#         '    1. scheduler schedules a task t1 to queue q1 for subj/survey/pri combo c1
-#         '    2. t1 is enqueued, but does not execute
-#         '    3. schedule schedules a task t2 to queue q2 for same c1 combo
-#         '    4. t1 executes and creates call object for c1
-#         '    5. t2 executes and creates call object for c1 in a race
-#         '''
-         unique_together = ('subject', 'survey', 'priority')
+        '''  Add a unique key constraint to prevent asynchronous task scheduling from 
+        '    adding extra objects due to race conditions on creation of a Call object
+        '    by multiple workers. E.g.:
+        '
+        '    1. scheduler schedules a task t1 to queue q1 for subj/survey/pri combo c1
+        '    2. t1 is enqueued, but does not execute
+        '    3. schedule schedules a task t2 to queue q2 for same c1 combo
+        '    4. t1 executes and creates call object for c1
+        '    5. t2 executes and creates call object for c1 in a race
+        '''
+        unique_together = ('subject', 'survey', 'priority')
     
     def __unicode__(self):
         return unicode(self.subject) + '-' + unicode(self.survey) + '-' + str(self.date) + '-p' + str(self.priority)
