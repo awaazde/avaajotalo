@@ -206,7 +206,7 @@ select.payment-select {
 					<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
 						<h3>Online payment is currently undergoing aesthetic improvements.</h3>
 						
-						<span class="sub-text">We'll be <span class="text-blue">very soon</span>. Sorry for any inconvenience.</span>
+						<span class="sub-text">We'll be back <span class="text-blue">very soon</span>. Sorry for any inconvenience.</span>
 					</div>
 				</div>
 			</div>
@@ -285,25 +285,7 @@ select.payment-select {
 
 {% block extrascripts %}
 	<script type="text/javascript">
-		function loadHTML(loadurl, targ) {
-			$(".tab-pane").html('');
-		    $.get(loadurl, function(data) {
-		        $(targ).html(data);
-		    });
-		}
 		
-		loadHTML('{% url 'buyoption' %}?option=groups_topups', '#both'); //default loading group+topup view
-		
-		$('[data-toggle="tabajax"]').click(function(e) {
-		    var $this = $(this),
-		        loadurl = $this.attr('href'),
-		        targ = $this.attr('data-target');
-		        
-			loadHTML(loadurl, targ);
-			
-		    $this.tab('show');
-		    return false;
-		});
 	</script>
 {% endblock %}
 
