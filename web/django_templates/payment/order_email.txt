@@ -1,0 +1,34 @@
+Hello {{user.name}},
+
+Thank you for the payment at AwaazDe. Below is your order summary.
+
+Order Summary - #{{order_no}}:
+
+{% if group_recharge %}
+
+		{{ new_groups }} x Groups (valid till {{groups_valid|date:'d-m-Y'}}) = Rs. {{ groups_amount }}
+	
+{% endif %} 
+
+{% if topups_recharge %}
+	{% if is_unlimited_plan %}
+		{{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}}) = Rs. {{ credit_amount }}
+	{% else %}
+        {{ new_credits }} x Messages - {{rec_plan}} = Rs. {{ credit_amount }}
+	{% endif %}
+	
+{% endif %} 
+
+
+	Total: Rs. {{ total_amount }}
+
+---------------------------------
+
+{% if coupon_code %}
+	Discount (coupon code: {{coupon_code}}) = Rs. -{{ coupon_amount }}
+{% endif %}
+
+	Net Total: Rs. {{ net_total_amount }}
+	
+	
+You can contact us with any question or concern by  sending an email to ask@awaaz.de
