@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+
+    <!-- Charset -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <!-- Responsive Meta Tag -->
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;" />
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,800,700,900' rel='stylesheet' type='text/css'>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+
+    <title>Awaaz.De - Thank you for your order</title>
+
+
+</head>
+
+<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" style="background: #f9f9f9; font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">
+
+    <table border="0" width="85%" cellpadding="0" cellspacing="0" bgcolor="f9f9fa" style="margin-left: auto; margin-right: auto;  margin-top: 20px;">
+        <tr>
+            <td>
+                <table border="0" width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e8ecef;">
+                    <tr>
+                        <td style="height: 180px; background: #f9f9fa;">
+                            <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td valign="middle" align="center">
+                                        <h2 style="font-family: 'Open Sans', Helvetica, sans-serif; color: #2c3e50; font-weight: 600;">Your purchase is completed!</h2>
+                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #2c3e50; font-size: 13px; font-weight: 600;">(Let us know if it hasn't at <a style="color: #4fbc7e; text-decoration: none;" href="mailto: ask@awaaz.de">ask@awaaz.de</a>)
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="height: auto;">
+                            <table border="0" width="100%" cellpadding="20" cellspacing="0">
+                                <tr>
+                                    <td valign="middle" align="justify">
+                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Hello {{user.name}},</p>
+                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Thank you for the payment at AwaazDe. Below is your order summary.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table border="0" width="100%" cellpadding="0" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="2" style="background: #f5f5f5; font-weight: 600; padding-top: 3px; padding-bottom: 3px;" align="justify">Order Summary - #{{order_no}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                {% if group_recharge %}
+                                                <tr style="border-bottom: 1px solid gray;'">
+                                                    <tr>
+                                                        <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
+                                                            {{ new_groups }} x Groups (valid till {{groups_valid|date:'d-m-Y'}})
+                                                        </td>
+                                                        <td>
+                                                            Rs. {{ groups_amount }}
+                                                        </td>
+                                                    </tr>
+                                                </tr>
+                                                {% endif %} 
+                                                
+                                                {% if topups_recharge %}
+                                                <tr style="border-bottom: 1px solid gray;'">
+                                                    {% if is_unlimited_plan %}
+                                                    
+                                                        <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
+                                                            {{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}})
+                                                        </td>
+                                                        <td>
+                                                            Rs. {{ credit_amount }}
+                                                        </td>
+                                                    
+                                                    {% else %}
+                                                    
+                                                        <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
+                                                            {{ new_credits }} x Messages - {{rec_plan}}
+                                                        </td>
+                                                        <td>
+                                                            Rs. {{ credit_amount }}
+                                                        </td>
+                                                    
+                                                    {% endif %}
+                                                </tr>
+                                                {% endif %}
+                                                
+                                                
+                                                <tr style="border-bottom: 1px solid gray;'">
+                                                    <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
+                                                        <strong style="color: #38abdf;">Total</strong>
+                                                    </td>
+                                                    <td><strong style="color: #38abdf;">Rs. {{ total_amount }}</strong>
+                                                    </td>
+                                                </tr>
+
+                                                {% if coupon_code %}
+                                                <tr style="border-bottom: 1px solid gray;'">
+                                                    <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
+                                                        Discount (coupon code: <span style="color: #27ae60;">{{coupon_code}}</span>)</td>
+                                                    <td>Rs. -{{ coupon_amount }}</td>
+                                                </tr>
+                                                {% endif %}
+
+                                                <tr style="padding-top: 30px;">
+                                                    <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
+                                                        <strong style="color: #38abdf;">Net Total</strong>
+                                                    </td>
+                                                    <td><strong style="color: #38abdf;">Rs. {{ net_total_amount }}</strong>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 20px; padding-top: 50px; text-align: center;">
+                            You can contact us with any question or concern by  sending an email to
+                            <p><a style="color: #0a8fd5; text-decoration: none; font-size: 14px; font-weight: 600;" href="mailto:ask@awaaz.de">ask@awaaz.de</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table border="0" width="100%" cellpadding="20" cellspacing="0">
+                    <tr>
+                        <td style="width: 5%;">
+                            <img style=" vertical-align: middle; " src="https://www.awaaz.de/img/logo_alt_2.png " alt="logo " />
+                        </td>
+                        <td valign="middle">
+                            <p style="vertical-align: middle; font-size: 10px;">You are recieving this email because you are customer of Awaaz.De</p>
+                        </td>
+                        <td valign="middle" align="right">
+                            <p style="vertical-align: middle; font-size: 10px;">To talk instantly</p>
+                            <p style="vertical-align: middle; font-size: 10px;">call: +91 079 40086740</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

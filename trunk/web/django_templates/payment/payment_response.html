@@ -6,7 +6,7 @@
 {% block extrahead %}
 <style>
 .pricing-plan-container {
-	background: #ffffff;
+	background: #f9f9fa;
 	min-height: 226px;
 	position: relative;
 	margin-top: -100px;
@@ -35,8 +35,6 @@ a.btn-c {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-	background-color: #f36;
-	border-color: #f36;
 	color: #fff;
 	margin-top: 40px;
 }
@@ -67,13 +65,29 @@ a.btn-c-alt {
 	width: 85%;
 	margin-left: auto;
 	margin-right: auto;
-	font-size: 22px;
 	line-height: 30px;
 }
 .label-success-c {
 	color: #06ba8f !important;
 }
 
+.text-green {
+	color: #27ae60;
+}
+
+.text-blue {
+	color: #38abdf;
+}
+
+.text-left {
+	text-align: left;
+}
+
+.table tr td {
+	line-height: 32px !important;
+	font-size: 13px;
+	color: #2c3e50;
+}
 </style>
 {% endblock %}
 
@@ -85,60 +99,159 @@ a.btn-c-alt {
 		<div id="customize">
 			<div class="row">
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
-					{% if success %}
-						<h3 class="label-c label-success-c">{{ success }}</h3>
+					{% if error %}
+						<h5 class="label-c label-error">{{ error }}</h5>
+						<div class="row">
+							<div class="col-lg-4 col-lg-offset-4 text-center">
+								<a href="mailto:info@awaaz.de" class="btn btn-blue btn-c">Contact Support</a>
+							</div>
+						</div>
 					{% else %}
-						<h3 class="label-c label-error">{{ error }}</h3>
-					{% endif %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 text-center">
-					<a href="/console/" class="btn btn-c">Go back to my account</a>
-				</div>
-				<div class="col-lg-4 col-md-4 col-sm-4 col-xs-6 text-center">
-					{% if success %}
-						<a href="/console/payment/buycredits" class="btn btn-c btn-c-alt">Recharge Again</a>
-					{% else %}
-						<a href="/console/payment/buycredits" class="btn btn-c btn-c-alt">Try Again</a>
+						<h4 class="label-c text-green">Payment completed successfully!</h4>
+						<div class="row">
+							<div class="col-lg-10 col-lg-offset-1 text-left">
+								<table class="table table-condensed">
+									<thead>
+										<tr class="active">
+											<th colspan="2">Order Summary - #{{order_no}}</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% if group_recharge %}
+										<tr>
+											<tr>
+												<td style="width: 70%;">
+													{{ new_groups }} x Groups (valid till {{groups_valid|date:'d-m-Y'}})
+												</td>
+												<td>
+													Rs. {{ groups_amount }}
+												</td>
+											</tr>
+										</tr>
+										{% endif %}
+										
+										{% if topups_recharge %}
+										<tr>
+											{% if is_unlimited_plan %}
+												<tr>
+													<td style="width: 70%;">
+														{{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}})
+													</td>
+													<td>
+														Rs. {{ credit_amount }}
+													</td>
+												</tr>
+											{% else %}
+											<tr>
+												<td style="width: 70%;">
+													{{ new_credits }} x Messages - {{rec_plan}}
+												</td>
+												<td>
+													Rs. {{ credit_amount }}
+												</td>
+											</tr>
+											{% endif %}
+										</tr>
+										{% endif %}
+									
+										<tr>
+											<td style="width: 70%;"><strong class="text-blue">Total</strong></td>
+											<td><strong class="text-blue">Rs. {{ total_amount }}</strong></td>
+										</tr>
+										
+										{% if coupon_code %}
+										<tr>
+											<td style="width: 70%;">Discount (coupon code: <span class="text-green">{{coupon_code}}</span>)</td>
+											<td>Rs. -{{ coupon_amount }}</td>
+										</tr>
+										{% endif %}
+										
+										<tr style="padding-top: 30px;">
+											<td style="width: 70%;"><strong class="text-blue">Net Total</strong></td>
+											<td><strong class="text-blue">Rs. {{ net_total_amount }}</strong></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>	
+						</div>
+						
+						<div class="row">
+							<div class="col-lg-4 col-lg-offset-4 text-center">
+								<a href="{% url 'pay' %}" class="btn btn-green">Buy More</a>
+							</div>
+						</div>
+					</div>
 					{% endif %}
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
+<div class="row">
+	<div class="col-lg-6 col-md-6 col-sm-6 col-xs-10 col w-100">&nbsp;</div>
+</div>
+
 <div class="row" id="footer">
-	<div class="container FadeIn animated fadeInUp">
+	<div class="container FadeIn">
 		<div class="row">
-			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-10 col">
-				<h5>Get in touch with us in case of any problem</h5>
+			<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 col">
+				<img src="/img/logo_alt_2.png" alt="awaazde" />
+				<h3 class="footer-logo-text">Awaaz.De</h3>
+				<h6>last mile mobile technology</h6>
+			</div>
+			<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 col">
+				<h5>About Us</h5>
 				<ul>
-					<li>(e) <a href="mailto:info@awaaz.de" title="info@awaaz.de">info@awaaz.de</a></li>
-					<li><a href="call:">(I) +91 7940086740</a></li>
+					<li><a href="/about-us">About Us</a></li>
+					<li><a href="/about-us/#media">Media &amp; Press</a></li>
+					<li><a href="/jobs">Career</a></li>
+					<li><a href="/blog">Blog</a></li>
 				</ul>
+
+				<div class="sub-row">
+					<h5>Get in Touch</h5>
+					<ul>
+						<li>(e) <a href="mailto:info@awaaz.de" title="info@awaaz.de">info@awaaz.de</a></li>
+						<li><a href="call:">(I) +91 7940086740</a></li>
+					</ul>
+				</div>
+				<!-- ./col-->
+			</div>
+			<!-- ./col-->
+
+			<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 col">
+				<h5>Policies</h5>
+				<ul>
+					<li><a href="http://awaaz.de/docs/ToS.pdf"
+						title="Terms &amp; Conditions">Terms &amp; Conditions</a></li>
+					<li><a href="http://awaaz.de/docs/ToS.pdf"
+						title="Disclaimer Privacy Policy">Disclaimer &amp; Privacy</a></li>
+					<li><a href="http://awaaz.de/docs/ToS.pdf"
+						title="Cancellation &amp; Refund Policy">Cancellation &amp;
+							Refund Policy</a></li>
+					<li>&nbsp;</li>
+				</ul>
+
+
+				<div class="sub-row">
+					<h5>&nbsp;</h5>
+					<ul class="social">
+						<li><a href="http://twitter.com/awaazde"><i
+								class="social-twitter-bird"></i></a></li>
+						<li><a href="http://www.facebook.com/AwaazDe"><i
+								class="social-facebook"></i></a></li>
+						<li><a href="http://www.linkedin.com/company/awaaz-de"><i
+								class="social-linkedin"></i></a></li>
+						<li><a href="/blog"><i class="social-wordpress"></i></a></li>
+					</ul>
+				</div>
+				<!-- ./col-->
 			</div>
 			<!-- ./col-->
 		</div>
 		<!-- ./row -->
 
-		<hr class="footer-line">
-		<div class="row">
-			<div class="col-lg-7 col-md-7 col-sm-6 col-xs-6">
-				<p class="copyright-text">Copyright © 2014 Awaaz.De</p>
-			</div>
-			<div class="col-lg-5 col-md-5 col-sm-6 col-xs-6">
-				<ul class="social">
-					<li><a href="http://twitter.com/awaazde"><i
-							class="social-twitter-bird"></i></a></li>
-					<li><a href="http://www.facebook.com/AwaazDe"><i
-							class="social-facebook"></i></a></li>
-					<li><a href="http://www.linkedin.com/company/awaaz-de"><i
-							class="social-linkedin"></i></a></li>
-					<li><a href="/blog"><i class="social-wordpress"></i></a></li>
-				</ul>
-			</div>
-		</div>
-		<!-- ./row -->
+		<hr class="footer-line" />
 	</div>
 </div>
 {% endblock %}

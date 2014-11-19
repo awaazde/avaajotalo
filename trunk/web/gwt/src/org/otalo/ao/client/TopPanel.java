@@ -191,27 +191,13 @@ public class TopPanel extends Composite implements ClickHandler, KeyUpHandler {
 				balance = "0";
 			else if (User.UNLIMITED_BALANCE.equals(balance))
 			{
-				balance = "N/A";
+				balance = "UNLIMITED";
 			}
 				
 			Label balanceAmount = new Label(balance);
-			/*AbstractImagePrototype rechargeHTML = AbstractImagePrototype.create(images.recharge());
-			Anchor rechargeButton = new Anchor(rechargeHTML.getHTML(), true, AoAPI.BUY_CREDITS);
-			rechargeButton.setStyleName("clickableimage");*/
-			
 			AbstractImagePrototype rechargeHTML = AbstractImagePrototype.create(images.recharge());
-			//HTML rechargeButton = new HTML(rechargeHTML.getHTML());
-	  	  	Anchor rechargeButton = new Anchor(rechargeHTML.getHTML(), true);
-	  	  	rechargeButton.setStyleName("clickableimage");
-			rechargeButton.addClickHandler(new ClickHandler() {
-				
-				public void onClick(ClickEvent event) {
-					ConfirmDialog recharge = new ConfirmDialog(" Online payments is currently disabled. You can recharge your account via NEFT transfer. Contact info@awaaz.de for details. Apologies for the inconvenience.");
-					recharge.show();
-					recharge.center();
-					
-				}
-			});
+			Anchor rechargeButton = new Anchor(rechargeHTML.getHTML(), true, AoAPI.BUY_CREDITS);
+			rechargeButton.setStyleName("clickableimage");
 			
 		
   	  

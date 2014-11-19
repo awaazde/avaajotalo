@@ -267,7 +267,7 @@ PAYMENT_GATEWAY_CONFIG = {
     'account_id': '5880',   #This is a test id. Actual account id needs to be put in prod
     'secret_key': 'ebskey', #This is a test key.Actual secret key needs to be put in prod
     'action_url': 'https://secure.ebs.in/pg/ma/sale/pay', #Action url where payment request needs to be submitted
-    'return_url': 'http://awaazde/console/payment/buycredits/', #url where payment response would be returened by payment gateway
+    'return_url': 'https://awaazde/console/payment/pay/', #url where payment response would be returened by payment gateway
     'mode'      : 'TEST', # or on prod 'LIVE' its transaction mode
 }
 

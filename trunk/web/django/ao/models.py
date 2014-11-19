@@ -213,6 +213,21 @@ class Forum(models.Model):
     add_member_credits = models.IntegerField(blank=True, null=True)
     backup_calls = models.IntegerField(blank=True, null=True)
     
+    '''
+    valid_till field holds the date till this groups is valid. Once reach to this date, the group would be considered as expired once. In case of None, we are assumuing that the group is not purchased by user.
+    It's value is set with the date using following way:
+    1. Whenever user purchased any group/s, we are creating corresponding PurchaseOrder object and setting validity date in it.
+    2. So now when user actually creates a group, we are finding the purchase order which is having group validity date and haven't been used yet. 
+       Here unused means the available groups in purchased order is greater than 0. The purchased order would be the older one.
+       e.g. let's say user purchased 2 groups, then we are having purchased order containing no_groups and available_groups field with avlue 2 along with groups_validity date.
+       Now when user creates a new group, we are taking this purchase order and checking its available_groups field. Since the purchase order is having 2 availbale_groups, we are taking 
+       its groups_validity date and setting it here in this field.
+       See create_group method in streamit.py. Also reference logic in payment/utils.Util class.
+    '''
+    valid_till = models.DateTimeField(_("Groups valid till"), blank=True, null=True)
+    
+    
+    
     def get_language(self):
         line = self.line_set.all()[0]
         return line.language
@@ -632,11 +647,11 @@ class Coupon(models.Model):
     type = models.CharField(_("Type"), max_length=20, choices=COUPON_TYPES)
     user = models.ForeignKey(AuthUser, verbose_name=_("User"), null=True, blank=True,
         help_text=_("You may specify a user you want to restrict this coupon to."))
-    created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
-    expires_at = models.DateTimeField(_("Expires at"), blank=True, null=True)
+    created_on = models.DateTimeField(_("Created On"), auto_now_add=True)
+    expires_on = models.DateTimeField(_("Expires On"), blank=True, null=True)
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['created_on']
         verbose_name = _("Coupon")
         verbose_name_plural = _("Coupons")
 
@@ -651,3 +666,42 @@ class Coupon(models.Model):
     @classmethod
     def generate_code(cls):
         return "".join(random.choice(Coupon.CODE_CHARS) for i in xrange(Coupon.CODE_CHARS))
+
+
+'''
+PurchaseOrder model is holding all the purchase information for any online payment
+
+Each important field and its purpose are descibed below:
+
+1. no_members: holds no.of memeber user purchased. This field is filled when user selects the unlimited plan.
+2. members_validity: the date till member(unlimited plan) is valid. The value would be date + 6 or 12 months from the date user purchased
+   Please note that whenever any value present into this field, it means user has/wanted to purchased unlimited plan. In case of None, the user selects the other pre defined plan.
+3. no_groups: no. of groups user purchased. The value of this would be add into max_groups in user model
+4. groups_validity: the date till the groups(that the user purchased) are valid.  The value would be date + 6 or 12 months from the date user purchased.
+   Whenever the user purchases the groups, this field would be filled. In case of None, we assume that user hasn't purchase the groups. Only recharged his/her account.
+5. available_groups: the initial value would be no_groups.  And whenever user creates a new group, the value in this field would be decreased by "1". See payment/utils.Util
+'''
+class PurchaseOrder(models.Model):
+    no_members = models.IntegerField(_("No. of Members"), blank=True, null=True)
+    members_validity = models.DateTimeField(_("Members valid till"), blank=True, null=True)
+    no_groups = models.IntegerField(_("No. of Groups"), blank=True, null=True)
+    groups_validity = models.DateTimeField(_("Groups valid till"), blank=True, null=True)
+    created_on = models.DateTimeField(_("Created at"), auto_now_add=True)
+    transaction = models.ForeignKey('Transaction', blank=True, null=True)
+    available_groups = models.IntegerField(_("Available Groups"), blank=True, null=True)
+    
+    
+    class Meta:
+        ordering = ['created_on']
+        verbose_name = _("Purchase Order")
+        verbose_name_plural = _("Purchase Orders")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.available_groups = self.no_groups
+        super(PurchaseOrder, self).save(*args, **kwargs)
+        
+    def __unicode__(self):
+        return str(self.id) + " == " + str(self.created_on) + " == " + str(self.transaction)
+
+    

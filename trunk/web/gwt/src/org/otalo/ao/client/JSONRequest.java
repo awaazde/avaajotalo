@@ -83,7 +83,7 @@ public final class JSONRequest {
 		public static final String DOWNLOAD_STREAM_REPORT = "s/download/streamreport/";
 		public static final String BALANCE = "s/balance/";
 		
-		public static final String BUY_CREDITS = "payment/buycredits/";
+		public static final String BUY_CREDITS = "payment/pay/";
 		
 		public static final String POSTS_TOP = "top";
 		public static final String POSTS_ALL = "all";
