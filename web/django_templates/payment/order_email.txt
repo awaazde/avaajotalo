@@ -6,15 +6,15 @@ Order Summary - #{{order_no}}:
 
 {% if group_recharge %}
 
-		{{ new_groups }} x Groups (valid till {{groups_valid|date:'d-m-Y'}}) = Rs. {{ groups_amount }}
+		{{ new_groups }} x Groups (valid till {{groups_valid|date:'d-m-Y'}}) = Rs. {{ groups_amount|floatformat:2 }}
 	
 {% endif %} 
 
 {% if topups_recharge %}
 	{% if is_unlimited_plan %}
-		{{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}}) = Rs. {{ credit_amount }}
+		{{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}}) = Rs. {{ credit_amount|floatformat:2 }}
 	{% else %}
-        {{ new_credits }} x Messages - {{rec_plan}} = Rs. {{ credit_amount }}
+        {{ new_credits }} x Messages - {{rec_plan}} = Rs. {{ credit_amount|floatformat:2 }}
 	{% endif %}
 	
 {% endif %} 
@@ -25,10 +25,10 @@ Order Summary - #{{order_no}}:
 ---------------------------------
 
 {% if coupon_code %}
-	Discount (coupon code: {{coupon_code}}) = Rs. -{{ coupon_amount }}
+	Discount (coupon code: {{coupon_code}}) = Rs. -{{ coupon_amount|floatformat:2 }}
 {% endif %}
 
-	Net Total: Rs. {{ net_total_amount }}
+	Net Total: Rs. {{ net_total_amount|floatformat:2 }}
 	
 	
 You can contact us with any question or concern by  sending an email to ask@awaaz.de

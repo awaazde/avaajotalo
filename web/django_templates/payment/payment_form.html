@@ -7,19 +7,18 @@
 .pricing-plan-container {
 	min-height: 238px;
 	position: relative;
-	margin-top: -200px;
-	-moz-box-shadow: 0 0 5px #888;
-	-webkit-box-shadow: 0 0 5px #888;
-	box-shadow: 0 0 5px #888;
 	padding: 0px;
 	margin-left: auto;
 	margin-right: auto;
 	float: none;
+	border: 1px solid #666;
+	border-radius: 3px;
+	box-shadow: none;
 }
 
 .nav-tabs>li.active>a,.nav-tabs>li.active>a:hover,.nav-tabs>li.active>a:focus,.pricing-plan-container
 	{
-	background: #f9f9fa;
+	background: #ffffff;
 }
 
 .pricing {
@@ -57,15 +56,16 @@
 }
 
 .top-text {
-	padding-top: 8%;
+	padding-top: 1%;
 }
 
-.top-text h2,p {
-	color: #fff !important;
+.top-text h4 {
+	color: #0a8fd5;
+	font-weight: 700;
 }
 
 .custom-link a,.control-label a {
-	color: #f36;
+	color: #0a8fd5;
 	text-decoration: none;
 }
 
@@ -135,7 +135,7 @@ input[type='checkbox'] + span:hover:after, input[type='checkbox']:checked + span
 }
 
 #customize {
-	padding-top: 20px;
+	padding-top: 0px;
 }
 
 .table-bordered,.table-bordered tr th {
@@ -216,7 +216,8 @@ p.text-mute {
 	margin-left: 0px;
 	margin-right: 0px;
 	padding-top: 10px;
-	padding-bottom: 40px;
+	padding-bottom: 20px;
+	text-align: center;
 }
 
 .time-sel label {
@@ -231,7 +232,7 @@ p.text-mute {
 	border-bottom: 1px solid rgba(1,1,1, 0.08);
 }
 .bg-white {
-	background: #fff;
+	background: #f9f9fa;
 	margin-left: 0px;
 	margin-right: 0px;
 	padding-top: 20px;
@@ -247,6 +248,11 @@ p.text-mute {
 
 {% block page_content %}
 <div class="col-lg-7 pricing-plan-container">
+	<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center top-text">
+			<h4>PRICING</h4>
+		</div>
+	</div>
 	<!-- pricing -->
 	<div class="row pricing" id="pricing">
 		<div id="customize">
@@ -268,8 +274,9 @@ p.text-mute {
 						</div>
 					</div>
 					
+					<div class="bg-white">
 					<div id="messagesRow" class="toggle-sec">
-						<div class="row bg-white border-top" id="recharge_plan_row">
+						<div class="row" id="recharge_plan_row">
 							<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
 								<div class="form-group">
 									<label for="number"
@@ -293,7 +300,7 @@ p.text-mute {
 							</div>
 						</div>
 						
-						<div class="row bg-white" id="memberrow">
+						<div class="row" id="memberrow">
 							<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
 								<div class="form-group">
 									<label for="number"
@@ -330,7 +337,7 @@ p.text-mute {
 						</div>
 					</div>
 					
-					<div class="row p-t-30 toggle-sec bg-white" id="groupRow">
+					<div class="row p-t-30 toggle-sec" id="groupRow">
 						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
 							<div class="form-group">
 								<label for="number"
@@ -370,8 +377,9 @@ p.text-mute {
 						</div>
 					</div>
 					
+					</div>
 					
-					<div class="row border-top no-row-m t-m-20">
+					<div class="row  no-row-m t-m-20">
 						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
 							<div class="form-group">
 								<label for="number"
