@@ -6,18 +6,16 @@
 {% block extrahead %}
 <style>
 .pricing-plan-container {
-	background: #f9f9fa;
-	min-height: 226px;
+	min-height: 238px;
 	position: relative;
-	margin-top: -100px;
-	margin-bottom: 100px;
-	-moz-box-shadow: 0 0 5px #888;
-	-webkit-box-shadow: 0 0 5px #888;
-	box-shadow: 0 0 5px #888;
 	padding: 0px;
 	margin-left: auto;
 	margin-right: auto;
 	float: none;
+	border: 1px solid #666;
+	border-radius: 3px;
+	box-shadow: none;
+	background: #ffffff;
 }
 .pricing {
 	padding-top: 0px;
@@ -25,7 +23,7 @@
 }
 
 .top-text {
-	padding-top: 12%;
+	padding-top: 2%;
 }
 
 .top-text h2, p {
@@ -124,7 +122,7 @@ a.btn-c-alt {
 													{{ new_groups }} x Groups (valid till {{groups_valid|date:'d-m-Y'}})
 												</td>
 												<td>
-													Rs. {{ groups_amount }}
+													Rs. {{ groups_amount|floatformat:2 }}
 												</td>
 											</tr>
 										</tr>
@@ -138,7 +136,7 @@ a.btn-c-alt {
 														{{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}})
 													</td>
 													<td>
-														Rs. {{ credit_amount }}
+														Rs. {{ credit_amount|floatformat:2 }}
 													</td>
 												</tr>
 											{% else %}
@@ -147,7 +145,7 @@ a.btn-c-alt {
 													{{ new_credits }} x Messages - {{rec_plan}}
 												</td>
 												<td>
-													Rs. {{ credit_amount }}
+													Rs. {{ credit_amount|floatformat:2 }}
 												</td>
 											</tr>
 											{% endif %}
@@ -156,19 +154,19 @@ a.btn-c-alt {
 									
 										<tr>
 											<td style="width: 70%;"><strong class="text-blue">Total</strong></td>
-											<td><strong class="text-blue">Rs. {{ total_amount }}</strong></td>
+											<td><strong class="text-blue">Rs. {{ total_amount|floatformat:2 }}</strong></td>
 										</tr>
 										
 										{% if coupon_code %}
 										<tr>
 											<td style="width: 70%;">Discount (coupon code: <span class="text-green">{{coupon_code}}</span>)</td>
-											<td>Rs. -{{ coupon_amount }}</td>
+											<td>Rs. -{{ coupon_amount|floatformat:2 }}</td>
 										</tr>
 										{% endif %}
 										
 										<tr style="padding-top: 30px;">
 											<td style="width: 70%;"><strong class="text-blue">Net Total</strong></td>
-											<td><strong class="text-blue">Rs. {{ net_total_amount }}</strong></td>
+											<td><strong class="text-blue">Rs. {{ net_total_amount|floatformat:2 }}</strong></td>
 										</tr>
 									</tbody>
 								</table>
