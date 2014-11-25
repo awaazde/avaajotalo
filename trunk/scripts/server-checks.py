@@ -25,6 +25,7 @@ DEFAULT_BUFFER_MINS = 5
 MYSQL_CONNECTION_THRESH = 2000
 PROTOCOL_ERROR_THRESH = 3000
 CALL_REJECTED_ERROR_THRESH = 6000
+WRONG_CALL_STATE_ERROR_THRESH = 10000
 
 def report_error(msg, buffer=DEFAULT_BUFFER_MINS):
 	now = datetime.now()
@@ -91,6 +92,15 @@ def check_freeswitch():
 		# to tell whether new errors are happening
 		print("CALL REJECTED")
 		report_error("[CALL_REJECTED] " + str(len(out)) + " is down!", 3*60)
+		
+	p = subprocess.Popen(['grep', 'hanging up, cause: WRONG_CALL_STATE', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
+	out,err = p.communicate()
+	
+	if out != '' and len(out) > WRONG_CALL_STATE_ERROR_THRESH:
+		# include the length of the output
+		# to tell whether new errors are happening
+		print("WRONG_CALL_STATE")
+		report_error("[WRONG_CALL_STATE] " + str(len(out)) + " is down!", 3*60)
 
 def check_celery():
 	if WORKERS:
