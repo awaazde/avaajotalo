@@ -145,7 +145,7 @@ public class Fora extends Composite implements JSONRequester, ClickHandler {
 					}
 					else
 					{
-						ConfirmDialog dlg = new ConfirmDialog("You have reached your group limit. Please contact us to request more groups");
+						ConfirmDialog dlg = new ConfirmDialog("You have reached your group limit. You can purchase more groups by clicking the payment link above or contacting us.");
 						dlg.show();
 						dlg.center();
 					}
