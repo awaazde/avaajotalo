@@ -59,7 +59,7 @@ class SMSMessage(models.Model):
     # date at which the notification was sent (or attempted to be sent)
     sent_on =           models.DateTimeField(default=datetime.now)
 
-    text =      models.CharField(max_length=255, null=True, blank=True)
+    text =      models.CharField(max_length=512, null=True, blank=True)
     
     def __unicode__(self):
         return "[SMS: from " + unicode(self.sender) + " text = " + self.text[:10] + "...]"
