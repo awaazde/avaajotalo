@@ -13,7 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
-import os, stat, re
+import os, stat, re, math
 from decimal import Decimal
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
@@ -98,8 +98,7 @@ PAGE_PARAM = "result_page"
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
 
-# if no limit, set to none
-SMS_LENGTH = None
+SMS_LENGTH = 160
 # corresponds to enum in SMSList.java
 SMSListType_IN = 0
 SMSListType_SENT = 1
@@ -1035,7 +1034,7 @@ def sendsms(request):
         return response
     
     # Get msg
-    smstext = params['txt'][:SMS_LENGTH] if SMS_LENGTH else params['txt']
+    smstext = params['txt']
     if smstext == '':
         response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+', "message":"Please enter some text"}]')
         response['Pragma'] = "no cache"
@@ -1049,7 +1048,8 @@ def sendsms(request):
     if recipients:
         if sender.balance is not None: 
             if sender.balance == Decimal(str(User.UNLIMITED_BALANCE)) or sender.balance > Decimal(str(sms_utils.SMS_DISALLOW_BALANCE_THRESH)):
-                sms_utils.charge_sms_credits(sender, len(recipients))
+                numsms = math.ceil(len(smstext) / float(SMS_LENGTH))
+                sms_utils.charge_sms_credits(sender, len(recipients) * numsms)
                 sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
             else:
                 response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NOT_ENOUGH_BALANCE+', "message":"Insufficient balance to send SMS"}]')
