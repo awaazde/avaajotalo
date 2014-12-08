@@ -98,7 +98,8 @@ PAGE_PARAM = "result_page"
 # How many bcasts to display at a time
 BCAST_PAGE_SIZE = 10
 
-SMS_LENGTH = 140
+# if no limit, set to none
+SMS_LENGTH = None
 # corresponds to enum in SMSList.java
 SMSListType_IN = 0
 SMSListType_SENT = 1
@@ -1034,7 +1035,7 @@ def sendsms(request):
         return response
     
     # Get msg
-    smstext = params['txt'][:SMS_LENGTH]
+    smstext = params['txt'][:SMS_LENGTH] if SMS_LENGTH else params['txt']
     if smstext == '':
         response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+', "message":"Please enter some text"}]')
         response['Pragma'] = "no cache"
