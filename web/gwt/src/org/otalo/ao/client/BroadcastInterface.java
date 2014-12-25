@@ -165,7 +165,10 @@ public class BroadcastInterface extends Composite {
 		
 		whoPanel.add(numbersPanel);
 		whoPanel.add(tagPanel);
-		whoPanel.add(logPanel);
+		// Disable logpanel since it relies on local
+		// inbound logs. Re-enable once we track
+		// inbound calls for Forums in DB
+		//whoPanel.add(logPanel);
 		
 		who.add(whoPanel);
 		
