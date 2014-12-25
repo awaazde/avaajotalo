@@ -659,7 +659,8 @@ def survey(request):
     surveys = Survey.objects.filter(broadcast=True).exclude(name__contains=Survey.ANSWER_CALL_DESIGNATOR).order_by('-id')
     if not auth_user.is_superuser:
         # get all lines associated with this login
-        lines = Line.objects.filter(forums__admin__auth_user=auth_user).distinct()
+        # change to auth_user.id from auth_user to account for SimpleLazyObject error: 
+        lines = Line.objects.filter(forums__admin__auth_user=auth_user.id).distinct()
         numbers = []
         for line in lines:
             numbers.append(line.number)
@@ -1097,6 +1098,7 @@ def get_phone_number(number):
     # a ten-digit number left.
     # Not full-proof, but accomodates all standard
     # number entry styles
+    number = number.encode('ascii', 'ignore').strip()
     if number is None:
         return number
     number = re.sub(r'[^\d]+','',str(number))
