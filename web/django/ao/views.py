@@ -794,7 +794,8 @@ def regularbcast(request):
     templates = Survey.objects.filter(template=True)
     if not auth_user.is_superuser:
         # get all lines associated with this login
-        lines = Line.objects.filter(forums__admin__auth_user=auth_user).exclude(forums__status=Forum.STATUS_INACTIVE).distinct()
+        # change to auth_user.id from auth_user to account for SimpleLazyObject error:
+        lines = Line.objects.filter(forums__admin__auth_user=auth_user.id).exclude(forums__status=Forum.STATUS_INACTIVE).distinct()
         numbers = []
         for line in lines:
             numbers.append(line.number)
