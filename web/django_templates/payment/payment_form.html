@@ -243,6 +243,14 @@ p.text-mute {
 	margin-right: 0px;
 }
 
+.choice-help {
+	margin-right: 15px;
+	margin-top: 12px;
+}
+
+.popover-content {
+	font-size: 11px;
+}
 </style>
 {% endblock %} 
 
@@ -281,7 +289,13 @@ p.text-mute {
 								<div class="form-group">
 									<label for="number"
 										class="col-sm-2 col-lg-2 col-md-2 col-xs-6 col-sm-offset-2 col-md-offset-1 col-lg-offset-1 control-label">
-										Choose Plan </label>
+										Choose Plan
+										
+										<a href="#" tabindex="0" data-container="body" data-toggle="popover" data-placement="top" data-trigger="focus" 
+								data-content="<p>1 message = 30 secs voice call</p>
+									<p>Unlimited Pack: Unlimited calls to members in your groups</p>">
+										<i class="glyphicon glyphicon-question-sign"></i></a> 
+									</label>
 									<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
 										<select class="form-control payment-select" id="rechargeplan"
 											name="rechargeplan">
@@ -305,10 +319,12 @@ p.text-mute {
 								<div class="form-group">
 									<label for="number"
 										class="col-sm-2 col-lg-2 col-md-2 col-xs-6 col-sm-offset-2 col-md-offset-1 col-lg-offset-1 control-label">
-										No. of members </label>
+										No. of members <a href="#" tabindex="0" data-container="body" data-toggle="popover" data-placement="top" data-trigger="focus" 
+								data-content="<p>Members are recipients of your voice messages. You specify them by adding names and numbers from the 'Members' tab from group management section.</p>">
+										<i class="glyphicon glyphicon-question-sign"></i></a> </label>
 									<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
 										<input type="text" class="form-control" name="members"
-											placeholder="Enter nunber of members" maxlength="20" id="members"
+											placeholder="Enter number of members" maxlength="20" id="members"
 											value="50" />
 										<p id="membersErrorLbl"></p>
 						
@@ -342,7 +358,9 @@ p.text-mute {
 							<div class="form-group">
 								<label for="number"
 									class="col-sm-2 col-lg-2 col-md-2 col-xs-6 col-sm-offset-2 col-md-offset-1 col-lg-offset-1 control-label">
-									No. of groups</label>
+									No. of groups <a href="#" tabindex="0" data-container="body" data-toggle="popover" data-placement="top" data-trigger="focus" 
+								data-content="<p>Group = Dedicated Number</p>">
+										<i class="glyphicon glyphicon-question-sign"></i></a></label>
 								<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
 									<input id="grpsize" data-slider-id='nogroupsSlider' type="text"
 										data-slider-min="1" data-slider-max="40" data-slider-tooltip="hide"
@@ -416,7 +434,7 @@ p.text-mute {
 					</form>
 										
 
-					<div class="row text-left p-l-40">
+					<!--div class="row text-left p-l-40">
 						<p>&nbsp;</p>
 						<p class="text-mute">
 							<small>* Group = Dedicated Number</small>
@@ -424,7 +442,7 @@ p.text-mute {
 						<p class="text-mute">
 							<small>* 1 message = 30 secs voice call</small>
 						</p>
-					</div>
+					</div-->
 				</div>
 			</div>
 		</div>
@@ -439,7 +457,7 @@ p.text-mute {
 	<div class="container FadeIn">
 		<div class="row">
 			<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 col">
-				<img src="/img/logo_alt_2.png" alt="awaazde" />
+				<img src="http://localhost/img/logo_alt_2.png" alt="awaazde" />
 				<h3 class="footer-logo-text">Awaaz.De</h3>
 				<h6>last mile mobile technology</h6>
 			</div>
@@ -502,6 +520,11 @@ p.text-mute {
 
 {% block extrascripts %}
 <script src="{{ STATIC_URL }}js/jquery.payment.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function () {
+  $('[data-toggle="popover"]').popover({ trigger: "hover",html:true });
+})
+</script>
 {% endblock %}
 
 
