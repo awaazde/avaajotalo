@@ -221,7 +221,7 @@ p.text-mute {
 }
 
 .time-sel label {
-	font-size: 15px;
+	font-size: 14px;
 }
 
 .border-top  {
@@ -250,6 +250,10 @@ p.text-mute {
 
 .popover-content {
 	font-size: 11px;
+}
+
+.m-rad {
+	margin-left: -16px !important;
 }
 </style>
 {% endblock %} 
@@ -329,23 +333,23 @@ p.text-mute {
 										<p id="membersErrorLbl"></p>
 						
 										<div class="row">
-											<div class="radio time-sel">
+											<div class="radio time-sel m-rad">
 												<label> <input type="radio" name="memberDurRadio"
 													id="6month" value="0" checked> <span
-													class="custom-radio custom-c-radio"></span> 6 Months
+													class="custom-radio custom-c-radio"></span> 6 Months Validity (Rs. 9/user/month)
 												</label>
 											</div>
 						
 											<div class="radio time-sel">
 												<label> <input type="radio" name="memberDurRadio"
 													id="12month" value="1"> <span
-													class="custom-radio custom-c-radio"></span> 12 Months
+													class="custom-radio custom-c-radio"></span> 12 Months Validity (Rs. 8/user/month)
 												</label>
 											</div>
 										</div>
 									</div>
 									<div class="col-sm-3 col-lg-3 col-md-3 col-xs-6">
-										x <span id='permemberprice'>9.00</span>&nbsp;=&nbsp; Rs. <label
+										&nbsp; Rs. <label
 											id='membertotalprice'>2,700</label>
 									</div>
 								</div>
