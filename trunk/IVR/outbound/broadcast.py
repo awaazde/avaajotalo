@@ -44,9 +44,12 @@ PREFETCH_BUFFER_SECS = 1 * 60
 
 def subjects_by_numbers(numbers):
     # clean up the numbers, but don't limit to 10-digit (to alllow int'l bcasts)
-    numbers = [number.encode('ascii', 'ignore').strip() for number in numbers]
-    numbers = [number.replace(' ','') for number in numbers]
-    numbers = filter(lambda n: n != '', numbers)
+    '''
+    # This is just the work around for circular referece in ao.views, the ideal solution is to move get_phone_number method from views to some utils file.
+    '''
+    from otalo.ao.views import get_phone_number
+    numbers = [get_phone_number(number, False) for number in numbers]
+    numbers = filter(lambda n: n != None, numbers)
     
     # filter out black-listed numbers
     disallowed = User.objects.filter(number__in=numbers, allowed='n').values('number')
