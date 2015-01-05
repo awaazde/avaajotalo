@@ -1094,7 +1094,7 @@ def smsin(request):
     
     return send_data('ok') 
 
-def get_phone_number(number):
+def get_phone_number(number, ten_digits_only=True):
     # strip non-numerics and see if we have
     # a ten-digit number left.
     # Not full-proof, but accomodates all standard
@@ -1104,7 +1104,9 @@ def get_phone_number(number):
         return number
     number = re.sub(r'[^\d]+','',str(number))
     if len(number) >= 10:
-        return number[-10:]
+        if ten_digits_only:
+            return number[-10:]
+        return number
     else:
         return None
     
