@@ -173,6 +173,7 @@ public class ManageGroups extends Composite {
 		memberControls.setWidth("800px");
 		memberControls.setSpacing(10);
 		Button removeMembers = new Button("Remove from group");
+		Button removeAllMembers = new Button("Remove All");
 		Anchor addMembers = new Anchor("Add members");
 		addMembers.addClickHandler(new ClickHandler() {
 			
@@ -196,6 +197,7 @@ public class ManageGroups extends Composite {
 		});
 		
 		memberControls.add(removeMembers);
+		memberControls.add(removeAllMembers);
 		memberControls.add(addMembers);
 				
 		memberControls.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
@@ -245,7 +247,10 @@ public class ManageGroups extends Composite {
     memberPanel.add(memberTable);
     memberPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
     memberPanel.add(pager);
-    removeMembers.addClickHandler(new UpdateMemberClickHandler(memberTable, "Are you sure you want to remove selected members from your group?", MembershipStatus.DELETED, "Members removed!"));
+    removeMembers.addClickHandler(new UpdateMemberClickHandler(memberTable, "Are you sure you want to remove selected members from your group?", MembershipStatus.DELETED, "Members removed!", false));
+    removeAllMembers.addClickHandler(new UpdateMemberClickHandler(memberTable, "Are you sure you want to remove all members from your group?", MembershipStatus.DELETED, "Members removed!", true));
+    
+    	
     
     /**************************************************
 		 * 
@@ -389,8 +394,8 @@ public class ManageGroups extends Composite {
 			}
 		});
     
-    approveMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to approve these requests?", MembershipStatus.SUBSCRIBED, "Members joined!"));
-		rejectMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to reject these requests?", MembershipStatus.DELETED, "Members rejected!"));
+    approveMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to approve these requests?", MembershipStatus.SUBSCRIBED, "Members joined!", false));
+		rejectMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to reject these requests?", MembershipStatus.DELETED, "Members rejected!", false));
     joinsPanel.add(joinControls);
     joinsPanel.add(joinsTable);
     joinsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
@@ -1359,21 +1364,28 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		DataGrid<Membership> table;
 		String areYouSureText, confirmText;
 		MembershipStatus status;
+		boolean isRemoveAll;
 		
-		public UpdateMemberClickHandler(DataGrid<Membership> table, String areYouSureText, MembershipStatus status, String confirmText)
+		public UpdateMemberClickHandler(DataGrid<Membership> table, String areYouSureText, MembershipStatus status, String confirmText, boolean isRemoveAll)
 		{
 			this.table = table;
 			this.areYouSureText = areYouSureText;
 			this.status = status;
 			this.confirmText = confirmText;
+			this.isRemoveAll = isRemoveAll;
 			
 		}
 		@Override
 		public void onClick(ClickEvent event) {
 			Set<Membership> selectedMems = ((MultiSelectionModel<Membership>)table.getSelectionModel()).getSelectedSet();
-			if (selectedMems.size() == 0)
+			if (!isRemoveAll && selectedMems.size() == 0)
 			{
 				ConfirmDialog noneSelected = new ConfirmDialog("No members selected. Please check the boxes for rows you want to update.");
+				noneSelected.show();
+				noneSelected.center();
+			}
+			else if(isRemoveAll && table.getRowCount() == 0) {
+				ConfirmDialog noneSelected = new ConfirmDialog("No members present in group.");
 				noneSelected.show();
 				noneSelected.center();
 			}
@@ -1388,13 +1400,19 @@ private class DeleteComplete implements SubmitCompleteHandler {
 						if (confirm.isConfirmed())
 						{
 							memberStatus.setValue(String.valueOf(status.getCode()));
-							Set<Membership> selectedMems = ((MultiSelectionModel<Membership>)table.getSelectionModel()).getSelectedSet();
+							
 							String memberIds = "";
-							for (Membership m : selectedMems)
-							{
-								memberIds += m.getId() + ",";
-								// clear selected
-								table.getSelectionModel().setSelected(m, false);
+							if(!isRemoveAll) {
+								Set<Membership> selectedMems = ((MultiSelectionModel<Membership>)table.getSelectionModel()).getSelectedSet();
+								
+								for (Membership m : selectedMems)
+								{
+									memberIds += m.getId() + ",";
+									// clear selected
+									table.getSelectionModel().setSelected(m, false);
+								}
+							} else {
+								memberIds = Membership.REMOVE_ALL;
 							}
 							membersToUpdate.setValue(memberIds);
 							
