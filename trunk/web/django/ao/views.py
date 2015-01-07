@@ -1099,14 +1099,13 @@ def get_phone_number(number, ten_digits_only=True):
     # a ten-digit number left.
     # Not full-proof, but accomodates all standard
     # number entry styles
+    number = str(number)
     number = number.encode('ascii', 'ignore').strip()
     if number is None:
         return number
     number = re.sub(r'[^\d]+','',str(number))
     if len(number) >= 10:
-        if ten_digits_only:
-            return number[-10:]
-        return number
+        return number[-10:] if ten_digits_only else number
     else:
         return None
     
