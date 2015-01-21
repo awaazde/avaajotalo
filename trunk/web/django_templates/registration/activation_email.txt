@@ -13,7 +13,7 @@ http://{{ site.domain }}/console/accounts/activate/{{activation_key}}
 
 Please note that this link is valid for {{expiration_days}} days only.
 
-Feel free to contact us on support@awaaz.de for any help regarding any problem with activation.
+Feel free to contact us on info@awaaz.de for any help regarding any problem with activation.
 
 
 Thanks,

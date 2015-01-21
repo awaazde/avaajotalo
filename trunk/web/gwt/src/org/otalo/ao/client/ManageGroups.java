@@ -75,6 +75,8 @@ import com.google.gwt.view.client.SelectionModel;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 public class ManageGroups extends Composite {
+	public static final String REMOVE_ALL = "__remove_all";
+	
 	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
 	private Hidden groupid, memberStatus, membersToUpdate;
 	private Button saveButton, cancelButton, addMembersButton, cancelAddMembers, deleteButton;
@@ -98,6 +100,10 @@ public class ManageGroups extends Composite {
 	
 	private Forum group;
 	private Line line;
+	
+	private Label selectedMembersText;
+	private HTML removeAllMembers;
+	private boolean isRemoveAll;
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -173,7 +179,8 @@ public class ManageGroups extends Composite {
 		memberControls.setWidth("800px");
 		memberControls.setSpacing(10);
 		Button removeMembers = new Button("Remove from group");
-		Button removeAllMembers = new Button("Remove All");
+		selectedMembersText = new Label("Only members on this page are selected.");
+		removeAllMembers = new HTML("<a href='javascript:;'>Select all members in this group</a>");
 		Anchor addMembers = new Anchor("Add members");
 		addMembers.addClickHandler(new ClickHandler() {
 			
@@ -197,8 +204,17 @@ public class ManageGroups extends Composite {
 		});
 		
 		memberControls.add(removeMembers);
+		memberControls.add(selectedMembersText);
 		memberControls.add(removeAllMembers);
 		memberControls.add(addMembers);
+		
+		resetSelectAll();
+		
+		removeAllMembers.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				toggleSelectAll();
+			}
+		});
 				
 		memberControls.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
 		HorizontalPanel filterPanel = new HorizontalPanel();
@@ -247,10 +263,7 @@ public class ManageGroups extends Composite {
     memberPanel.add(memberTable);
     memberPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
     memberPanel.add(pager);
-    removeMembers.addClickHandler(new UpdateMemberClickHandler(memberTable, "Are you sure you want to remove selected members from your group?", MembershipStatus.DELETED, "Members removed!", false));
-    removeAllMembers.addClickHandler(new UpdateMemberClickHandler(memberTable, "Are you sure you want to remove all members from your group?", MembershipStatus.DELETED, "Members removed!", true));
-    
-    	
+    removeMembers.addClickHandler(new UpdateMemberClickHandler(memberTable, "Are you sure you want to remove selected members from your group?", MembershipStatus.DELETED, "Members removed!"));
     
     /**************************************************
 		 * 
@@ -394,8 +407,8 @@ public class ManageGroups extends Composite {
 			}
 		});
     
-    approveMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to approve these requests?", MembershipStatus.SUBSCRIBED, "Members joined!", false));
-		rejectMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to reject these requests?", MembershipStatus.DELETED, "Members rejected!", false));
+    approveMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to approve these requests?", MembershipStatus.SUBSCRIBED, "Members joined!"));
+		rejectMembers.addClickHandler(new UpdateMemberClickHandler(joinsTable, "Are you sure you want to reject these requests?", MembershipStatus.DELETED, "Members rejected!"));
     joinsPanel.add(joinControls);
     joinsPanel.add(joinsTable);
     joinsPanel.setHorizontalAlignment(HasAlignment.ALIGN_CENTER);
@@ -745,6 +758,13 @@ public class ManageGroups extends Composite {
     selectPageHeader.setUpdater(new ValueUpdater<Boolean>() {
       @Override
       public void update(Boolean value) {
+    	selectedMembersText.setVisible(value);
+  		removeAllMembers.setVisible(value);
+  		if(!value) {
+  			isRemoveAll = false;
+  			toggleSelectAll();
+  		}
+  		
         for (Membership item : memberTable.getVisibleItems()) {
           memberTable.getSelectionModel().setSelected(item, value);
         }
@@ -1300,6 +1320,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		 this.group = group;
 		 this.line = line;
 		 manageGroupsForm.reset();
+		 resetSelectAll();
 		 loadSettings();
 		 groupid.setValue(group.getId());
 		 
@@ -1325,6 +1346,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		cancelAddMembers.setEnabled(true);
 		cancelButton.setEnabled(true);
 		deleteButton.setEnabled(true);
+		resetSelectAll();
 	}
 	
 	private void showMemberTable() {
@@ -1360,32 +1382,54 @@ private class DeleteComplete implements SubmitCompleteHandler {
 		
 	}
 	
+	private void toggleSelectAll() {
+		if(isRemoveAll) {
+			isRemoveAll = false;
+			removeAllMembers.setHTML("<a href='javascript:;'>Select all members in this group</a>");
+			selectedMembersText.setText("Only members on this page are selected.");
+			
+			//clearing the selection
+			for (Membership item : memberTable.getVisibleItems()) {
+				memberTable.getSelectionModel().setSelected(item, false);
+		    }
+			removeAllMembers.setVisible(false);
+			selectedMembersText.setVisible(false);
+		}
+		else {
+			isRemoveAll = true;
+			removeAllMembers.setHTML("<a href='javascript:;'>Clear your selection</a>");
+			selectedMembersText.setText("All the members on this group are selected.");
+		}
+	}
+	
+	private void resetSelectAll() {
+		//hiding remove all
+		selectedMembersText.setVisible(false);
+		removeAllMembers.setVisible(false);
+		isRemoveAll = false;
+		removeAllMembers.setHTML("<a href='javascript:;'>Select all members in this group</a>");
+		selectedMembersText.setText("Only members on this page are selected.");
+	}
+	
 	private class UpdateMemberClickHandler implements ClickHandler {
 		DataGrid<Membership> table;
 		String areYouSureText, confirmText;
 		MembershipStatus status;
-		boolean isRemoveAll;
 		
-		public UpdateMemberClickHandler(DataGrid<Membership> table, String areYouSureText, MembershipStatus status, String confirmText, boolean isRemoveAll)
+		public UpdateMemberClickHandler(DataGrid<Membership> table, String areYouSureText, MembershipStatus status, String confirmText)
 		{
 			this.table = table;
 			this.areYouSureText = areYouSureText;
 			this.status = status;
 			this.confirmText = confirmText;
-			this.isRemoveAll = isRemoveAll;
 			
 		}
 		@Override
 		public void onClick(ClickEvent event) {
 			Set<Membership> selectedMems = ((MultiSelectionModel<Membership>)table.getSelectionModel()).getSelectedSet();
-			if (!isRemoveAll && selectedMems.size() == 0)
+			if (selectedMems.size() == 0)
 			{
 				ConfirmDialog noneSelected = new ConfirmDialog("No members selected. Please check the boxes for rows you want to update.");
-				noneSelected.show();
-				noneSelected.center();
-			}
-			else if(isRemoveAll && table.getRowCount() == 0) {
-				ConfirmDialog noneSelected = new ConfirmDialog("No members present in group.");
 				noneSelected.show();
 				noneSelected.center();
 			}
@@ -1412,7 +1456,7 @@ private class DeleteComplete implements SubmitCompleteHandler {
 									table.getSelectionModel().setSelected(m, false);
 								}
 							} else {
-								memberIds = Membership.REMOVE_ALL;
+								memberIds = REMOVE_ALL;
 							}
 							membersToUpdate.setValue(memberIds);
 							

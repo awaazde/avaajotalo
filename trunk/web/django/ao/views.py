@@ -106,7 +106,17 @@ SMSListType_SENT = 1
 @login_required
 def index(request):
     #return render_to_response('AO/index.html', {'fora':fora})
+    
+    if 'show' not in request.GET:
+        auth_user = request.user
+        user = User.objects.filter(admin__auth_user=auth_user).distinct()
+        if user.exists() and user[0].no_login == 1:
+            groups = Forum.objects.filter(admin__auth_user=auth_user).exclude(status=Forum.STATUS_INACTIVE).distinct()
+            numbers = Line.objects.get(forums__admin__auth_user=auth_user, forums=groups[0])
+            return render(request, 'registration/welcome.html', {'group_name': groups[0].name, 'group_number': numbers.number})
+        
     return render_to_response('Ao.html')
+    
 
 def forum(request):
     auth_user = request.user

@@ -4,9 +4,31 @@
 {% block title %}Awaaz.De | Sign up for free{% endblock %}
 
 {% block extrahead %}
+
+<style>
+/*
+	Override the style from base.css
+*/
+.alert-block {
+	
+}
+
+</style>
 {% endblock %}
 
+{% block extra-container-class %}signup-container{% endblock %}
+
 {% block page_content %}
+	{% if form.errors %}
+		{% for field, errors in form.errors.items %}
+			{% if field == 'username' %}
+		    	{% for error in errors %}
+		    		<p class="error-text form-error">{{ error }}</p>
+		    	{% endfor %}
+		    {% endif %}
+    	{% endfor %}
+	{% endif %}
+	
 	{% crispy form %}
 {% endblock %}
 
@@ -16,6 +38,7 @@
 
 $(".registration-form").on("submit", function() {
 	$("input[name='username']").val($("input[name='email']").val());
+	$("input[name='password2']").val($("input[name='password1']").val());
 	return true;
 });
 </script>
