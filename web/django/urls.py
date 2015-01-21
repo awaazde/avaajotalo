@@ -17,7 +17,8 @@
 from django.conf.urls import *
 from django.conf import settings
 from longerusername.forms import AuthenticationForm
-
+from django.core.urlresolvers import reverse_lazy
+from django.views.generic import RedirectView
 from registration.backends.default.views import RegistrationView
 from awaazde.streamit.forms import CreateAcctForm
 
@@ -26,7 +27,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^AO/createaccount/$', RegistrationView.as_view(form_class=CreateAcctForm), name = 'registration_register'),                   
+    url(r'^AO/createaccount/$', RedirectView.as_view(pattern_name='registration_register')), #keeping it fr legecy purpose only   
     (r'^AO/', include('otalo.ao.urls')),   
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 

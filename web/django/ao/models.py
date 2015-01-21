@@ -76,6 +76,7 @@ class User(models.Model):
     district = models.CharField(max_length=128, blank=True, null=True)
     taluka = models.CharField(max_length=128, blank=True, null=True)
     village = models.CharField(max_length=128, blank=True, null=True)
+    no_login = models.IntegerField(blank=True, null=True) #keeping track of logins
     
     # a secret amount of money that signals
     # that this is account has unlimited credits. Choose an amount
