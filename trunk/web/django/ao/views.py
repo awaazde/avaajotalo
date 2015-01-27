@@ -1047,6 +1047,7 @@ def sendsms(request):
     
     # Get msg
     smstext = params['txt']
+    smstext = smstext.encode('ascii', 'ignore')
     if smstext == '':
         response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NO_CONTENT+', "message":"Please enter some text"}]')
         response['Pragma'] = "no cache"
