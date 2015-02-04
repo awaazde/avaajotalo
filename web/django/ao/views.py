@@ -1110,7 +1110,7 @@ def get_phone_number(number, ten_digits_only=True):
     # a ten-digit number left.
     # Not full-proof, but accomodates all standard
     # number entry styles
-    number = str(number)
+    number = str(number) if isinstance(number, (int, long)) else number
     number = number.encode('ascii', 'ignore').strip()
     if number is None:
         return number
