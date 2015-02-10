@@ -501,6 +501,7 @@ public class ManageGroups extends Composite {
     languageBox.addItem("Tamil", "tam");
     languageBox.addItem("Kannada", "kan");
     languageBox.addItem("English", "eng");
+    languageBox.addItem("Nepali", "nep");
     
     Label deliveryLabel = new Label("Delivery Type");
     deliveryBox = new ListBox();
