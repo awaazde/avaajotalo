@@ -1115,7 +1115,7 @@ def get_phone_number(number, ten_digits_only=True):
     if number is None:
         return number
     number = re.sub(r'[^\d]+','',str(number))
-    if len(number) >= 10:
+    if len(number) != 10:
         return number[-10:] if ten_digits_only else number
     else:
         return None
