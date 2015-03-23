@@ -1,0 +1,88 @@
+{% extends 'dashboard/base.html' %}
+{% load crispy_forms_tags common_tags %}
+
+{% block title %}Awaaz.De | Report{% endblock %}
+
+
+{% block partial %}
+{% include "dashboard/includes/navmenu.html" with active_tab='report' %}
+
+<div class="container" id="report-container">
+	<div class="row p-b-20">
+		
+		<div class="col-md-3 p-t-20 p-b-20">
+			<h3>Reports</h3>
+		</div>
+		
+		<div class="col-md-7 col-md-offset-2 p-t-20 p-b-20">
+			
+			<div class="col-md-5 p-t-20">
+				<h5 class="v-align-middle pull-right text-primary">Please select a user</h5>
+			</div>	
+			
+			<div class="col-md-7">
+				<select class="width-100 m-t-20" id="select-user" data-placeholder="---" onchange="location = this.options[this.selectedIndex].value;">
+					<option></option>
+					{% for admin in admins %}
+						{% if admin|get_item:'id' == user_id %}
+							<option value="{% url 'dashboard:report_user_param' user_id=admin|get_item:'id' %}" selected>{{ admin|get_item:"name" }} ({{ admin|get_item:"number" }} - {{ admin|get_item:"admin__auth_user__username" }})</option>
+						{% else %}
+							<option value="{% url 'dashboard:report_user_param' user_id=admin|get_item:'id' %}">{{ admin|get_item:"name" }} ({{ admin|get_item:"number" }} - {{ admin|get_item:"admin__auth_user__username" }})</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>	
+		
+		{% if groups %}
+		
+		<div class="col-md-7 col-md-offset-5 p-b-20 row">
+			
+			<div class="col-md-5 ">
+				<h5 class="v-align-middle pull-right text-primary">Please select a group</h5>
+			</div>	
+			
+			<div class="col-md-7">
+				<select class="width-100 " id="select-group" data-placeholder="---" onchange="location = this.options[this.selectedIndex].value;">
+					<option></option>
+					{% for group in groups %}
+						{% if group|get_item:'admin__forum__id' == group_id %}
+							<option value="{% url 'dashboard:report_group_param' user_id=group|get_item:'id' group_id=group|get_item:'admin__forum__id' %}" selected>{{ group|get_item:"admin__forum__name" }} ( {{ group|get_item:"admin__forum__line__number" }} )</option>
+						{% else %}
+							<option value="{% url 'dashboard:report_group_param' user_id=group|get_item:'id' group_id=group|get_item:'admin__forum__id' %}">{{ group|get_item:"admin__forum__name" }} ( {{ group|get_item:"admin__forum__line__number" }} )</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		
+		{% endif %}			
+		
+		
+		{% if broadcasts %}
+			
+		<div class="col-md-7 col-md-offset-5 p-b-20 row">
+			
+			<div class="col-md-5 ">
+				<h5 class="v-align-middle pull-right text-primary">Please select a broadcast</h5>
+			</div>	
+			
+			<div class="col-md-7">
+				<select class="width-100 " id="select-broadcast" data-placeholder="---" onchange="location = this.options[this.selectedIndex].value;">
+					<option></option>
+					{% for broadcast in broadcasts %}
+						{% if broadcast|get_item:'id' == broadcast_id %}
+							<option value="{% url 'dashboard:report_broadcast_param' user_id=user_id group_id=group_id broadcast_id=broadcast|get_item:'id' %}" selected> {{ broadcast|get_item:'name' }}</option>
+						{% else %}
+							<option value="{% url 'dashboard:report_broadcast_param' user_id=user_id group_id=group_id broadcast_id=broadcast|get_item:'id' %}"> {{ broadcast|get_item:'name' }}</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+			
+		{% endif %}
+		
+	</div>
+</div>
+{% endblock %}

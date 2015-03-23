@@ -1,0 +1,60 @@
+{% load i18n  common  %}
+<header id="t-navbar">
+<div class="navbar navbar-custom" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<!-- LOGO -->
+					<a class="navbar-brand logo" href="{% url 'dashboard:home' %}"> 
+						<img src="https://awaaz.de/img/logo_alt.png" alt="logo" /> <span></span>
+					</a>
+				</div>
+				<!-- end navbar-header -->
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right menu-effect">
+						<li id="ds-link" class="nav-link {% if active_tab == 'ds' %}active{% endif %}">
+							<a href="{% url 'dashboard:home' %}"><span aria-hidden="true" class="icon icon-layers"></span>
+							 <span>Dashboard</span></a>
+						</li>
+						<li class="dropdown {% if active_tab == 'us' %}active{% endif %}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+								<span aria-hidden="true" class="icon icon-users"></span>
+								<span>User Management</span> <span class="caret"></span>
+							</a>
+							<ul class="dropdown-menu" role="menu">
+								<li><a href="{% url 'dashboard:search' %}">Search</a></li>
+								<li><a href="{% url 'dashboard:settings' %}">Update User Account</a></li>
+								<li><a href="{% url 'dashboard:signups' %}">Sign Up Analysis</a></li>
+								<li><a href="{% url 'dashboard:coupon' %}">Coupon Management</a></li>
+							</ul>
+						</li>
+						<li id="rpt-link" class="nav-link {% if active_tab == 'report' %}active{% endif %}">
+							<a href="{% url 'dashboard:report' %}"> <span aria-hidden="true" class="icon icon-bar-chart"></span>
+								<span>Reports</span></a>
+						</li>
+						<li>&nbsp;</li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+								{{ user.username }} <span class="caret"></span>
+							</a>
+							<ul class="dropdown-menu" role="menu">
+								<li>
+									<a href=""> <span aria-hidden="true" class="icon icon-note"></span> <span>Change Password</span></a>
+								</li>
+								<li>
+									<a href="{% url 'logout' %}"> <span aria-hidden="true" class="icon icon-logout"></span> <span>Logout</span></a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
+			<!-- end container -->
+		</div>
+	</header>
