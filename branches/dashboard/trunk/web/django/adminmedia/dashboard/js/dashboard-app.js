@@ -546,8 +546,10 @@ function($) {
         this.$advanceSearchLink = $("#advance_search_link"),
         this.$advanceSearchPanelAddFilterBtn = $("#advance_search_panel_addfilterbtn"),
         this.$addFilterBtn = $("#add_filter"),
+        this.$submitBtn = $("#submit"),
         this.$saveExcel = $("#saveasexcel"),
         this.$errorContainer = $("#show-notification"),
+        this.$saveFlagHiddenField = $("#saveFlag"),
         this.fileds,
         this.operators,
         this.types,
@@ -976,18 +978,22 @@ function($) {
     UserSearch.prototype.init = function() {
     
     	var $this = this;
+
     	this.$saveExcel.click(function() {
+    		document.getElementById("saveFlag").value = true;
+    		//this.$saveFlagHiddenField.setValue(true);
     		
-    		var hiddenfield = document.createElement("input");
-    		hiddenfield.setAttribute("name", "save");
-    		hiddenfield.setAttribute("value", true);
-    		hiddenfield.setAttribute("type", "hidden");
-    		$this.$userSearchForm.append(hiddenfield);
-    		console.log("HELLO");
+    	
     	});
     	
+    	this.$submitBtn.click(function() {
+    		document.getElementById("saveFlag").value = false;
+    		//this.$saveFlagHiddenField.setValue(true);
+    	});
+    	
+    	
         this.$userSearchForm.submit(function(event)  {
-   
+        	
         	$.UserSearch.submit();
         });
     	
