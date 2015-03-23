@@ -1,0 +1,301 @@
+[
+    {
+        "pk": 1, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cotton",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Wheat",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Cumin",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Castor",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Mustard",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Millet",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Groundnut",
+            "forum" : 1
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Maize",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Paddy",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Crop Planning",
+            "forum" : 1
+        }
+    },
+
+    {
+        "pk": 11, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Onion",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tobacco",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sesame",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 14, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chilli",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 15, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Sorghum",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Garlic",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 17, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Brinjal",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 18, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Gram",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 19, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Chickpea",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 20, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Banana",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 21, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Papaya",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 22, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Tumeric",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 23, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-crop", 
+            "tag": "Other",
+            "forum" : 1
+        }
+    },
+        {
+        "pk": 24, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Seeds",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 25, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Soil Care",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 26, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Pests",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 27, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Diseases",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 28, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Weeding",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 29, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Irrigation",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 30, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Animal Husbandry",
+            "forum" : 1
+        }
+    },
+     {
+        "pk": 31, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Harvesting",
+            "forum" : 1
+        }
+    },
+     {
+        "pk": 32, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Marketing",
+            "forum" : 1
+        }
+    },
+    {
+        "pk": 33, 
+        "model": "AO.tag", 
+        "fields": {
+            "type": "agri-topic", 
+            "tag": "Other",
+            "forum" : 1
+        }
+    }
+    
+]

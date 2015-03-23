@@ -1,0 +1,74 @@
+{% extends 'registration/registration_base.html' %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block title %}Awaaz.De | Login to your account{% endblock %}
+
+{% block extrahead %}
+{% endblock %}
+
+{% block extra-container-class %}signup-container{% endblock %}
+
+{% block page_content %}
+	{% if error_message %}
+		<p class="error-text">{{ error_message }}</p>
+	{% endif %}
+	
+	{% if form.errors %}
+		{% for field, errors in form.errors.items %}
+			{% if field == '__all__' %}
+		    	{% for error in errors %}
+		    		<p class="error-text form-error">{{ error }}</p>
+		    	{% endfor %}
+		    {% endif %}
+    	{% endfor %}
+	{% endif %}
+	
+	<form action="{{ app_path }}" method="post" id="login-form" class="registration-form">
+		{% csrf_token %}
+		<div class="form-group">
+			<div id="div_id_username" class="control-group required">
+				<label for="id_username" class="control-label requiredField">
+				{% trans 'Username:' %}<span class="asteriskField">*</span></label>
+				<div class="controls">
+					{{ form.username }} 
+				</div>
+				{% if form.username.errors %}
+					<p id="error_id_username" class="help-block"><strong>{{ form.username.errors.as_text }}</strong></p>
+				{% endif %}	
+			</div>
+		</div>
+		<div class="form-group">
+			<div id="div_id_password" class="control-group required">
+				<label for="id_password" class="control-label requiredField">
+				{% trans 'Password:' %}<span class="asteriskField">*</span>
+				</label>
+				<div class="controls">
+					{{ form.password }}
+					
+					<input type="hidden" name="this_is_the_login_form" value="1" /> 
+				</div>
+				
+				
+				{% if form.password.errors %}
+					<p id="error_id_password" class="help-block"><strong>{{ form.password.errors.as_text }}</strong></p>
+				{% endif %}	
+			</div>
+		</div>
+		<div class="row">
+			<input type="submit" value="{% trans 'Log in' %}" class="btn btn-primary btn-signup pull-right"/>
+		</div>
+		<div class="row bottom-links">
+			<p><a href="{% url 'django.contrib.auth.views.password_reset' %}">Forgot password?</a></p>
+			<p><a href="{% url 'registration_register' %}">New User? Sign up for free now</a></p>
+		</div>
+	</form>
+
+{% endblock %}
+
+
+{% block extrascripts %}
+<script type="text/javascript">
+document.getElementById('id_username').focus();
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+<html>
+<head />
+{% if fora %}
+    <ul>
+    {% for forum in fora %}
+        <li><a href="/AO/forum/{{forum.id}}">{{ forum.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No fora are available.</p>
+{% endif %}
+
+</html>

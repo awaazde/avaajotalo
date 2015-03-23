@@ -1,0 +1,518 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ LANGUAGE_CODE }}" xml:lang="{{ LANGUAGE_CODE }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="keywords" content="voice SMS API, transactional voice SMS, bulk voice SMS, free voice SMS, voice messaging API, voice messaging, ICT4D, Mobiles for development, Mobiles for Health, Mobiles for education, indian language voice SMS, Rural voice messagging, Farmer voice messaging, Rural SMS platform, hindi voice SMS, marathi voice SMS, punjabi voice SMS, tamil voice SMS">
+
+    <meta name="description" content="Sign up with Awaaz.De and start voice messaging instantly!">
+
+    <meta name="author" content="awaaz.de">
+
+	<title>{% block title %}{% endblock %}</title>
+
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" media="all" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" type="text/css" />
+	
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- fonts -->
+    <link href='http://weloveiconfonts.com/api/?family=iconicfill' rel='stylesheet' type='text/css'>
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
+
+	{% block extrastyle %}{% endblock %}
+	
+	{% block extrahead %}{% endblock %}
+	{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+	
+	<style>
+/*
+		Override the style from base.css
+	*/
+body {
+	font-family: "open sans",arial,sans-serif;
+	color: #323a45;
+	letter-spacing: 1px;
+	overflow-x: hidden;
+	padding-bottom: 0;
+	margin-bottom: 0px;
+	background: url('/img/slider/agro.jpg') no-repeat
+		center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+}
+
+body:after {  
+	opacity:1;
+    content: "";
+    position:fixed;
+    z-index:-1;
+    width:100%;
+    height:100%;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-repeat:repeat;
+    background-color: rgba(67, 74, 84, 0.85);
+}
+
+a {
+	color: #0a8fd5;
+	text-decoration: underline;
+}
+
+a:hover {
+	color: #0a8fd5;
+}
+
+/* Helper Classes */
+a, .easing, .button, .btn, input, textarea, button, html input[type="button"],
+	input[type="reset"], input[type="submit"], .social li a {
+	-webkit-transition: all 0.3s ease-out;
+	-moz-transition: all 0.3s ease-out;
+	-ms-transition: all 0.3s ease-out;
+	-o-transition: all 0.3s ease-out;
+	transition: all 0.3s ease-out;
+}
+
+.hidden {
+	display: none;
+}
+
+input[type="text"], input[type="password"], input[type="email"] {
+	font-size: 14px;
+	color: #323a45;
+	border: 1px solid #cbccd0;
+	-webkit-transition: border 0.4s;
+	-moz-transition: border 0.4s;
+	transition: border 0.4s;
+	box-shadow: none;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-radius: 3px;
+	width: 100%;
+	height: 40px;
+	padding-left: 8px;
+	margin-bottom: 10px;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus
+	{
+	outline: none;
+	border-color: #0a8fd5;
+	box-shadow: none;
+}
+
+select {
+	font-size: 13px;
+	color: #323a45;
+	-webkit-transition: border 0.4s;
+	-moz-transition: border 0.4s;
+	transition: border 0.4s;
+	box-shadow: none;
+	border-width: 2px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	height: 36px;
+	border-radius: 4px;
+	width: 85%;
+}
+
+.col-captcha {
+	text-align: left;
+}
+
+.col-captcha img {
+	min-width: 100px;
+	min-height: 40px;
+	margin-left: 25px;
+}
+
+.col-captcha input {
+	width: 40.585%;
+}
+
+.text-left {
+	text-align: left;
+}
+
+.body {
+	padding: 5%;
+}
+.body p {
+	text-align: justify;
+	line-height: 24px;
+}
+.body .text-left {
+	padding-left: 3%;
+	padding-right: 3%;
+}
+
+.body .text-left img {
+	max-height: 480px;
+}
+
+.content .body, .form-horizontal {
+	padding: 30px 0px;
+	background: #fff;
+	z-index: 100;
+	-webkit-border-radius: 0 0 4px 4px;
+	-moz-border-radius: 0 0 4px 4px;
+	border-radius: 0 0 4px 4px;
+}
+
+.row-signup {
+	padding-top: 5em;
+}
+
+.btn-signup {
+	padding: 12px 28px;
+	text-transform: uppercase;
+	font-size: 13px;
+	border-radius: 4px;
+	letter-spacing: 1px;
+	background-color: #27ae60 !important;
+	border-color: #27ae60 !important;
+	color: #ffffff !important;
+	background-image: none;
+	margin-right: 1em;
+	font-weight: 700;
+	border-radius: 3px;
+	letter-spacing: 1px;
+	webkit-transition: border .25s linear, color .25s linear, background-color .25s linear;
+	transition: border .25s linear, color .25s linear, background-color .25s linear;
+	-webkit-font-smoothing: subpixel-antialiased;
+}
+
+.btn-signup:hover, .btn-signup:focus {
+	background-color: #4fbc7e !important;
+}
+
+.vertical-center {
+	min-height: 100%; /* Fallback for vh unit */
+	min-height: 100vh; /* You might also want to use
+                        'height' property instead.
+                        
+                        Note that for percentage values of
+                        'height' or 'min-height' properties,
+                        the 'height' of the parent element
+                        should be specified explicitly.
+  
+                        In this case the parent of '.vertical-center'
+                        is the <body> element */
+	/* Make it a flex container */
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	/* Align the bootstrap's container vertically */
+	-webkit-box-align: center;
+	-webkit-align-items: center;
+	-moz-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	/* In legacy web browsers such as Firefox 9
+     we need to specify the width of the flex container */
+	width: 100%;
+	/* Also 'margin: 0 auto' doesn't have any effect on flex items in such web browsers
+     hence the bootstrap's container won't be aligned to the center anymore.
+  
+     Therefore, we should use the following declarations to get it centered again */
+	-webkit-box-pack: center;
+	-moz-box-pack: center;
+	-ms-flex-pack: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+}
+
+
+.form-container {
+	background: #fff;
+	/*-moz-box-shadow: 0 0 3px #ccc;
+	-webkit-box-shadow: 0 0 3px #ccc;
+	box-shadow: 0 0 3px #ccc;*/
+	border-radius: 4px;
+	width: 100%;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	margin-right: auto;
+}
+
+.signup-container {
+	max-width: 45%;
+}
+
+.password-r-container {
+	max-width: 35%;
+}
+
+.header {
+	border-radius: 4px;
+	position: relative;
+	background: #f2f4f8;
+	padding: 10px 0 10px 0;
+	text-align: center;
+	border-bottom: 2px solid #f7f8fa;
+	width: 100%;
+}
+.header:after{
+	content: '';
+	position: absolute;
+	bottom: -11px;
+	left: 48.5%;
+	width: 0;
+	height: 0;
+	margin-left: -8px;
+	border-left: 12px solid transparent;
+	border-right: 12px solid transparent;
+	border-top: 12px solid #f2f4f8;
+}
+.signup-brand {
+	text-decoration: none !important;
+}
+
+.signup-brand span {
+	font-size: 28px;
+	font-weight: 600;
+	vertical-align: middle;
+	padding-left: 14px;
+}
+.form-container form {
+	padding: 22px;
+}
+.form-container form label {
+	font-size: 14px;
+	font-weight: 400;
+}
+
+.form-container form .checkbox {
+	margin-left: -12px;
+}
+
+.form-container form .help-block {
+	margin-top: -5px;
+}
+.form-container form .help-block strong {
+	font-weight: 400;
+	color: #e74c3c;
+	font-size: 13px;
+}
+
+.error-text {
+	color: #e74c3c;
+}
+
+.bottom-links {
+	padding-top: 30px;
+	padding-left: 3%;
+}
+
+/* Checkmark style starts */
+@-moz-keyframes dothabottomcheck {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: 9px;
+  }
+}
+@-webkit-keyframes dothabottomcheck {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: 9px;
+  }
+}
+@keyframes dothabottomcheck {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: 9px;
+  }
+}
+@keyframes dothatopcheck {
+  0% {
+    height: 0;
+  }
+  50% {
+    height: 0;
+  }
+  100% {
+    height: 21.6px;
+  }
+}
+@-webkit-keyframes dothatopcheck {
+  0% {
+    height: 0;
+  }
+  50% {
+    height: 0;
+  }
+  100% {
+    height: 21.6px;
+  }
+}
+@-moz-keyframes dothatopcheck {
+  0% {
+    height: 0;
+  }
+  50% {
+    height: 0;
+  }
+  100% {
+    height: 21.6px;
+  }
+}
+input[type=checkbox] {
+  display: none;
+}
+
+.check-box {
+  height: 18px;
+  width: 18px;
+  background-color: transparent;
+  border: 2.16px solid #cbccd0;
+  border-radius: 2px;
+  position: relative;
+  display: inline-block;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-transition: border-color ease 0.2s;
+  -o-transition: border-color ease 0.2s;
+  -webkit-transition: border-color ease 0.2s;
+  transition: border-color ease 0.2s;
+  cursor: pointer;
+  margin-right: 15px;
+  vertical-align: middle;
+}
+.check-box::before, .check-box::after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  position: absolute;
+  height: 0;
+  width: 3.6px;
+  background-color: #0a8fd5;
+  display: inline-block;
+  -moz-transform-origin: left top;
+  -ms-transform-origin: left top;
+  -o-transform-origin: left top;
+  -webkit-transform-origin: left top;
+  transform-origin: left top;
+  border-radius: 5px;
+  content: ' ';
+  -webkit-transition: opacity ease .5;
+  -moz-transition: opacity ease .5;
+  transition: opacity ease .5;
+}
+.check-box::before {
+  top: 12.96px;
+  left: 7.38px;
+  box-shadow: 0 0 0 0.9px #ffffff;
+  -moz-transform: rotate(-135deg);
+  -ms-transform: rotate(-135deg);
+  -o-transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+  transform: rotate(-135deg);
+}
+.check-box::after {
+  top: 6.66px;
+  left: 0.9px;
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+input[type=checkbox]:checked + .check-box,
+.check-box.checked {
+  border-color: #0a8fd5;
+}
+input[type=checkbox]:checked + .check-box::after,
+.check-box.checked::after {
+  height: 9px;
+  -moz-animation: dothabottomcheck 0.2s ease 0s forwards;
+  -o-animation: dothabottomcheck 0.2s ease 0s forwards;
+  -webkit-animation: dothabottomcheck 0.2s ease 0s forwards;
+  animation: dothabottomcheck 0.2s ease 0s forwards;
+}
+input[type=checkbox]:checked + .check-box::before,
+.check-box.checked::before {
+  height: 18px;
+  -moz-animation: dothatopcheck 0.4s ease 0s forwards;
+  -o-animation: dothatopcheck 0.4s ease 0s forwards;
+  -webkit-animation: dothatopcheck 0.4s ease 0s forwards;
+  animation: dothatopcheck 0.4s ease 0s forwards;
+}
+
+/* backward compatibility */
+.alert-error {
+	color: #a94442;
+	background-color: #f2dede;
+	border-color: #ebccd1;
+}
+
+.form-error {
+	padding: 15px 20px 0px;
+	line-height: 20px;
+	font-size: 13px;
+	text-align: center;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+}
+</style>
+</head>
+{% load i18n %}
+{% load common %}
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+
+<div class="vertical-center">
+	<!-- Container -->
+	<div class="container">
+	    <!-- Content -->
+	    <div id="content" class="{% block coltype %}colM{% endblock %}">
+	        {% block pretitle %}{% endblock %}
+	        
+	        {% block object-tools %}{% endblock %}
+	        
+	        
+	        <!--  header -->
+	        
+			<div class="row">
+					<div class="form-container {% block extra-container-class %}{% endblock %}">
+						<div class="header">
+							<a class="signup-brand" href="/"><img src="/img/logo_alt.png" /> <span>Awaaz.De</span></a>
+						</div>
+						{% block page_content %}
+						{% endblock %}
+					</div>
+		        
+		        <br class="clear" />
+		</div>
+	    {% block footer %}{% endblock %}
+	</div>
+	<!-- END Container -->
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js" media="all" type="text/javascript"></script>
+	{% block extrascripts %}{% endblock %}
+</body>
+</html>

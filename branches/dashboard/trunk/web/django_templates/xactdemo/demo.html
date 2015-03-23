@@ -1,0 +1,114 @@
+{% extends 'registration/base_site.html' %}
+{% load crispy_forms_tags %}
+{% load upload_tags %}
+{% load i18n %}
+
+{% block extrahead %}
+<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-alert.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-datetimepicker.min.js"></script>
+<link rel="stylesheet" media="all" href="{{ STATIC_URL }}css/bootstrap.css" type="text/css" />
+<link href="{{ STATIC_URL }}css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+
+<style>
+/*
+	Override the style from base.css
+*/
+input[name="btnsubmit"] {
+	background: #0074CC;
+	border-style: solid;
+	border-color: #0074CC;
+	border-width: 1px;
+	color: 	#FFFFFF;
+	padding: 4px 10px; 
+}
+
+input[type="button"]{
+	padding: 4px 10px;
+}
+
+input[type="text"] {
+	border-radius: 0;
+}
+
+#content {
+	margin-top: 20px;
+}
+
+#content .alert {
+	margin-top: 40px;
+}
+
+.form-horizontal {
+	margin-top: 40px;
+}
+
+#field_tabs {
+	padding-top: 40px;
+}
+
+#field_tabs li {
+	list-style: none;
+	font-size: 14px;
+}
+
+.nav-tabs > li {
+	margin-bottom: -2px;
+}
+
+
+.call_url {
+	text-decoration: underline !important;
+	color: #3a87ad !important;
+}
+</style>
+
+{% endblock %}
+
+{% block content %}
+	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">&times;</a><strong>{{ success }}</strong></div>{% endif %}
+	{% if error %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">&times;</a><strong>{{ error }}</strong></div>{% endif %}
+   	{% if text %}<div class="alert alert-info fade in" ><a class="close" data-dismiss="alert">&times;</a>{% autoescape off %}{{ text }}{% endautoescape %}</div>{% endif %}
+   		
+   	{% crispy form %}
+   
+   	
+   	{% if postform %}{{ postform|safe }}{% endif %}   	
+{% endblock %}
+
+{% block footer %}
+<script>
+$(document).ready(function() {
+	$("#schedule_on").datetimepicker({
+    	format: "yyyy-mm-ddThh:ii:ss"
+    });
+    
+	$("[name=sector]").change(function() {
+		//clearing all templates
+		$("[name=template]").html('');
+		$("[id^=div_id_field_]").remove();
+		if($(this).val() != -1) {
+			$("[name=req_resource]").val('templates');
+			$('.main-form').submit();
+		}
+	});
+	
+	$("[name=template]").change(function() {
+		//clearing all fields
+		$("[id^=div_id_field_]").remove();
+		if($(this).val() != -1) {
+			$("[name=req_resource]").val('chunks');
+			$('.main-form').submit();
+		}
+	});
+	
+	//on schedule button submit, passing is submit
+	$("[name=btnsubmit]").on("click", function() {
+		$("[name=req_resource]").val('schedule');
+		$('.main-form').submit();
+	});
+});
+</script>
+{% endblock %}
+
