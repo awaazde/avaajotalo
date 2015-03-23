@@ -290,4 +290,7 @@ SWAGGER_SETTINGS = {
 MACHINE_ID = None
 
 
-
+'''
+MEDIA SYNC - Target Machine
+'''
+TARGET_MACHINES = ['2']
