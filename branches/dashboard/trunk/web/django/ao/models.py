@@ -639,7 +639,7 @@ class Coupon(models.Model):
         (PERCENTAGE, 'Percentage discount'),
     )
     
-    CODE_LENGTH = 15
+    CODE_LENGTH = 7
     CODE_CHARS = string.letters+string.digits
     
     value = models.IntegerField(_("Value"), help_text=_("Arbitrary coupon value"))
@@ -666,7 +666,7 @@ class Coupon(models.Model):
 
     @classmethod
     def generate_code(cls):
-        return "".join(random.choice(Coupon.CODE_CHARS) for i in xrange(Coupon.CODE_CHARS))
+        return "".join(random.choice(Coupon.CODE_CHARS) for i in xrange(Coupon.CODE_LENGTH))
 
 
 '''
