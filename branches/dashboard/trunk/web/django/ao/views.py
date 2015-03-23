@@ -43,6 +43,7 @@ from django.contrib.messages.context_processors import messages
 from django.core.paginator import Paginator
 from django.contrib.admin.templatetags.admin_list import results
 import subprocess
+from otalo.ao import tasks
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -467,6 +468,14 @@ def record_or_upload_message(request):
             f = get_object_or_404(Forum, pk=params['forumid'])
             
         mf = createmessage(f, main, author, parent, date)
+        
+        '''
+        For each dialing machine we'll need to execute the sync task. While uploading we don't have any way to decided machine,
+        so using the setting value, ensure that the machine ids present in settings.py file.
+        For each machine, this task would be put in corresponding audio_cache queue. e.g. audio_cache1, audio_cache2 
+        '''
+        for m in settings.TARGET_MACHINES:
+            tasks.cache_audio_file.s().delay(re.sub('\\' + settings.MEDIA_ROOT + '$', '', str(mf.message.file)), m)
         
         # do this after createmessage so that an answer call will use the wav file
         # which was just saved above

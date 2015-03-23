@@ -19,6 +19,7 @@ import sys, os, time, subprocess, urllib
 from datetime import datetime, timedelta
 from ao.models import Message 
 from surveys.models import Survey, Prompt
+import urllib2
 from ESL import *
 
 '''
@@ -43,16 +44,36 @@ shorter
 '''
 BUFFER_MINS = 2
 
-'''Store this survey's audio locally'''
-def cache_survey_audio(survey):
-    con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
-    for p in Prompt.objects.filter(survey=survey):
-        # cast to string in order for SWIG
-        # to deal with unicode coming from django db
-        # see http://stackoverflow.com/questions/20905702/typeerror-argument-of-type-char-const
-        url = str(settings.MEDIA_URL + p.file)
-        print('prefetching '+url)
-        con.api("http_prefetch "+ url)
+'''Store this audio locally'''
+def cache_survey_audio(file):
+    
+    url = str(settings.MEDIA_URL + file)
+        
+    '''
+    checking if prompt file is standard system prompt or already present on disk
+    
+    e.g. http://awaaz.de/console/2015/01/31/01-31-2015_1805377.wav - message file
+    http://awaaz.de/console/survey/blank.wav - standard prompt file
+    '''
+    file_name = str(file)
+    file_path = str(settings.MEDIA_ROOT + "/" + file)
+    print file_path
+    if file_name.startswith('forum') or file_name.startswith('survey') or os.path.isfile(file_path):
+        print 'file ' + file_path + ' already present on disk'
+    else:            
+        '''
+        downloading the file from remote path
+        '''
+        try:
+            print 'downloading file ' + url
+            u = urllib2.urlopen(url)
+            localFile = open(file_path, 'w')
+            localFile.write(u.read())
+            localFile.close()
+        except Exception as e:
+            print "Error while downloading file " + url + ", error: " + str(e)
+        
+
             
 def convert_to_mp3(file_path):
     #converting audio file to mp3
@@ -72,12 +93,12 @@ def convert_audio(interval_mins):
             if not os.path.isfile(mp3_file_path):
                 print('converting to mp3')
                 convert_to_mp3(m.file.path)
-                
+
+
 if __name__=="__main__":
     if "--convert_audio" in sys.argv:
         mins = sys.argv[2]
         convert_audio(int(mins))
     elif "--cache_audio" in sys.argv:
-        sid = sys.argv[2]
-        s = Survey.objects.get(pk=sid)
-        cache_survey_audio(s)
+        file = sys.argv[2]
+        cache_survey_audio(file)
