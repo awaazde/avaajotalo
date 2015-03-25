@@ -491,9 +491,26 @@ def answer_call(line, answer):
 '     Do the exclude manually since Django doesn't correctly exclude on a relationship that was previously filtered on
 '     e.g. Subject.objects.filter(call__survey=bcast).exclude(call__survey=bcast, call__complete=True) doesn't work!
 '''
-def get_pending_backup_calls(survey, max_backup_calls):        
-    to_exclude = Subject.objects.filter(Q(call__complete=True) | Q(call__priority=max_backup_calls+1), call__survey=survey).values('id')
-    to_exclude = [s.values()[0] for s in to_exclude]
+def get_pending_backup_calls(survey, max_backup_calls):     
+    '''
+    # Get subjects who are pending because of extra calls added based on hangup causes
+    # don't use priority__lt because the query will pass as long as there exists any
+    # call with a lesser priority. What we want to say is that a call does not exist
+    # with the final priority
+    '''
+    hup_limit_queries = [Q(call__survey=survey, call__hangup_cause=cause) & ~Q(call__priority=Call.HUP_CAUSES_WITH_LIMIT[cause]+1) for cause in Call.HUP_CAUSES_WITH_LIMIT.keys()]
+    '''
+    # The above subjects are pending, so exclude them from the exclude list generated below.
+    # Do it as a separate exclude rather than in the filter because the filter includes
+    # The Q statement with backup calls, which would have to say "AND doesn't have any
+    # HUP Causes with limits", which does not seem possible to express through the ORM.
+    # Otherwise a subject that needs extra calls because of HUP cause would be included
+    # in the exclude list when backup calls have been exhausted 
+    # (i.e. Q(call__priority=max_backup_calls+1) would be true)
+    '''
+    extra_calls_for_hup_cause = Subject.objects.filter(reduce(operator.or_, hup_limit_queries)).values_list('id',flat=True)
+    #print('hup subjs '+str(hups))
+    to_exclude = Subject.objects.filter(Q(call__complete=True) | Q(call__priority=max_backup_calls+1), call__survey=survey).exclude(pk__in=extra_calls_for_hup_cause).values_list('id', flat=True)
     to_sched = Subject.objects.filter(call__survey=survey).exclude(pk__in=to_exclude).annotate(max_pri=Max('call__priority')).values('number','max_pri')
     #print('to_sched: ' + str(to_sched))
     to_sched = [tuple(s.values()) for s in to_sched]

@@ -132,30 +132,15 @@ userid = get_table_field('ao_user', 'id', 'number='..caller);
 
 -- create a call in order to track any inputs made to this survey
 -- first get subject id
-query = "SELECT subject.id FROM surveys_subject subject WHERE subject.number = " .. caller;
-freeswitch.consoleLog("info", script_name .. " : query : " .. query .. "\n");
-local cur = con:execute(query);
-local subj = row(query);
-
-local subjectid = nil;
-if (subj == nil) then
-	query = "INSERT INTO surveys_subject (number) VALUES ('" ..caller.."')";
-	con:execute(query);
-	freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-	local cur = con:execute("SELECT LAST_INSERT_ID()");
-	subjectid = tostring(cur:fetch());
-	cur:close();
-else
-	subjectid = subj[1];
+local subjectid = get_table_field('surveys_subject', 'id', 'number='.. caller);
+if (subjectid == nil) then
+	local name_vals = {number=caller};
+	subjectid = insert_into_table("surveys_subject", name_vals);
 end
 
 -- create the call
-query = "INSERT INTO surveys_call (subject_id, survey_id, date ) VALUES (" ..subjectid..","..surveyid..",now()) ";
-con:execute(query);
-freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
-local cur = con:execute("SELECT LAST_INSERT_ID()");
-callid = tostring(cur:fetch());
-cur:close();
+local name_vals = {survey_id=surveyid, subject_id=subjectid, date="now()"};
+callid = insert_into_table("surveys_call", name_vals);
 
 freeswitch.consoleLog("info", script_name .. " , num = " .. caller .. " , survey = " .. surveyid .. "\n");
 
@@ -258,7 +243,14 @@ function survey_main()
 		-- play prompts
 		play_prompts(prompts);
 		
-		hangup();
+		hangup(CAUSE_APP_HANGUP);
+	else
+		local hangup_cause = session:hangupCause();
+		if (hangup_cause ~= nil) then
+			-- log the hangup cause
+			local name_vals = {hangup_cause=hangup_cause};
+			update_table("surveys_call", name_vals, "id = "..callid);
+		end
 	end
 end
 
@@ -266,4 +258,3 @@ status, err = pcall(survey_main)
 if status == false and termination_reason ~= NORMAL_HANGUP then
 	freeswitch.consoleLog("err", tostring(debug.traceback(err)) .. "\n");
 end
-

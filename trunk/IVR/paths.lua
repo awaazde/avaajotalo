@@ -86,8 +86,15 @@ env = assert (luasql.odbc());
 con = assert (env:connect("otalo","otalo","otalo","localhost"));
 assert (con:execute ("use otalo"));
 
+-- This is to signal that a call hung up normally, as opposed to on script error
+-- It isn't a hangup cause, but a flag to tell the script to emit error or not.
 NORMAL_HANGUP = 'NORMAL_HANGUP';
 termination_reason = nil;
+
+-- Application-specific "hangup causes"
+CAUSE_APP_HANGUP = "APP_HANGUP";
+CAUSE_CALLER_HANGUP = "CALLER_HANGUP";
+CAUSE_NO_RESP_HANGUP = "NO_RESP_HANGUP";
 
 SOUND_EXT = '.wav';
 RECORD_SOUND_EXT = SOUND_EXT;
@@ -105,7 +112,7 @@ interdigit to at least the threshhold.
 --]]
 MULTI_DIGIT_INPUT_THRESH = 4000;
 
-TECHNICAL_ERRORS = {REQUESTED_CHAN_UNAVAILABLE = true, NORMAL_CIRCUIT_CONGESTION = true, NORMAL_TEMPORARY_FAILURE = true, PROTOCOL_ERROR = true};
+TECHNICAL_ERRORS = {REQUESTED_CHAN_UNAVAILABLE = true, NORMAL_TEMPORARY_FAILURE = true, PROTOCOL_ERROR = true};
 
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )
