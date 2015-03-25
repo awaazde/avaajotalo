@@ -216,6 +216,46 @@ class Call(models.Model):
     '    Nullable because we don't set this with inbound (missed calls)
     '''
     dialer = models.ForeignKey('ao.Dialer', blank=True, null=True)
+    
+    '''
+    '    Report the hangup cause. If the call didn't connect at all (i.e. on an outbound call), report
+    '    the failure cause.
+    '
+    '    Making it a charfield because that's how they come straight from IVR stack
+    '''  
+    hangup_cause = models.CharField(max_length=128, blank=True, null=True) 
+    # make sure max_retries is at least as big as number of backup calls, or else the limit
+    # won't be applied
+    HANGUP_CAUSES = {
+                     "UNSPECIFIED" : {"code": 0, "max_retries" : 3, "report_desc" : "unspecified exchange error"},
+                     "UNALLOCATED_NUMBER" : {"code": 1},
+                     "NO_ROUTE_DESTINATION" : {"code": 3},
+                     "CHANNEL_UNACCEPTABLE" : {"code": 6},
+                     "NORMAL_CLEARING" : {"code": 16},
+                     "USER_BUSY" : {"code": 17},
+                     "NO_USER_RESPONSE" : {"code": 18},
+                     "NO_ANSWER" : {"code": 19},
+                     "CALL_REJECTED" : {"code": 21},
+                     "DESTINATION_OUT_OF_ORDER" : {"code": 27},
+                     "INVALID_NUMBER_FORMAT" : {"code": 28},
+                     "NORMAL_UNSPECIFIED" : {"code": 31},
+                     "NORMAL_CIRCUIT_CONGESTION" : {"code": 34, "max_retries" : 5},
+                     "NETWORK_OUT_OF_ORDER" : {"code": 38},
+                     "NORMAL_TEMPORARY_FAILURE" : {"code": 41},
+                     "REQUESTED_CHAN_UNAVAIL" : {"code": 44},
+                     "WRONG_CALL_STATE" : {"code": 101},
+                     "RECOVERY_ON_TIMER_EXPIRE" : {"code": 102},
+                     "PROTOCOL_ERROR" : {"code": 111},
+                     "INTERWORKING" : {"code": 127},
+                     "ORIGINATOR_CANCEL" : {"code": 487},
+                     
+                     ''' App-defined codes. Must be consistent with paths.lua '''
+                     "APP_HANGUP" : {},
+                     "CALLER_HANGUP" : {},
+                     "NO_RESP_HANGUP" : {},
+                     } 
+    
+    HUP_CAUSES_WITH_LIMIT = {k:v['max_retries'] for (k,v) in HANGUP_CAUSES.iteritems() if 'max_retries' in v}
      
     class Meta:
         '''  Add a unique key constraint to prevent asynchronous task scheduling from 

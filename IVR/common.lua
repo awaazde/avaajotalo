@@ -20,22 +20,27 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 -----------
 -- hangup 
 -----------
-
-function hangup() 
+function hangup(cause)
    local callendtime = os.time();
    logfile:write(sessid, "\t",
 		 caller, "\t", destination, "\t",
 		 callendtime, "\t", "End call", "\n");
-
+   
+   -- if no argument is passed explicitly by the application
+   -- then assume the hangup is being invoked by hanguphook,
+   -- which passes userdata
+   if (type(cause) ~= "string") then   		
+		cause = CAUSE_CALLER_HANGUP;
+   end
+   
    for i,curs in ipairs(opencursors) do
 		curs:close();
    end
    
    if (callid ~= nil and callstarttime ~= nil) then
    		local callduration = callendtime - callstarttime;
-   		local query = "UPDATE surveys_call SET duration="..callduration.." WHERE id="..callid;
-	    con:execute(query);
-	    freeswitch.consoleLog("info", script_name .. " : " .. query .. "\n");
+   		local name_vals = {duration=callduration, hangup_cause=cause};
+		update_table("surveys_call", name_vals, "id = "..callid);
    end
    
    -- cleanup
@@ -78,7 +83,8 @@ end
 *********************************************************************
 	For different providers and dialer types (and potentially FS quirks)
 	originated calls from Session() take an extra pause of time for
-	session:ready() to be actually true. Call this funtion after
+	session:ready() to be actually true. Call this funtion after originating
+	a call
 	
 *********************************************************************
 --]]
@@ -360,7 +366,7 @@ function check_abort(counter, threshold)
 	counter = counter + 1;
 	if (counter >= threshold) then
 		logfile:write(sessid, "\t", caller, "\t", destination, "\t", os.time(), "\t", "Abort call", "\n");
-		hangup();
+		hangup(CAUSE_NO_RESP_HANGUP);
 	else
 		return counter;
 	end
@@ -1037,9 +1043,7 @@ function play_prompts (prompts)
       else
 		replay_cnt = 0;
       end
-      if (session:ready() == false) then
-		hangup();
-      end
+
       -- keep together all options which have a goto IDX param
       -- in order to avoid duplicating the code that checks the
       -- param and sets the current_prompt_idx accordingly

@@ -227,13 +227,7 @@ function responder_main()
 		session:setInputCallback("my_cb", "arg");
 	
 		-- wait a while before testing
-		-- do it in increments so we don't wait unnecessarily long
-		local ready_cnt = 0;
-		while (ready_cnt < 3 and session:ready() ~= true) do
-			-- session:sleep doesn't work!
-			os.execute("sleep 2");
-			ready_cnt = ready_cnt + 1;
-		end
+		pause_for_session_ready();
 	
 		if (session:ready() == true) then
 			logfile:write(sessid, "\t", caller, "\t", destination,
@@ -255,7 +249,7 @@ function responder_main()
 			   read(aosd .. "mainmenu.wav", 1000);
 			end
 				
-			hangup();
+			hangup(CAUSE_APP_HANGUP);
 		end
 	end -- close num_rows check
 end

@@ -123,10 +123,7 @@ if (callback_allowed == 1) then
 	session = freeswitch.Session(vars .. DIALSTRING_PREFIX .. caller .. DIALSTRING_SUFFIX)
 	
 	-- wait a while before testing
-	session:sleep(2000);
-	if (session:ready() == false) then
-		hangup();
-	end
+	pause_for_session_ready();
 else
 	-- answer the call
 	session:answer();
@@ -225,4 +222,4 @@ else
 		read(bsd .. lang .. promptfile, 0);
 	until (repeat_cnt > DEF_NUM_REPEATS);
 end
-hangup();
+hangup(CAUSE_APP_HANGUP);
