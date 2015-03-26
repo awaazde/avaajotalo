@@ -39,7 +39,7 @@ function hangup(cause)
    
    if (callid ~= nil and callstarttime ~= nil) then
    		local callduration = callendtime - callstarttime;
-   		local name_vals = {duration=callduration, hangup_cause=cause};
+   		local name_vals = {duration=callduration, hangup_cause="'"..cause.."'"};
 		update_table("surveys_call", name_vals, "id = "..callid);
    end
    
