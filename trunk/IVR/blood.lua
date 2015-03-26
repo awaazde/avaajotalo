@@ -32,17 +32,21 @@ dofile("/usr/local/freeswitch/scripts/AO/common.lua");
 
 script_name = "blood.lua";
 
--- script-specific sounds
-bsd = sd .. "forum/blood/";
-
 digits = "";
 arg = {};
 opencursors = {};
 
 sessid = os.time();
 
+local platelets = session:getVariable("platelet");
+freeswitch.consoleLog("info", script_name .. " : platelet " .. tostring(platelets) .. "\n");
+if (platelets == nil) then
+	platelets = false;
+end
+
 -- survey phonenumber
 destination = session:getVariable("destination_number");
+
 -- caller's number
 caller = session:getVariable("caller_id_number");
 caller = caller:sub(-10);
@@ -60,10 +64,20 @@ local MAX_STD_LEN = 5;
 local DEF_NUM_REPEATS = 3;
 local MIN_BGROUP_ID = 1;
 local MAX_BGROUP_ID = 8;
-local IBD_URL = 'http://indianblooddonors.com/fetch_donor.php?';
 local IBD_STD = 'std=';
 local IBD_BGROUP = 'bgid=';
 local IBD_CALLER = 'caller=';
+
+local IBD_URL = '';
+if (platelets) then
+	-- script-specific sounds
+	bsd = sd .. "forum/platelets/";
+	IBD_URL = 'http://plateletdonors.org/api/ivrs/ws-ivrs-std-code-search.php?';
+else
+	-- script-specific sounds
+	bsd = sd .. "forum/blood/";
+	IBD_URL = 'http://indianblooddonors.com/fetch_donor.php?';
+end
 
 -- hard-coded for now
 local callback_allowed = 0;
