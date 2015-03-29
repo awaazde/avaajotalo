@@ -112,7 +112,7 @@ interdigit to at least the threshhold.
 --]]
 MULTI_DIGIT_INPUT_THRESH = 4000;
 
-TECHNICAL_ERRORS = {REQUESTED_CHAN_UNAVAILABLE = true, NORMAL_TEMPORARY_FAILURE = true, PROTOCOL_ERROR = true};
+TECHNICAL_ERRORS = {REQUESTED_CHAN_UNAVAILABLE = true, PROTOCOL_ERROR = true};
 
 -- UTILITY FUNCTIONS
 function table.val_to_str ( v )

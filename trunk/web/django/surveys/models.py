@@ -227,7 +227,7 @@ class Call(models.Model):
     # make sure max_retries is at least as big as number of backup calls, or else the limit
     # won't be applied
     HANGUP_CAUSES = {
-                     "UNSPECIFIED" : {"code": 0, "max_retries" : 3, "report_desc" : "unspecified exchange error"},
+                     "UNSPECIFIED" : {"code": 0, "report_desc" : "unspecified exchange error"},
                      "UNALLOCATED_NUMBER" : {"code": 1},
                      "NO_ROUTE_DESTINATION" : {"code": 3},
                      "CHANNEL_UNACCEPTABLE" : {"code": 6},
@@ -241,7 +241,7 @@ class Call(models.Model):
                      "NORMAL_UNSPECIFIED" : {"code": 31},
                      "NORMAL_CIRCUIT_CONGESTION" : {"code": 34, "max_retries" : 5},
                      "NETWORK_OUT_OF_ORDER" : {"code": 38},
-                     "NORMAL_TEMPORARY_FAILURE" : {"code": 41},
+                     "NORMAL_TEMPORARY_FAILURE" : {"code": 41, "max_retries" : 5},
                      "REQUESTED_CHAN_UNAVAIL" : {"code": 44},
                      "WRONG_CALL_STATE" : {"code": 101},
                      "RECOVERY_ON_TIMER_EXPIRE" : {"code": 102},
