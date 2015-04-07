@@ -192,13 +192,12 @@ def main():
 	# Announcements
 	actives = Survey.objects.filter(broadcast=True, number__in=[line.number, line.outbound_number], call__date__gt=today, call__date__lt=today+oneday).exclude(name__contains=Survey.ANSWER_CALL_DESIGNATOR).order_by('-id').distinct()
 	
-	# For each survey, get the number of subjects that are set to get a call today
+	# For each survey, get the number of subjects and calls
 	for survey in actives:
-		subjects = Subject.objects.filter(call__survey=survey).distinct().values_list('id', flat=True)
 		calls = Call.objects.filter(survey=survey)
 		n_subjects = survey.subjects.all().count()
-		calls_attempted = calls.filter(date__gte=today).count()
-		calls_completed = calls.filter(date__gte=today, complete=True).count()
+		calls_attempted = calls.filter(date__gte=today, date__lt=today+oneday).count()
+		calls_completed = calls.filter(date__gte=today, date__lt=today+oneday, complete=True).count()
 		
 		print("<tr>")
 		print("<td>"+survey.name+"</td>")
