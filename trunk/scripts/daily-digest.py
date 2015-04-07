@@ -194,28 +194,11 @@ def main():
 	
 	# For each survey, get the number of subjects that are set to get a call today
 	for survey in actives:
-		subjects = Subject.objects.filter(call__survey=survey).distinct()
-		n_subjects = 0
-		calls_attempted = 0
-		calls_completed = 0
-		for subject in subjects:			
-			calls = Call.objects.filter(subject=subject, survey=survey)
-			calls_today = calls.filter(date__gte=today, date__lt=today+oneday)
-			# check if this survey has been completed for this subj
-			# ASSUMES that the same survey does not have multiple P1s
-			# WHY? Because if we account for this then the ordering of P1s wrt P2s
-			# matters. The consequence is that if a survey is reused, then these
-			# numbers will underestimate the actual since it will not consider future P1s
-			if bool(calls_today.filter(complete=True)):
-				n_subjects += 1
-				calls_completed += 1
-				completed_today = calls_today.filter(complete=True)[0]
-				tilldate = completed_today.date				
-				calls_attempted += calls_today.filter(date__lte=tilldate).count()
-			# if the call has not been completed at *any time*, add the call attempts for today
-			elif calls.filter(complete=True).count() == 0:
-				n_subjects += 1
-				calls_attempted += calls_today.count()
+		subjects = Subject.objects.filter(call__survey=survey).distinct().values_list('id', flat=True)
+		calls = Call.objects.filter(survey=survey)
+		n_subjects = survey.subjects.all().count()
+		calls_attempted = calls.filter(date__gte=today).count()
+		calls_completed = calls.filter(date__gte=today, complete=True).count()
 		
 		print("<tr>")
 		print("<td>"+survey.name+"</td>")
