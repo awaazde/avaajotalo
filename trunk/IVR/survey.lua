@@ -248,7 +248,7 @@ function survey_main()
 		local hangup_cause = session:hangupCause();
 		if (hangup_cause ~= nil) then
 			-- log the hangup cause
-			local name_vals = {hangup_cause=hangup_cause};
+			local name_vals = {hangup_cause="'"..hangup_cause.."'"};
 			update_table("surveys_call", name_vals, "id = "..callid);
 		end
 	end
