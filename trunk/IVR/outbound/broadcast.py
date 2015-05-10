@@ -498,7 +498,7 @@ def get_pending_backup_calls(survey, max_backup_calls):
     # call with a lesser priority. What we want to say is that a call does not exist
     # with the final priority
     '''
-    hup_limit_queries = [Q(call__survey=survey, call__hangup_cause=cause) & ~Q(call__priority=Call.HUP_CAUSES_WITH_LIMIT[cause]+1 & ~Q(call__complete=True)) for cause in Call.HUP_CAUSES_WITH_LIMIT.keys()]
+    hup_limit_queries = [Q(call__survey=survey, call__hangup_cause=cause) & ~Q(call__priority=Call.HUP_CAUSES_WITH_LIMIT[cause]+1) & ~Q(call__complete=True) for cause in Call.HUP_CAUSES_WITH_LIMIT.keys()]
     '''
     # The above subjects are pending, so exclude them from the exclude list generated below.
     # Do it as a separate exclude rather than in the filter because the filter includes
