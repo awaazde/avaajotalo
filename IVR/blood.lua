@@ -25,6 +25,7 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 
 -- INCLUDES
 require "socket.http";
+json = require("json");
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
@@ -67,12 +68,15 @@ local MAX_BGROUP_ID = 8;
 local IBD_STD = 'std=';
 local IBD_BGROUP = 'bgid=';
 local IBD_CALLER = 'caller=';
+local IBD_BGROUP_OPTS = {"a+%2Bve", "a+-ve", "b+%2Bve", "b+-ve", "ab+%2Bve", "ab+-ve", "o+%2Bve", "o+-ve"};
 
 local IBD_URL = '';
 if (platelets) then
 	-- script-specific sounds
 	bsd = sd .. "forum/platelets/";
 	IBD_URL = 'http://plateletdonors.org/api/ivrs/ws-ivrs-std-code-search.php?';
+	IBD_BGROUP = 'bloodgroup=';
+	IBD_STD = 'stdcode=';
 else
 	-- script-specific sounds
 	bsd = sd .. "forum/blood/";
@@ -205,17 +209,34 @@ while (d == "" or tonumber(d) < MIN_BGROUP_ID or tonumber(d) > MAX_BGROUP_ID) do
 	repeat_cnt = check_abort(repeat_cnt, DEF_NUM_REPEATS)
 end
 local bgroupid = d;
+if (platelets) then
+	bgroupid = IBD_BGROUP_OPTS[tonumber(d)];
+	if (bgroupid == nil) then
+		bgroupid = '';
+	end
+end
 d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
 response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
 freeswitch.consoleLog("info", script_name .. " : response is " .. tostring(response) .. "\n");
+
+if (platelets) then
+	json_table = json.decode(response);	
+	if (json_table.DonorFound == false) then
+		response = nil;
+	else
+		number = json_table.DonorMobile;
+	end
+else
+	number = trim(tostring(response));
+end
+
 if (response == nil or trim(tostring(response)) == "0") then
 	promptfile = "nomatch.wav";
 	freeswitch.consoleLog("info", script_name .. " : playing prompt " .. bsd .. lang .. promptfile .. "\n");
 	read(bsd .. lang .. promptfile, 0);
 else
-	number = trim(tostring(response));
 	-- playback number
 	repeat_cnt = 0;
 	-- loop up to default repeat times (make it an actual number just as a failsafe)
