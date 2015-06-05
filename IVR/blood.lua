@@ -218,7 +218,7 @@ end
 d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
-local response = socket.http.request {url=IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller, method="POST");
+local response = socket.http.request {url=IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller, method="POST"};
 freeswitch.consoleLog("info", script_name .. " : response is " .. tostring(response) .. "\n");
 
 if (platelets) then
