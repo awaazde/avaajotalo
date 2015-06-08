@@ -109,11 +109,14 @@ function insert_into_table(table, name_vals)
 	sql_statement = sql_statement .. " ) ";
 	
 	freeswitch.consoleLog("info", script_name .. " : " .. sql_statement .. "\n");
-	con:execute(sql_statement);
-	cur = con:execute("SELECT LAST_INSERT_ID()");
-   	id = tostring(cur:fetch());
-   	cur:close();
-   	return id;
+	local success,err = con:execute(sql_statement);
+	local id = nil;
+	if (success) then
+		local cur = con:execute("SELECT LAST_INSERT_ID()");
+	   	id = tostring(cur:fetch());
+	   	cur:close();	   	
+	end
+   	return id, err;
 end
 
 --[[

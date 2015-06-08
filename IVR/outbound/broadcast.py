@@ -52,9 +52,8 @@ def subjects_by_numbers(numbers):
     numbers = filter(lambda n: n != None, numbers)
     
     # filter out black-listed numbers
-    disallowed = User.objects.filter(number__in=numbers, allowed='n').values('number')
-    disallowed = [n.values()[0] for n in disallowed]
-    numbers = list(set(numbers) - set(disallowed))
+    disallowed = User.objects.filter(number__in=numbers, allowed='n').values_list('number',flat=True)
+    numbers = list(set(numbers) - set(list(disallowed)))
         
     return numbers_to_subjects(numbers)
 
@@ -73,7 +72,6 @@ def numbers_to_subjects(numbers):
             subjects.append(existing_dict[n])
         else:
             new_subjects.append(Subject(number=n))
-    
     if new_subjects:
         Subject.objects.bulk_create(new_subjects)
         # get objects with their primary keys
@@ -81,51 +79,14 @@ def numbers_to_subjects(numbers):
         new_subjects = Subject.objects.filter(number__in=new_nums)
         new_subjects = [s for s in new_subjects]
         subjects += new_subjects
-        
     return subjects
 
 def subjects_by_tags(tags, line):
-    subjects = []
-    
-    users = User.objects.filter(Q(message__message_forum__tags__in=tags, message__message_forum__forum__line=line) | Q(tags__in=tags)).distinct()
-    for user in users:
-        if user.allowed == 'n' or not user.indirect_bcasts_allowed:
-            continue
-        s = Subject.objects.filter(number = user.number)
-        if not bool(s):
-            s = Subject(number=user.number)
-            #print ("adding subject " + str(s))
-            s.save()
-            subjects.append(s)
-        else:
-            subjects.append(s[0])
-    
-    return subjects
-
-def subjects_by_log(line, since, lastn=0, callthresh=DEFAULT_CALL_THRESHOLD):
-    filename = settings.INBOUND_LOG_ROOT+str(line.id)+'.log'
-    calls = stats_by_phone_num.get_numbers_by_date(filename=filename, destnum=str(line.number), date_start=since, quiet=True)
-    numbers = calls.keys()
-    subjects = []
-    
-    if lastn:
-        numbers = numbers[:lastn]
-        
-    for number in numbers:
-        u = User.objects.filter(number=number)
-        if bool(u) and (u[0].allowed == 'n' or not u[0].indirect_bcasts_allowed):
-            continue
-        
-        s = Subject.objects.filter(number = number)
-        if not bool(s):
-            s = Subject(number=str(number))
-            #print ("adding subject " + str(s))
-            s.save()
-            subjects.append(s)
-        else:
-            subjects.append(s[0])
-    
-    return subjects
+    tag_ids = [t.id for t in tags]
+    numbers = User.objects.filter(Q(message__message_forum__tags__pk__in=tag_ids, message__message_forum__forum__line=line) | Q(tags__pk__in=tag_ids)).exclude(allowed='n').exclude(indirect_bcasts_allowed=False).distinct().values_list('number', flat=True)
+    # execute the query to avoid complex joins in the next step
+    numbers = list(numbers)
+    return numbers_to_subjects(numbers)
 
 # Assumes the messageforum is a top-level message
 # and you want to bcast the whole thread (flattened)
@@ -424,10 +385,26 @@ def answer_call(line, answer):
     parent = ancestors[0]
 
     asker = Subject.objects.filter(number=parent.user.number)
-    if not bool(asker):
-        asker = Subject.objects.create(name=parent.user.name, number=parent.user.number)
-    else:
-        asker = asker[0]
+    '''
+    This function is called both explicitly from the view (UI) when a user uploads a response,
+    as well as in a background cron-like task (celery) for cases where the response is recorded
+    over IVR. Because of this, there are potential race conditions for a subject getting created
+    and duplicate subjects were getting created.
+    
+    To fix, we've added a unique constraint on subject.number. So if we try to create here and there is
+    a duplicate, we will get an integrity violation.
+    
+    Means we are working with a stale DB session here, let's just print the error and exit without doing
+    anything further. 
+    '''
+    try:
+        if not asker.exists():
+            asker = Subject.objects.create(name=parent.user.name, number=parent.user.number)
+        else:
+            asker = asker[0]
+    except IntegrityError as e:
+        print(e)
+        return
         
     now = datetime.now()
     num = line.outbound_number or line.number
