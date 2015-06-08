@@ -22,7 +22,15 @@ from datetime import datetime
 
 class Subject(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
-    number = models.CharField(max_length=24)
+    '''  It's critical that duplicate numbers don't get into this table
+    '    Currently it mostly matters for the scheduler, where the implementation
+    '    will schedule repeated calls for numbers that are duplicated
+    '    
+    '    Duplicates are currently getting in by the IVR code (inbound lua scripts)
+    '    and perhaps race conditions with answer_call, where a cron scheduling answer calls
+    '    races with the answer_call invocation that happens explicitly on response upload
+    '''
+    number = models.CharField(max_length=24, unique=True)
     group = models.IntegerField(blank=True, null=True)
     
     def __unicode__(self):

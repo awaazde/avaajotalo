@@ -721,6 +721,11 @@ def bcast(request):
         tags = Tag.objects.filter(pk__in=tagids)
         subjects += broadcast.subjects_by_tags(tags, line)
     
+    
+    '''
+    This is dormant until we are able to track all inbound calls by db. We can no
+    longer rely on logs on local servers because our dialing system is distributed
+    
     if params.__contains__('bylog'):
         lastncallers = params['lastncallers']
         since = params['since']
@@ -737,6 +742,7 @@ def bcast(request):
             since = datetime.now()
                
         subjects += broadcast.subjects_by_log(line, since, lastncallers)
+    '''
     
     # remove dups
     subjects = list(set(subjects))

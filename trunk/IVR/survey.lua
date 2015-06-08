@@ -135,7 +135,23 @@ userid = get_table_field('ao_user', 'id', 'number='..caller);
 local subjectid = get_table_field('surveys_subject', 'id', 'number='.. caller);
 if (subjectid == nil) then
 	local name_vals = {number=caller};
-	subjectid = insert_into_table("surveys_subject", name_vals);
+	local err=nil;
+	subjectid, err = insert_into_table("surveys_subject", name_vals);
+	
+	--[[
+		If there is an integrity violation caused by trying to
+		create a subject that already exists even though we just check, we are 
+		working with a stale database session here. Why would the
+		session be stale? As of the time of this writing, we don't
+		know and don't have time to investigate.
+		
+		Just do the conservative thing and hang up. Assume that this call
+		will get taken care of by another session or by a call retry.		
+	--]]
+	if (subjectid == nil) then
+		freeswitch.consoleLog("info", script_name .. " : db error" .. tostring(err) .. "; hanging up number " .. caller .. "\n");
+		hangup(CAUSE_APP_HANGUP);
+	end
 end
 
 -- create the call
