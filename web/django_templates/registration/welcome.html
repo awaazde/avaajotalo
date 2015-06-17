@@ -39,7 +39,7 @@ body {
 	overflow-x: hidden;
 	padding-bottom: 0;
 	margin-bottom: 0px;
-	background: url('/img/slider/agro.jpg') no-repeat
+	background: url('/images/slider/stream.jpg') no-repeat
 			center center fixed;
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
@@ -47,27 +47,15 @@ body {
 	background-size: cover;
 }
 
-body:after {  
-	    opacity:1;  
-	    content: "";  
-	    position:fixed;  
-	    z-index:-1;  
-	    width:100%;  
-	    height:100%;  
-	    top:0;  
-	    bottom:0;  
-	    left:0;  
-	    right:0;  
-	    background-repeat:repeat;  
-	    background-color: rgba(67, 74, 84, 0.85);
-	}
+
 a {
-	color: #0a8fd5;
+	color: #FDBC00;
+	font-weight: 600;
 	text-decoration: underline;
 }
 
 a:hover {
-	color: #0a8fd5;
+	color: #FDBC00;
 }
 
 /* Helper Classes */
@@ -85,26 +73,24 @@ a, .easing, .button, .btn, input, textarea, button, html input[type="button"],
 }
 
 .btn-custom {
-	padding: 12px 28px;
-	text-transform: uppercase;
-	font-size: 13px;
-	border-radius: 4px;
-	letter-spacing: 1px;
-	background-color: #27ae60 !important;
-	border-color: #27ae60 !important;
-	color: #ffffff !important;
-	background-image: none;
-	margin-right: 1em;
-	font-weight: 700;
-	border-radius: 3px;
-	letter-spacing: 1px;
+	font-weight: 600;
+	background: #FDBC00;
+	border-color: #FDBC00;
+	color: #fff;
+	border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+	border-radius: 0px !important;
+	padding: 9px 15px;
+	-webkit-font-smoothing: subpixel-antialiased;
+	margin-right: 16px;
 	webkit-transition: border .25s linear, color .25s linear, background-color .25s linear;
 	transition: border .25s linear, color .25s linear, background-color .25s linear;
-	-webkit-font-smoothing: subpixel-antialiased;
 }
 
 .btn-custom:hover, .btn-custom:focus {
-	background-color: #4fbc7e !important;
+	background: #FFB62C;
+	border-color: #FFB62C;
+	border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+	color: #fff;
 }
 
 .vertical-center {
@@ -176,7 +162,7 @@ a, .easing, .button, .btn, input, textarea, button, html input[type="button"],
 }
 
 .inner-container h2 {
-	color: #0a8fd5;
+	color: #FDBC00;
 	margin-top: 3%;
 	margin-bottom: 3%;
 }
@@ -212,7 +198,7 @@ p.header-sub {
 }
 
 .form-container p span {
-	color: #0a8fd5;
+	color: #FDBC00;
 }
 .form-container a {
 	text-align: left;
@@ -238,10 +224,10 @@ p.header-sub {
 						<div class="col-md-12 inner-container">
 							<h2>Congratulations!</h2>
 							<h1>Your awaaz.de number is {{ group_number }}</h1>
-							<p class="header-sub">All the members of group <span>{{ group_name }}</span> will recieve your voice messages from this number</p>
+							<p class="header-sub">All the members of group <strong><span>{{ group_name }}</span></strong> will recieve your voice messages from this number</p>
 							
 							<p>&nbsp;</p>
-							<p>Your account manager <span>Niti (+91 74051 23455)</span> will shortly get in touch with you.</p>
+							<p>Your account manager <strong><span>Niti (+91 74051 23455)</span></strong> will shortly get in touch with you.</p>
 							
 							<p><strong><span>Send voice messages to your group {{ group_name }} NOW by making just one call to 
 							your awaaz.de number</span> from your registered number or with a single click from your account console</strong>.</p>
