@@ -78,9 +78,7 @@ STATICFILES_DIRS = (
     "/Users/neil/Development/otalo/adminmedia",
 )
 
-COMPRESS_ROOT = (
-    "/home/awaazde/otalo/adminmedia",
-)
+COMPRESS_ROOT = "/home/awaazde/otalo/adminmedia"
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '+1m4bqgx##tjp#rd4e=r#1ut=cw7xr3-za__oa3o8j377os_#='
@@ -141,6 +139,7 @@ INSTALLED_APPS = (
     'awaazde.payment',
     'captcha',
     'compressor',
+    'django.contrib.humanize',
 )
 
 STATICFILES_FINDERS = (
