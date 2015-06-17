@@ -90,6 +90,10 @@ div.qform
 	clear: both;
 }
 
+.p-t-20 {
+	padding-top: 20px !important;
+}
+
 div.modal-header {
 	border-bottom: none;
 }
@@ -97,9 +101,11 @@ div.modal-header {
 {% endblock %}
 
 {% block content %}
+
 	{% if success %}<div class="alert alert-success fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ success }}</strong></div>{% endif %}
 	{% if error %}<div class="alert alert-error fade in" ><a class="close" data-dismiss="alert">x</a><strong>{{ error }}</strong></div>{% endif %}
-   	<form action="{% url "awaazde.console.views.createsurvey" %}" class="form-horizontal" method="post" id="create-survey-form" enctype="multipart/form-data">
+   
+   	<form action="{% url "awaazde.console.views.createsurvey" %}" class="form-horizontal p-t-20" method="post" id="create-survey-form" enctype="multipart/form-data">
    		{% crispy createform %}
    		{% if question_formset %}
    			{% crispy question_formset question_formset.form.helper %}
@@ -108,6 +114,7 @@ div.modal-header {
    	</form>
    	
    	<div id="modal-container"></div>
+
 {% endblock %}
 
 

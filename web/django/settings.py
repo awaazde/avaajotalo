@@ -135,7 +135,15 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'rest_framework.authtoken',
     'awaazde.payment',
-    'captcha'
+    'captcha',
+    'compressor',
+)
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders..
+    'compressor.finders.CompressorFinder',
 )
 
 ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; we can use a different value.

@@ -1,0 +1,48 @@
+{% extends 'dashboard/base.html' %}
+{% load crispy_forms_tags common_tags %}
+
+{% block title %}Awaaz.De | Add Coupon{% endblock %}
+
+{% block partial %}
+
+
+{% include "dashboard/includes/navmenu.html" with active_tab='user' sub_menu='coupons' %}
+
+<!--Main Content Start -->
+<section class="content">
+	{% include "dashboard/includes/header.html" with active_tab='new_coupons' %}
+
+	<!-- Page Content Start -->
+	<!-- ================== -->
+
+	<div class="wraper container-fluid">
+		<div id="add-coupon-container">
+			
+		</div>
+	
+		<div class="row p-b-20">
+			<div class="col-md-12">
+				<div class="panel panel-default p-b-20 p-t-20" id="search-portlet">
+					<div class="container-xs-height full-height">
+						<div class="row-xs-height p-20">
+							<div class="col-md-12 form-group-sm">
+								
+							
+							{% crispy form form.helper %}
+									
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Page Content Ends -->
+	<!-- ================== -->
+
+
+
+</section>
+<!-- Main Content Ends -->
+
+{% endblock %}
