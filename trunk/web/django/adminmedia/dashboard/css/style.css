@@ -141,6 +141,11 @@ aside.left-panel.lg + .content {
   vertical-align: middle;
 }
 
+.logo-expanded:hover {
+  color: #FFFFFF;
+}
+
+
 /******** 2.2 Navigation *******/
 
 .navigation {

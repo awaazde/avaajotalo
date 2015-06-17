@@ -320,7 +320,7 @@ function($) {
     			    "marginRight": 80,
     			    "autoMarginOffset": 20,
     			    "marginTop": 7,
-    			    "pathToImages": "http://www.amcharts.com/lib/3/images/",
+    			    "pathToImages": "https://www.amcharts.com/lib/3/images/",
     			    "dataProvider": chartData,
     			    "valueAxes": [{
     			        "axisAlpha": 0.2,
@@ -357,7 +357,7 @@ function($) {
     			    "export": {
     			        "enabled": true,
     			        "libs": {
-    			            "path": "http://www.amcharts.com/lib/3/plugins/export/libs/"
+    			            "path": "https://www.amcharts.com/lib/3/plugins/export/libs/"
     			        }
     			    }
     			});
