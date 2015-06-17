@@ -234,8 +234,6 @@ SERIALIZATION_MODULES = {
 
 CORS_ORIGIN_WHITELIST = ('awaaz.de', 'classlynx.co') #allowing classlynx
 
-CORS_ORIGIN_REGEX_WHITELIST = ('^(https?://)?(\w+\.)?awaaz\.de(?::\d{0,9})?)$', '^(http?://)?(\w+\.)?classlynx\.co$')
-
 CORS_ALLOW_HEADERS = (
         'x-requested-with',
         'content-type',
