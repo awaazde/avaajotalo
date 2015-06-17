@@ -1,0 +1,225 @@
+{% extends 'dashboard/base.html' %} 
+{% load crispy_forms_tags %} 
+{% load common_tags %}
+{% block title %}Awaaz.De | Search{% endblock %} 
+{% block extrascripts %}
+
+<script>
+	$.UserSearch.init()
+	$(document).ready(function()
+	{
+		
+		var fields = [];
+		var operator = [];
+		var type = [];
+		var selected_value = [];
+		var selected_andor = [];
+		var selected_operator = [];
+		var selected_field = [];
+		
+		
+		{% for key,data in fields.items  %}
+			
+			fields.push("{{data|get_item:'fieldviewname'}}");
+			operator.push("{{data|get_item:'operator'}}");
+			type.push("{{data|get_item:'type'}}");
+			
+			
+		{% endfor %}
+		
+
+		$.UserSearch.setData(fields,operator,type);
+		
+		
+		{% if searchstring %}
+			$.UserSearch.setSearchString("{{searchstring}}");
+		{% endif %}
+	
+	
+		{% for json in jsonlist %}
+				
+				selected_value.push("{{ json|get_item:'value' }}")
+				selected_andor.push("{{ json|get_item:'andor' }}")
+				selected_operator.push("{{ json|get_item:'operator' }}")
+				selected_field.push("{{ json|get_item:'field' }}")
+
+		{% endfor %}
+		
+		{% if jsonlist %}
+			$.UserSearch.setDefaultData(selected_andor,selected_field,selected_operator,selected_value);
+		{% endif %}
+		
+
+	});
+
+</script>
+
+{% endblock %}
+{% block partial %}
+
+{% include "dashboard/includes/navmenu.html" with active_tab='user' sub_menu='user_search' %}
+
+<!--Main Content Start -->
+<section class="content">
+	{% include "dashboard/includes/header.html" with active_tab='search' %}
+
+	<!-- Page Content Start -->
+	<!-- ================== -->
+
+	<div class="wraper container-fluid">
+		<div id="usersearch-container">
+			
+		</div>
+
+		<div class="row p-b-20 p-t-20">
+			<div class="col-md-12 sm-no-padding">
+				<div class="panel panel-default p-b-20 p-t-20" id="search-portlet">
+					<div class="container-xs-height full-height">
+						<div class="row-xs-height p-b-20">
+							{% autoescape off %}
+							<form class="form-horizontal" id="usersearchform" action=""
+								method="POST">
+								{% csrf_token %}
+
+								<div id="div_id_search" class="form-group-sm">
+									<label for="searchstring" class="form-group col-md-2">
+										Search Query</label>
+									<div class="controls col-sm-7">
+										<input type="text"
+											class="textinput textInput form-control searchstring"
+											placeholder="your search query" id="search_string"
+											name="searchstring">
+									</div>
+
+									<div class="col-sm-3 p-t-5">
+										<a id="advance_search_link" href=""><label
+											class="form-group">Advanced Search</label></a>
+									</div>
+								</div>
+
+								<div id="advance_search_panel" class="p-t-20"
+									style="width: 100%; display: none;" class="row"></div>
+
+								<div Class="row form-group-sm">
+									<div id="advance_search_panel_addfilterbtn"
+										class="col-md-3 col-md-offset-2" style="display: none;">
+
+										<input type="button" class="btn btn-success" id="add_filter"
+											value="ADD Filter">
+
+									</div>
+									<div class="col-md-3 col-md-offset-2">
+										<input type="submit" name="submit" value="Search"
+											class="btn btn-primary btn btn-success " id="submit">
+										<input name="save" value="false" type="hidden" id="saveFlag">
+									</div>
+								</div>
+
+							</form>
+							{% endautoescape %}
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row p-b-20">
+			<div class="col-md-12">
+				<div class="panel panel-default p-b-20 p-t-20" id="search-portlet">
+					<div class="container-xs-height full-height">
+						<div class="row-xs-height p-20">
+							<div class="col-md-12">
+								{% if users %}
+								<table class="table data-table" data-pagesize="10"
+									data-paging="true" id="data-search-table">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Number</th>
+											<th>Email</th>
+											<th>Balance</th>
+											<th>Login/Groups</th>
+											<th>Account Start Date</th>
+											<th>Last Login</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for key,user in users.items %}
+										<tr>
+											<td width="10%">{{ user|get_item:'name' }}</td>
+											<td width="10%">{{ user|get_item:'number' }}</td>
+											<td width="10%">{{ user|get_item:'email' }}</td>
+											<td width="10%">{{ user|get_item:'balance' }}</td>
+											<td width="30%">
+												<p>
+													<strong> 
+													{{ user|get_item:'admin__auth_user__username' }}
+													</strong>
+												</p> 
+													{% with list1=user|get_item:'group' %}
+													{% for u in list1 %}
+														<p>
+														{{ u|get_item:'admin__forum__name' }} - {{ u|get_item:'admin__forum__line__number' }} - {{ u|get_item:'admin__forum__status' }}
+														</p> 
+													{% endfor %} 
+													{% endwith %}
+											</td>
+											<td width="10%">{{ user|get_item:'admin__auth_user__date_joined' }}</td>
+											<td width="10%">{{ user|get_item:'admin__auth_user__last_login' }}</td>
+											<td width="10%">
+												<div class="dropdown">
+													<button class="btn btn-default dropdown-toggle"
+														type="button" id="dropdownMenu1" data-toggle="dropdown"
+														aria-expanded="true">
+														Action <span class="caret"></span>
+													</button>
+
+													<ul class="dropdown-menu" role="menu"
+														aria-labelledby="dropdownMenu1">
+														<li role="presentation" class="accountdetail"><a
+															role="menuitem"
+															href="{% url 'dashboard:settings_param' admin_id=user|get_item:'id' %}">Account
+																Setting</a></li>
+														<li role="presentation" class="streamaccount"><a
+															role="menuitem"
+															href="{% url 'dashboard:settings_param' admin_id=user|get_item:'id' %}">Group
+																/ SMS Setting</a></li>
+														<li role="presentation" class="recharge"><a
+															role="menuitem"
+															href="{% url 'dashboard:settings_param' admin_id=user|get_item:'id' %}">Recharge</a></li>
+													</ul>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+
+								<div>
+									<center>
+										<input id="saveasexcel" class="btn-primary btn btn-success" form="usersearchform" type="submit" value="Save as CSV" />
+									</center>
+
+								</div>
+
+								{% else %} <strong>No users have been found</strong> {% endif %}
+								{% if error %} <span id="show-notification" data-message="{{ error }}" data-type="error"></span> {% endif %}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Page Content Ends -->
+	<!-- ================== -->
+
+
+
+
+</section>
+<!-- Main Content Ends -->
+
+{% endblock %}
