@@ -184,6 +184,18 @@ class ADRouter(object):
             # get the main machine_id
             machine_id = args[1][0] if args[1] is not None else ''
             return {'queue': 'audio_cache'+str(machine_id)}
+        elif task == 'otalo.ao.tasks.cache_audio_file':
+            # get the main machine_id
+            machine_id = args[1][0] if args[1] is not None else ''
+            return {'queue': 'audio_cache'+str(machine_id)}
+        elif task == 'otalo.ao.tasks.cache_audio_file':
+            # get the main machine_id
+            machine_id = args[1][0] if args[1] is not None else ''
+            return {'queue': 'audio_cache'+str(machine_id)}
+        elif task == 'otalo.ao.tasks.cache_message_audio':
+            # get the main machine_id
+            machine_id = args[1][0] if args[1] is not None else ''
+            return {'queue': 'audio_cache'+str(machine_id)}
         return None
 
 CELERY_ROUTES = (ADRouter())
