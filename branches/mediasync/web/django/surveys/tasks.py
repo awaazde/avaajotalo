@@ -20,6 +20,7 @@ from celery.exceptions import MaxRetriesExceededError
 from celery import shared_task
 from celery.task.control import revoke
 from otalo.ao.models import Dialer
+import otalo.ao.tasks
 from otalo.surveys.models import Call, Survey
 from ESL import *
 
@@ -31,6 +32,12 @@ def schedule_call(survey, dialer, subject, priority):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     # reload survey to check status for cancellation
     survey = Survey.objects.get(pk=survey.id)
+    
+    '''
+    ' Making sure that all the required survey audio files present locally, if its not then skipping the scheduling for now
+    '''
+    cached = otalo.ao.tasks.cache_audio(survey, dialer.machine_id)
+    
     '''
     '    Do congestion control down here because we assume
     '    higher level schedulers are *not* sending tasks based on
@@ -77,7 +84,7 @@ def schedule_call(survey, dialer, subject, priority):
     '    To prevent the race condition, have to enforce consistency at the DB level through
     '    unique constraints. Account for the db constraint here by catching the error and simply moving on if it happens.
     '''
-    if con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
+    if cached and con.connected() and get_n_channels(con, dialer) < dialer.max_parallel_out and survey.status != Survey.STATUS_CANCELLED:
         try:
             call = Call.objects.create(survey=survey, dialer=dialer, subject=subject, priority=priority, date=datetime.now())
             

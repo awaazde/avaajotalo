@@ -301,4 +301,9 @@ SWAGGER_SETTINGS = {
 MACHINE_ID = None
 
 
-
+'''
+MEDIA SYNC - folder name for stream, forum and survey
+'''
+SURVEY_FOLDER = 'survey'
+FORUM_FOLDER = 'forum'
+STREAM_FOLDER = 'streamit'
