@@ -1,0 +1,51 @@
+{% extends "registration/registration_base.html" %}
+{% load i18n %}
+{% load common %}
+
+{% block title %}Awaaz.De | Activatation completed{% endblock %}
+
+{% block extrastyle %}
+<style>
+.btn-signup {
+	color: #fff;
+	text-decoration: none;
+	margin-top: 2%;
+	border-bottom: 2px solid transparent;
+}
+
+.btn-signup:hover, .btn-signup:focus {
+	color: #fff;
+	text-decoration: none;
+	border-bottom: 2px solid #f36;
+}
+</style>
+{% endblock %}
+{% block page_content %}
+	<div class="body">
+		<h2>Congratulations! Your account has been activated successfully.</h2>
+	
+		<br class="clear" />
+		<br class="clear" />
+		<p><a class="btn-signup" href="{% settings_value "CONSOLE_ROOT" %}">{% trans 'GET STARTED NOW' %}</a></p>
+		<br class="clear" />
+		
+		<!-- Google Code for web signups Conversion Page -->
+		<script type="text/javascript">
+		/* <![CDATA[ */
+		var google_conversion_id = 979457037;
+		var google_conversion_language = "en";
+		var google_conversion_format = "3";
+		var google_conversion_color = "ffffff";
+		var google_conversion_label = "PokvCObrwlgQjaiF0wM";
+		var google_remarketing_only = false;
+		/* ]]> */
+		</script>
+		<script type="text/javascript" src="//www.googleadservices.com/pagead/conversion.js">
+		</script>
+		<noscript>
+		<div style="display:inline;">
+		<img height="1" width="1" style="border-style:none;" alt="" src="//www.googleadservices.com/pagead/conversion/979457037/?label=PokvCObrwlgQjaiF0wM&amp;guid=ON&amp;script=0"/>
+		</div>
+		</noscript>
+	</div>
+{% endblock %}

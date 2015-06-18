@@ -1,0 +1,231 @@
+{% extends 'dashboard/base.html' %}
+{% load crispy_forms_tags common_tags %}
+{% block title %}Awaaz.De | Report{% endblock %}
+{% block partial %}
+
+{% include "dashboard/includes/navmenu.html" with active_tab='report' %}
+
+<!--Main Content Start -->
+<section class="content">
+	{% include "dashboard/includes/header.html" with active_tab='report' %}
+	{% block subheader %}
+			<div class="row">
+				<div class="col-md-12 ">
+					<div class=" panel">
+						<ul id="graph_menu" class="submenu-main list-inline">
+							{% for chart_name,chart_data in graph_list_dict.items %} 
+							{% for chart_visible in chart_data|get_item:'visible' %} 
+							{% if chart_visible == visible %}
+								<li><a id="{{ chart_name }}" href="">{{chart_data|get_item:'name'}}
+								</a></li> 
+							{% endif %} 
+							{% endfor %} 
+							{% endfor %}
+						</ul>
+						<input type="hidden" id="graph_type"> <input type="hidden"
+							id="chart_data_for_csv">
+					</div>
+				</div>
+			</div>
+		{% endblock %}
+
+	<!-- Page Content Start -->
+	<!-- ================== -->
+
+	<div class="wraper container-fluid">
+		<div id="report-container">
+		
+
+
+			{% csrf_token %}
+			<div>
+				<div class="container-xs-height full-height panel">
+						<div class="row-xs-height">
+							<div class="col-xs-height col-top">
+								<div class="panel-heading ">
+									<div class="panel-title text-black hint-text p-l-20" >
+										<span class="fs-11 all-caps"><h4>Graph Level</h4></span>
+									</div>
+								</div>
+								<div>
+									<div class="row" >
+									
+										<div class="col-md-4 p-b-20 p-t-20" id="select-user-div">			
+											<div class="col-md-2">
+												<h5 class="v-align-middle pull-right text-primary">User </h5>
+											</div>	
+											
+											<div class="col-md-10">
+												<select class="width-100 " id="select-user" data-placeholder="---" >
+													<option></option>
+													{% for admin in admins %}
+															<option id="{{ admin|get_item:'id' }}" value="{{ admin|get_item:'id' }}">{{ admin|get_item:"name" }} ({{ admin|get_item:"number" }} - {{ admin|get_item:"admin__auth_user__username" }})</option>
+													{% endfor %}
+												</select>
+											</div>
+										</div>
+									
+									
+									
+										<div class="col-md-4 p-b-20 p-t-20" id="select-group-div">
+											<div class="col-md-2">
+													<h5 class="v-align-middle pull-right text-primary">Group</h5>
+												</div>	
+												
+												<div class="col-md-10">
+													<select class="width-100 " id="select-group" data-placeholder="---" >
+														<option></option>
+														
+													</select>
+												</div>
+											</div>
+									
+									
+										<div class="col-md-4 p-b-20 p-t-20" id="select-broadcast-div">
+											<div class="col-md-3">
+													<h5 class="v-align-middle pull-right text-primary">Broadcast</h5>
+												</div>	
+												
+												<div class="col-md-9">
+													<select class="width-100 " id="select-broadcast" data-placeholder="---" >
+														<option></option>
+													
+													</select>
+												</div>
+											</div>
+										</div>
+								</div>
+							</div>
+						</div>
+				</div>
+			</div>
+			
+			<div class="row ">
+					
+					<div class="col-md-12" >
+					
+					<div class="panel" style="height : 500px;" >
+					
+						<div class="widget-calls-in" id="calls-dial-pickup-portlet">
+						
+						
+						<div class="container-xs-height full-height">
+							<div class="row-xs-height">
+								
+								<div class="col-xs-height col-top">
+								
+									<div class="panel-heading">
+									
+									<div class="row">
+										<div class="col-md-3">
+											<h4>
+												Graph
+											</h4>					
+										</div>																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													
+										<div class="input-daterange input-group datepickeryyyy-mm-dd col-md-5  p-r-20 pull-left" id="dashboard-datepicker-range">
+											<input type="text" class="input form-control" name="start" id="startdate" /> 
+											<span class="input-group-addon">to</span> 
+											<input type="text" class="input form-control input-group" name="end" id="enddate" />		
+										</div>
+										<div class="col-md-3">
+										<button  id="get_graph_btn" class="btn btn-info">GET GRAPH</button>
+										<button  id="save_as_csv_btn" class="btn btn-success ">Save as .CSV</button>
+										</div>
+									</div>																									
+	
+									</div>										
+								
+								</div>																					
+							
+							</div>
+						</div>
+						
+						
+						<div class="row p-t-20">
+							<div class="col-md-12" style="height:400px;">
+								<div class="widget-calls-in-chart line-chart" id="widget-calls-in-chart"
+									data-area-color="complete-light"																																									
+									data-y-grid="false" data-points="False" data-stroke-width="2"> CALL IN CHART
+									<svg></svg>
+								</div>
+								
+								<div class="widget-calls-in-chart line-chart" id="widget-calls-forward-chart"
+									data-area-color="complete-light"
+									data-y-grid="false" data-points="False" data-stroke-width="2"> CALL FORWARD CHART
+									<svg></svg>
+									</div>
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-calls-dial-vs-pickup-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> DIAL Vs. PICKUP CHART
+										<svg></svg>
+									</div>
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-call-duration-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="true" data-stroke-width="10"> DURATION CHART
+										<svg></svg>
+									</div>
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-call-response-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> RESPONSE CHART
+										<svg></svg>
+									</div>
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-attempt-wise-pickup-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> ATTEMPT WISE PICKUP
+										<svg></svg>
+									</div>
+									
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-total-minute-used-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> TOTAL MINUTE USED OVER TIME
+										<svg></svg>
+									</div>								
+									
+									<div class="widget-calls-in-chart line-chart full-height" id="widget-out-bound-minute-used-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> OUT BOUND MINUTE USED OVER TIME
+										<svg></svg>
+									</div>	
+									
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-in-bound-minute-used-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> IN BOUND TOTAL MINUTE USED OVER TIME
+										<svg></svg>
+									</div>
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-credit-used-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> CREDIT USED
+										<svg></svg>
+									</div>	
+									
+									<div class="widget-calls-in-chart line-chart" id="widget-recharge-chart"
+										data-area-color="complete-light"
+										data-y-grid="false" data-points="False" data-stroke-width="2"> RECHARGE
+										<svg></svg>
+									</div>	
+									
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Page Content Ends -->
+	<!-- ================== -->
+
+
+	
+
+</section>
+<!-- Main Content Ends -->
+
+{% endblock %}

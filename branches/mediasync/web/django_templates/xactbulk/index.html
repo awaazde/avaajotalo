@@ -1,0 +1,97 @@
+{% extends 'registration/base_site.html' %}
+{% load crispy_forms_tags %}
+{% load upload_tags %}
+{% load i18n %}
+
+{% block extrahead %}
+<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-alert.js" type="text/javascript"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-datetimepicker.min.js"></script>
+<link rel="stylesheet" media="all" href="{{ STATIC_URL }}css/bootstrap.css" type="text/css" />
+<link href="{{ STATIC_URL }}css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+
+<style>
+/*
+	Override the style from base.css
+*/
+input[name="btnsubmit"] {
+	background: #0074CC;
+	border-style: solid;
+	border-color: #0074CC;
+	border-width: 1px;
+	color: 	#FFFFFF;
+	padding: 4px 10px; 
+}
+
+input[type="button"]{
+	padding: 4px 10px;
+}
+
+input[type="text"] {
+	border-radius: 0;
+}
+
+#content {
+	margin-top: 20px;
+}
+
+#content .alert {
+	margin-top: 40px;
+}
+
+.form-horizontal {
+	margin-top: 40px;
+}
+
+#field_tabs {
+	padding-top: 40px;
+}
+
+#field_tabs li {
+	list-style: none;
+	font-size: 14px;
+}
+
+.nav-tabs > li {
+	margin-bottom: -2px;
+}
+
+
+.call_url {
+	text-decoration: underline !important;
+	color: #3a87ad !important;
+}
+</style>
+
+{% endblock %}
+
+{% block content %}
+	{% if res_messages %}
+	<div class="alert alert-info fade in" ><a class="close" data-dismiss="alert">&times;</a>
+		{% for message in res_messages %}
+			<p>{% autoescape off %}{{ message.msg }}{% endautoescape %}</p>
+		{% endfor %}
+	{% endif %}
+   	</div>
+   	{% crispy form %}
+   
+   	
+   	{% if postform %}{{ postform|safe }}{% endif %}   	
+{% endblock %}
+
+{% block footer %}
+<script>
+$(document).ready(function() {
+	$("#schedule_on").datetimepicker({
+    	format: "yyyy-mm-ddThh:ii:ss"
+    });
+    
+	//on schedule button submit, passing is submit
+	$("[name=btnsubmit]").on("click", function() {
+		$('.main-form').submit();
+	});
+});
+</script>
+{% endblock %}
+

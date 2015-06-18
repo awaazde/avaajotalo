@@ -1,0 +1,56 @@
+
+<!-- Header -->
+<header class="top-head container-fluid">
+
+	<button type="button" class="navbar-toggle pull-left">
+		<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span>
+		<span class="icon-bar"></span> <span class="icon-bar"></span>
+	</button>
+	
+	<ul class="list-inline top-menu top-right-menu v-align-middle">
+		<li class="header-name">
+		{% if active_tab == 'dashboard' %} Dashboard {% endif %}
+		{% if active_tab == 'search' %} User Search {% endif %}
+		{% if active_tab == 'account_setting' %} Account Setting {% endif %}
+		{% if active_tab == 'signups' %} New Users {% endif %}
+		{% if active_tab == 'coupons' %} Coupon Management {% endif %}
+		{% if active_tab == 'new_coupons' %} Add New Coupon {% endif %}
+		{% if active_tab == 'report' %} Report {% endif %}
+		
+		
+		</li>
+	</ul>
+	
+
+	<!-- Right navbar -->
+	<ul class="list-inline navbar-right top-menu top-right-menu">
+		<li>
+			<!-- Search -->
+			<!--  form role="search" class="app-search">
+				<input type="text" placeholder="Search..." class="form-control">
+			</form-->
+		</li>
+
+		<!-- user login dropdown start-->
+		<li class="dropdown text-center"><a data-toggle="dropdown"
+			class="dropdown-toggle" href="#">   <img alt="" src="/images/logo/logo_new_alt_4.png" 
+			class="img-circle profile-img thumb-sm">  
+				<span class="username"> {{ user.username }} </span> <span class="caret"></span>
+		</a>
+			<ul class="dropdown-menu extended pro-menu fadeInUp animated"
+				tabindex="5003" style="overflow: hidden; outline: none;">
+				<!--li><a href=""> <span aria-hidden="true" class="ion-ios7-locked"></span>&nbsp;&nbsp;<span>Change Password</span></a></li-->
+				<li>
+					<a href="{% url 'logout' %}"> 
+						<span aria-hidden="true" class="ion-log-out"></span>&nbsp;&nbsp;<span>Logout</span></a>
+				</li>
+			</ul></li>
+		<!-- user login dropdown end -->
+	</ul>
+
+	<!-- End right navbar -->
+
+</header>
+<!-- Header Ends -->
+
+{% block subheader %}{% endblock %}

@@ -1,0 +1,227 @@
+{% extends 'dashboard/base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load common_tags %}
+{% block title %}Awaaz.De | Dashboard{% endblock %}
+
+{% block partial %}
+{% include "dashboard/includes/navmenu.html" with active_tab='dashboard' %}
+
+
+ <!--Main Content Start -->
+<section class="content">
+	{% include "dashboard/includes/header.html" with active_tab='dashboard'  %}
+
+
+	<!-- Page Content Start -->
+	<!-- ================== -->
+
+	<div class="wraper container-fluid">
+		<div id="dashboard-container">
+			{% csrf_token %}
+			 <!--Widget-3 -->
+                <div class="row">
+                    <div class="col-md-3 col-sm-6"> 
+                        <div class="tile-stats white-bg"> 
+                            <div class="status">
+                                <h3 class="m-t-0">{{signup_number}}</h3> 
+                                <p>Total Users</p>
+                            </div> 
+                            <div class="chart-inline">
+                                <span class="inlinesparkline"></span> 
+                            </div>
+                        </div> 
+                    </div>
+
+                    <div class="col-md-3 col-sm-6"> 
+                        <div class="tile-stats white-bg"> 
+                            <div class="status">
+                                <h3 class="m-t-0">{{online_recharge|intcomma}}</h3> 
+                                <p>Online Recharge</p>
+                            </div> 
+                            <span class="dynamicbar-big"></span> 
+                        </div> 
+                    </div>
+
+                    <div class="col-md-3 col-sm-6"> 
+                        <div class="tile-stats white-bg"> 
+                            <div class="status">
+                                <h3 class="m-t-0">{{credit|intcomma}}</h3> 
+                                <p>Credit Purchased</p>
+                            </div> 
+                            <span id="compositeline"></span> 
+                        </div> 
+                    </div>
+
+                    <div class="col-md-3 col-sm-6"> 
+                        <div class="tile-stats white-bg"> 
+                            <div class="col-sm-8">
+                                <div class="status">
+                                <h3 class="m-t-15">{{minute_used|intcomma}}</h3> 
+                                <p>Minute Used</p>
+                            </div> 
+                            </div>
+                            <div class="col-sm-4 m-t-20">
+                                <span class="sparkpie-big"></span> 
+                            </div>
+                        </div> 
+                    </div>
+                </div> <!-- End row -->
+
+
+			<!-- BAR Chart -->
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="portlet panel-default">
+						<!-- /primary heading -->
+						<div class="portlet-heading">
+							<h3 class="portlet-title text-dark">Realtime Calls</h3>
+							<div class="portlet-widgets">
+								 <a data-toggle="collapse" data-parent="#accordion1"
+									href="#bg-default"><i class="ion-minus-round"></i></a> <span
+									class="divider"></span> <a href="#" data-toggle="remove"><i
+									class="ion-close-round"></i></a>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						<div id="bg-default" class="panel-collapse collapse in">
+							<div class="portlet-body">
+								<div id="linechart"></div>
+							</div>
+						</div>
+					</div>
+					<!-- /Portlet -->
+				</div>
+				<!-- col -->
+				
+				<div class="col-lg-6">
+                        <div class="portlet"><!-- /primary heading -->
+                            <div class="portlet-heading">
+                                <h3 class="portlet-title text-dark">
+                                    Total Minutes
+                                </h3>
+                                <div class="portlet-widgets">
+                                    
+                                    
+                                    <a data-toggle="collapse" data-parent="#accordion1" href="#portlet5"><i class="ion-minus-round"></i></a>
+                                    <span class="divider"></span>
+                                    <a href="#" data-toggle="remove"><i class="ion-close-round"></i></a>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div id="portlet5" class="panel-collapse collapse in">
+                                <div class="portlet-body">
+                                    <div id="lineplotchart"></div>
+                                </div>
+                            </div>
+                        </div> <!-- /Portlet -->
+                    </div>
+			</div>
+			<!-- End row-->
+
+
+			<!-- BAR Chart -->
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="portlet panel-default">
+						<!-- /primary heading -->
+						<div class="portlet-heading">
+							<h3 class="portlet-title text-dark">Top Users (s)</h3>
+							<div class="portlet-widgets">
+								    <a data-toggle="collapse" data-parent="#accordion1" href="#portlet6"><i class="ion-minus-round"></i></a>
+                                    <span class="divider"></span>
+                                    <a href="#" data-toggle="remove"><i class="ion-close-round"></i></a>
+							</div>
+						</div>
+						<div id="portlet6" class="panel-collapse collapse in">
+							<div class="portlet-body">
+								<div class="row">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<div class="p-t-20">
+											<table class="table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Email</th>
+														<th>Number</th>
+														<th>Joined On</th>
+														<th>Actions</th>
+													</tr>
+												</thead>
+												<tbody>
+												
+													{% for u in users%}
+													<tr>
+														<td>{{ u|get_item:'name' }}</td>
+														<td><a href="mailto:{{ u|get_item:'email' }}">{{ u|get_item:'email' }}</a></td>
+														<td>{{ u|get_item:'number'}}</td>
+														<td>{{ u|get_item:'admin__auth_user__date_joined' }}</td>
+														<td>
+															<div class="dropdown">
+																<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+																Action <span class="caret"></span>
+																</button>
+	
+																<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+																	<li role="presentation" class="accountdetail">
+																		<a role="menuitem" href="{% url 'dashboard:settings_param' admin_id=u|get_item:'user' %}">
+																		Account Setting</a>
+																	</li>
+																	<li role="presentation" class="streamaccount"><a role="menuitem" href="{% url 'dashboard:settings_param' admin_id=u|get_item:'user' %}">
+																	Group / SMS Setting</a>
+																	</li>
+																	<li role="presentation" class="recharge"><a role="menuitem" href="{% url 'dashboard:settings_param' admin_id=u|get_item:'user' %}">
+																	Recharge</a>
+																	</li>
+																</ul>
+															</div>		
+														</td>
+													</tr>
+													{% endfor %}
+													
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Page Content Ends -->
+	<!-- ================== -->
+
+	<!-- Footer Start -->
+	<footer class="footer"> 2015 © Awaaz.De </footer>
+	<!-- Footer Ends -->
+
+</section>
+<!-- Main Content Ends -->
+
+{% endblock %}
+
+{% block extrascripts %}
+
+<script>
+	
+	$.DashboardPage.init();
+	$(document).ready(function()
+	{
+		var graph_url_data = {};
+		graph_url_data["live_call_past_data"] = "{% url 'dashboard:live_call_past_data' %}";
+		graph_url_data["live_call_last_15sec_data"] = "{% url 'dashboard:live_call_last_15sec_data' %}";
+		graph_url_data["call_vs_pickup_last_month_data"] = "{% url 'dashboard:call_vs_pickup_last_month_data' %}";
+		graph_url_data["home_portal_signup_per_month"] = "{% url 'dashboard:home_portal_signup_per_month' %}";
+		graph_url_data["home_portal_recharge_per_month"] = "{% url 'dashboard:home_portal_recharge_per_month' %}";
+		graph_url_data["home_portal_credit_used_per_month"] = "{% url 'dashboard:home_portal_credit_used_per_month' %}";
+		graph_url_data["home_portal_minute_used_per_month"] = "{% url 'dashboard:home_portal_minute_used_per_month' %}";
+		
+		$.DashboardPage.set_graph_urls(graph_url_data);
+	});
+
+</script>
+
+{% endblock %}
