@@ -13,12 +13,14 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #===============================================================================
+import re
 from datetime import datetime, timedelta
 from celery import shared_task
 from haystack.management.commands import update_index
 from otalo.utils import audio_utils
 import broadcast
 from otalo.ao.models import Dialer
+from otalo.surveys.models import Prompt
 
 '''
 '    Helper function to run periodic tasks with the scheduler
@@ -88,11 +90,31 @@ def cache_survey_audio(s, dialers=None):
         cache_audio.s().delay(s, mid)
 
 '''
-'    Stash audio for this survey at this machine
+'   Download audio file from master server at this machine
 '''
 @shared_task
 def cache_audio(s, machine_id):
-    audio_utils.cache_survey_audio(s)
+    is_cached = True
+    for p in Prompt.objects.filter(survey=s):
+        is_cached = is_cached and audio_utils.cache_survey_audio(str(p.file))
+    
+    return is_cached
+
+
+'''
+' Download audio file from master server at this machine
+'''
+@shared_task
+def cache_audio_file(file, machine_id):
+    audio_utils.cache_survey_audio(file)
+
+'''
+' Download audio file from master server at this machine
+'''
+@shared_task
+def cache_message_audio(mf, machine_id):
+    audio_utils.cache_survey_audio(re.sub('\\' + settings.MEDIA_ROOT + '$', '', str(mf.message.file)))
+
         
 '''
 '    Update haystack search index
@@ -100,3 +122,9 @@ def cache_audio(s, machine_id):
 @shared_task(time_limit=300)
 def update_search_index(interval_hours):
     update_index.Command().handle(age=interval_hours)
+
+
+
+@shared_task
+def sync_media(file):
+    audio_utils.sync_media(file)
