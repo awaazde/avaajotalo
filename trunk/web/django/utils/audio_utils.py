@@ -84,7 +84,7 @@ def cache_audio(filepath):
                 try:
                     os.makedirs(dir)
                 except OSError:
-                    if os.path.exists(dirname):
+                    if os.path.exists(dir):
                         # We are nearly safe
                         pass
                     else:
