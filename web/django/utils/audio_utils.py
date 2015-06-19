@@ -83,12 +83,12 @@ def cache_audio(filepath):
             if not os.path.exists(dir):
                 try:
                     os.makedirs(dir)
-                except OSError:
+                except OSError as err:
                     if os.path.exists(dir):
                         # We are nearly safe
                         pass
                     else:
-                        print "Error while creating new dir " + dir + ", error: " + str(e)
+                        print "Error while creating new dir " + dir + ", error: " + str(err)
                         return False
             localFile = open(filepath, 'w')
             localFile.write(u.read())
