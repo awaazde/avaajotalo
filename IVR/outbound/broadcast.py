@@ -26,7 +26,7 @@ from otalo.surveys import tasks as surveytasks
 # this is a circular reference, so change
 # how we import slightly to avoid importErrors
 # (see http://stackoverflow.com/a/746067/199754)
-import otalo.ao.tasks
+import otalo.utils.sync_utils
 
 SOUND_EXT = ".wav"
 OUTBOUND_SOUNDS_SUBDIR = 'forum/outbound/'
@@ -289,7 +289,7 @@ def schedule_bcasts(time=None, dialers=None):
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
             if not scheduled_subjs.exists():
                 # no calls have been scheduled yet, so prefetch the audio
-                prefetches[bcast] = otalo.ao.tasks.cache_survey_audio.s(bcast)
+                prefetches[bcast] = otalo.utils.sync_utils.sync_survey_files(bcast)
             # next line purely for query optimization purposes
             scheduled_subjs = [subj.values()[0] for subj in scheduled_subjs]
             recipients = bcast.subjects.all()
