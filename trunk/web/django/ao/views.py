@@ -21,7 +21,7 @@ from django.shortcuts import render_to_response, get_object_or_404, get_list_or_
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext
-from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership
+from otalo.ao.models import Line, Forum, Message, Message_forum, User, Tag, Forum_tag, Message_responder, Admin, Membership, Dialer
 from otalo.surveys.models import Survey, Prompt, Input, Call, Option
 from otalo.sms.models import SMSMessage
 from otalo.sms import sms_utils
@@ -472,7 +472,7 @@ def record_or_upload_message(request):
         '''
         syncing message file to all the machines, getting machine id's from dialers associated with the selected group's line 
         '''
-        sync_utils.sync_file((mf.message.file.path), mf.forum.line_set.all()[0].dialers.all())
+        sync_utils.sync_file((mf.message.file.path), Dialer.objects.filter(line__forums=mf.forum))
         
         # do this after createmessage so that an answer call will use the wav file
         # which was just saved above
