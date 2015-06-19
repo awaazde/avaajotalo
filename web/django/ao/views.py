@@ -43,6 +43,7 @@ from django.contrib.messages.context_processors import messages
 from django.core.paginator import Paginator
 from django.contrib.admin.templatetags.admin_list import results
 import subprocess
+from otalo.utils import sync_utils
 
 # Only keep these around as legacy
 MESSAGE_STATUS_PENDING = Message_forum.STATUS_PENDING
@@ -467,6 +468,11 @@ def record_or_upload_message(request):
             f = get_object_or_404(Forum, pk=params['forumid'])
             
         mf = createmessage(f, main, author, parent, date)
+        
+        '''
+        syncing message file to all the machines, getting machine id's from dialers associated with the selected group's line 
+        '''
+        sync_utils.sync_file(str(mf.message.file.path), mf.forum.line_set.all()[0].dialers.all())
         
         # do this after createmessage so that an answer call will use the wav file
         # which was just saved above

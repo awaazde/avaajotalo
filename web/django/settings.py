@@ -180,7 +180,7 @@ class ADRouter(object):
             dialer = args[1]
             machine_id = dialer.machine_id or ''
             return {'queue': 'calls'+str(machine_id)}
-        elif task == 'otalo.ao.tasks.cache_audio':
+        elif task == 'otalo.tasks.sync_survey_audio' or task == 'otalo.tasks.sync_audio_file':
             # get the main machine_id
             machine_id = args[1][0] if args[1] is not None else ''
             return {'queue': 'audio_cache'+str(machine_id)}
