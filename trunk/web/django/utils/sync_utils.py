@@ -1,6 +1,7 @@
 import os
 from os import listdir
 from os.path import isfile, join
+from celery import shared_task
 from otalo.ao.models import Line, Dialer
 from otalo import tasks
 
@@ -38,6 +39,7 @@ def sync_folder(filedir, dialers):
 ' Sync all files from given survey from master server in the slave machine
 '
 '''
+@shared_task
 def sync_survey_files(survey):
     machine_ids = get_unique_machines(survey.dialers.all())
     
@@ -51,7 +53,7 @@ def get_unique_machines(dialers):
     machine_ids = []
     
     for d in dialers:
-        machine_ids.append(d.machine_id[0])
+        machine_ids.append(d.machine_id[0] if d.machine_id else None)
         machine_ids = list(set(machine_ids))
     
     return machine_ids
