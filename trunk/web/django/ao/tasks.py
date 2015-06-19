@@ -78,7 +78,3 @@ def convert_audio(interval_mins):
 def update_search_index(interval_hours):
     update_index.Command().handle(age=interval_hours)
 
-
-@shared_task
-def sync_media(file):
-    audio_utils.sync_media(file)
