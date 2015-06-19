@@ -472,7 +472,7 @@ def record_or_upload_message(request):
         '''
         syncing message file to all the machines, getting machine id's from dialers associated with the selected group's line 
         '''
-        sync_utils.sync_file(str(mf.message.file.path), mf.forum.line_set.all()[0].dialers.all())
+        sync_utils.sync_file((mf.message.file.path), mf.forum.line_set.all()[0].dialers.all())
         
         # do this after createmessage so that an answer call will use the wav file
         # which was just saved above
