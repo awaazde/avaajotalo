@@ -60,12 +60,12 @@
 }
 
 .top-text h4 {
-	color: #0a8fd5;
+	color: #FDBC00;
 	font-weight: 700;
 }
 
 .custom-link a,.control-label a {
-	color: #0a8fd5;
+	color: #FDBC00;
 	text-decoration: none;
 }
 
@@ -74,23 +74,24 @@
 }
 
 input[type="text"],input[type="number"] {
-	font-size: 13px;
+	font-size: 14px;
 	color: #323a45;
-	border: 1px solid #e8ecef;
-	-webkit-transition: border 0.4s;
-	-moz-transition: border 0.4s;
-	transition: border 0.4s;
+	border: 1px solid #cbccd0;
+	-webkit-transition: border .4s;
+	-moz-transition: border .4s;
+	transition: border .4s;
 	box-shadow: none;
-	border-width: 2px;
 	padding-top: 5px;
 	padding-bottom: 5px;
-	border-radius: 4px;
+	border-radius: 3px;
+	width: 100%;
+	height: 40px;
+	padding-left: 8px;
+	margin-bottom: 10px;
 }
-
-input[type="text"]:focus,input[type="password"]:focus,input[type="email"]:focus,select.payment-select:focus
-	{
+input[type="text"]:focus,input[type="password"]:focus,input[type="email"]:focus,select.payment-select:focus {
 	outline: none;
-	border-color: #d0d4d7;
+	border-color: #FDBC00;
 	box-shadow: none;
 }
 
@@ -109,11 +110,18 @@ select.payment-select {
 }
 
 .checkbox .custom-checkbox {
-	border: 1px solid #0a8fd5;
+	border: 1px solid #FDBC00;
+	background: #FDBC00;
 }
 
-.checkbox input[type="checkbox"]:checked + .custom-checkbox {
-	border-color: #0a8fd5;
+.checkbox input[type="checkbox"]:checked + .custom-checkbox,
+.radio input[type="radio"]:checked + .custom-c-radio,
+.checkbox .custom-c-checkbox, .radio .custom-c-radio {
+	border-color: #FDBC00;
+}
+
+.slider-handle, .slider-selection {
+	background-color: #FDBC00;
 }
 input[type='checkbox'] + span:hover:after, input[type='checkbox']:checked + span:after {
   content: '';
@@ -166,10 +174,35 @@ input[type='checkbox'] + span:hover:after, input[type='checkbox']:checked + span
 	padding-bottom: 9px;
 }
 
+.btn-blue {
+	background-color: #0a8fd5;
+	border-color: #0a8fd5;
+	color: #ffffff;
+	border-radius: 0px;
+	border-bottom: 2px solid rgba(0,0,0,0.2);
+}
+
 .btn-apply:hover,.btn-apply:focus {
 	color: #fff;
 }
 
+.btn-primary {
+	background: #FDBC00;
+	border-color: #FDBC00;
+	color: #fff;
+	border-bottom: 2px solid rgba(0,0,0,0.2);
+	border-radius: 0!important;
+	padding: 9px 15px;
+	font-weight: 700;
+	font-size: 15px;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
+	background: #FFB62C;
+	border-color: #FFB62C;
+	border-bottom: 2px solid rgba(0,0,0,0.2);
+	color: #fff;
+}
 #pricing-container {
 	margin-top: 70px;
 }
@@ -254,6 +287,12 @@ p.text-mute {
 
 .m-rad {
 	margin-left: -16px !important;
+}
+.logo_image {
+	width: 60px;
+}
+#footer .footer-logo-text {
+	color: #666666;
 }
 </style>
 {% endblock %} 
@@ -430,7 +469,7 @@ p.text-mute {
 						<div class="row">
 							<div
 								class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 field">
-								<button type="submit" class="btn btn-price btn-green" id="btnpay">
+								<button type="submit" class="btn btn-price btn-primary" id="btnpay">
 									Pay Rs. <span id="total_prbtn">5,398</span>
 								</button>
 							</div>
@@ -461,7 +500,7 @@ p.text-mute {
 	<div class="container FadeIn">
 		<div class="row">
 			<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 col">
-				<img src="/img/logo_alt_2.png" alt="awaazde" />
+				<img src="/images/logo/logo_new_f.png" alt="awaazde" class="logo_image"/>
 				<h3 class="footer-logo-text">Awaaz.De</h3>
 				<h6>last mile mobile technology</h6>
 			</div>
