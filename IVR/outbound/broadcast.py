@@ -23,7 +23,6 @@ from otalo.ao.models import Forum, Line, Message_forum, Message, User, Tag, Dial
 from otalo.surveys.models import Survey, Subject, Call, Prompt, Option, Param
 import otalo_utils, stats_by_phone_num
 from otalo.surveys import tasks as surveytasks
-from otalo.utils import sync_utils
 
 SOUND_EXT = ".wav"
 OUTBOUND_SOUNDS_SUBDIR = 'forum/outbound/'
@@ -35,9 +34,6 @@ DEFAULT_CALL_THRESHOLD = 2
 # Wait at least this many
 # mins before sending a backup call
 BACKUP_THRESH_MINS = 30
-
-# making this a minute for calls awaiting an audio prefetch
-PREFETCH_BUFFER_SECS = 1 * 60
 
 def subjects_by_numbers(numbers):
     # clean up the numbers, but don't limit to 10-digit (to alllow int'l bcasts)
@@ -263,7 +259,6 @@ def schedule_bcasts(time=None, dialers=None):
         '''
         new_bcasts = {}
         backups = {}
-        prefetches = {}
         
         '''
         '    Get all possible numbers rather than relying on
@@ -284,9 +279,6 @@ def schedule_bcasts(time=None, dialers=None):
         for bcast in bcasts:
             #print("pending bcast: "+ str(bcast))
             scheduled_subjs = Call.objects.filter(survey=bcast).values('subject__number').distinct()
-            if not scheduled_subjs.exists():
-                # no calls have been scheduled yet, so prefetch the audio
-                prefetches[bcast] = sync_utils.sync_survey_files.s(bcast)
             # next line purely for query optimization purposes
             scheduled_subjs = [subj.values()[0] for subj in scheduled_subjs]
             recipients = bcast.subjects.all()
@@ -343,22 +335,14 @@ def schedule_bcasts(time=None, dialers=None):
                     continue
                 priority = latest_call.priority + 1
             
-            # Use si for immutable subtasks, to be used with the chain below in case there is a prefetch
-            # Don't pass on the result of the prefetch task as an arg to the calls 
-            calls.append(surveytasks.schedule_call.si(survey, dialer, subject, priority))
-            #calls.append(surveytasks.test_task.si(survey, dialer, subject, priority, bcasttime))
+            calls.append(surveytasks.schedule_call.s(survey, dialer, subject, priority))
+            #calls.append(surveytasks.test_task.s(survey, dialer, subject, priority, bcasttime))
             
             scheduled.append(subject)
             num_scheduled += 1
             
-            if calls:
-                prefetch = prefetches.get(survey,None)
-                if prefetch:
-                    g = group([t.set(countdown=PREFETCH_BUFFER_SECS) for t in calls])
-                    (prefetch | g).delay()
-                else:
-                    g = group([t for t in calls])
-                    g.delay()
+            g = group([t for t in calls])
+            g.delay()
             
 
 '''
