@@ -39,7 +39,6 @@ def sync_folder(filedir, dialers):
 ' Sync all files from given survey from master server in the slave machine
 '
 '''
-@shared_task
 def sync_survey_files(survey):
     machine_ids = get_unique_machines(survey.dialers.all())
     
