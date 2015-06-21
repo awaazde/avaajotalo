@@ -1,7 +1,6 @@
 import os
 from os import listdir
 from os.path import isfile, join
-from celery import shared_task
 from otalo.ao.models import Line, Dialer
 from otalo import tasks
 
