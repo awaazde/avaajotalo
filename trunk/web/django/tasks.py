@@ -26,7 +26,7 @@ from otalo.surveys.models import Prompt
 ' Sync the survey prompt audio on the give machine - we need it because of survey task - before creating call, 
 ' we are calling this method to check if all survey files are present
 '''
-@shared_task
+@shared_task(time_limit=300)
 def sync_survey_audio(s, machine_id):
     is_cached = True
     for p in Prompt.objects.filter(survey=s):
@@ -40,7 +40,7 @@ def sync_survey_audio(s, machine_id):
 ' file parameter is a full file path e.g. /home/awaazde/media/forum/sefc_hindi/listen.wav or stream file
 ' like /home/awaazde/media/2015/01/01/2015_02922323.wav
 '''
-@shared_task
+@shared_task(time_limit=300)
 def sync_audio_file(file, machine_id):
     audio_utils.cache_audio(file)
 
