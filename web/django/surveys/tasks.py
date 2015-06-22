@@ -27,7 +27,7 @@ from ESL import *
 
 BCAST_SCRIPT= 'AO/outbound/survey.lua'
    
-@shared_task
+@shared_task(time_limit=300)
 def schedule_call(survey, dialer, subject, priority):
     con = ESLconnection('127.0.0.1', '8021', 'ClueCon')
     # reload survey to check status for cancellation
