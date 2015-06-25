@@ -29,6 +29,7 @@
 											<th>Name</th>
 											<th>Number</th>
 											<th>Email ID</th>
+											<th>Last message date</th>
 											<th>Join Date</th>
 										</tr>
 									</thead>
@@ -38,6 +39,8 @@
 											<td>{{ u|get_item:'admin__user__name' }}</td>
 											<td>{{ u|get_item:'admin__user__number'}}</td>
 											<td>{{ u|get_item:'email' }}</td>
+											
+											<td>{{ u|get_item:'message__date' }}</td>
 											<td>{{ u|get_item:'date_joined' }}</td>
 										</tr>
 										{% endfor %}
@@ -45,6 +48,12 @@
 								</table>
 								{% endif %}
 							</div>
+							<center>
+							<form class="form-horizontal" id="signupuserform" action="" method="POST">
+							 {% csrf_token %}
+								<input id="saveasexcel" class="btn dashboard-btn" type="submit" value="Save as CSV" />
+							</form>
+							</center>
 						</div>
 					</div>
 				</div>

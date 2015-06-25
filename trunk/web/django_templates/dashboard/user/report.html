@@ -34,7 +34,10 @@
 
 	<div class="wraper container-fluid">
 		<div id="report-container">
-		
+			
+			<div class="alert alert-danger" id="success-alert" role="alert" hidden="true" >
+				
+			</div>
 
 
 			{% csrf_token %}
@@ -50,13 +53,15 @@
 								<div>
 									<div class="row" >
 									
+									{% if request.user.is_superuser or request.user.is_staff %}
+									
 										<div class="col-md-4 p-b-20 p-t-20" id="select-user-div">			
 											<div class="col-md-2">
 												<h5 class="v-align-middle pull-right text-primary">User </h5>
 											</div>	
 											
 											<div class="col-md-10">
-												<select class="width-100 " id="select-user" data-placeholder="---" >
+												<select class="width-100 user-select-c" id="select-user" data-placeholder="---" >
 													<option></option>
 													{% for admin in admins %}
 															<option id="{{ admin|get_item:'id' }}" value="{{ admin|get_item:'id' }}">{{ admin|get_item:"name" }} ({{ admin|get_item:"number" }} - {{ admin|get_item:"admin__auth_user__username" }})</option>
@@ -65,6 +70,11 @@
 											</div>
 										</div>
 									
+									{% else %}
+									
+									<input type="hidden" id="select-user" value= "{{user_id}}">
+									
+									{% endif %}
 									
 									
 										<div class="col-md-4 p-b-20 p-t-20" id="select-group-div">
@@ -104,7 +114,7 @@
 					
 					<div class="col-md-12" >
 					
-					<div class="panel" style="height : 500px;" >
+					<div class="panel" style="height : 600px;" >
 					
 						<div class="widget-calls-in" id="calls-dial-pickup-portlet">
 						
@@ -122,15 +132,16 @@
 												Graph
 											</h4>					
 										</div>																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													
-										<div class="input-daterange input-group datepickeryyyy-mm-dd col-md-5  p-r-20 pull-left" id="dashboard-datepicker-range">
+										<div class="col-md-2 pull-right">
+										<button  id="get_graph_btn" class="btn dashboard-btn">Submit</button>
+										<button  id="save_as_csv_btn" class="btn dashboard-btn">Export</button>
+										</div>
+										<div class="input-daterange input-group datepickeryyyy-mm-dd col-md-5  p-r-20 pull-right" id="dashboard-datepicker-range">
 											<input type="text" class="input form-control" name="start" id="startdate" /> 
 											<span class="input-group-addon">to</span> 
 											<input type="text" class="input form-control input-group" name="end" id="enddate" />		
 										</div>
-										<div class="col-md-3">
-										<button  id="get_graph_btn" class="btn btn-info">GET GRAPH</button>
-										<button  id="save_as_csv_btn" class="btn btn-success ">Save as .CSV</button>
-										</div>
+										
 									</div>																									
 	
 									</div>										
@@ -141,63 +152,55 @@
 						</div>
 						
 						
-						<div class="row p-t-20">
-							<div class="col-md-12" style="height:400px;">
-								<div class="widget-calls-in-chart line-chart" id="widget-calls-in-chart"
-									data-area-color="complete-light"																																									
-									data-y-grid="false" data-points="False" data-stroke-width="2"> CALL IN CHART
-									<svg></svg>
+						<div class="row p-t-20 panel-body">
+							
+							<div class="chart-main-class" style="height:440px; padding-top:35px;">
+								
+								<div class="chart" id="widget-calls-in-chart"> CALL IN CHART
+					                     <span class="call-in-chart"></span> 
 								</div>
 								
-								<div class="widget-calls-in-chart line-chart" id="widget-calls-forward-chart"
-									data-area-color="complete-light"
-									data-y-grid="false" data-points="False" data-stroke-width="2"> CALL FORWARD CHART
-									<svg></svg>
-									</div>
+								<div class="chart" id="widget-calls-forward-chart"> CALL FORWARD CHART
+					                     <span class="call-in-chart"></span> 
+								</div>
+								
+								<div class="chart" id="widget-calls-dial-vs-pickup-chart"> DIAL Vs. PICKUP CHART
+					                     <span class="call-in-chart"></span> 
+								</div>
+								
+							
 									
-									<div class="widget-calls-in-chart line-chart" id="widget-calls-dial-vs-pickup-chart"
-										data-area-color="complete-light"
-										data-y-grid="false" data-points="False" data-stroke-width="2"> DIAL Vs. PICKUP CHART
-										<svg></svg>
-									</div>
-									
-									<div class="widget-calls-in-chart line-chart" id="widget-call-duration-chart"
+								<div class="widget-calls-in-chart line-chart" id="widget-call-duration-chart"
 										data-area-color="complete-light"
 										data-y-grid="false" data-points="true" data-stroke-width="10"> DURATION CHART
 										<svg></svg>
-									</div>
+								</div>
 									
-									<div class="widget-calls-in-chart line-chart" id="widget-call-response-chart"
+								<div class="widget-calls-in-chart line-chart" id="widget-call-response-chart"
 										data-area-color="complete-light"
 										data-y-grid="false" data-points="False" data-stroke-width="2"> RESPONSE CHART
 										<svg></svg>
-									</div>
+								</div>
 									
-									<div class="widget-calls-in-chart line-chart" id="widget-attempt-wise-pickup-chart"
+								<div class="widget-calls-in-chart line-chart" id="widget-attempt-wise-pickup-chart"
 										data-area-color="complete-light"
 										data-y-grid="false" data-points="False" data-stroke-width="2"> ATTEMPT WISE PICKUP
 										<svg></svg>
-									</div>
+								</div>
 									
 									
-									<div class="widget-calls-in-chart line-chart" id="widget-total-minute-used-chart"
+								<div class="widget-calls-in-chart line-chart" id="widget-total-minute-used-chart"
 										data-area-color="complete-light"
 										data-y-grid="false" data-points="False" data-stroke-width="2"> TOTAL MINUTE USED OVER TIME
 										<svg></svg>
-									</div>								
+								</div>								
 									
-									<div class="widget-calls-in-chart line-chart full-height" id="widget-out-bound-minute-used-chart"
+									<div class="widget-calls-in-chart line-chart full-height" id="widget-total-call-count-chart"
 										data-area-color="complete-light"
-										data-y-grid="false" data-points="False" data-stroke-width="2"> OUT BOUND MINUTE USED OVER TIME
+										data-y-grid="false" data-points="False" data-stroke-width="2"> CALL COUNT OVER TIME
 										<svg></svg>
 									</div>	
 									
-									
-									<div class="widget-calls-in-chart line-chart" id="widget-in-bound-minute-used-chart"
-										data-area-color="complete-light"
-										data-y-grid="false" data-points="False" data-stroke-width="2"> IN BOUND TOTAL MINUTE USED OVER TIME
-										<svg></svg>
-									</div>
 									
 									<div class="widget-calls-in-chart line-chart" id="widget-credit-used-chart"
 										data-area-color="complete-light"
@@ -210,7 +213,7 @@
 										data-y-grid="false" data-points="False" data-stroke-width="2"> RECHARGE
 										<svg></svg>
 									</div>	
-									
+									<span id="show-notification" data-message="{{ error }}" data-type="error" hidden="true"></span>
 								</div>
 							</div>
 						</div>
@@ -227,5 +230,21 @@
 
 </section>
 <!-- Main Content Ends -->
+
+{% endblock %}
+
+{% block extrascripts %}
+
+<script>
+	
+	$.ReportPage.init();
+	$(document).ready(function()
+	{		
+		var graph_url_data = {};
+		graph_url_data["report"] = "{% url 'dashboard:report_get_graph_data' %}";
+		$.ReportPage.set_graph_urls(graph_url_data);
+	});
+
+</script>
 
 {% endblock %}

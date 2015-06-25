@@ -65,56 +65,62 @@
 
 	<!-- Page Content Start -->
 	<!-- ================== -->
-
+	{% if error %} 
+		<div class="alert alert-danger" role="alert">  {{ error }}  </div>
+	{% endif %}
 	<div class="wraper container-fluid">
 		<div id="usersearch-container">
 			
 		</div>
 
-		<div class="row p-b-20 p-t-20">
+		<div class="row p-b-20">
 			<div class="col-md-12 sm-no-padding">
 				<div class="panel panel-default p-b-20 p-t-20" id="search-portlet">
 					<div class="container-xs-height full-height">
 						<div class="row-xs-height p-b-20">
 							{% autoescape off %}
-							<form class="form-horizontal" id="usersearchform" action=""
-								method="POST">
+							<form class="form-horizontal" id="usersearchform" action="" method="POST">
 								{% csrf_token %}
-
-								<div id="div_id_search" class="form-group-sm">
-									<label for="searchstring" class="form-group col-md-2">
-										Search Query</label>
-									<div class="controls col-sm-7">
-										<input type="text"
-											class="textinput textInput form-control searchstring"
-											placeholder="your search query" id="search_string"
-											name="searchstring">
+								
+								<div id="div_id_search" class="form-group">
+									<label for="searchstring" class="control-label col-sm-1 col-custom-label">
+										Search Word
+									</label>
+									<div class="col-sm-8">
+										<input type="text" class="textinput textInput form-control searchstring"
+											placeholder="Your search word" id="search_string" name="searchstring">
 									</div>
+									<div class="col-sm-2">
+										<a id="advance_search_link" href="" class="btn btn-link">Advanced Search</a>
+									</div>
+									
+								</div>								
+								<!--  jquery show hide won't work if we use hide class because of !important in hide class -->
+								<div id="advance_search_panel" class="p-t-20 row" style="display: none;">
+								</div>
+								
+								<div class="row">
+									<div class="col-sm-9 col-custom-label">
+										<div Class="form-group">
+											<div id="advance_search_panel_addfilterbtn" class="pull-right" style="display:none;">
+												<input type="button" class="btn btn-default"
+													id="add_filter" value="Add Filter">
 
-									<div class="col-sm-3 p-t-5">
-										<a id="advance_search_link" href=""><label
-											class="form-group">Advanced Search</label></a>
+											</div>
+										</div>
 									</div>
 								</div>
-
-								<div id="advance_search_panel" class="p-t-20"
-									style="width: 100%; display: none;" class="row"></div>
-
-								<div Class="row form-group-sm">
-									<div id="advance_search_panel_addfilterbtn"
-										class="col-md-3 col-md-offset-2" style="display: none;">
-
-										<input type="button" class="btn btn-success" id="add_filter"
-											value="ADD Filter">
-
-									</div>
-									<div class="col-md-3 col-md-offset-2">
-										<input type="submit" name="submit" value="Search"
-											class="btn btn-primary btn btn-success " id="submit">
-										<input name="save" value="false" type="hidden" id="saveFlag">
+								
+								<!--  search button -->
+								<div class="row">
+									<div class="col-sm-12">
+										<div class="p-t-20 pull-right">
+											<input type="submit" name="submit" value="Search"
+												class="btn dashboard-btn" id="submit"> <input
+												name="save" value="false" type="hidden" id="saveFlag">
+										</div>
 									</div>
 								</div>
-
 							</form>
 							{% endautoescape %}
 
@@ -142,7 +148,9 @@
 											<th>Login/Groups</th>
 											<th>Account Start Date</th>
 											<th>Last Login</th>
+											{% if is_superuser %}
 											<th></th>
+											{% endif %}
 										</tr>
 									</thead>
 									<tbody>
@@ -168,6 +176,7 @@
 											</td>
 											<td width="10%">{{ user|get_item:'admin__auth_user__date_joined' }}</td>
 											<td width="10%">{{ user|get_item:'admin__auth_user__last_login' }}</td>
+											{% if is_superuser %}
 											<td width="10%">
 												<div class="dropdown">
 													<button class="btn btn-default dropdown-toggle"
@@ -192,6 +201,7 @@
 													</ul>
 												</div>
 											</td>
+											{% endif %}
 										</tr>
 										{% endfor %}
 									</tbody>
@@ -199,13 +209,13 @@
 
 								<div>
 									<center>
-										<input id="saveasexcel" class="btn-primary btn btn-success" form="usersearchform" type="submit" value="Save as CSV" />
+										<input id="saveasexcel" class="btn dashboard-btn" form="usersearchform" type="submit" value="Save as CSV" />
 									</center>
 
 								</div>
 
 								{% else %} <strong>No users have been found</strong> {% endif %}
-								{% if error %} <span id="show-notification" data-message="{{ error }}" data-type="error"></span> {% endif %}
+								
 							</div>
 						</div>
 					</div>

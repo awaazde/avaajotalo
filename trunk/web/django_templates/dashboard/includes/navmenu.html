@@ -6,9 +6,9 @@
 <aside class="left-panel">
 	<!-- brand -->
 	<div class="logo">
-		<a href="{% url 'dashboard:home' %}" class="logo-expanded"> <span
-			class="nav-label">Awaaz.De</span>
-		</a>
+			<a href="{% url 'dashboard:home' %}" class="logo-expanded"> <span
+				class="nav-label">Awaaz.De</span>
+			</a>
 	</div>
 	<!-- / brand -->
 
@@ -16,22 +16,31 @@
 	<nav class="navigation">
 		<ul class="list-unstyled">
 		
+		{% if request.user.is_staff %}	
 			<li class="has-submenu {% if active_tab == 'dashboard' %}active{% endif %}"><a href="{% url 'dashboard:home' %}"><i
 					class="ion-ios7-pulse-strong"></i> <span class="nav-label">Dashboard</span></a></li>
 			<li class="has-submenu {% if active_tab == 'user' %}active{% endif %}"><a href="#"><i class="ion-ios7-people"></i>
 					<span class="nav-label">User Management</span></a>
 				<ul class="list-unstyled">
 					<li class="{% if sub_menu == 'user_search' %}active{% endif %}"><a href="{% url 'dashboard:search' %}">Search</a></li>
+			{% if request.user.is_superuser %}
 					<li class="{% if sub_menu == 'account_setting' %}active{% endif %}"><a href="{% url 'dashboard:settings' %}">Account Settings</a></li>
+			{% endif %}
 					<li class="{% if sub_menu == 'signups' %}active{% endif %}"><a href="{% url 'dashboard:signups' %}">New Users</a></li>
+			{% if request.user.is_superuser %}
 					<li class="{% if sub_menu == 'coupons' %}active{% endif %}"><a href="{% url 'dashboard:coupon' %}">Coupons</a></li>
+			{% endif %}
 				</ul>
 			</li>
-			
 			<li class="has-submenu {% if active_tab == 'report' %}active{% endif %}"><a href="{% url 'dashboard:report' %}"><i
-					class="ion-stats-bars"></i> <span class="nav-label">Reports</span></a></li>
+					class="ion-stats-bars"></i> <span class="nav-label">Report</span></a></li>
+		{% else %}
+			<li><a href="{% settings_value "CONSOLE_ROOT" %}"><i class="ion-home"></i>
+			 <span class="nav-label">Home</span></a></li>	
+			<li class="has-submenu {% if active_tab == 'report' %}active{% endif %}"><a href="{% url 'dashboard:report' %}"><i
+					class="ion-stats-bars"></i> <span class="nav-label">Dashboard</span></a></li>
+		{% endif %}
 		</ul>
 	</nav>
-
 </aside>
 <!-- Aside Ends-->

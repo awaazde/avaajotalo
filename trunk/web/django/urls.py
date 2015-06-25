@@ -46,6 +46,6 @@ urlpatterns = patterns('',
     (r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', 'django.contrib.auth.views.password_reset_confirm', {'post_reset_redirect' : settings.PROJECT_MOUNT_POINT+'/accounts/password/done/'}),
     (r'^accounts/password/done/$', 
         'django.contrib.auth.views.password_reset_complete'),
-    (r'^logout/$', 'otalo.views.log_out'),
+    url(r'^logout/$', 'otalo.views.log_out',name="logout"),
     (r'^captcha/', include('captcha.urls')),
 )

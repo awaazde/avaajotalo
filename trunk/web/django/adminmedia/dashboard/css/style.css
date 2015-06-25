@@ -134,7 +134,7 @@ aside.left-panel.lg + .content {
   font-size: 28px;
   padding: 0px 25px;
   font-weight: 600;
-  color: #fd7037;
+  color: #FDBC00;
 }
 
 .logo-expanded span {
@@ -2171,31 +2171,55 @@ small, .small {
 
 
 /* ------------ call in ----------*/
+
 .widget-calls-in .row-xs-height:nth-child(1) {
     height: 10px;
     width: 100%;
 }
 .widget-calls-in .row-xs-height:nth-child(2) {
-    height: 500px;
+    height: 600px;
     width: 100%;
 }
 .widget-calls-in .row-xs-height:nth-child(3) {
     height: 100%;
     width: 100%;
 }
-.widget-calls-in-chart {
-    height: 100%;
-    width: 100%;
-    bottom: 0;
-    position: absolute;
-    right: 0;
+
+
+.chart-main-class {
+    width: 95%;
+    padding-left: 20px !important;
 }
+
+.chart-main-class canvas {
+    height: 100% !important;
+    width: 100% !important;
+    max-height: 400px !important;
+
+}
+
+
+.chart-main-class .widget-calls-in-chart {
+    height: 100% !important;
+    width: 100% !important;
+    max-height: 400px !important;
+}
+
+.chart-main-class .chart {
+    height: 100% !important;
+    width: 100% !important;
+    max-height: 400px !important;
+}
+
+
+/*
 .widget-calls-in-chart.line-chart .tick text, .widget-calls-in-chart .line-chart .nvd3 .nv-axis .nv-axisMaxMin text {
     transform: translate(-10px, -32px);
 }
+
 .widget-calls-in-chart .nvtooltip .nv-pointer-events-none thead {
     display: none;
-}
+}*/
 .widget-calls-in-chart .nvtooltip .nv-pointer-events-none tbody .nv-pointer-events-none .key {
    
 }
@@ -2248,4 +2272,39 @@ small, .small {
 	border-color: black;
 	color: #fd7037;
 	
+}
+
+.jqstooltip {
+	background-color: #414550 !important;
+	color: #ffffff !important;
+	min-height: 55px !important;
+	font-size: 30px !important;
+	font-weight: bold !important;
+	min-width: 180px; !important;
+}
+
+.rickshaw_graph .detail .item {
+	font-size: 18px !important;
+}
+.rickshaw_graph .detail .x_label {
+opacity: 1;
+display:none;
+}
+
+.dashboard-btn {
+	background-color: #FDBC00;
+	border-color: #FDBC00;
+	color: white;
+	border-bottom: 2px solid rgba(0,0,0,0.2);
+}
+
+.dashboard-btn:hover {
+	color: #73590B !important;
+	background-color: #FDBC00 ;
+	border-color: #FDBC00 ;
+	border-bottom: 2px solid rgba(0,0,0,0.2);
+}
+
+.col-custom-label {
+	width: 10%;
 }
