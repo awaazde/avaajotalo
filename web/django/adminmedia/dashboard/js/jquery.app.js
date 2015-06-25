@@ -5,71 +5,6 @@
 
 ! function($) {
     "use strict";
-    var Notification = function(container, options) {
-        function SimpleNotification() {
-            if (self.notification.addClass("notif-simple"), self.alert.append(self.options.message), self.options.showClose) {
-                var close = $('<button type="button" class="close" data-dismiss="alert"></button>').append('<span aria-hidden="true">&times;</span>').append('<span class="sr-only">Close</span>');
-                self.alert.prepend(close)
-            }
-        }
-
-        function BarNotification() {
-            if (self.notification.addClass("notif-bar"), self.alert.append("<span>" + self.options.message + "</span>"), self.alert.addClass("alert-" + self.options.type), self.options.showClose) {
-                var close = $('<button type="button" class="close" data-dismiss="alert"></button>').append('<span aria-hidden="true">&times;</span>').append('<span class="sr-only">Close</span>');
-                self.alert.prepend(close)
-            }
-        }
-
-        function CircleNotification() {
-            self.notification.addClass("notif-circle");
-            var table = "<div>";
-            self.options.thumbnail && (table += '<div class="pgn-thumbnail"><div>' + self.options.thumbnail + "</div></div>"), table += '<div class="notif-message"><div>', self.options.title && (table += '<p class="bold">' + self.options.title + "</p>"), table += "<p>" + self.options.message + "</p></div></div>", table += "</div>", self.options.showClose && (table += '<button type="button" class="close" data-dismiss="alert">', table += '<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>', table += "</button>"), self.alert.append(table), self.alert.after('<div class="clearfix"></div>')
-        }
-
-        function FlipNotification() {
-            if (self.notification.addClass("notif-flip"), self.alert.append("<span>" + self.options.message + "</span>"), self.options.showClose) {
-                var close = $('<button type="button" class="close" data-dismiss="alert"></button>').append('<span aria-hidden="true">&times;</span>').append('<span class="sr-only">Close</span>');
-                self.alert.prepend(close)
-            }
-        }
-        var self = this;
-        return self.container = $(container), self.notification = $('<div class="notif"></div>'), 
-        	self.options = $.extend(!0, {}, $.fn.appNotification.defaults, options), 
-        	self.container.find(".notif-wrapper[data-position=" + this.options.position + "]").length ? self.wrapper = $(".notif-wrapper[data-position=" + this.options.position + "]") : (self.wrapper = $('<div class="notif-wrapper" data-position="' + this.options.position + '"></div>'), 
-        			self.container.append(self.wrapper)), 
-        			self.alert = $('<div class="alert"></div>'), 
-        			self.alert.addClass("alert-" + self.options.type), 
-        			"bar" == self.options.style ? new BarNotification : "flip" == self.options.style ? new FlipNotification : "circle" == self.options.style ? new CircleNotification : ("simple" == self.options.style, new SimpleNotification), 
-        					self.notification.append(self.alert), self.alert.on("closed.bs.alert", function() {
-        						self.notification.remove(), self.options.onClosed()
-        					}), this
-    };
-    Notification.VERSION = "1.0.0", Notification.prototype.show = function() {
-        this.wrapper.prepend(this.notification), 
-        this.options.onShown(), 
-        0 != this.options.timeout && setTimeout(function() {
-        	var $this = this;
-            this.notification.fadeOut("slow", function() {
-                $(this).remove(), 
-                $this.options.onClosed()
-            })
-        }.bind(this), this.options.timeout)
-    }, $.fn.appNotification = function(options) {
-        return new Notification(this, options)
-    }, $.fn.appNotification.defaults = {
-        style: "simple",
-        message: null,
-        position: "top-right",
-        type: "info",
-        showClose: !0,
-        timeout: 3e3,
-        onShown: function() {},
-        onClosed: function() {}
-    }
-}(window.jQuery),
-
-function($) {
-    "use strict";
 
     function Plugin(option) {
         return this.each(function() {
@@ -293,90 +228,232 @@ function($) {
         return rgba
     },
     
-    Graph.prototype.zoom_line_chart = function(chart_json_data,div_id,chart_display_id){
+     Graph.prototype.call_count_zoom_line_chart = function(chart_json_data,div_id,chart_display_id) {
+    	
     	$(div_id).show();
-    	var chart_data = chart_json_data["data"];
-    	var key = chart_json_data["key"];
+    	var in_bound_call_count_data = [];
+    	var date = [];
+    	var inbound = chart_json_data.inbound_call_count;
+    	var outbound_dial = chart_json_data.outbound_dial_call_count;
+    	var outbound_pickup = chart_json_data.outbound_pickup_call_count;
+    	
+    	$.each(inbound.data, function(key, value) {
+    		in_bound_call_count_data.push(parseInt(value));
+    		date.push(key);
+    	});  
+    	
+    	var out_bound_dial_call_count_data = [];
+    	$.each(outbound_dial.data, function(key, value) {
+    		out_bound_dial_call_count_data.push(parseInt(value));
+    	});  
+    	
+    	var out_bound_pickup_call_count_data = [];
+    	$.each(outbound_pickup.data, function(key, value) {
+    		out_bound_pickup_call_count_data.push(parseInt(value));
+    	});  
+    	
+    	
+    	var string_data = "Date,Inbound Calls, Dial Calls, Pickup Calls\n";
     	var $this = this;
-    	var chartData = [];
-    	
-    	$.each(chart_data, function(date,total_minutes) {
-    		var final_date = new Date(date);
-    	
-    	    chartData.push({
-	              date: final_date,
-	              visits: total_minutes
-	          });
-    		
-    	    
-    	});
+    	for (var i=0; i < in_bound_call_count_data.length; i++ )
+    	{
+    		string_data = string_data + date[i] +"," + in_bound_call_count_data[i]+ "," + out_bound_dial_call_count_data[i];
+    		string_data = string_data + " , " + out_bound_pickup_call_count_data[i] + "\n";
 
-
-    	nv.addGraph(function() {
-    		  //var chartData = generateChartData();
-    		  var chart = AmCharts.makeChart(chart_display_id, {
-    			    "type": "serial",
-    			    "theme": "light",
-    			    "marginRight": 80,
-    			    "autoMarginOffset": 20,
-    			    "marginTop": 7,
-    			    "pathToImages": "https://www.amcharts.com/lib/3/images/",
-    			    "dataProvider": chartData,
-    			    "valueAxes": [{
-    			        "axisAlpha": 0.2,
-    			        "dashLength": 1,
-    			        "position": "left"
-    			    }],
-    			    "mouseWheelZoomEnabled": true,
-    			    "graphs": [{
-    			        "id": "g1",
-    			        "balloonText": "[[category]]<br/><b><span style='font-size:14px;'>"+ key +": [[value]]</span></b>",
-    			        "bullet": "round",
-    			        "bulletBorderAlpha": 1,
-    			        "bulletColor": "#FFFFFF",
-    			        "hideBulletsCount": 50,
-    			        "title": "red line",
-    			        "valueField": "visits",
-    			        "useLineColorForBulletBorder": true
-    			    }],
-    			    "chartScrollbar": {
-    			        "autoGridCount": true,
-    			        "graph": "g1",
-    			        "scrollbarHeight": 40
-    			    },
-    			    "chartCursor": {
-
-    			    },
-    			    "categoryField": "date",
-    			    "categoryAxis": {
-    			        "parseDates": true,
-    			        "axisColor": "#DADADA",
-    			        "dashLength": 1,
-    			        "minorGridEnabled": true
-    			    },
-    			    "export": {
-    			        "enabled": true,
-    			        "libs": {
-    			            "path": "https://www.amcharts.com/lib/3/plugins/export/libs/"
-    			        }
-    			    }
-    			});
-    		  chart.addListener("rendered", zoomChart);
-    		  zoomChart();
-
-    		  // this method is called when chart is first inited as we listen for "dataUpdated" event
-    		  function zoomChart() {
-    		      // different zoom methods can be used - zoomToIndexes, zoomToDates, zoomToCategoryValues
-    		      chart.zoomToIndexes(chartData.length - 40, chartData.length - 1);
-    		  }
-
-  		    $(div_id).data('chart', chart);
-      		$this.$callsInGraph = chart; 
-      		return chart;
-    		});
-    }
+    	}
     
+    	var g = new Dygraph(document.getElementById(chart_display_id),string_data,{
+            // options go here. See http://dygraphs.com/options.html
+    		
+    		animatedZooms : true,
+    	    title: 'CALL COUNT',
+            xlabel: 'Date',
+            ylabel: 'Minutes',
+            colors : ["#fd7037", "#333b4d", "#337ab7"],
+            highlightCircleSize : 7,
+            
+        });
+    	return g;
+    	
+    },
+    
+    Graph.prototype.recharge_line_chart = function(chart_json_data,div_id,chart_display_id,graph_name) {
+    	$(div_id).show(chart_json_data);
+    	
+    	var date = [];
+    	var recharge = [];
+    	$.each(chart_json_data.data, function(key, value) {
+    		recharge.push(parseInt(value));
+    		date.push(key);
+    	});  
+    	
+    	var string_data = "Date," + chart_json_data["key"] +"\n";
+    	var $this = this;
+    	for (var i=0; i < recharge.length; i++ )
+    	{
+    		string_data = string_data + date[i] +"," + recharge[i]+ "\n";
 
+    	}
+    
+    	var g = new Dygraph(document.getElementById(chart_display_id),string_data,{
+            // options go here. See http://dygraphs.com/options.html
+    		
+    		animatedZooms : true,
+    	    title: graph_name,
+            xlabel: 'Date',
+            ylabel: 'Rupess',
+            colors : ["#fd7037"],
+            highlightCircleSize : 7,
+            
+        });
+    	return g;
+    	
+    },
+    
+    Graph.prototype.single_line_chart = function(chart_json_data,div_id,chart_display_id,graph_name) {
+    	$(div_id).show();
+    	
+    	var data = [];
+    	var hour = [];
+    	for (var i = 0; i<24;i++)
+    	{
+    		if(chart_json_data["data"].hasOwnProperty(i)){
+    			data.push(chart_json_data["data"][i])
+    		}
+    		else
+    		{
+    			data.push(0);
+    		}
+    		
+    		hour.push(i);
+    	}
+    	
+    	var string_data = "Hour,"+chart_json_data["key"]+"\n";
+    	var $this = this;
+    	for (var i=0; i < hour.length; i++ )
+    	{
+    		string_data = string_data +  hour[i] +", " +  data[i] + "\n";
+
+    	}
+    
+    	var g = new Dygraph(document.getElementById(chart_display_id),string_data,{
+            // options go here. See http://dygraphs.com/options.html
+    		animatedZooms : false,
+    		height : "95%",
+    		width : "95%",
+    	    title: graph_name,
+            xlabel: 'Hour',
+            ylabel: 'Call Count',
+            colors : ["#fd7037"],
+            highlightCircleSize : 7,
+            interactionModel : null,
+            
+            
+        });
+    	return g;
+    	
+    },
+    
+    
+    
+    Graph.prototype.double_line_chart = function( total_dial_call,total_pickup_call,div_id,chart_display_id,graph_name) {
+    	$(div_id).show();
+    	var dial_call_data = [];
+     	var pickup_call_data = [];
+     	var hour = [];
+     	
+     	
+     	for (var i = 0; i<24;i++)
+    	{
+    		if(total_dial_call["data"].hasOwnProperty(i)){
+    			dial_call_data.push(total_dial_call["data"][i])
+    		}
+    		else
+    		{
+    			dial_call_data.push(0);
+    		}
+    		
+    		if(total_pickup_call["data"].hasOwnProperty(i)){
+    			pickup_call_data.push(total_pickup_call["data"][i])
+    		}
+    		else
+    		{
+    			pickup_call_data.push(0);
+    		}
+    		
+    		hour.push(i);
+    	}
+     	
+     	var string_data = "Hour,"+total_dial_call["key"]+ "," +total_pickup_call["key"] + "\n";
+    	var $this = this;
+    	for (var i=0; i < hour.length; i++ )
+    	{
+    		string_data = string_data + hour[i] +","+ dial_call_data[i] +", " +  pickup_call_data[i] +"\n";
+
+    	}
+    
+    	var g = new Dygraph(document.getElementById(chart_display_id),string_data,{
+            // options go here. See http://dygraphs.com/options.html
+    		animatedZooms : false,
+    		height : "95%",
+    		width : "95%",
+    	    title: graph_name,
+            xlabel: 'Hour',
+            ylabel: 'Call Count',
+            colors : ["#fd7037",  "#333b4d"],
+            highlightCircleSize : 7,
+            interactionModel : null,
+        });
+    	return g;
+},
+
+    
+    
+    
+    
+    
+    Graph.prototype.minute_used_zoom_line_chart = function(chart_json_data,div_id,chart_display_id) {
+    	$(div_id).show();
+    	var in_bound_minute_used_data = [];
+    	var date = [];
+    	var inbound = chart_json_data.inbound_minute_used;
+    	var outbound = chart_json_data.outbound_minute_used;
+    	
+    	
+    	$.each(inbound.data, function(key, value) {
+    		in_bound_minute_used_data.push(parseInt(value)/60);
+    		date.push(key);
+    	});  
+    	
+    	var out_bound_minute_used_data = [];
+    	$.each(outbound.data, function(key, value) {
+    		out_bound_minute_used_data.push(parseInt(value)/60);
+    	});  
+    	    
+    	var string_data = "Date,Outbound Minute, Inbound Minute, Total Minute\n";
+    	var $this = this;
+    	for (var i=0; i < in_bound_minute_used_data.length; i++ )
+    	{
+    		string_data = string_data + date[i] +"," + out_bound_minute_used_data[i]+ "," + in_bound_minute_used_data[i];
+    		string_data = string_data + " , " + (out_bound_minute_used_data[i]+in_bound_minute_used_data[i]) + "\n";
+
+    	}
+    
+    	var g = new Dygraph(document.getElementById(chart_display_id),string_data,{
+            // options go here. See http://dygraphs.com/options.html
+    		
+    		animatedZooms : true,
+    	    title: 'Total Minute Used',
+            xlabel: 'Date',
+            ylabel: 'Minutes',
+            colors : ["#fd7037", "#333b4d", "#337ab7"],
+            highlightCircleSize : 7,
+            
+        });
+    	return g;
+    	
+    },
+  
     Graph.prototype.bar_chart = function(chart_json_data,div_id){
     	$(div_id).show();
     	var $this = this;
@@ -397,14 +474,22 @@ function($) {
 	    var final_graph_data = [];
 	    final_graph_data.push(finaldata);
 	    $(".widget-calls-in-chart svg").empty();
+	    
+	    var tooltip = function(key, x, y, e, graph) {
+	        return '<br/> <h3> Second : ' + key + '</h3>' +
+	               '<p> Count' +  y + '</p>';
+	    };
+	    
     	nv.addGraph(function() {
     		  var chart = nv.models.discreteBarChart()
     		      .x(function(d) { return d.label })    //Specify the data accessors.
     		      .y(function(d) { return d.value })
     		      .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
-    		      .tooltips(false)        //Don't show tooltips
-    		      .showValues(true);       //...instead, show the bar value right on top of each bar.
-    		      //.transitionDuration(350);
+    		      .tooltips(tooltip)        //Don't show tooltips
+    		      .showValues(true);    //...instead, show the bar value right on top of each bar.
+    		
+    		  chart.yAxis.axisLabel("Call Counts");
+    		  chart.xAxis.axisLabel("Seconds");
     		  
     		  d3.select(div_id +'> svg').datum(final_graph_data).call(chart);
   		    
@@ -459,119 +544,7 @@ function($) {
     		});
     },
     
-    Graph.prototype.single_line_chart = function(chart_data,div_id) {
-    	
-    	$(div_id).show();
-    	var data1 = [];
-    	
-    
-    	$.each(chart_data.data, function(key, value) {
-    		var values = [];
-    	    values.push(parseInt(key));
-    	    values.push(value);
-    	    data1.push(values);
-    	});													
-    	
-        var $this = this;
-    	
-    	var data = 
-    	            
-    			[{
-    				key: chart_data.key,
-    				area: true,
-    				values: data1,
-    				color: "#2222ff"
-    			}];
-    	
-    	nv.addGraph(function() {
-    		var chart = nv.models.lineChart().x(function(d) {
-    			return d[0]
-    		}).y(function(d) {
-    			return d[1]
-    		}).color([$this.getColor('complete')]).forceY([0, 2]).useInteractiveGuideline(true).margin({
-    				top: 60,
-    	            right: -10,
-    	            bottom: -10,
-    	            left: -10
-    		}).showLegend(false);
-    		
-    		
-    		d3.select(div_id +'> svg').datum(data).transition().duration(500).call(chart);
-
-    		nv.utils.windowResize(function() {
-    			chart.update();
-    		});
-    		
-    		$(div_id).data('chart', chart);
-    		chart.update();
-    		return chart;
-    	});
-    	
-    	
-        },
-        
-    Graph.prototype.double_line_chart = function( total_dial_call,total_pickup_call,div_id) {
-        	$(div_id).show();
-        	var dial_call_data = [];
-        	$.each(total_dial_call.data, function(key, value) {
-        		var values = [];
-        	    values.push(parseInt(key));
-        	    values.push(value);
-        	    dial_call_data.push(values);
-        	});  
-        	
-        	var pickup_call_data = [];
-        	$.each(total_pickup_call.data, function(key, value) {
-        		var values = [];
-        	    values.push(parseInt(key));
-        	    values.push(value);
-        	    pickup_call_data.push(values);
-        	}); 
-    
-    var $this = this;
-	
-	var data =  [
-	            
-			{
-				key: total_dial_call.key,
-				area: true,
-				values: dial_call_data,
-				color: "#2222ff"
-			},
-			
-			{
-				key: total_pickup_call.key,
-				area: true,
-				values: pickup_call_data,
-				color: "#667711"
-			}
-	          ];
-
-	nv.addGraph(function() {
-		var chart = nv.models.lineChart().x(function(d) {
-			return d[0]
-		}).y(function(d) {
-			return d[1]
-		}).color([$this.getColor('complete')]).forceY([0, 2]).useInteractiveGuideline(true).margin({
-				top: 60,
-	            right: -10,
-	            bottom: -10,
-	            left: -10
-		}).showLegend(false);
-		
-		d3.select(div_id +'> svg').datum(data).transition().duration(500).call(chart);
-		nv.utils.windowResize(function() {
-			chart.update();
-		});
-		
-		$(div_id).data('chart', chart);
-		$this.$callsInGraph = chart; 
-		return chart;
-	});
-	
-	
-    },
-    
+     
     $.Graph = new Graph, $.Graph.Constructor = Graph
     
 }(window.jQuery),
@@ -606,12 +579,9 @@ function($) {
     	if($this.$errorContainer.length > 0) {
     		var type = $this.$errorContainer.attr('data-type');
     		var msg = $this.$errorContainer.attr('data-message'); 
-    		$('body').appNotification({
-                style: 'bar',
-                message: msg,
-                position: 'top',
-                type: type
-            }).show();
+    		
+    		
+    	
     	}
     	
     	//removing - hack
@@ -670,8 +640,7 @@ function($) {
         this.$graph_attend_wise_pickup = $("#attend_wise_pickup"),
         this.$graph_call_duration = $("#call_duration"),
         this.$graph_total_minute_used = $("#total_minute_used"),
-        this.$graph_in_bound_minute_used = $("#in_bound_minute_used"),
-        this.$graph_out_bound_minute_used = $("#out_bound_minute_used"),
+        this.$graph_total_call_count = $("#total_call_count"),
         this.$graph_credit_used = $("#credit_used"),
         this.$graph_recharge = $("#recharge"),
         
@@ -688,10 +657,10 @@ function($) {
         this.$widget_call_response_chart = $("#widget-call-response-chart"),
         this.$widget_call_duration_chart = $("#widget-call-duration-chart"),
         this.$widget_total_minute_used_chart = $("#widget-total-minute-used-chart"),
-        this.$widget_in_bound_minute_used_chart = $("#widget-in-bound-minute-used-chart"),
-        this.$widget_out_bound_minute_used_chart = $("#widget-out-bound-minute-used-chart"),
         this.$widget_credit_used_chart = $("#widget-credit-used-chart"),
         this.$widget_recharge_chart = $("#widget-recharge-chart"),
+        this.$widget_total_call_count_chart = $("#widget-total-call-count-chart"),
+        
         
         this.$get_graph_btn = $("#get_graph_btn"),
         this.$save_as_csv_btn = $("#save_as_csv_btn"),
@@ -703,10 +672,27 @@ function($) {
         
         this.visible,
         this.chart_list
-    
+        this.graph_url_data;
     };
     
-    
+    ReportPage.prototype.set_graph_urls = function(data)
+    {
+    	var $this = this;
+    	this.graph_url_data = data;
+    	
+    	if($(".user-select-c").length > 0)
+    	{
+    		console.log("");
+    	}
+    	else
+    	{
+    		
+    		$.ReportPage.select_user_event($this.$userselect.val());
+    		$this.$select_group_div.show();
+    	}
+    	this.$get_graph_btn.trigger('click');
+    }
+  
     ReportPage.prototype.set_visible_level = function(visible_level) {
     	this.visible = visible_level;
     }
@@ -838,11 +824,30 @@ function($) {
 	    this.$widget_call_response_chart.hide();
 	    this.$widget_call_duration_chart.hide();
 	    this.$widget_total_minute_used_chart.hide();
-	    this.$widget_in_bound_minute_used_chart.hide();
-	    this.$widget_out_bound_minute_used_chart.hide();
 	    this.$widget_credit_used_chart.hide();
 	    this.$widget_recharge_chart.hide();
+	    this.$widget_total_call_count_chart.hide();
 	}
+    
+    ReportPage.prototype.show_error = function(error){
+    	
+    	$("#success-alert").empty();
+		if (error.status == 403)
+		{
+			$("#success-alert").append("<p> You are not allowed to access this data. </p>");
+			$("#success-alert").fadeTo(6000, 500).slideUp(500, function(){
+				$("#success-alert").alert('close');
+			});
+		}
+		else
+		{
+			$("#success-alert").append("<p> Somthing want wrong please try again or contact our support </p>");
+			$("#success-alert").fadeTo(6000, 500).slideUp(500, function(){
+				$("#success-alert").alert('close');
+			});
+		}
+    	
+    }
     
     ReportPage.prototype.get_dial_vs_pickup_graph = function(chart_id) {
     	
@@ -851,7 +856,7 @@ function($) {
         var $this = this;
     	
         $.ajax({
-				url: "", 
+        		url: $this.graph_url_data["report"], 
 				method: "POST", 
 	
 				data : 
@@ -859,16 +864,19 @@ function($) {
 				selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
 				
-				complete: function (response) 
+				success: function (response) 
 				{
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 					$.Graph.init();
-					
-					$this.$chart_data_for_csv.val(response.responseText); 
-					
-					$.Graph.double_line_chart(graph_data.total_dial_call,graph_data.total_pickup_call,$this.$widget_calls_dial_vs_pickup_chart.selector);
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
+					$.Graph.double_line_chart(graph_data.total_dial_call,graph_data.total_pickup_call,$this.$widget_calls_dial_vs_pickup_chart.selector, "widget-calls-dial-vs-pickup-chart","Attempts vs. Pickup over time");
 				},
-				
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },
 				dataType: 'json',	
 			});
     }
@@ -880,7 +888,7 @@ function($) {
     	var $this = this;
     	
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				
 				data :
@@ -888,18 +896,22 @@ function($) {
 				selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
   	
-				complete: function (response) 
+				success: function (response) 
 				{
 					
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 					
 					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText); 
-					
-					$.Graph.single_line_chart(graph_data.call_in,$this.$widget_calls_in_chart.selector);
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
+					$.Graph.single_line_chart(graph_data.call_in,$this.$widget_calls_in_chart.selector,"widget-calls-in-chart","Call-In over time");
   		
 				},
-				
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },
 				dataType: 'json',
 			});
     }
@@ -911,23 +923,28 @@ function($) {
     	
     	var $this = this;
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				data : 
 				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
 				selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
   		
-				complete: function (response) 
+				success: function (response) 
 				{
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 					
 					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText); 
-					
-					$.Graph.single_line_chart(graph_data.forward,$this.$widget_calls_forward_chart.selector);
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
+					$.Graph.single_line_chart(graph_data.forward,$this.$widget_calls_forward_chart.selector,"widget-calls-forward-chart","Call Forward over time");
   		
 				},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },
 				dataType: 'json',
 			});
     }
@@ -937,23 +954,28 @@ function($) {
     	$.ReportPage.hide_all_graph();
     	var $this = this;
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				data : 
 				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
 				selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
   	
-				complete: function (response) 
+				success: function (response) 
 				{
 	  		
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 
 					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText); 
-
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
 					$.Graph.pie_chart(graph_data.attemp_wise_pickup,$this.$widget_attempt_wise_pickup_chart.selector);
 				},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },
 				dataType: 'json',	
 			});
 	}
@@ -964,23 +986,28 @@ function($) {
     	
     	var $this = this;
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				data :
 				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
 				selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
   	
-				complete: function (response) 
+				success: function (response) 
 				{
 		  		
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 
 					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText); 
-
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
 					$.Graph.bar_chart(graph_data.duration,$this.$widget_call_duration_chart.selector);
 		  		},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },
 			dataType: 'json',	
 		});
 	}
@@ -993,27 +1020,66 @@ function($) {
     	var $this = this;
     	 
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				data : 
 				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
     			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
     	
-				complete: function (response) 
+				success: function (response) 
 				{
     		
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 
 					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText); 
-
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
 					$.Graph.pie_chart(graph_data.response_graph,$this.$widget_call_response_chart.selector);
 			 
-				},dataType: 'json',	
+				},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },dataType: 'json',	
 			});
     
 	}
+
+    ReportPage.prototype.get_total_call_count_graph = function(chart_id)
+    {
+    	
+    	$.ReportPage.hide_all_graph();
+        
+    	var $this = this;
+    	$this.$widget_total_call_count_chart.show();
+    	
+    	$.ajax({
+    			url: $this.graph_url_data["report"],
+				method: "POST",
+				data : 
+				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
+    			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
+				},
+    	
+				success: function (response) 
+				{
+					var graph_data = response;
+					$.Graph.init();
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
+					$.Graph.call_count_zoom_line_chart(graph_data,$this.$widget_total_call_count_chart.selector,"widget-total-call-count-chart");
+				},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },dataType: 'json',	
+			});
+	}
+   
+
     
     ReportPage.prototype.get_total_minute_used_graph = function(chart_id)
     {
@@ -1025,77 +1091,29 @@ function($) {
     	$this.$widget_total_minute_used_chart.show();
     	
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				data : 
 				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
     			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
     	
-				complete: function (response) 
+				success: function (response) 
 				{
-					var graph_data = jQuery.parseJSON(response.responseText);
-					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText); 
-					$.Graph.zoom_line_chart(graph_data.total_minute_used,$this.$widget_total_minute_used_chart.selector,"widget-total-minute-used-chart");
-			 
-				},dataType: 'json',	
+					var graph_data = response;
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data); 
+					$.Graph.minute_used_zoom_line_chart(graph_data,$this.$widget_total_minute_used_chart.selector,"widget-total-minute-used-chart");
+				},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },dataType: 'json',	
 			});
 	}
    
-    ReportPage.prototype.get_in_bound_minute_used_graph = function(chart_id)
-    {
-        $.ReportPage.hide_all_graph();
-    	var $this = this; 
-    	$this.$widget_in_bound_minute_used_chart.show();
-    	$.ajax({
-				url: "",
-				method: "POST",
-				data : 
-				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
-    			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
-				},
-    	
-				complete: function (response) 
-				{
-					var graph_data = jQuery.parseJSON(response.responseText);
-					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText);
-					$.Graph.zoom_line_chart(graph_data.inbound_minute_used,$this.$widget_in_bound_minute_used_chart.selector,"widget-in-bound-minute-used-chart");
-			 
-				},dataType: 'json',	
-			});
-    
-	}
-    
-    ReportPage.prototype.get_out_bound_minute_used_graph = function(chart_id)
 
-    {
-        $.ReportPage.hide_all_graph();
-    	var $this = this;
-    	$this.$widget_out_bound_minute_used_chart.show();
-    	$.ajax({
-				url: "",
-				method: "POST",
-				data : 
-				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
-    			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
-				},
-    	
-				complete: function (response) 
-				{
-					
-					
-					var graph_data = jQuery.parseJSON(response.responseText);
-					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText);
-					$.Graph.zoom_line_chart(graph_data.outbound_minute_used,$this.$widget_out_bound_minute_used_chart.selector,"widget-out-bound-minute-used-chart");
-			 
-				},dataType: 'json',	
-			});
-    
-	}
-    
     ReportPage.prototype.get_recharge_graph = function(chart_id)
 
     {
@@ -1106,21 +1124,27 @@ function($) {
     	$this.$widget_recharge_chart.show();
     	
     	$.ajax({
-				url: "",
+    			url: $this.graph_url_data["report"],
 				method: "POST",
 				data : 
 				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
     			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast, graph : chart_id, start_date : $this.$start_date.val(), end_date : $this.$end_date.val() 
 				},
     	
-				complete: function (response) 
+				success: function (response) 
 				{
-					var graph_data = jQuery.parseJSON(response.responseText);
+					var graph_data = response;
 					$.Graph.init();
-					$this.$chart_data_for_csv.val(response.responseText);
-					$.Graph.zoom_line_chart(graph_data.recharge,$this.$widget_recharge_chart.selector,"widget-recharge-chart");
+					var export_data = JSON.stringify(response);
+					$this.$chart_data_for_csv.val(export_data);
+					$.Graph.recharge_line_chart(graph_data.recharge,$this.$widget_recharge_chart.selector,"widget-recharge-chart","Recharge Graph");
 					
-				},dataType: 'json',	
+				},
+				error: function(xhr)
+				{	
+					$.ReportPage.show_error(xhr);
+					
+			    },dataType: 'json',	
 			});
     
 	}
@@ -1138,13 +1162,14 @@ function($) {
         		append_options = append_options + value;
         		append_options = append_options + '</a></li> ';
         	});
+        
         this.$graph_menu.empty().append(append_options);
     }
     
     ReportPage.prototype.set_options = function (option_data,select_tag_id){ 
    
     	var append_options = '<option></option>';
- 
+    	
     	$.each(option_data, function(key, value) {	
     	
     		append_options = append_options + '<option id='+key+' value='+key+'> ';
@@ -1153,6 +1178,7 @@ function($) {
     	});
     	$(select_tag_id).empty().append(append_options);
     	$(select_tag_id).select2("val", "---");
+    	
     	this.$get_graph_btn.trigger('click');	
     }
     
@@ -1162,7 +1188,7 @@ function($) {
     	var $this = this;
     	
     	$.ajax({
-			url: "",
+    		url: $this.graph_url_data["report"],
 			method: "POST",
 			data : 
 			{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
@@ -1171,7 +1197,7 @@ function($) {
 	
 			complete: function (response) 
 			{
-				var group_data = jQuery.parseJSON(response.responseText);
+				var group_data = response;
 				$.ReportPage.set_graph_menu(group_data.visible_graph_data);
 		 
 			},dataType: 'json',	
@@ -1187,20 +1213,25 @@ function($) {
     	var $this = this;
     	
     	$.ajax({
-			url: "",
+    		url: $this.graph_url_data["report"],
 			method: "POST",
 			data : 
 			{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
 			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast , select_group : "True"
 			},
-	
-			complete: function (response) 
+			success: function (response) 
 			{
-				var broadcast_data = jQuery.parseJSON(response.responseText);
+				var broadcast_data = response;
 				$.ReportPage.set_options(broadcast_data.broadcast_data,$this.$broadcastselect.selector)
 				$.ReportPage.set_graph_menu(broadcast_data.visible_graph_data);
 		 
-			},dataType: 'json',	
+			},
+			error: function(xhr)
+			{	
+				$.ReportPage.show_error(xhr);
+				
+		    },
+			dataType: 'json',
 		});
     }
     
@@ -1210,35 +1241,41 @@ function($) {
     	$.ReportPage.set_group_id ("");
     	$.ReportPage.set_broadcast_id ("");
     	var $this = this;
+    	
     	$.ajax({
-			url: "",
+    		url: $this.graph_url_data["report"],
 			method: "POST",
 			data : 
 			{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), selected_user : $this.selected_user, 
 			selected_group : $this.selected_group, selected_broadcast : $this.selected_broadcast , select_user : "True"
 			},
-	
-			complete: function (response) 
+			success: function (response) 
 			{
-				var group_data = jQuery.parseJSON(response.responseText);
+				var group_data = response;
 				$.ReportPage.set_options(group_data.group_data,$this.$groupselect.selector)
 				$.ReportPage.set_graph_menu(group_data.visible_graph_data);
-			},dataType: 'json',	
+			},
+			error: function(xhr)
+			{	
+				$.ReportPage.show_error(xhr);
+				
+		    },dataType: 'json',	
 		});
-
+    	
     }
-    
-
- 
     
     ReportPage.prototype.init = function() {
      	var $this = this;
      	$.ReportPage.hide_all_graph();
-     	$.fn.select2 && $this.$userselect.select2({}).on("select2-opening", function() {
-            $.fn.scrollbar && $(".select2-results").scrollbar({
-                ignoreMobile: !1
-            })
-       });
+     	
+     	if($(".user-select-c").length > 0) {
+	     	$.fn.select2 && $this.$userselect.select2({}).on("select2-opening", function() {
+	            $.fn.scrollbar && $(".select2-results").scrollbar({
+	                ignoreMobile: !1
+	            })
+	       });
+     	}
+     	
      	
      	$.fn.select2 && $this.$groupselect.select2({}).on("select2-opening", function() {
             $.fn.scrollbar && $(".select2-results").scrollbar({
@@ -1268,14 +1305,12 @@ function($) {
      			$.ReportPage.get_response_graph(chart_id);
      		}else if (chart_id == 'total_minute_used'){
      			$.ReportPage.get_total_minute_used_graph(chart_id);
-     		}else if (chart_id == 'in_bound_minute_used'){
-     			$.ReportPage.get_in_bound_minute_used_graph(chart_id);
-     		}else if (chart_id == 'out_bound_minute_used'){
-     			$.ReportPage.get_out_bound_minute_used_graph(chart_id);
+     		}else if (chart_id == 'total_call_count'){
+     			$.ReportPage.get_total_call_count_graph(chart_id);
      		}else if (chart_id == 'recharge'){
-     			$.ReportPage.get_out_bound_minute_used_graph(chart_id);
+     			$.ReportPage.get_recharge_graph(chart_id);
      		}else {
-     			$.ReportPage.get_out_bound_minute_used_graph("out_bound_minute_used");
+     			$.ReportPage.get_total_minute_used_graph("total_minute_used");
      		}
      	});
      	
@@ -1332,18 +1367,11 @@ function($) {
 	    	$.ReportPage.get_total_minute_used_graph(chart_id);
 	    
 	    });
-	    
-	    this.$body.on("click",this.$graph_in_bound_minute_used.selector, function($e) {
+	   
+	    this.$body.on("click",this.$graph_total_call_count.selector, function($e) {
 	    	var chart_id = $(this).attr('id'); 	
 	    	$e.preventDefault();
-	    	$.ReportPage.get_in_bound_minute_used_graph(chart_id);
-	    
-	    });
-	    
-	    this.$body.on("click",this.$graph_out_bound_minute_used.selector, function($e) {
-	    	var chart_id = $(this).attr('id'); 	
-	    	$e.preventDefault();
-	    	$.ReportPage.get_out_bound_minute_used_graph(chart_id);
+	    	$.ReportPage.get_total_call_count_graph(chart_id);
 	    
 	    });
 	    
@@ -1382,8 +1410,7 @@ function($) {
 	    
 	    this.$select_group_div.hide();
 	    this.$select_broadcast_div.hide();
-
-	    this.$get_graph_btn.trigger('click');
+	    
     }, 
         
     $.ReportPage = new ReportPage, $.ReportPage.Constructor = ReportPage
@@ -1936,12 +1963,8 @@ function($) {
 			
     		var type = this.$errorContainer.attr('data-type');
     		var msg = this.$errorContainer.attr('data-message'); 
-    		$('body').appNotification({
-                style: 'bar',
-                message: msg,
-                position: 'top',
-                type: type
-            }).show();
+    		
+    		
     	}
 		
     },
@@ -2025,7 +2048,13 @@ function($) {
           ]
       });
    
+      var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+          graph: areaGraph
+        } );
+
+      
       areaGraph.render();
+      
       
       setInterval( function() {
    
@@ -2048,7 +2077,7 @@ function($) {
   		});
     	 
     	  areaGraph.update();
-      }, 3000 );
+      }, 20000 );
       
       $(window).resize(function(){
           areaGraph.render();
@@ -2117,6 +2146,7 @@ function($) {
         ]
       } );
 
+      
       graph.render();
 
       var hoverDetail = new Rickshaw.Graph.HoverDetail( {
@@ -2251,25 +2281,9 @@ function($) {
         
         //create live area graph
         var colors = ['#ff962f', '#E9E9E9'];
-        var labels = ['Calls', 'Pickup'];
+        var labels = ['Pickup','Attempts'];
         this.createAreaGraph("#linechart", seriesData, random, colors, labels,data_length);
         
-    }
-    
-    RickshawChart.prototype.callvsPickupLastMonthGraph = function(call_vs_pickup_graph_data)
-    {
-        var LinePlotcolors = ['#f13c6e','#615ca8'];
-        var linePnames = ["Outbound Call", "Pickup Call"];
-        var call_vs_pickup_data = [[],[]]
-        for (var key in call_vs_pickup_graph_data["total_call"])
-        {
-      	  var date = this.stringToDate(key,"yyyy-mm-dd","-");
-      	  var x = date.getTime() / 1000;
-      	  call_vs_pickup_data[0].push({"x":x, "y": call_vs_pickup_graph_data["total_call"][key]});
-      	  call_vs_pickup_data[1].push({"x":x, "y": call_vs_pickup_graph_data["complete_call"][key]});
-        }
-        
-        this.createLinePlotGraph("lineplotchart", LinePlotcolors, linePnames,call_vs_pickup_data);
     }
     
     RickshawChart.prototype.init = function(call_vs_pickup_graph_data) {
@@ -2285,10 +2299,14 @@ function($) {
 function($) {
     "use strict";
 
-    var Sparkline = function() {};
+    var Sparkline = function() {
+    	var month_data = [];
+    };
 
     //
     Sparkline.prototype.create_portlet_signup_user_per_month = function(graph_data) {
+    	var $this= this;
+    	
     	$('.inlinesparkline').sparkline(graph_data["signup_data"], {
             type: 'line',
             width: '100%',
@@ -2299,20 +2317,91 @@ function($) {
             highlightSpotColor: '#3bc0c3',
             highlightLineColor: '#1a2942',
             spotRadius: 3,
+            tooltipFormat : '<span style="font-size: 18px"> Signups : {{y}} <br> {{x:month}} - {{x:year}} '  +'</span>',
+            tooltipValueLookups: {
+                "month": {
+                    0: $this.month_data[( (parseInt(graph_data["start_month"] -1 ) % 12) )],
+                    1: $this.month_data[( ( parseInt(graph_data["start_month"]) + 0 ) % 12)],
+                    2: $this.month_data[( ( parseInt(graph_data["start_month"]) + 1 ) % 12)],
+                    3: $this.month_data[( ( parseInt(graph_data["start_month"]) + 2 ) % 12)],
+                    4: $this.month_data[( ( parseInt(graph_data["start_month"]) + 3 ) % 12)],
+                    5: $this.month_data[( ( parseInt(graph_data["start_month"]) + 4 ) % 12)],
+                    6: $this.month_data[( ( parseInt(graph_data["start_month"]) + 5 ) % 12)],
+                    7: $this.month_data[( ( parseInt(graph_data["start_month"]) + 6 ) % 12)],
+                    8: $this.month_data[( ( parseInt(graph_data["start_month"]) + 7 ) % 12)],
+                    9: $this.month_data[( ( parseInt(graph_data["start_month"]) + 8 ) % 12)],
+                    10:$this.month_data[( ( parseInt(graph_data["start_month"]) + 9 ) % 12)],
+                    11:$this.month_data[( ( parseInt(graph_data["start_month"]) + 10 ) % 12)],
+                    // Add more here
+                	},
+    			"year": {
+    				0:  parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]-1) / 12 ),
+                    1: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+0) / 12 ) ,
+                    2: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+1) / 12 ) ,
+                    3: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+2) / 12 ) ,
+                    4: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+3) / 12 ) ,
+                    5: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+4) / 12 ) ,
+                    6: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+5) / 12 ) ,
+                    7: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+6) / 12 ) ,
+                    8: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+7) / 12 ) ,
+                    9: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+8) / 12 ) ,
+                    10: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+9) / 12 ) ,
+                    11: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+10) / 12 ) ,
+                    
+    			}
+            }
         });
     },
     
     Sparkline.prototype.create_portlet_recharge_per_month = function(graph_data) {
+    	var $this = this;
     	$('.dynamicbar-big').sparkline(graph_data["recharge_data"], {
             type: 'bar',
             barColor: '#3bc0c3',
             height: '32',
-            barWidth: 15,
-            barSpacing: 5
+            barWidth: 24,
+            barSpacing: 5,
+            tooltipFormat : '<span style="font-size: 18px"> Recharge : {{value}} </span>',
+        });
+    },
+    
+    Sparkline.prototype.create_call_in_by_hour = function(graph_data,div_id) {
+    	var $this = this;
+    	$(div_id).show();
+    	
+    	var array_data = [];
+    	for (var i = 0; i<24;i++)
+    	{
+    		if(graph_data["data"].hasOwnProperty(i)){
+    			array_data.push(parseInt(graph_data["data"][i]))
+    		}
+    		else
+    		{
+    			array_data.push(parseInt(0));
+    		}
+    		
+    	}
+    	$('.call-in-chart').sparkline(array_data, {
+    		type: 'line',
+            width: '100%',
+            height: '100%',
+            lineWidth: 3,
+            drawNormalOnTop : true,
+            drawXAxis: show_box,
+            drawYAxis: show_box,
+            drawXGrid: show_box,
+            drawYGrid: show_box,
+            lineColor: 'rgba(26,41,66,0.7)',
+            fillColor: 'rgba(59,192,195,0.5)',
+            highlightSpotColor: '#3bc0c3',
+            highlightLineColor: '#1a2942',
+            spotRadius: 3,
+            tooltipFormat : '<span style="font-size: 18px"> Hour : {{x}} <br>' + graph_data["key"]+ ': {{y}} </span>',
         });
     },
     
     Sparkline.prototype.create_portlet_credit_used_per_month = function(graph_data) {
+    	var $this = this;
     	$('#compositeline').sparkline(graph_data["credit_data"], {
             fillColor: false,
             changeRangeMin: 0,
@@ -2325,6 +2414,39 @@ function($) {
             highlightSpotColor: '#3bc0c3',
             highlightLineColor: '#f13c6e',
             spotRadius: 4,
+            tooltipFormat : '<span style="font-size: 18px"> Credit Purchase : {{y}} <br> {{x:month}} - {{x:year}} '  +'</span>',
+            tooltipValueLookups: {
+                "month": {
+                    0: $this.month_data[( (parseInt(graph_data["start_month"] -1 ) % 12) )],
+                    1: $this.month_data[( ( parseInt(graph_data["start_month"]) + 0 ) % 12)],
+                    2: $this.month_data[( ( parseInt(graph_data["start_month"]) + 1 ) % 12)],
+                    3: $this.month_data[( ( parseInt(graph_data["start_month"]) + 2 ) % 12)],
+                    4: $this.month_data[( ( parseInt(graph_data["start_month"]) + 3 ) % 12)],
+                    5: $this.month_data[( ( parseInt(graph_data["start_month"]) + 4 ) % 12)],
+                    6: $this.month_data[( ( parseInt(graph_data["start_month"]) + 5 ) % 12)],
+                    7: $this.month_data[( ( parseInt(graph_data["start_month"]) + 6 ) % 12)],
+                    8: $this.month_data[( ( parseInt(graph_data["start_month"]) + 7 ) % 12)],
+                    9: $this.month_data[( ( parseInt(graph_data["start_month"]) + 8 ) % 12)],
+                    10:$this.month_data[( ( parseInt(graph_data["start_month"]) + 9 ) % 12)],
+                    11:$this.month_data[( ( parseInt(graph_data["start_month"]) + 10 ) % 12)],
+                    // Add more here
+                	},
+    			"year": {
+    				0:  parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]-1) / 12 ),
+                    1: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+0) / 12 ) ,
+                    2: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+1) / 12 ) ,
+                    3: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+2) / 12 ) ,
+                    4: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+3) / 12 ) ,
+                    5: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+4) / 12 ) ,
+                    6: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+5) / 12 ) ,
+                    7: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+6) / 12 ) ,
+                    8: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+7) / 12 ) ,
+                    9: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+8) / 12 ) ,
+                    10: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+9) / 12 ) ,
+                    11: parseInt(graph_data["start_year"]) + parseInt(parseInt(graph_data["start_month"]+10) / 12 ) ,
+                    
+    			}
+            }
         });
     },
     
@@ -2336,12 +2458,26 @@ function($) {
             sliceColors: ['#EF5350', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#42A5F5', '#29B6F6', '#26C6DA', '#26A69A', '#66BB6A', '#9CCC65', '#D4E157'],
             offset: 0,
             borderWidth: 0,
-            borderColor: '#00007f'
+            borderColor: '#00007f',
+            tooltipFormat : '<span style="font-size: 18px; color:{{color}};" > Minute Used : {{value}} <br> Peratenge : {{percent}}% </span>',
         });
     },
     
     Sparkline.prototype.init = function() {
-
+    	
+    	this.month_data = [
+    	"January",
+		"February",
+		"march",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"Suptember",
+		"October",
+		"Nevember",
+		"December" ];
     },
     //init
     $.Sparkline = new Sparkline, $.Sparkline.Constructor = Sparkline
@@ -2357,11 +2493,11 @@ function($) {
         {
         	this.graph_url_data = data;
         	$.DashboardPage.get_live_call_graph();
-    		$.DashboardPage.get_call_vs_pickup_last_month_graph();
     		$.DashboardPage.get_portlet_signup_user();
     		$.DashboardPage.get_portlet_recharge();
     		$.DashboardPage.get_portlet_credit_used();
     		$.DashboardPage.get_portlet_minute_used();
+    		
         }
         
         DashboardPage.prototype.get_portlet_minute_used = function()
@@ -2457,26 +2593,9 @@ function($) {
     			});
     	},
     	
-    	DashboardPage.prototype.get_call_vs_pickup_last_month_graph = function()
-        {
-            var $this = this;
-        	$.ajax({
-    				url: $this.graph_url_data["call_vs_pickup_last_month_data"],
-    				method: "POST",
-    				data : 
-    				{'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(), chart_type : "portlet"
-    				},
-    				complete: function (response) 
-    				{
-    					var graph_data = jQuery.parseJSON(response.responseText);
-    					
-    					$.RickshawChart.callvsPickupLastMonthGraph(graph_data["call_vs_pickup_data"]);
-    				},dataType: 'json',	
-    			});
-    	},
-        
+    	       
         DashboardPage.prototype.init = function() {
-
+    		$.Sparkline.init();
         }, 
         
         $.DashboardPage = new DashboardPage, $.DashboardPage.Constructor = DashboardPage
@@ -2595,8 +2714,8 @@ function($) {
     		$.UserSettingPage.init();
     	if(this.$addCouponPage.length > 0)
     		$.AddCouponPage.init();
-    	if(this.$reportPage.length > 0)
-    		$.ReportPage.init();
+    	//if(this.$reportPage.length > 0)
+    	//	$.ReportPage.init();
     },
 
     $.DashboardApp = new DashboardApp, $.DashboardApp.Constructor = DashboardApp

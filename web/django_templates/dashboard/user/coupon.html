@@ -19,7 +19,7 @@
 				<div class="col-md-2 col-md-offset-10 p-t-20 p-b-20">
 	
 					<a id="add_coupon" href="{% url 'dashboard:addcoupon' %}">
-					<input type="button" class="btn btn-success" id="add_coupon" value="Add Coupon"></a>
+					<input type="button" class="btn dashboard-btn" id="add_coupon" value="Add Coupon"></a>
 	
 				</div>
 			</div>
@@ -46,7 +46,11 @@
 									<tbody>
 										{% for u in users%}
 										<tr>
+											{% if u|get_item:'user__username' %}
 											<td>{{ u|get_item:'user__username' }}</td>
+											{% else %}
+											<td>All Users</td>
+											{% endif %}
 											<td>{{ u|get_item:'code'}}</td>
 											<td>{{ u|get_item:'created_on' }}</td>
 											<td>{{ u|get_item:'expires_on' }}</td>
