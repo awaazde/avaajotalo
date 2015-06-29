@@ -148,7 +148,7 @@
 											<th>Login/Groups</th>
 											<th>Account Start Date</th>
 											<th>Last Login</th>
-											{% if is_superuser %}
+											{% if request.user.is_superuser %}
 											<th></th>
 											{% endif %}
 										</tr>
@@ -176,7 +176,7 @@
 											</td>
 											<td width="10%">{{ user|get_item:'admin__auth_user__date_joined' }}</td>
 											<td width="10%">{{ user|get_item:'admin__auth_user__last_login' }}</td>
-											{% if is_superuser %}
+											{% if request.user.is_superuser %}
 											<td width="10%">
 												<div class="dropdown">
 													<button class="btn btn-default dropdown-toggle"
