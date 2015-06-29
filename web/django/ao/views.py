@@ -1070,19 +1070,45 @@ def sendsms(request):
     sender = get_console_user(request)
     # check balance in backend in case UI check fails to capture negative balance
     # (i.e. if user hasn't refreshed his screen in a while and UI doesn't update in real time)
+    
+    # Get schedule
+    send_date = ""
+    when = params['when']
+    if when == 'date':
+        start_date = params['date']
+        try:
+            start_date = datetime.strptime(start_date, '%b-%d-%Y')
+        except ValueError as err:
+            response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+INVALID_DATE+', "message":"invalid schedule date"}]')
+            response['Pragma'] = "no cache"
+            response['Cache-Control'] = "no-cache, must-revalidate"
+            return response
+        
+        hour = int(params['hour'])
+        min = int(params['min'])
+        send_date = datetime(year=start_date.year,month=start_date.month,day=start_date.day,hour=hour,minute=min)
+        
     if recipients:
-        if sender.balance is not None: 
+        if sender.balance is not None:
             if sender.balance == Decimal(str(User.UNLIMITED_BALANCE)) or sender.balance > Decimal(str(sms_utils.SMS_DISALLOW_BALANCE_THRESH)):
                 numsms = math.ceil(len(smstext) / float(SMS_LENGTH))
                 sms_utils.charge_sms_credits(sender, len(recipients) * numsms)
-                sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
+                
+                if send_date:
+                    sms_utils.send_sms(line.sms_config, recipients, smstext, sender,send_date)
+                else:
+                    sms_utils.send_sms(line.sms_config, recipients, smstext, sender)
+                
             else:
                 response = HttpResponse('[{"model":"VALIDATION_ERROR", "type":'+NOT_ENOUGH_BALANCE+', "message":"Insufficient balance to send SMS"}]')
                 response['Pragma'] = "no cache"
                 response['Cache-Control'] = "no-cache, must-revalidate"
                 return response
         else:
-            sms_utils.send_sms_from_line(line, recipients, smstext)
+            if send_date:
+                sms_utils.send_sms_from_line(line, recipients, smstext,send_date)
+            else:
+                sms_utils.send_sms_from_line(line, recipients, smstext)
     
     return HttpResponseRedirect(reverse('otalo.ao.views.forum'))
 
