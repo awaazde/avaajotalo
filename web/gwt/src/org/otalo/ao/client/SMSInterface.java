@@ -12,6 +12,8 @@ import org.otalo.ao.client.model.Line;
 import org.otalo.ao.client.model.MessageForum;
 import org.otalo.ao.client.model.Tag;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -35,25 +37,34 @@ import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import com.google.gwt.user.datepicker.client.DateBox;
 
 public class SMSInterface extends Composite {
 	private FormPanel smsForm;
 	private DecoratedStackPanel stackPanel = new DecoratedStackPanel();
-	private VerticalPanel outer, who, what;
+	private VerticalPanel outer, who, what, when;
 	private HorizontalPanel controls = new HorizontalPanel();
+	private HorizontalPanel datePanel;
 	private Button sendButton;
 	private TextBox sinceField;
+	private Hidden dateField;
 	private TextArea txtArea;
 	private DatePicker since;
 	private ListBox tags, lastNCallers, groups;
 	private Hidden lineid;
 	private CheckBox numbers, usersByTag, usersByLog;
-	private Label remainingCharsLabel;
+	private Label remainingCharsLabel, dateLabel;
 	private final int SMS_MAX_LENGTH = 160;
+	private DateBox dateBox;
+	private RadioButton now, date;
+	private ListBox hour, min;
+
+	private final DateTimeFormat dateFormat = DateTimeFormat.getFormat("MMM-dd-yyyy"); //on server side string date should be converted back to date in this format only
 	
 	public interface Images extends Fora.Images {
 		ImageResource group();
@@ -76,6 +87,8 @@ public class SMSInterface extends Composite {
 		who.setSize("100%", "100%");
 		what = new VerticalPanel();
 		what.setSize("100%", "100%");
+		when = new VerticalPanel();
+		when.setSize("100%", "100%");
 		
 		VerticalPanel whoPanel = new VerticalPanel();
 		whoPanel.setSize("100%", "100%");
@@ -142,6 +155,72 @@ public class SMSInterface extends Composite {
 			}
 		});
 		
+		dateLabel = new Label("Broadcast Time: ");
+		
+		now = new RadioButton("when","Now");
+		now.setFormValue("now");
+
+		date = new RadioButton("when","Date");
+		date.setFormValue("date");
+		dateField = new Hidden("date");
+		// Date Box
+		
+		dateBox = new DateBox();
+		dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
+		dateBox.addValueChangeHandler(new ValueChangeHandler<Date>() {
+
+			public void onValueChange(ValueChangeEvent<Date> event) {
+				now.setValue(false);
+				date.setValue(true);
+				Date d = event.getValue();
+				dateField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
+			}
+		});
+
+		// Hour box
+		hour = new ListBox();
+		hour.setName("hour");
+		for(int i=0; i < 24; i++)
+		{
+			String hourStr;
+			if (i < 10)
+				hourStr = "0"+String.valueOf(i);
+			else
+				hourStr = String.valueOf(i);
+
+			hour.addItem(hourStr);
+		}
+		hour.addChangeHandler(new ChangeHandler() {
+
+			public void onChange(ChangeEvent event) {
+				now.setValue(false);
+				date.setValue(true);
+
+			}
+		});
+
+		// Minute box
+		min = new ListBox();
+		min.setName("min");
+		for(int i=0; i < 60; i+=5)
+		{
+			String minStr;
+			if (i < 10)
+				minStr = "0"+String.valueOf(i);
+			else
+				minStr = String.valueOf(i);
+
+			min.addItem(minStr);
+		}
+		min.addChangeHandler(new ChangeHandler() {
+
+			public void onChange(ChangeEvent event) {
+				now.setValue(false);
+				date.setValue(true);
+
+			}
+		});
+
 		if (Messages.get().canManage())
 		{
 			HorizontalPanel groupPanel = new HorizontalPanel();
@@ -199,9 +278,29 @@ public class SMSInterface extends Composite {
   	what.setSpacing(10);
   	what.add(txtArea);
   	what.add(remainCharsPanel);
+  	
+  	 HorizontalPanel nowPanel = new HorizontalPanel();
+     //nowPanel.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
+     nowPanel.setSpacing(4);
+     nowPanel.add(now);
+     
+     HorizontalPanel datePicker = new HorizontalPanel();
+     datePicker.setSpacing(4);
+     datePicker.add(date);
+     datePicker.add(dateBox);
+     datePicker.add(hour);
+     datePicker.add(new Label(":"));
+     datePicker.add(min);
+     
+     dateField = new Hidden("date");
+  	
+  	when.add(nowPanel);
+	when.add(datePicker);
+	when.add(dateField);
 		
 		stackPanel.add(who, createHeaderHTML(images.group(), "Recipients"), true);
 		stackPanel.add(what, createHeaderHTML(images.messagesgroup(), "Message"), true);
+		stackPanel.add(when, createHeaderHTML(images.calendar(), "Schedule"), true);
 		
 		controls = new HorizontalPanel();
 		
