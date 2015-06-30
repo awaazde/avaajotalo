@@ -159,6 +159,7 @@ public class SMSInterface extends Composite {
 		
 		now = new RadioButton("when","Now");
 		now.setFormValue("now");
+		now.setValue(true);
 
 		date = new RadioButton("when","Date");
 		date.setFormValue("date");
